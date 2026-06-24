@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users, Heart, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +42,16 @@ export function Nav({
         <Link to="/looking-for" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border">
           <Users className="h-3.5 w-3.5" />Looking For
         </Link>
+        {user && (
+          <>
+            <Link to="/saved" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border" title="Saved">
+              <Heart className="h-3.5 w-3.5" />Saved
+            </Link>
+            <Link to="/my-listings" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border" title="My listings">
+              <Home className="h-3.5 w-3.5" />Mine
+            </Link>
+          </>
+        )}
         {onOpenMatch && (
           <button onClick={onOpenMatch} className="hidden md:inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
             <Sparkles className="h-3.5 w-3.5" />Find My Match
