@@ -21,25 +21,33 @@ export function LeaseAnalysisDialog({ open, onOpenChange }: { open: boolean; onO
     enabled: !!user && open,
   });
   const [text, setText] = useState("");
+  const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [filename, setFilename] = useState("Pasted lease");
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState<any>(null);
 
   async function onFile(f: File) {
-    if (f.type !== "text/plain") {
-      toast.error("For now, upload a .txt copy of your lease (or paste text below). PDF support coming soon.");
-      return;
-    }
-    const t = await f.text();
-    setText(t);
     setFilename(f.name);
+    if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
+      if (f.size > 6 * 1024 * 1024) return toast.error("PDF too large (max 6MB)");
+      const buf = await f.arrayBuffer();
+      let bin = ""; const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      setPdfBase64(btoa(bin));
+      setText("");
+      toast.success("PDF loaded — click Analyze");
+    } else {
+      const t = await f.text();
+      setText(t);
+      setPdfBase64(null);
+    }
   }
 
   async function run() {
-    if (text.trim().length < 50) return toast.error("Paste at least a paragraph of lease text");
+    if (!pdfBase64 && text.trim().length < 50) return toast.error("Paste at least a paragraph of lease text or upload a PDF");
     setBusy(true);
     try {
-      const row = await analyze({ data: { filename, text } });
+      const row = await analyze({ data: { filename, text: text || undefined, pdf_base64: pdfBase64 || undefined } });
       setActive(row);
       qc.invalidateQueries({ queryKey: ["lease-analyses", user?.id] });
       toast.success("Analysis ready");
