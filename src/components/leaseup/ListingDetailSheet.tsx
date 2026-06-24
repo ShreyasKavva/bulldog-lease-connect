@@ -1,11 +1,12 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone } from "lucide-react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SafeScoreBadge } from "./SafeScoreBadge";
+import { ReportListingDialog } from "./ReportListingDialog";
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
@@ -17,6 +18,7 @@ export function ListingDetailSheet({
   onViewProfile: (userId: string) => void;
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
+  const [reportOpen, setReportOpen] = useState(false);
   const { user } = useSession();
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
@@ -143,20 +145,27 @@ export function ListingDetailSheet({
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
 
-          <button
-            onClick={() => {
-              const url = `${window.location.origin}/?listing=${listing.id}`;
-              navigator.clipboard.writeText(url);
-              toast.success("Link copied");
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-          ><Share2 className="h-3.5 w-3.5" />Share listing</button>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/?listing=${listing.id}`;
+                navigator.clipboard.writeText(url);
+                toast.success("Link copied");
+              }}
+              className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            ><Share2 className="h-3.5 w-3.5" />Share</button>
+            <button
+              onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
+              className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
+            ><Flag className="h-3.5 w-3.5" />Report listing</button>
+          </div>
 
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
         </div>
       </SheetContent>
+      <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
     </Sheet>
   );
 }

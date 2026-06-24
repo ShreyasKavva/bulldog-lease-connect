@@ -124,6 +124,64 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string | null
@@ -136,6 +194,7 @@ export type Database = {
           campus_id: string
           created_at: string
           description: string
+          flagged: boolean
           furnished: boolean
           id: string
           is_active: boolean
@@ -165,6 +224,7 @@ export type Database = {
           campus_id: string
           created_at?: string
           description?: string
+          flagged?: boolean
           furnished?: boolean
           id?: string
           is_active?: boolean
@@ -194,6 +254,7 @@ export type Database = {
           campus_id?: string
           created_at?: string
           description?: string
+          flagged?: boolean
           furnished?: boolean
           id?: string
           is_active?: boolean
@@ -322,12 +383,14 @@ export type Database = {
       profiles: {
         Row: {
           avatar_emoji: string | null
+          banned: boolean
           banner_color: string | null
           bio: string | null
           campus_id: string | null
           created_at: string
           email: string
           id: string
+          is_admin: boolean
           major: string | null
           name: string
           phone: string | null
@@ -338,12 +401,14 @@ export type Database = {
         }
         Insert: {
           avatar_emoji?: string | null
+          banned?: boolean
           banner_color?: string | null
           bio?: string | null
           campus_id?: string | null
           created_at?: string
           email: string
           id: string
+          is_admin?: boolean
           major?: string | null
           name?: string
           phone?: string | null
@@ -354,12 +419,14 @@ export type Database = {
         }
         Update: {
           avatar_emoji?: string | null
+          banned?: boolean
           banner_color?: string | null
           bio?: string | null
           campus_id?: string | null
           created_at?: string
           email?: string
           id?: string
+          is_admin?: boolean
           major?: string | null
           name?: string
           phone?: string | null
@@ -416,6 +483,7 @@ export type Database = {
         Args: { _listing_id: string }
         Returns: number
       }
+      is_admin: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
