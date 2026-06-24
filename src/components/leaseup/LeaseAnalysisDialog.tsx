@@ -21,25 +21,33 @@ export function LeaseAnalysisDialog({ open, onOpenChange }: { open: boolean; onO
     enabled: !!user && open,
   });
   const [text, setText] = useState("");
+  const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [filename, setFilename] = useState("Pasted lease");
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState<any>(null);
 
   async function onFile(f: File) {
-    if (f.type !== "text/plain") {
-      toast.error("For now, upload a .txt copy of your lease (or paste text below). PDF support coming soon.");
-      return;
-    }
-    const t = await f.text();
-    setText(t);
     setFilename(f.name);
+    if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
+      if (f.size > 6 * 1024 * 1024) return toast.error("PDF too large (max 6MB)");
+      const buf = await f.arrayBuffer();
+      let bin = ""; const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      setPdfBase64(btoa(bin));
+      setText("");
+      toast.success("PDF loaded — click Analyze");
+    } else {
+      const t = await f.text();
+      setText(t);
+      setPdfBase64(null);
+    }
   }
 
   async function run() {
-    if (text.trim().length < 50) return toast.error("Paste at least a paragraph of lease text");
+    if (!pdfBase64 && text.trim().length < 50) return toast.error("Paste at least a paragraph of lease text or upload a PDF");
     setBusy(true);
     try {
-      const row = await analyze({ data: { filename, text } });
+      const row = await analyze({ data: { filename, text: text || undefined, pdf_base64: pdfBase64 || undefined } });
       setActive(row);
       qc.invalidateQueries({ queryKey: ["lease-analyses", user?.id] });
       toast.success("Analysis ready");
@@ -63,12 +71,15 @@ export function LeaseAnalysisDialog({ open, onOpenChange }: { open: boolean; onO
             <p className="text-sm text-muted-foreground">Paste your lease (or upload a .txt). I'll flag risky clauses in plain English. Not legal advice.</p>
             <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed bg-background hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
-              <span className="text-xs font-semibold">Upload .txt file</span>
-              <input type="file" accept=".txt,text/plain" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+              <span className="text-xs font-semibold">{pdfBase64 ? `📄 ${filename}` : "Upload PDF or .txt"}</span>
+              <span className="text-[10px] text-muted-foreground">PDF, up to 6MB</span>
+              <input type="file" accept=".pdf,application/pdf,.txt,text/plain" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
             </label>
-            <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} placeholder="Paste lease text here…" />
+            {!pdfBase64 && (
+              <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} placeholder="…or paste lease text here" />
+            )}
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{text.length.toLocaleString()} chars</span>
+              <span className="text-xs text-muted-foreground">{pdfBase64 ? "PDF ready" : `${text.length.toLocaleString()} chars`}</span>
               <Button onClick={run} disabled={busy} className="bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
                 {busy ? <><Loader2 className="h-4 w-4 animate-spin" />Analyzing…</> : "Analyze lease"}
               </Button>

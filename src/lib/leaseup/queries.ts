@@ -179,3 +179,35 @@ export async function deleteLookingFor(id: string) {
   const { error } = await supabase.from("looking_for_posts").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function fetchSavedListings(userId: string): Promise<Listing[]> {
+  const { data: rows } = await supabase.from("saved_listings").select("listing_id").eq("user_id", userId);
+  const ids = (rows ?? []).map((r: any) => r.listing_id);
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase
+    .from("listings").select("*")
+    .in("id", ids).eq("is_active", true)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const withProfiles = await attachProfiles(data ?? []);
+  return attachSignedUrls(withProfiles);
+}
+
+export async function fetchMyListings(userId: string): Promise<Listing[]> {
+  const { data, error } = await supabase
+    .from("listings").select("*").eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const withProfiles = await attachProfiles(data ?? []);
+  return attachSignedUrls(withProfiles);
+}
+
+export async function deleteListing(id: string) {
+  const { error } = await supabase.from("listings").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function setListingActive(id: string, active: boolean) {
+  const { error } = await supabase.from("listings").update({ is_active: active }).eq("id", id);
+  if (error) throw error;
+}

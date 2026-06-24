@@ -25,45 +25,52 @@ function extractJson<T>(text: string): T {
 // ---- LEASE ANALYSIS ----
 const AnalyzeInput = z.object({
   filename: z.string().min(1),
-  text: z.string().min(50).max(60000),
+  text: z.string().max(60000).optional(),
+  pdf_base64: z.string().max(8_000_000).optional(),
+}).refine(v => (v.text && v.text.length >= 50) || v.pdf_base64, {
+  message: "Provide lease text (50+ chars) or a PDF",
 });
 
-export const analyzeLease = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => AnalyzeInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const provider = gateway();
-    const prompt = `You are a tenant-advocate lease reviewer for college students.
-Analyze the lease text below. Identify clauses that could hurt the tenant:
-auto-renewal, joint & several liability, early-termination fees, subletting bans,
-guarantor traps, security-deposit traps, maintenance burdens, entry rights, late fees, etc.
+const SYSTEM_PROMPT = `You are a tenant-advocate lease reviewer for college students.
+Identify clauses that could hurt the tenant: auto-renewal, joint & several liability,
+early-termination fees, subletting bans, guarantor traps, security-deposit traps,
+maintenance burdens, entry rights, late fees, etc.
 
 Return ONLY JSON in this exact shape (no prose, no markdown fences):
 {
   "summary": "2-3 sentence plain-English overview",
   "risk_score": 0-100 (higher = riskier for tenant),
   "flags": [
-    { "severity": "low|medium|high", "clause": "short clause name", "concern": "1-2 sentence explanation in plain English" }
+    { "severity": "low|medium|high", "clause": "short clause name", "concern": "1-2 sentence explanation" }
   ]
-}
+}`;
 
-LEASE TEXT:
-"""
-${data.text.slice(0, 50000)}
-"""`;
+export const analyzeLease = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AnalyzeInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const provider = gateway();
+
+    const userContent: any[] = [{ type: "text", text: SYSTEM_PROMPT }];
+    if (data.pdf_base64) {
+      userContent.push({
+        type: "file",
+        mediaType: "application/pdf",
+        data: data.pdf_base64,
+      });
+    } else if (data.text) {
+      userContent.push({ type: "text", text: `LEASE TEXT:\n"""\n${data.text.slice(0, 50000)}\n"""` });
+    }
 
     const { text } = await generateText({
       model: provider(MODEL),
-      prompt,
+      messages: [{ role: "user", content: userContent }],
       temperature: 0.2,
     });
 
     let parsed: { summary: string; risk_score: number; flags: any[] };
-    try {
-      parsed = extractJson(text);
-    } catch {
-      parsed = { summary: text.slice(0, 500), risk_score: 50, flags: [] };
-    }
+    try { parsed = extractJson(text); }
+    catch { parsed = { summary: text.slice(0, 500), risk_score: 50, flags: [] }; }
 
     const { data: row, error } = await context.supabase
       .from("lease_analyses")
@@ -73,7 +80,7 @@ ${data.text.slice(0, 50000)}
         summary: parsed.summary ?? null,
         risk_score: Math.max(0, Math.min(100, Math.round(parsed.risk_score ?? 50))),
         flags: parsed.flags ?? [],
-        raw_excerpt: data.text.slice(0, 2000),
+        raw_excerpt: data.text ? data.text.slice(0, 2000) : `[PDF: ${data.filename}]`,
       })
       .select("*")
       .single();
