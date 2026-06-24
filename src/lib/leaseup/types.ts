@@ -11,6 +11,8 @@ export type Profile = {
   vibe_tags: string[] | null;
   phone: string | null;
   verified_email: boolean;
+  is_admin?: boolean;
+  banned?: boolean;
   created_at: string;
 };
 
@@ -36,6 +38,7 @@ export type Listing = {
   amenities: string[] | null;
   photos: string[] | null;
   is_active: boolean;
+  flagged?: boolean;
   safe_score: number | null;
   created_at: string;
   profile?: Profile;
