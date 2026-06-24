@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.unread_message_count(uuid);

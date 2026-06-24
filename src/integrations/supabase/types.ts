@@ -416,7 +416,6 @@ export type Database = {
         Args: { _listing_id: string }
         Returns: number
       }
-      unread_message_count: { Args: { _user: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
