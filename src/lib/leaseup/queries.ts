@@ -17,25 +17,31 @@ async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
   }));
 }
 
+async function attachProfiles(listings: any[]): Promise<Listing[]> {
+  const ids = Array.from(new Set(listings.map((l) => l.user_id)));
+  if (ids.length === 0) return listings;
+  const { data } = await supabase.from("profiles").select("*").in("id", ids);
+  const map = new Map<string, Profile>((data ?? []).map((p: any) => [p.id, p]));
+  return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));
+}
+
 export async function fetchListings(): Promise<Listing[]> {
   const { data, error } = await supabase
     .from("listings")
-    .select("*, profile:profiles!listings_user_id_fkey(*)")
+    .select("*")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return attachSignedUrls((data as any) ?? []);
+  const withProfiles = await attachProfiles(data ?? []);
+  return attachSignedUrls(withProfiles);
 }
 
 export async function fetchListing(id: string): Promise<Listing | null> {
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*, profile:profiles!listings_user_id_fkey(*)")
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const [withUrls] = await attachSignedUrls([data as any]);
+  const [withProfile] = await attachProfiles([data]);
+  const [withUrls] = await attachSignedUrls([withProfile]);
   return withUrls;
 }
 
