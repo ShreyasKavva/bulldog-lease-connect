@@ -10,6 +10,8 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { MapView } from "@/components/leaseup/MapView";
+import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
+import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Map as MapIcon, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -59,6 +61,8 @@ function Home() {
   const [profileId, setProfileId] = useState<string | null>(null);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [matchOpen, setMatchOpen] = useState(false);
+  const [leaseOpen, setLeaseOpen] = useState(false);
 
   // Open listing via ?listing= URL param
   useEffect(() => {
@@ -124,6 +128,8 @@ function Home() {
         onPost={handlePost}
         onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })}
         onOpenProfile={() => user ? setProfileId(user.id) : navigate({ to: "/auth", search: { mode: "in" } })}
+        onOpenMatch={() => setMatchOpen(true)}
+        onOpenLease={() => user ? setLeaseOpen(true) : navigate({ to: "/auth", search: { mode: "in" } })}
         search={search}
         onSearch={setSearch}
       />
@@ -217,6 +223,13 @@ function Home() {
         open={messagesOpen}
         onOpenChange={setMessagesOpen}
         initialConversationId={activeConv}
+      />
+
+      <LeaseAnalysisDialog open={leaseOpen} onOpenChange={setLeaseOpen} />
+      <FindMyMatchDialog
+        open={matchOpen}
+        onOpenChange={setMatchOpen}
+        onOpenListing={(l) => setSelected(l)}
       />
     </div>
   );

@@ -36,6 +36,7 @@ export type Listing = {
   amenities: string[] | null;
   photos: string[] | null;
   is_active: boolean;
+  safe_score: number | null;
   created_at: string;
   profile?: Profile;
   photo_urls?: string[];
@@ -60,5 +61,33 @@ export type Message = {
   recipient_id: string;
   content: string;
   read: boolean;
+  created_at: string;
+};
+
+export type LookingForPost = {
+  id: string;
+  user_id: string;
+  campus_id: string | null;
+  title: string;
+  description: string;
+  budget_max: number | null;
+  move_in_date: string | null;
+  move_out_date: string | null;
+  beds_min: number | null;
+  area: string | null;
+  furnished: boolean | null;
+  pets_ok: boolean | null;
+  created_at: string;
+  profile?: Profile;
+};
+
+export type LeaseAnalysis = {
+  id: string;
+  user_id: string;
+  filename: string;
+  summary: string | null;
+  risk_score: number | null;
+  flags: Array<{ severity: "low" | "medium" | "high"; clause: string; concern: string }>;
+  raw_excerpt: string | null;
   created_at: string;
 };

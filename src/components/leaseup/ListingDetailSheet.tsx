@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
+import { SafeScoreBadge } from "./SafeScoreBadge";
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
@@ -56,8 +57,9 @@ export function ListingDetailSheet({
                 )}
               </div>
               <h2 className="mt-1 text-2xl font-extrabold">{listing.title}</h2>
-              <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />{listing.area ?? "Athens, GA"}
+                <SafeScoreBadge score={listing.safe_score} />
               </div>
             </div>
             <div className="text-right">

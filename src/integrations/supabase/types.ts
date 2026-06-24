@@ -88,6 +88,39 @@ export type Database = {
           },
         ]
       }
+      lease_analyses: {
+        Row: {
+          created_at: string
+          filename: string
+          flags: Json
+          id: string
+          raw_excerpt: string | null
+          risk_score: number | null
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filename: string
+          flags?: Json
+          id?: string
+          raw_excerpt?: string | null
+          risk_score?: number | null
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filename?: string
+          flags?: Json
+          id?: string
+          raw_excerpt?: string | null
+          risk_score?: number | null
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           address: string | null
@@ -109,6 +142,7 @@ export type Database = {
           pet_friendly: boolean
           photos: string[] | null
           price: number
+          safe_score: number | null
           semester: string | null
           title: string
           type: string
@@ -137,6 +171,7 @@ export type Database = {
           pet_friendly?: boolean
           photos?: string[] | null
           price: number
+          safe_score?: number | null
           semester?: string | null
           title: string
           type?: string
@@ -165,6 +200,7 @@ export type Database = {
           pet_friendly?: boolean
           photos?: string[] | null
           price?: number
+          safe_score?: number | null
           semester?: string | null
           title?: string
           type?: string
@@ -176,6 +212,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      looking_for_posts: {
+        Row: {
+          area: string | null
+          beds_min: number | null
+          budget_max: number | null
+          campus_id: string | null
+          created_at: string
+          description: string
+          furnished: boolean | null
+          id: string
+          move_in_date: string | null
+          move_out_date: string | null
+          pets_ok: boolean | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area?: string | null
+          beds_min?: number | null
+          budget_max?: number | null
+          campus_id?: string | null
+          created_at?: string
+          description: string
+          furnished?: boolean | null
+          id?: string
+          move_in_date?: string | null
+          move_out_date?: string | null
+          pets_ok?: boolean | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area?: string | null
+          beds_min?: number | null
+          budget_max?: number | null
+          campus_id?: string | null
+          created_at?: string
+          description?: string
+          furnished?: boolean | null
+          id?: string
+          move_in_date?: string | null
+          move_out_date?: string | null
+          pets_ok?: boolean | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "looking_for_posts_campus_id_fkey"
             columns: ["campus_id"]
             isOneToOne: false
             referencedRelation: "campuses"
@@ -314,7 +409,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      compute_listing_safe_score: {
+        Args: { _listing_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
