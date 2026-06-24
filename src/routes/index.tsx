@@ -224,6 +224,13 @@ function Home() {
         onOpenChange={setMessagesOpen}
         initialConversationId={activeConv}
       />
+
+      <LeaseAnalysisDialog open={leaseOpen} onOpenChange={setLeaseOpen} />
+      <FindMyMatchDialog
+        open={matchOpen}
+        onOpenChange={setMatchOpen}
+        onOpenListing={(l) => setSelected(l)}
+      />
     </div>
   );
 }
