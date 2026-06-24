@@ -110,7 +110,7 @@ function Onboarding() {
           <div className="space-y-4 text-center">
             <div className={cn(
               "mx-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold",
-              verified ? "bg-success-light text-success" : "bg-warning-light text-warning",
+              verified ? "bg-success-light text-success" : "bg-background text-muted-foreground",
             )}>
               {verified ? <><ShieldCheck className="h-4 w-4" /> Verified student ✓</> : "Unverified domain"}
             </div>
