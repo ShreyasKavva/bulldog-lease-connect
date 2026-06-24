@@ -38,7 +38,20 @@ export function Nav({
           className="flex-1 bg-transparent text-sm outline-none"
         />
       </div>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-1.5">
+        <Link to="/looking-for" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border">
+          <Users className="h-3.5 w-3.5" />Looking For
+        </Link>
+        {onOpenMatch && (
+          <button onClick={onOpenMatch} className="hidden md:inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
+            <Sparkles className="h-3.5 w-3.5" />Find My Match
+          </button>
+        )}
+        {onOpenLease && (
+          <button onClick={onOpenLease} className="hidden md:inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
+            <ShieldCheck className="h-3.5 w-3.5" />Lease Bot
+          </button>
+        )}
         {user ? (
           <>
             <Button onClick={onPost} className="hidden sm:inline-flex bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
