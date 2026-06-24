@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyListingsRoute = MyListingsRouteImport.update({
@@ -40,20 +47,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
+  id: '/sublease/$slug',
+  path: '/sublease/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
+  '/sublease/$slug': typeof SubleaseSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
+  '/sublease/$slug': typeof SubleaseSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,14 +77,38 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
+  '/sublease/$slug': typeof SubleaseSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/looking-for' | '/my-listings' | '/saved'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/looking-for'
+    | '/my-listings'
+    | '/onboarding'
+    | '/saved'
+    | '/sublease/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/looking-for' | '/my-listings' | '/saved'
-  id: '__root__' | '/' | '/auth' | '/looking-for' | '/my-listings' | '/saved'
+  to:
+    | '/'
+    | '/auth'
+    | '/looking-for'
+    | '/my-listings'
+    | '/onboarding'
+    | '/saved'
+    | '/sublease/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/looking-for'
+    | '/my-listings'
+    | '/onboarding'
+    | '/saved'
+    | '/sublease/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,7 +116,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LookingForRoute: typeof LookingForRoute
   MyListingsRoute: typeof MyListingsRoute
+  OnboardingRoute: typeof OnboardingRoute
   SavedRoute: typeof SavedRoute
+  SubleaseSlugRoute: typeof SubleaseSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-listings': {
@@ -116,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sublease/$slug': {
+      id: '/sublease/$slug'
+      path: '/sublease/$slug'
+      fullPath: '/sublease/$slug'
+      preLoaderRoute: typeof SubleaseSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -124,7 +180,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LookingForRoute: LookingForRoute,
   MyListingsRoute: MyListingsRoute,
+  OnboardingRoute: OnboardingRoute,
   SavedRoute: SavedRoute,
+  SubleaseSlugRoute: SubleaseSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
