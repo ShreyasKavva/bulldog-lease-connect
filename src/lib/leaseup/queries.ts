@@ -79,15 +79,6 @@ export async function getOrCreateConversation(
   listingId: string | null,
 ): Promise<string> {
   const [a, b] = [meId, otherId].sort();
-  const { data: existing } = await supabase
-    .from("conversations")
-    .select("id")
-    .eq("participant_1_id", a)
-    .eq("participant_2_id", b)
-    .is("listing_id", listingId ? undefined : null)
-    .eq("listing_id", listingId ?? "")
-    .maybeSingle();
-  // Above approach with .is/null is brittle — do a manual query instead:
   const { data: rows } = await supabase
     .from("conversations")
     .select("id, listing_id")
@@ -95,7 +86,6 @@ export async function getOrCreateConversation(
     .eq("participant_2_id", b);
   const match = rows?.find((r: any) => (r.listing_id ?? null) === (listingId ?? null));
   if (match) return match.id;
-  if (existing?.id) return existing.id;
   const { data: created, error } = await supabase
     .from("conversations")
     .insert({ participant_1_id: a, participant_2_id: b, listing_id: listingId })
