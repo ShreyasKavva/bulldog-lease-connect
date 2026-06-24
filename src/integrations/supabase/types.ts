@@ -14,7 +14,301 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      campuses: {
+        Row: {
+          city: string
+          created_at: string
+          domain: string | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          short_name: string
+          state: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          short_name: string
+          state: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          short_name?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_at: string | null
+          listing_id: string | null
+          participant_1_id: string
+          participant_2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1_id: string
+          participant_2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1_id?: string
+          participant_2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listings: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          area: string | null
+          available_from: string | null
+          available_to: string | null
+          baths: number
+          beds: number
+          campus_id: string
+          created_at: string
+          description: string
+          furnished: boolean
+          id: string
+          is_active: boolean
+          lat: number | null
+          lng: number | null
+          parking: boolean
+          pet_friendly: boolean
+          photos: string[] | null
+          price: number
+          semester: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          utilities_included: boolean
+          views: number
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          baths?: number
+          beds?: number
+          campus_id: string
+          created_at?: string
+          description?: string
+          furnished?: boolean
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          parking?: boolean
+          pet_friendly?: boolean
+          photos?: string[] | null
+          price: number
+          semester?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          utilities_included?: boolean
+          views?: number
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          baths?: number
+          beds?: number
+          campus_id?: string
+          created_at?: string
+          description?: string
+          furnished?: boolean
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          parking?: boolean
+          pet_friendly?: boolean
+          photos?: string[] | null
+          price?: number
+          semester?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          utilities_included?: boolean
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_emoji: string | null
+          banner_color: string | null
+          bio: string | null
+          campus_id: string | null
+          created_at: string
+          email: string
+          id: string
+          major: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+          verified_email: boolean
+          vibe_tags: string[] | null
+          year: string | null
+        }
+        Insert: {
+          avatar_emoji?: string | null
+          banner_color?: string | null
+          bio?: string | null
+          campus_id?: string | null
+          created_at?: string
+          email: string
+          id: string
+          major?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          verified_email?: boolean
+          vibe_tags?: string[] | null
+          year?: string | null
+        }
+        Update: {
+          avatar_emoji?: string | null
+          banner_color?: string | null
+          bio?: string | null
+          campus_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          major?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          verified_email?: boolean
+          vibe_tags?: string[] | null
+          year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_listings: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
