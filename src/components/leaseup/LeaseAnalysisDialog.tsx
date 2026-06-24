@@ -71,12 +71,15 @@ export function LeaseAnalysisDialog({ open, onOpenChange }: { open: boolean; onO
             <p className="text-sm text-muted-foreground">Paste your lease (or upload a .txt). I'll flag risky clauses in plain English. Not legal advice.</p>
             <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed bg-background hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
-              <span className="text-xs font-semibold">Upload .txt file</span>
-              <input type="file" accept=".txt,text/plain" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+              <span className="text-xs font-semibold">{pdfBase64 ? `📄 ${filename}` : "Upload PDF or .txt"}</span>
+              <span className="text-[10px] text-muted-foreground">PDF, up to 6MB</span>
+              <input type="file" accept=".pdf,application/pdf,.txt,text/plain" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
             </label>
-            <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} placeholder="Paste lease text here…" />
+            {!pdfBase64 && (
+              <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} placeholder="…or paste lease text here" />
+            )}
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{text.length.toLocaleString()} chars</span>
+              <span className="text-xs text-muted-foreground">{pdfBase64 ? "PDF ready" : `${text.length.toLocaleString()} chars`}</span>
               <Button onClick={run} disabled={busy} className="bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
                 {busy ? <><Loader2 className="h-4 w-4 animate-spin" />Analyzing…</> : "Analyze lease"}
               </Button>
