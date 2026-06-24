@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users, Heart, Home } from "lucide-react";
+import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users, Heart, Home, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CampusPicker } from "@/components/leaseup/CampusPicker";
@@ -55,6 +55,11 @@ export function Nav({
             <Link to="/my-listings" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border" title="My listings">
               <Home className="h-3.5 w-3.5" />Mine
             </Link>
+            {profile?.is_admin && (
+              <Link to="/admin" className="hidden md:inline-flex items-center gap-1 rounded-full bg-foreground text-background px-3 py-1.5 text-xs font-bold hover:bg-foreground/90" title="Admin">
+                <Shield className="h-3.5 w-3.5" />Admin
+              </Link>
+            )}
           </>
         )}
         {onOpenMatch && (
