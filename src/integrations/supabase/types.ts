@@ -24,6 +24,7 @@ export type Database = {
           lng: number
           name: string
           short_name: string
+          slug: string
           state: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           lng: number
           name: string
           short_name: string
+          slug: string
           state: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           lng?: number
           name?: string
           short_name?: string
+          slug?: string
           state?: string
         }
         Relationships: []
