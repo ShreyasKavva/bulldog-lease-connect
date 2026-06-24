@@ -1,6 +1,7 @@
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, BadgeCheck, Bed, MapPin } from "lucide-react";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
+import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 
 export function ListingCard({
@@ -54,6 +55,7 @@ export function ListingCard({
           <MapPin className="h-3 w-3" />{listing.area ?? "Athens, GA"}
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
+          <SafeScoreBadge score={listing.safe_score} />
           {listing.furnished && <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-semibold text-primary-dark">Furnished</span>}
           {listing.utilities_included && <span className="rounded-full bg-success-light px-2 py-0.5 text-[10px] font-semibold text-success">Utilities</span>}
           {listing.pet_friendly && <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-accent-foreground">Pets OK</span>}

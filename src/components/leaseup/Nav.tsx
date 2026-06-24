@@ -1,17 +1,20 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { Plus, MessageSquare, Search } from "lucide-react";
+import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export function Nav({
   onPost, onOpenMessages, onOpenProfile, search, onSearch,
+  onOpenMatch, onOpenLease,
 }: {
   onPost: () => void;
   onOpenMessages: () => void;
   onOpenProfile: () => void;
   search: string;
   onSearch: (s: string) => void;
+  onOpenMatch?: () => void;
+  onOpenLease?: () => void;
 }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
