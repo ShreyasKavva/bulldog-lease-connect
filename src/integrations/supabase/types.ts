@@ -24,6 +24,7 @@ export type Database = {
           lng: number
           name: string
           short_name: string
+          slug: string
           state: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           lng: number
           name: string
           short_name: string
+          slug: string
           state: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           lng?: number
           name?: string
           short_name?: string
+          slug?: string
           state?: string
         }
         Relationships: []
@@ -413,6 +416,7 @@ export type Database = {
         Args: { _listing_id: string }
         Returns: number
       }
+      unread_message_count: { Args: { _user: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
