@@ -39,11 +39,12 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Welcome to LeaseUp 🎉");
+        navigate({ to: "/onboarding" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        navigate({ to: "/" });
       }
-      navigate({ to: "/" });
     } catch (e: any) {
       toast.error(e.message ?? "Auth failed");
     } finally { setBusy(false); }

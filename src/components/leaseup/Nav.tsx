@@ -3,10 +3,12 @@ import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { Plus, MessageSquare, Search, Sparkles, ShieldCheck, Users, Heart, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { CampusPicker } from "@/components/leaseup/CampusPicker";
+import { useUnreadCount } from "@/hooks/use-unread";
 
 export function Nav({
   onPost, onOpenMessages, onOpenProfile, search, onSearch,
-  onOpenMatch, onOpenLease,
+  onOpenMatch, onOpenLease, activeCampusSlug,
 }: {
   onPost: () => void;
   onOpenMessages: () => void;
@@ -15,10 +17,12 @@ export function Nav({
   onSearch: (s: string) => void;
   onOpenMatch?: () => void;
   onOpenLease?: () => void;
+  activeCampusSlug?: string;
 }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
+  const unread = useUnreadCount();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -26,10 +30,11 @@ export function Nav({
   }
 
   return (
-    <nav className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-surface px-4 shadow-sm">
+    <nav className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-surface px-4 shadow-sm">
       <Link to="/" className="text-xl font-black tracking-tight">
         <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
       </Link>
+      <CampusPicker activeSlug={activeCampusSlug} />
       <div className="hidden flex-1 max-w-lg items-center gap-2 rounded-full bg-background px-4 h-10 sm:flex">
         <Search className="h-4 w-4 text-muted-foreground" />
         <input
@@ -67,8 +72,13 @@ export function Nav({
             <Button onClick={onPost} className="hidden sm:inline-flex bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
               <Plus className="h-4 w-4" />Post
             </Button>
-            <button onClick={onOpenMessages} aria-label="Messages" className="rounded-full bg-background p-2 hover:bg-border">
+            <button onClick={onOpenMessages} aria-label="Messages" className="relative rounded-full bg-background p-2 hover:bg-border">
               <MessageSquare className="h-5 w-5" />
+              {unread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
             </button>
             <button onClick={onOpenProfile} className="flex items-center gap-2 rounded-full bg-background py-1 pr-3 pl-1 hover:bg-border">
               <div

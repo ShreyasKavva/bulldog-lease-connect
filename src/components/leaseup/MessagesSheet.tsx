@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
+import { markConversationRead } from "@/hooks/use-unread";
 
 export function MessagesSheet({
   open, onOpenChange, initialConversationId,
@@ -37,11 +38,13 @@ export function MessagesSheet({
   // Realtime subscription for messages in active conversation
   useEffect(() => {
     if (!activeId) return;
+    if (user?.id) markConversationRead(activeId, user.id).then(() => qc.invalidateQueries({ queryKey: ["unread", user.id] }));
     const channel = supabase.channel(`messages:${activeId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${activeId}` },
         () => {
           qc.invalidateQueries({ queryKey: ["messages", activeId] });
           qc.invalidateQueries({ queryKey: ["conversations", user?.id] });
+          if (user?.id) markConversationRead(activeId, user.id).then(() => qc.invalidateQueries({ queryKey: ["unread", user.id] }));
         })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
