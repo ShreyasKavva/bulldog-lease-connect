@@ -143,3 +143,39 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     last_message: content, last_message_at: new Date().toISOString(),
   }).eq("id", conversationId);
 }
+
+// ---- Looking For board ----
+export async function fetchLookingFor(): Promise<LookingForPost[]> {
+  const { data, error } = await supabase
+    .from("looking_for_posts")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const rows = (data ?? []) as LookingForPost[];
+  const ids = Array.from(new Set(rows.map(r => r.user_id)));
+  if (ids.length === 0) return rows;
+  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
+  return rows.map(r => ({ ...r, profile: map.get(r.user_id) }));
+}
+
+export async function createLookingFor(userId: string, payload: Partial<LookingForPost>) {
+  const { error } = await supabase.from("looking_for_posts").insert({
+    user_id: userId,
+    title: payload.title!,
+    description: payload.description!,
+    budget_max: payload.budget_max ?? null,
+    move_in_date: payload.move_in_date ?? null,
+    move_out_date: payload.move_out_date ?? null,
+    beds_min: payload.beds_min ?? null,
+    area: payload.area ?? null,
+    furnished: payload.furnished ?? null,
+    pets_ok: payload.pets_ok ?? null,
+  });
+  if (error) throw error;
+}
+
+export async function deleteLookingFor(id: string) {
+  const { error } = await supabase.from("looking_for_posts").delete().eq("id", id);
+  if (error) throw error;
+}
