@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.compute_listing_safe_score(UUID) FROM PUBLIC, anon, authenticated;
