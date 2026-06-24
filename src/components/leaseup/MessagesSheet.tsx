@@ -1,0 +1,141 @@
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
+import { useSession } from "@/lib/leaseup/use-session";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Send } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { timeAgo } from "@/lib/leaseup/constants";
+
+export function MessagesSheet({
+  open, onOpenChange, initialConversationId,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  initialConversationId?: string | null;
+}) {
+  const { user } = useSession();
+  const qc = useQueryClient();
+  const [activeId, setActiveId] = useState<string | null>(initialConversationId ?? null);
+
+  useEffect(() => { if (initialConversationId) setActiveId(initialConversationId); }, [initialConversationId]);
+
+  const { data: conversations } = useQuery({
+    queryKey: ["conversations", user?.id],
+    queryFn: () => fetchConversations(user!.id),
+    enabled: !!user?.id && open,
+  });
+
+  const active = conversations?.find(c => c.id === activeId);
+  const { data: messages } = useQuery({
+    queryKey: ["messages", activeId],
+    queryFn: () => fetchMessages(activeId!),
+    enabled: !!activeId,
+  });
+
+  // Realtime subscription for messages in active conversation
+  useEffect(() => {
+    if (!activeId) return;
+    const channel = supabase.channel(`messages:${activeId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${activeId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["messages", activeId] });
+          qc.invalidateQueries({ queryKey: ["conversations", user?.id] });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [activeId, qc, user?.id]);
+
+  // Realtime for conversation list
+  useEffect(() => {
+    if (!user?.id || !open) return;
+    const channel = supabase.channel(`conv:${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations" },
+        () => qc.invalidateQueries({ queryKey: ["conversations", user.id] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, open, qc]);
+
+  const [input, setInput] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages?.length]);
+
+  async function send() {
+    if (!input.trim() || !user || !active) return;
+    const other = active.participant_1_id === user.id ? active.participant_2_id : active.participant_1_id;
+    const text = input;
+    setInput("");
+    try {
+      await sendMessage(active.id, user.id, other, text);
+      qc.invalidateQueries({ queryKey: ["messages", active.id] });
+      qc.invalidateQueries({ queryKey: ["conversations", user.id] });
+    } catch (e: any) { setInput(text); }
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="flex w-full sm:max-w-md flex-col p-0">
+        <SheetHeader className="border-b p-4">
+          <SheetTitle className="flex items-center gap-2">
+            {active && (
+              <button onClick={() => setActiveId(null)} className="rounded-md p-1 hover:bg-background"><ArrowLeft className="h-4 w-4" /></button>
+            )}
+            {active?.other ? active.other.name : "Messages"}
+          </SheetTitle>
+        </SheetHeader>
+
+        {!active ? (
+          <div className="flex-1 overflow-y-auto">
+            {(conversations?.length ?? 0) === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                No conversations yet. Tap "Message" on any listing.
+              </div>
+            ) : conversations!.map((c) => (
+              <button key={c.id} onClick={() => setActiveId(c.id)}
+                className="flex w-full items-center gap-3 border-b p-3 text-left hover:bg-background">
+                <div className="grid h-11 w-11 place-items-center rounded-full text-lg" style={{ background: c.other?.banner_color ?? "#2563EB" }}>
+                  {c.other?.avatar_emoji ?? "🙂"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="truncate font-bold">{c.other?.name ?? "Student"}</span>
+                    {c.last_message_at && <span className="text-[10px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>}
+                  </div>
+                  <div className="truncate text-xs text-muted-foreground">{c.last_message ?? "Say hi 👋"}</div>
+                  {c.listing && <div className="truncate text-[10px] text-primary mt-0.5">re: {c.listing.title}</div>}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 space-y-2 overflow-y-auto bg-background p-4">
+              {messages?.map((m) => {
+                const mine = m.sender_id === user?.id;
+                return (
+                  <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                    <div className={cn("max-w-[75%] rounded-2xl px-3 py-2 text-sm",
+                      mine ? "bg-primary text-primary-foreground" : "bg-surface border")}>
+                      {m.content}
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={endRef} />
+            </div>
+            <div className="border-t p-3 flex gap-2 bg-surface">
+              <input value={input} onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+                placeholder="Message…"
+                className="flex-1 rounded-full border bg-background px-4 text-sm outline-none focus:border-primary" />
+              <button onClick={send} className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground hover:bg-primary-dark">
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
