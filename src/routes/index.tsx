@@ -173,6 +173,14 @@ function Home() {
       <main className="mx-auto max-w-7xl px-4 py-5">
         {view === "map" ? (
           <MapView listings={filtered} onSelect={setSelected} />
+        ) : view === "scroll" ? (
+          <ScrollView
+            listings={filtered}
+            savedIds={savedIds}
+            onSave={handleSave}
+            onMessage={handleMessage}
+            onOpen={setSelected}
+          />
         ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
