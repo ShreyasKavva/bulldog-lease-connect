@@ -145,6 +145,9 @@ function Home() {
             <button onClick={() => setView("map")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "map" && "bg-surface shadow")}>
               <MapIcon className="h-3.5 w-3.5" />Map
             </button>
+            <button onClick={() => setView("scroll")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "scroll" && "bg-surface shadow")}>
+              <Flame className="h-3.5 w-3.5" />Scroll
+            </button>
           </div>
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold">
             <option value="newest">Newest</option>
