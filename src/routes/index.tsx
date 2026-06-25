@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type View = "grid" | "map";
+type View = "grid" | "map" | "scroll";
 type Sort = "newest" | "price_asc" | "price_desc";
 
 function Home() {
