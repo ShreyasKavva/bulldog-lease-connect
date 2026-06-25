@@ -129,6 +129,14 @@ function Home() {
     setPosting(true);
   }
 
+  // Logged-out visitors see the marketing landing page
+  if (sessionLoading) {
+    return <div className="min-h-screen bg-background" />;
+  }
+  if (!user) {
+    return <LandingPage />;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
       <Nav
