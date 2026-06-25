@@ -40,8 +40,15 @@ Return ONLY JSON in this exact shape (no prose, no markdown fences):
 {
   "summary": "2-3 sentence plain-English overview",
   "risk_score": 0-100 (higher = riskier for tenant),
+  "key_terms": { "rent": "string or null", "term": "string or null", "deposit": "string or null", "late_fee": "string or null" },
   "flags": [
-    { "severity": "low|medium|high", "clause": "short clause name", "concern": "1-2 sentence explanation" }
+    {
+      "severity": "low|medium|high",
+      "category": "one of: fees, deposit, termination, liability, maintenance, privacy, renewal, subletting, pets, utilities, other",
+      "clause": "short clause name",
+      "concern": "1-2 sentence explanation in plain English",
+      "suggestion": "1 sentence: what the tenant should do or ask the landlord"
+    }
   ]
 }`;
 
@@ -68,7 +75,7 @@ export const analyzeLease = createServerFn({ method: "POST" })
       temperature: 0.2,
     });
 
-    let parsed: { summary: string; risk_score: number; flags: any[] };
+    let parsed: { summary: string; risk_score: number; flags: any[]; key_terms?: any };
     try { parsed = extractJson(text); }
     catch { parsed = { summary: text.slice(0, 500), risk_score: 50, flags: [] }; }
 
@@ -79,7 +86,7 @@ export const analyzeLease = createServerFn({ method: "POST" })
         filename: data.filename,
         summary: parsed.summary ?? null,
         risk_score: Math.max(0, Math.min(100, Math.round(parsed.risk_score ?? 50))),
-        flags: parsed.flags ?? [],
+        flags: { items: parsed.flags ?? [], key_terms: parsed.key_terms ?? null },
         raw_excerpt: data.text ? data.text.slice(0, 2000) : `[PDF: ${data.filename}]`,
       })
       .select("*")
@@ -97,6 +104,19 @@ export const listLeaseAnalyses = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data ?? [];
+  });
+
+export const deleteLeaseAnalysis = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("lease_analyses")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw error;
+    return { ok: true };
   });
 
 // ---- FIND MY MATCH ----
