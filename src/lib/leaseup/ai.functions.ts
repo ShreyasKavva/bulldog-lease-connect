@@ -40,8 +40,15 @@ Return ONLY JSON in this exact shape (no prose, no markdown fences):
 {
   "summary": "2-3 sentence plain-English overview",
   "risk_score": 0-100 (higher = riskier for tenant),
+  "key_terms": { "rent": "string or null", "term": "string or null", "deposit": "string or null", "late_fee": "string or null" },
   "flags": [
-    { "severity": "low|medium|high", "clause": "short clause name", "concern": "1-2 sentence explanation" }
+    {
+      "severity": "low|medium|high",
+      "category": "one of: fees, deposit, termination, liability, maintenance, privacy, renewal, subletting, pets, utilities, other",
+      "clause": "short clause name",
+      "concern": "1-2 sentence explanation in plain English",
+      "suggestion": "1 sentence: what the tenant should do or ask the landlord"
+    }
   ]
 }`;
 
