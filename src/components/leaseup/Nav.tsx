@@ -78,6 +78,7 @@ export function Nav({
             <Button onClick={onPost} className="hidden sm:inline-flex bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
               <Plus className="h-4 w-4" />Post
             </Button>
+            <NotificationsBell onOpenMessages={onOpenMessages} />
             <button onClick={onOpenMessages} aria-label="Messages" className="relative rounded-full bg-background p-2 hover:bg-border">
               <MessageSquare className="h-5 w-5" />
               {unread > 0 && (
