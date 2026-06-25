@@ -1,12 +1,14 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag } from "lucide-react";
-import { useState } from "react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { ReportListingDialog } from "./ReportListingDialog";
+import { ShareToStoryButton } from "./ShareToStoryButton";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
@@ -19,7 +21,20 @@ export function ListingDetailSheet({
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
+  const [views, setViews] = useState<number | null>(null);
   const { user } = useSession();
+
+  useEffect(() => {
+    if (!open || !listing) return;
+    setViews(listing.view_count ?? null);
+    const key = `viewed:${listing.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
+      if (typeof data === "number") setViews(data);
+    });
+  }, [open, listing]);
+
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
 
