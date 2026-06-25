@@ -165,7 +165,7 @@ export function ListingDetailSheet({
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => {
                 const url = `${window.location.origin}/?listing=${listing.id}`;
@@ -173,11 +173,12 @@ export function ListingDetailSheet({
                 toast.success("Link copied");
               }}
               className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            ><Share2 className="h-3.5 w-3.5" />Share</button>
+            ><Share2 className="h-3.5 w-3.5" />Copy link</button>
+            <ShareToStoryButton listing={listing} />
             <button
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
               className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
-            ><Flag className="h-3.5 w-3.5" />Report listing</button>
+            ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
