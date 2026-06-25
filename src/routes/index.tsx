@@ -10,10 +10,11 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { MapView } from "@/components/leaseup/MapView";
+import { ScrollView } from "@/components/leaseup/ScrollView";
 import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Map as MapIcon, Plus } from "lucide-react";
+import { LayoutGrid, Map as MapIcon, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type View = "grid" | "map";
+type View = "grid" | "map" | "scroll";
 type Sort = "newest" | "price_asc" | "price_desc";
 
 function Home() {
@@ -144,6 +145,9 @@ function Home() {
             <button onClick={() => setView("map")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "map" && "bg-surface shadow")}>
               <MapIcon className="h-3.5 w-3.5" />Map
             </button>
+            <button onClick={() => setView("scroll")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "scroll" && "bg-surface shadow")}>
+              <Flame className="h-3.5 w-3.5" />Scroll
+            </button>
           </div>
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold">
             <option value="newest">Newest</option>
@@ -169,6 +173,14 @@ function Home() {
       <main className="mx-auto max-w-7xl px-4 py-5">
         {view === "map" ? (
           <MapView listings={filtered} onSelect={setSelected} />
+        ) : view === "scroll" ? (
+          <ScrollView
+            listings={filtered}
+            savedIds={savedIds}
+            onSave={handleSave}
+            onMessage={handleMessage}
+            onOpen={setSelected}
+          />
         ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
