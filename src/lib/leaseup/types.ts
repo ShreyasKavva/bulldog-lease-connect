@@ -40,6 +40,7 @@ export type Listing = {
   is_active: boolean;
   flagged?: boolean;
   safe_score: number | null;
+  view_count?: number;
   created_at: string;
   profile?: Profile;
   photo_urls?: string[];

@@ -211,6 +211,7 @@ export type Database = {
           updated_at: string
           user_id: string
           utilities_included: boolean
+          view_count: number
           views: number
         }
         Insert: {
@@ -241,6 +242,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           utilities_included?: boolean
+          view_count?: number
           views?: number
         }
         Update: {
@@ -271,6 +273,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           utilities_included?: boolean
+          view_count?: number
           views?: number
         }
         Relationships: [
@@ -519,6 +522,7 @@ export type Database = {
         Args: { _listing_id: string }
         Returns: number
       }
+      increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {

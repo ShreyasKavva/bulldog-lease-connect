@@ -1,12 +1,14 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag } from "lucide-react";
-import { useState } from "react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { ReportListingDialog } from "./ReportListingDialog";
+import { ShareToStoryButton } from "./ShareToStoryButton";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
@@ -19,7 +21,20 @@ export function ListingDetailSheet({
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
+  const [views, setViews] = useState<number | null>(null);
   const { user } = useSession();
+
+  useEffect(() => {
+    if (!open || !listing) return;
+    setViews(listing.view_count ?? null);
+    const key = `viewed:${listing.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
+      if (typeof data === "number") setViews(data);
+    });
+  }, [open, listing]);
+
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
 
@@ -59,9 +74,14 @@ export function ListingDetailSheet({
                 )}
               </div>
               <h2 className="mt-1 text-2xl font-extrabold">{listing.title}</h2>
-              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />{listing.area ?? "Athens, GA"}
                 <SafeScoreBadge score={listing.safe_score} />
+                {views !== null && views > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground">
+                    <Eye className="h-3 w-3" />{views} {views === 1 ? "view" : "views"}
+                  </span>
+                )}
               </div>
             </div>
             <div className="text-right">
@@ -145,7 +165,7 @@ export function ListingDetailSheet({
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => {
                 const url = `${window.location.origin}/?listing=${listing.id}`;
@@ -153,11 +173,12 @@ export function ListingDetailSheet({
                 toast.success("Link copied");
               }}
               className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            ><Share2 className="h-3.5 w-3.5" />Share</button>
+            ><Share2 className="h-3.5 w-3.5" />Copy link</button>
+            <ShareToStoryButton listing={listing} />
             <button
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
               className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
-            ><Flag className="h-3.5 w-3.5" />Report listing</button>
+            ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
