@@ -45,9 +45,9 @@ function Home() {
   const qc = useQueryClient();
 
   const { data: listings = [], isLoading } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ["listings"],
     queryFn: fetchListings,
+    enabled: !!user,
   });
 
   const { data: savedIds = new Set<string>() } = useQuery({
