@@ -42,6 +42,11 @@ export function ListingCard({
             {listing.type === "transfer" ? "Transfer" : "Sublease"}
           </span>
         </div>
+        {(listing.view_count ?? 0) >= 5 && (
+          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+            <Eye className="h-3 w-3" />{listing.view_count} viewed
+          </div>
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-baseline justify-between gap-2">
