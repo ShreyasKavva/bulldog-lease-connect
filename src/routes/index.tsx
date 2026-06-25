@@ -13,6 +13,7 @@ import { MapView } from "@/components/leaseup/MapView";
 import { ScrollView } from "@/components/leaseup/ScrollView";
 import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
+import { LandingPage } from "@/components/leaseup/LandingPage";
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Map as MapIcon, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -22,10 +23,14 @@ import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LeaseUp — Student Subleases at UGA" },
-      { name: "description", content: "Browse and post student subleases in Athens, GA. Built for UGA students." },
-      { property: "og:title", content: "LeaseUp — Student Subleases at UGA" },
-      { property: "og:description", content: "The trusted student lease marketplace at UGA." },
+      { title: "LeaseUp — Subleases built for students, not scammers" },
+      { name: "description", content: "The trusted student sublease marketplace at UGA. Verified .edu profiles, SafeScore trust signals, AI lease analysis, and zero shady DMs." },
+      { property: "og:title", content: "LeaseUp — Student subleases done right" },
+      { property: "og:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis. Built at UGA." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "LeaseUp — Student subleases done right" },
+      { name: "twitter:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis." },
     ],
   }),
   component: Home,
@@ -36,10 +41,11 @@ type Sort = "newest" | "price_asc" | "price_desc";
 
 function Home() {
   const navigate = useNavigate();
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const qc = useQueryClient();
 
   const { data: listings = [], isLoading } = useQuery({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ["listings"],
     queryFn: fetchListings,
   });

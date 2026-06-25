@@ -13,7 +13,6 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
-import { Route as LandingRouteImport } from './routes/landing'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,11 +36,6 @@ const MyListingsRoute = MyListingsRouteImport.update({
 const LookingForRoute = LookingForRouteImport.update({
   id: '/looking-for',
   path: '/looking-for',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -69,7 +63,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/landing': typeof LandingRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -80,7 +73,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/landing': typeof LandingRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -92,7 +84,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/landing': typeof LandingRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -105,7 +96,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/landing'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -116,7 +106,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/landing'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -127,7 +116,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/landing'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -139,7 +127,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  LandingRoute: typeof LandingRoute
   LookingForRoute: typeof LookingForRoute
   MyListingsRoute: typeof MyListingsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -177,13 +164,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookingForRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -219,7 +199,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  LandingRoute: LandingRoute,
   LookingForRoute: LookingForRoute,
   MyListingsRoute: MyListingsRoute,
   OnboardingRoute: OnboardingRoute,
