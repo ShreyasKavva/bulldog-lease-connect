@@ -64,13 +64,16 @@ export function BottomNav({
         </span>
         <span>Chat</span>
       </button>
-      <button
-        onClick={onProfile}
-        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+      <Link
+        to="/profile"
+        className={cn(
+          "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition",
+          path === "/profile" ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        )}
       >
-        <User className="h-5 w-5" />
+        <User className={cn("h-5 w-5", path === "/profile" && "stroke-[2.5]")} />
         <span>Me</span>
-      </button>
+      </Link>
     </nav>
   );
 }
