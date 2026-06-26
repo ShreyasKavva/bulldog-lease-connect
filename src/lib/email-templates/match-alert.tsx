@@ -23,9 +23,8 @@ const MatchAlertEmail = ({
 }: MatchAlertProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>
-      {matchCount} new match{matchCount === 1 ? '' : 'es'} for {searchName}
-    </Preview>
+    <Preview>{`${matchCount} new match${matchCount === 1 ? '' : 'es'} for ${searchName}`}</Preview>
+
     <Body style={main}>
       <Container style={container}>
         <Section style={badge}>
