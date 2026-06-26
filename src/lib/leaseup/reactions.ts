@@ -34,7 +34,7 @@ export function useListingReactions(listingId: string | null | undefined) {
         fire: 0, love: 0, wow: 0, pricey: 0, suspicious: 0,
       };
       let mine: ReactionType | null = null;
-      for (const row of (data ?? []) as Array<{ reaction_type: ReactionType; user_id: string }>) {
+      for (const row of ((data ?? []) as unknown) as Array<{ reaction_type: ReactionType; user_id: string }>) {
         counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
         if (user && row.user_id === user.id) mine = row.reaction_type;
       }
