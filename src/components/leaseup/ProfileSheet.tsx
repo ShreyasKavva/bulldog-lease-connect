@@ -125,6 +125,24 @@ export function ProfileSheet({
                     </div>
                     <div><Label>Major</Label><Input value={form.major} onChange={(e) => setForm(f => ({ ...f, major: e.target.value }))} /></div>
                   </div>
+                  <div>
+                    <Label>Currently (max 60)</Label>
+                    <div className="mt-1 flex gap-2">
+                      <select
+                        value={form.currently_emoji}
+                        onChange={(e) => setForm(f => ({ ...f, currently_emoji: e.target.value }))}
+                        className="h-10 rounded-md border bg-surface px-2 text-lg"
+                      >
+                        {["🔎","🏠","📦","🎓","✈️","🔥","🤝","☕️"].map(e => <option key={e}>{e}</option>)}
+                      </select>
+                      <Input
+                        maxLength={60}
+                        placeholder="e.g. Looking near North Campus, Aug–Dec"
+                        value={form.currently_status}
+                        onChange={(e) => setForm(f => ({ ...f, currently_status: e.target.value }))}
+                      />
+                    </div>
+                  </div>
                   <div><Label>Bio (max 120)</Label><Textarea maxLength={120} value={form.bio} onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))} /></div>
                   <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                   <div><Label>Avatar</Label>
