@@ -71,8 +71,8 @@ function AuthPage() {
           )}
           <div>
             <Label>Email</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@uga.edu" />
-            <p className="text-[11px] text-muted-foreground mt-1">UGA emails get a verified ✓ badge automatically.</p>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@school.edu" />
+            <p className="text-[11px] text-muted-foreground mt-1">.edu emails get a verified ✓ badge automatically.</p>
           </div>
           <div><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
           <Button type="submit" disabled={busy} className="w-full bg-primary hover:bg-primary-dark text-primary-foreground font-bold h-11 mt-2">
