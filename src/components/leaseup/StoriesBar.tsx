@@ -96,23 +96,38 @@ export function StoriesBar({
           <button
             key={s.userId}
             onClick={() => onSelectStudent(s.userId)}
-            className="flex shrink-0 flex-col items-center gap-1"
+            className="group flex shrink-0 flex-col items-center gap-1"
           >
             <span
               className={cn(
-                "relative grid h-[54px] w-[54px] place-items-center rounded-full text-2xl ring-2 transition",
-                active ? "ring-primary" : "ring-white/80",
+                "relative grid h-[58px] w-[58px] place-items-center rounded-full p-[2.5px] transition-transform group-active:scale-95",
+                active
+                  ? "bg-gradient-to-tr from-orange-500 via-pink-500 to-primary"
+                  : "bg-gradient-to-tr from-muted-foreground/40 to-muted-foreground/20",
               )}
-              style={{ background: s.profile.banner_color ?? "#2563EB" }}
             >
-              {s.profile.avatar_emoji ?? "🙂"}
+              <span
+                className="grid h-full w-full place-items-center rounded-full text-2xl ring-2 ring-white"
+                style={{ background: s.profile.banner_color ?? "#2563EB" }}
+              >
+                {s.profile.avatar_emoji ?? "🙂"}
+              </span>
               {s.profile.verified_email && (
                 <BadgeCheck className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-white text-success" />
               )}
+              {s.hasListing && (
+                <span className="absolute -top-1 right-0 grid h-5 w-5 place-items-center rounded-full bg-success text-[10px] ring-2 ring-white">
+                  🏠
+                </span>
+              )}
+              {!s.hasListing && s.hasLookingFor && (
+                <span className="absolute -top-1 right-0 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] ring-2 ring-white">
+                  🔍
+                </span>
+              )}
             </span>
-            <span className="max-w-[60px] truncate text-[10px] font-bold text-foreground">
+            <span className="max-w-[64px] truncate text-[10px] font-bold text-foreground">
               {(s.profile.name ?? "Student").split(" ")[0]}
-              {s.hasListing ? " 🏠" : s.hasLookingFor ? " 🔍" : ""}
             </span>
           </button>
         );
