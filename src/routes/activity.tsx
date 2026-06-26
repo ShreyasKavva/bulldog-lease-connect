@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useActivity, activityTimeAgo, type ActivityItem } from "@/lib/leaseup/activity";
-import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
