@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchListings } from "@/lib/leaseup/queries";
 import { cn } from "@/lib/utils";
+import { ReactionBar } from "./ReactionBar";
 
 
 export function ListingDetailSheet({
@@ -155,6 +156,11 @@ export function ListingDetailSheet({
             <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label="messages" />
             <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
           </div>
+
+          {/* Emoji reactions */}
+          <ReactionBar listingId={listing.id} />
+
+
 
           {/* SafeScore animated gauge */}
           <div className="flex items-center gap-4 rounded-xl border bg-background p-3">
