@@ -289,6 +289,19 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
+function formatLastActive(iso?: string | null) {
+  if (!iso) return "New here";
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 2) return "Active now";
+  if (m < 60) return `Active ${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Active ${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `Active ${d}d ago`;
+  return `Active ${Math.floor(d / 7)}w ago`;
+}
+
 function avgScore(listings: { safe_score: number | null }[]) {
   const scored = listings.filter((l) => typeof l.safe_score === "number");
   if (scored.length === 0) return "—";
