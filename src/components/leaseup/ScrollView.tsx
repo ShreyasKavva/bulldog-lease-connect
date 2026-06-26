@@ -26,6 +26,7 @@ export function ScrollView({
   onOpen,
   pinnedIds,
   onPin,
+  fullBleed = false,
 }: {
   listings: Listing[];
   savedIds: Set<string>;
@@ -34,6 +35,7 @@ export function ScrollView({
   onOpen: (l: Listing) => void;
   pinnedIds?: Set<string>;
   onPin?: (l: Listing) => void;
+  fullBleed?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -107,10 +109,13 @@ export function ScrollView({
   }
 
   return (
-    <div className="relative -mx-4 -my-5">
+    <div className={cn("relative", fullBleed ? "h-[100dvh] w-screen" : "-mx-4 -my-5")}>
       <div
         ref={containerRef}
-        className="h-[calc(100vh-7.5rem)] snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-black"
+        className={cn(
+          "snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-black",
+          fullBleed ? "h-[100dvh] w-screen" : "h-[calc(100vh-7.5rem)]",
+        )}
         style={{ scrollbarWidth: "none" }}
       >
         {listings.map((l, i) => {
