@@ -68,7 +68,7 @@ export async function adminDeleteListing(id: string) {
   if (error) throw error;
 }
 
-export async function adminSetProfile(id: string, patch: { banned?: boolean; verified_email?: boolean; is_admin?: boolean }) {
+export async function adminSetProfile(id: string, patch: { banned?: boolean; verified_email?: boolean; is_admin?: boolean; is_ambassador?: boolean }) {
   const { error } = await supabase.from("profiles").update(patch).eq("id", id);
   if (error) throw error;
 }

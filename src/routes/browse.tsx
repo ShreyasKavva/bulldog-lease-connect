@@ -21,6 +21,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
+import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
+import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
+import { useMyProfile } from "@/lib/leaseup/use-session";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
@@ -50,6 +54,19 @@ function Browse() {
     queryFn: () => fetchSavedIds(user!.id),
     enabled: !!user?.id,
   });
+  const { data: profile } = useMyProfile();
+  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity, enabled: !!user });
+  const myCampus = campuses.find(c => c.id === profile?.campus_id);
+  const { data: trendingIds = [] } = useQuery({
+    queryKey: ["trending-ids", profile?.campus_id ?? "all"],
+    queryFn: () => fetchTrendingIds(profile?.campus_id ?? null, 5),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const trendingListings = useMemo(
+    () => trendingIds.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
+    [trendingIds, listings],
+  );
 
   const [view, setView] = useState<View>("grid");
   const [sort, setSort] = useState<Sort>("newest");
@@ -204,6 +221,13 @@ function Browse() {
         </div>
 
         <main className="mx-auto max-w-7xl px-4 py-5">
+          {view === "grid" && (
+            <TrendingCarousel
+              listings={trendingListings}
+              campusName={myCampus?.name}
+              onOpen={setSelected}
+            />
+          )}
           {view === "scroll" ? (
             <ScrollView
               listings={filtered}
