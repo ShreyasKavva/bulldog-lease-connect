@@ -33,6 +33,7 @@ export function ProfileSheet({
   const [form, setForm] = useState({
     name: "", year: "", major: "", bio: "", phone: "",
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
+    currently_status: "", currently_emoji: "🔎",
   });
 
   useEffect(() => {
@@ -41,6 +42,8 @@ export function ProfileSheet({
       bio: profile.bio ?? "", phone: profile.phone ?? "",
       avatar_emoji: profile.avatar_emoji ?? "🙂", banner_color: profile.banner_color ?? "#2563EB",
       vibe_tags: profile.vibe_tags ?? [],
+      currently_status: profile.currently_status ?? "",
+      currently_emoji: profile.currently_emoji ?? "🔎",
     });
   }, [profile]);
 
