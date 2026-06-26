@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Listing, Profile, Conversation, Message, LookingForPost } from "./types";
+import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSearch } from "./types";
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 

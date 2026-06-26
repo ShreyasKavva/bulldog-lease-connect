@@ -16,6 +16,7 @@ import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
@@ -55,6 +56,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -74,6 +80,7 @@ const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/alerts'
     | '/auth'
     | '/browse'
     | '/looking-for'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/alerts'
     | '/auth'
     | '/browse'
     | '/looking-for'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/alerts'
     | '/auth'
     | '/browse'
     | '/looking-for'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AlertsRoute: typeof AlertsRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   LookingForRoute: typeof LookingForRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AlertsRoute: AlertsRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   LookingForRoute: LookingForRoute,

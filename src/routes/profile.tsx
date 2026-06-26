@@ -10,7 +10,7 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { useMemo, useState } from "react";
-import { BadgeCheck, Pencil, Settings, LogOut, Heart, Home as HomeIcon, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Pencil, Settings, LogOut, Heart, Home as HomeIcon, ShieldCheck, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -215,9 +215,15 @@ function ProfilePage() {
           >
             <Settings className="h-4 w-4" />Manage listings
           </Link>
+          <Link
+            to="/alerts"
+            className="flex items-center justify-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-bold text-foreground shadow-card-md hover:bg-background"
+          >
+            <Bell className="h-4 w-4" />Search alerts
+          </Link>
           <button
             onClick={signOut}
-            className="flex items-center justify-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-bold text-foreground shadow-card-md hover:bg-background"
+            className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-bold text-foreground shadow-card-md hover:bg-background"
           >
             <LogOut className="h-4 w-4" />Sign out
           </button>

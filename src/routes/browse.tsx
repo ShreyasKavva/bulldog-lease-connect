@@ -16,10 +16,11 @@ import { CompareSheet } from "@/components/leaseup/CompareSheet";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { TopBar } from "@/components/leaseup/TopBar";
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
+import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
@@ -66,6 +67,7 @@ function Browse() {
   const [leaseOpen, setLeaseOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
 
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const pinnedListings = useMemo(
@@ -175,6 +177,9 @@ function Browse() {
               <button onClick={() => setLeaseOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
                 <ShieldCheck className="h-3.5 w-3.5" />Lease Bot
               </button>
+              <button onClick={() => setSaveSearchOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+                <Bell className="h-3.5 w-3.5" />Save search
+              </button>
               <div className="text-xs text-muted-foreground">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</div>
             </div>
           </div>
@@ -243,6 +248,12 @@ function Browse() {
       <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={activeConv} />
       <LeaseAnalysisDialog open={leaseOpen} onOpenChange={setLeaseOpen} />
       <FindMyMatchDialog open={matchOpen} onOpenChange={setMatchOpen} onOpenListing={(l) => setSelected(l)} />
+
+      <SaveSearchDialog
+        open={saveSearchOpen}
+        onOpenChange={setSaveSearchOpen}
+        filters={{ area, maxPrice, furnishedOnly, keyword: search }}
+      />
 
       <CompareBar
         listings={pinnedListings}
