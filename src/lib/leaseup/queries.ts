@@ -177,19 +177,28 @@ export async function fetchLookingFor(): Promise<LookingForPost[]> {
   const { data, error } = await supabase
     .from("looking_for_posts")
     .select("*")
+    .eq("is_active", true)
     .order("created_at", { ascending: false });
   if (error) throw error;
   const rows = (data ?? []) as LookingForPost[];
+  if (rows.length === 0) return rows;
   const ids = Array.from(new Set(rows.map(r => r.user_id)));
-  if (ids.length === 0) return rows;
   const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
-  return rows.map(r => ({ ...r, profile: map.get(r.user_id) }));
+  // interest counts per request (post owners only see their own via RLS, others see 0)
+  const { data: interests } = await supabase
+    .from("looking_for_interests")
+    .select("request_id")
+    .in("request_id", rows.map(r => r.id));
+  const counts = new Map<string, number>();
+  for (const i of (interests ?? []) as any[]) counts.set(i.request_id, (counts.get(i.request_id) ?? 0) + 1);
+  return rows.map(r => ({ ...r, profile: map.get(r.user_id), interest_count: counts.get(r.id) ?? 0 }));
 }
 
-export async function createLookingFor(userId: string, payload: Partial<LookingForPost>) {
+export async function createLookingFor(userId: string, payload: Partial<LookingForPost>, campusId: string | null = null) {
   const { error } = await supabase.from("looking_for_posts").insert({
     user_id: userId,
+    campus_id: campusId,
     title: payload.title!,
     description: payload.description!,
     budget_max: payload.budget_max ?? null,
@@ -203,10 +212,94 @@ export async function createLookingFor(userId: string, payload: Partial<LookingF
   if (error) throw error;
 }
 
-export async function deleteLookingFor(id: string) {
-  const { error } = await supabase.from("looking_for_posts").delete().eq("id", id);
+export async function updateLookingFor(id: string, payload: Partial<LookingForPost>) {
+  const { error } = await supabase.from("looking_for_posts").update({
+    title: payload.title,
+    description: payload.description,
+    budget_max: payload.budget_max ?? null,
+    move_in_date: payload.move_in_date ?? null,
+    move_out_date: payload.move_out_date ?? null,
+    beds_min: payload.beds_min ?? null,
+    area: payload.area ?? null,
+    furnished: payload.furnished ?? null,
+    pets_ok: payload.pets_ok ?? null,
+  }).eq("id", id);
   if (error) throw error;
 }
+
+export async function deleteLookingFor(id: string) {
+  // Soft delete
+  const { error } = await supabase
+    .from("looking_for_posts")
+    .update({ is_active: false })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function renewLookingFor(id: string) {
+  const { error } = await supabase
+    .from("looking_for_posts")
+    .update({ created_at: new Date().toISOString(), expiry_notified_at: null, is_active: true })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function markLookingForFound(
+  post: LookingForPost,
+  opts: { foundViaLeaseUp: boolean; userId: string }
+) {
+  const { error: e1 } = await supabase
+    .from("looking_for_posts")
+    .update({ is_active: false })
+    .eq("id", post.id);
+  if (e1) throw e1;
+  const { error: e2 } = await supabase.from("closed_deals").insert({
+    user_id: opts.userId,
+    campus_id: post.campus_id,
+    looking_for_post_id: post.id,
+    found_via_lease_up: opts.foundViaLeaseUp,
+  });
+  if (e2) throw e2;
+}
+
+export async function fetchMyLookingForInterests(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("looking_for_interests")
+    .select("request_id")
+    .eq("user_id", userId);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => r.request_id);
+}
+
+export async function toggleLookingForInterest(userId: string, requestId: string, interested: boolean) {
+  if (interested) {
+    const { error } = await supabase
+      .from("looking_for_interests")
+      .insert({ user_id: userId, request_id: requestId });
+    if (error && !`${error.message}`.includes("duplicate")) throw error;
+  } else {
+    const { error } = await supabase
+      .from("looking_for_interests")
+      .delete()
+      .eq("user_id", userId)
+      .eq("request_id", requestId);
+    if (error) throw error;
+  }
+}
+
+export async function fetchMatchingListingsForPost(post: LookingForPost): Promise<Listing[]> {
+  let q = supabase.from("listings").select("*").eq("is_active", true);
+  if (post.campus_id) q = q.eq("campus_id", post.campus_id);
+  if (post.budget_max) q = q.lte("price", post.budget_max);
+  if (post.beds_min) q = q.gte("beds", post.beds_min);
+  if (post.move_in_date) q = q.or(`available_to.is.null,available_to.gte.${post.move_in_date}`);
+  if (post.move_out_date) q = q.or(`available_from.is.null,available_from.lte.${post.move_out_date}`);
+  const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
+  if (error) throw error;
+  return await attachProfiles(data ?? []);
+}
+
+
 
 export async function fetchSavedListings(userId: string): Promise<Listing[]> {
   const { data: rows } = await supabase.from("saved_listings").select("listing_id").eq("user_id", userId);
