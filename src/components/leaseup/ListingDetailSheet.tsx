@@ -44,17 +44,19 @@ export function ListingDetailSheet({
       });
     }
     // Load social proof counts
-    Promise.all([
-      supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).eq("listing_id", listing.id),
-      supabase.from("messages").select("id", { count: "exact", head: true })
-        .in("conversation_id",
-          (await supabase.from("conversations").select("id").eq("listing_id", listing.id)).data?.map((c: any) => c.id) ?? ["00000000-0000-0000-0000-000000000000"]
-        ),
-    ]).then(([sav, msg]: any) => {
-      setSaveCount(sav?.count ?? 0);
-      setMsgCount(msg?.count ?? 0);
-    }).catch(() => {});
+    (async () => {
+      try {
+        const sav = await supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).eq("listing_id", listing.id);
+        setSaveCount(sav.count ?? 0);
+        const convs = await supabase.from("conversations").select("id").eq("listing_id", listing.id);
+        const convIds = (convs.data ?? []).map((c: any) => c.id);
+        if (convIds.length === 0) { setMsgCount(0); return; }
+        const msg = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds);
+        setMsgCount(msg.count ?? 0);
+      } catch { /* ignore */ }
+    })();
   }, [open, listing]);
+
 
   // Comp listings (same campus, ±1 bed)
   const { data: allListings = [] } = useQuery({
