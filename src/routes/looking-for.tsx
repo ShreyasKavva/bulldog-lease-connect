@@ -19,7 +19,7 @@ export const Route = createFileRoute("/looking-for")({
   head: () => ({
     meta: [
       { title: "Looking For — LeaseUp" },
-      { name: "description", content: "Post what you're looking for. Let other UGA students bring listings to you." },
+      { name: "description", content: "Post what you're looking for. Let other students bring listings to you." },
     ],
   }),
   component: LookingForPage,
