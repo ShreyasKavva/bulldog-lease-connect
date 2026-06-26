@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
@@ -21,6 +22,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   const qc = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
     beds: "1", baths: "1", area: NEIGHBORHOODS[0].name,
@@ -47,6 +49,12 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     if (!form.title || !form.price) { toast.error("Title and price required"); return; }
     setSubmitting(true);
     try {
+      // Check if this is the user's first listing for the invite prompt
+      const { count: existingCount } = await supabase
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
       const photos = files.length ? await uploadListingPhotos(user.id, files) : [];
       const hood = NEIGHBORHOODS.find(n => n.name === form.area);
       const { error } = await supabase.from("listings").insert({
@@ -75,6 +83,9 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
       onOpenChange(false);
       setForm({ ...form, title: "", description: "", price: "" });
       setFiles([]);
+      if ((existingCount ?? 0) === 0) {
+        setInviteOpen(true);
+      }
     } catch (e: any) {
       toast.error(e.message ?? "Failed to post");
     } finally { setSubmitting(false); }
