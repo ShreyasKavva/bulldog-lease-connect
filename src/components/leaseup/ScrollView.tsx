@@ -284,14 +284,7 @@ function ScrollCard({
         </div>
       )}
 
-      {/* Floating heart on double-tap */}
-      {floatHeart && (
-        <Heart
-          key={floatHeart.key}
-          className="lu-float-up pointer-events-none absolute h-20 w-20 fill-red-500 text-red-500 drop-shadow-2xl"
-          style={{ left: floatHeart.x - 40, top: floatHeart.y - 40 }}
-        />
-      )}
+      {/* (Double-tap floating reaction now handled by useReactionPicker overlay) */}
 
       {/* Activity pulse */}
       {pulseText && (
