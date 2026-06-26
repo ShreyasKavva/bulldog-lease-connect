@@ -67,6 +67,7 @@ function ProfilePage() {
       !!profile.campus_id,
       (profile.vibe_tags?.length ?? 0) > 0,
       !!profile.verified_email,
+      !!profile.currently_status,
     ];
     return Math.round((fields.filter(Boolean).length / fields.length) * 100);
   }, [profile]);
