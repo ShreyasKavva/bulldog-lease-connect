@@ -53,6 +53,55 @@ export type Database = {
         }
         Relationships: []
       }
+      closed_deals: {
+        Row: {
+          campus_id: string | null
+          closed_at: string
+          found_via_lease_up: boolean
+          id: string
+          looking_for_post_id: string | null
+          user_id: string
+        }
+        Insert: {
+          campus_id?: string | null
+          closed_at?: string
+          found_via_lease_up?: boolean
+          id?: string
+          looking_for_post_id?: string | null
+          user_id: string
+        }
+        Update: {
+          campus_id?: string | null
+          closed_at?: string
+          found_via_lease_up?: boolean
+          id?: string
+          looking_for_post_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closed_deals_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closed_deals_looking_for_post_id_fkey"
+            columns: ["looking_for_post_id"]
+            isOneToOne: false
+            referencedRelation: "looking_for_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closed_deals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -412,6 +461,42 @@ export type Database = {
           },
         ]
       }
+      looking_for_interests: {
+        Row: {
+          created_at: string
+          id: string
+          request_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "looking_for_interests_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "looking_for_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "looking_for_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       looking_for_posts: {
         Row: {
           area: string | null
@@ -420,8 +505,10 @@ export type Database = {
           campus_id: string | null
           created_at: string
           description: string
+          expiry_notified_at: string | null
           furnished: boolean | null
           id: string
+          is_active: boolean
           move_in_date: string | null
           move_out_date: string | null
           pets_ok: boolean | null
@@ -436,8 +523,10 @@ export type Database = {
           campus_id?: string | null
           created_at?: string
           description: string
+          expiry_notified_at?: string | null
           furnished?: boolean | null
           id?: string
+          is_active?: boolean
           move_in_date?: string | null
           move_out_date?: string | null
           pets_ok?: boolean | null
@@ -452,8 +541,10 @@ export type Database = {
           campus_id?: string | null
           created_at?: string
           description?: string
+          expiry_notified_at?: string | null
           furnished?: boolean | null
           id?: string
+          is_active?: boolean
           move_in_date?: string | null
           move_out_date?: string | null
           pets_ok?: boolean | null
@@ -559,6 +650,7 @@ export type Database = {
           email: string
           id: string
           is_admin: boolean
+          last_seen: string | null
           major: string | null
           name: string
           phone: string | null
@@ -580,6 +672,7 @@ export type Database = {
           email: string
           id: string
           is_admin?: boolean
+          last_seen?: string | null
           major?: string | null
           name?: string
           phone?: string | null
@@ -601,6 +694,7 @@ export type Database = {
           email?: string
           id?: string
           is_admin?: boolean
+          last_seen?: string | null
           major?: string | null
           name?: string
           phone?: string | null
@@ -759,6 +853,7 @@ export type Database = {
         }
         Returns: number
       }
+      process_looking_for_expiry: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

@@ -16,8 +16,11 @@ export type Profile = {
   currently_status?: string | null;
   currently_emoji?: string | null;
   currently_updated_at?: string | null;
+  last_seen?: string | null;
+  updated_at?: string | null;
   created_at: string;
 };
+
 
 export type Listing = {
   id: string;
@@ -84,9 +87,13 @@ export type LookingForPost = {
   area: string | null;
   furnished: boolean | null;
   pets_ok: boolean | null;
+  is_active: boolean;
+  expiry_notified_at: string | null;
   created_at: string;
   profile?: Profile;
+  interest_count?: number;
 };
+
 
 export type LeaseAnalysis = {
   id: string;

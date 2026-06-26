@@ -8,7 +8,9 @@ export type ActivityKind =
   | "price_drop"
   | "listing_closed"
   | "looking_for"
-  | "reaction";
+  | "reaction"
+  | "deal_closed";
+
 
 export type ActivityItem = {
   id: string;
@@ -122,12 +124,31 @@ export async function fetchActivity(limit = 50): Promise<ActivityItem[]> {
     }
   }
 
+  // Closed deals (found via LeaseUp)
+  const { data: deals } = await supabase
+    .from("closed_deals")
+    .select("id, found_via_lease_up, closed_at, campus:campuses(name)")
+    .eq("found_via_lease_up", true)
+    .order("closed_at", { ascending: false })
+    .limit(limit);
+  for (const d of (deals ?? []) as any[]) {
+    items.push({
+      id: `cd-${d.id}`,
+      kind: "deal_closed",
+      emoji: "🎉",
+      text: `A student found a sublease${d.campus?.name ? ` at ${d.campus.name}` : ""} through LeaseUp`,
+      area: null,
+      created_at: d.closed_at,
+    });
+  }
+
   // Note: Detecting price drops without a history table isn't reliable.
   // We surface them via realtime UPDATE events on listings as they happen.
 
   items.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   return items.slice(0, limit);
 }
+
 
 export function useActivity() {
   const qc = useQueryClient();
@@ -174,12 +195,16 @@ export function useActivity() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "looking_for_posts" }, () => {
         qc.invalidateQueries({ queryKey: ["activity"] });
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "closed_deals" }, () => {
+        qc.invalidateQueries({ queryKey: ["activity"] });
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [qc]);
 
   return query;
 }
+
 
 export function activityTimeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
