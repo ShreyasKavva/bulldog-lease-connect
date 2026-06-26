@@ -13,6 +13,9 @@ export type Profile = {
   verified_email: boolean;
   is_admin?: boolean;
   banned?: boolean;
+  currently_status?: string | null;
+  currently_emoji?: string | null;
+  currently_updated_at?: string | null;
   created_at: string;
 };
 
