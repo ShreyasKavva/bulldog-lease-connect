@@ -93,6 +93,12 @@ export function ProfileSheet({
                   <p className="text-sm text-muted-foreground">
                     {profile.year ?? "Student"}{profile.major ? ` · ${profile.major}` : ""}
                   </p>
+                  {profile.currently_status && (
+                    <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary-dark">
+                      <span>{profile.currently_emoji ?? "🔎"}</span>
+                      <span className="truncate">{profile.currently_status}</span>
+                    </div>
+                  )}
                   {profile.bio && <p className="mt-3 text-sm">{profile.bio}</p>}
                   {(profile.vibe_tags?.length ?? 0) > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
