@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar } from "lucide-react";
+import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar, Scale } from "lucide-react";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 
