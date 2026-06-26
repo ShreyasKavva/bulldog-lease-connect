@@ -33,11 +33,17 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "up") {
+        let ref: string | null = null;
+        try { ref = localStorage.getItem("lu_ref"); } catch {}
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: { name } },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { name, ...(ref ? { ref } : {}) },
+          },
         });
         if (error) throw error;
+        try { if (ref) localStorage.removeItem("lu_ref"); } catch {}
         toast.success("Welcome to LeaseUp 🎉");
         navigate({ to: "/onboarding" });
       } else {

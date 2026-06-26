@@ -15,8 +15,10 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AmbassadorRouteImport } from './routes/ambassador'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
@@ -60,6 +62,11 @@ const LookingForRoute = LookingForRouteImport.update({
   path: '/looking-for',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
@@ -68,6 +75,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmbassadorRoute = AmbassadorRouteImport.update({
+  id: '/ambassador',
+  path: '/ambassador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertsRoute = AlertsRouteImport.update({
@@ -139,8 +151,10 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/join': typeof JoinRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -161,8 +175,10 @@ export interface FileRoutesByTo {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/join': typeof JoinRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -184,8 +200,10 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/join': typeof JoinRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -208,8 +226,10 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/join'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -230,8 +250,10 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/join'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -252,8 +274,10 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/join'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -275,8 +299,10 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
+  AmbassadorRoute: typeof AmbassadorRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  JoinRoute: typeof JoinRoute
   LookingForRoute: typeof LookingForRoute
   MyListingsRoute: typeof MyListingsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -337,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookingForRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse': {
       id: '/browse'
       path: '/browse'
@@ -349,6 +382,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ambassador': {
+      id: '/ambassador'
+      path: '/ambassador'
+      fullPath: '/ambassador'
+      preLoaderRoute: typeof AmbassadorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alerts': {
@@ -443,8 +483,10 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
+  AmbassadorRoute: AmbassadorRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  JoinRoute: JoinRoute,
   LookingForRoute: LookingForRoute,
   MyListingsRoute: MyListingsRoute,
   OnboardingRoute: OnboardingRoute,
