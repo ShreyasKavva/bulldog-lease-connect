@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 
 export function BottomNav({
-  onPost, onChat, onProfile,
+  onPost, onChat, onProfile: _onProfile,
 }: {
   onPost: () => void;
   onChat: () => void;
-  onProfile: () => void;
+  onProfile?: () => void;
 }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const unread = useUnreadCount();
