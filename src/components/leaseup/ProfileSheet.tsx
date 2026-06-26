@@ -49,9 +49,13 @@ export function ProfileSheet({
 
   async function save() {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({
+    const payload: any = {
       ...form, vibe_tags: form.vibe_tags.slice(0, 3),
-    }).eq("id", user.id);
+      currently_status: form.currently_status.trim() || null,
+      currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
+      currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,
+    };
+    const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
     qc.invalidateQueries({ queryKey: ["profile"] });
