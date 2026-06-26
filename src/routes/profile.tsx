@@ -67,6 +67,7 @@ function ProfilePage() {
       !!profile.campus_id,
       (profile.vibe_tags?.length ?? 0) > 0,
       !!profile.verified_email,
+      !!profile.currently_status,
     ];
     return Math.round((fields.filter(Boolean).length / fields.length) * 100);
   }, [profile]);
@@ -115,6 +116,12 @@ function ProfilePage() {
               {profile?.major ? ` · ${profile.major}` : ""}
               {myCampus ? ` · ${myCampus.name}` : ""}
             </p>
+            {profile?.currently_status && (
+              <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary-dark">
+                <span>{profile.currently_emoji ?? "🔎"}</span>
+                <span className="truncate">{profile.currently_status}</span>
+              </div>
+            )}
             {profile?.bio && <p className="mt-3 text-sm">{profile.bio}</p>}
             {(profile?.vibe_tags?.length ?? 0) > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -150,6 +157,7 @@ function ProfilePage() {
               {!profile?.bio && <Chip>Add bio</Chip>}
               {!profile?.year && <Chip>Add year</Chip>}
               {!profile?.major && <Chip>Add major</Chip>}
+              {!profile?.currently_status && <Chip>Set "Currently"</Chip>}
               {(profile?.vibe_tags?.length ?? 0) === 0 && <Chip>Pick vibe tags</Chip>}
               {!profile?.verified_email && <Chip><ShieldCheck className="mr-1 inline h-3 w-3" />Verify .edu</Chip>}
             </div>

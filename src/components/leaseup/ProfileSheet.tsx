@@ -33,6 +33,7 @@ export function ProfileSheet({
   const [form, setForm] = useState({
     name: "", year: "", major: "", bio: "", phone: "",
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
+    currently_status: "", currently_emoji: "🔎",
   });
 
   useEffect(() => {
@@ -41,14 +42,20 @@ export function ProfileSheet({
       bio: profile.bio ?? "", phone: profile.phone ?? "",
       avatar_emoji: profile.avatar_emoji ?? "🙂", banner_color: profile.banner_color ?? "#2563EB",
       vibe_tags: profile.vibe_tags ?? [],
+      currently_status: profile.currently_status ?? "",
+      currently_emoji: profile.currently_emoji ?? "🔎",
     });
   }, [profile]);
 
   async function save() {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({
+    const payload: any = {
       ...form, vibe_tags: form.vibe_tags.slice(0, 3),
-    }).eq("id", user.id);
+      currently_status: form.currently_status.trim() || null,
+      currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
+      currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,
+    };
+    const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
     qc.invalidateQueries({ queryKey: ["profile"] });
@@ -86,6 +93,12 @@ export function ProfileSheet({
                   <p className="text-sm text-muted-foreground">
                     {profile.year ?? "Student"}{profile.major ? ` · ${profile.major}` : ""}
                   </p>
+                  {profile.currently_status && (
+                    <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary-dark">
+                      <span>{profile.currently_emoji ?? "🔎"}</span>
+                      <span className="truncate">{profile.currently_status}</span>
+                    </div>
+                  )}
                   {profile.bio && <p className="mt-3 text-sm">{profile.bio}</p>}
                   {(profile.vibe_tags?.length ?? 0) > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -111,6 +124,24 @@ export function ProfileSheet({
                       </select>
                     </div>
                     <div><Label>Major</Label><Input value={form.major} onChange={(e) => setForm(f => ({ ...f, major: e.target.value }))} /></div>
+                  </div>
+                  <div>
+                    <Label>Currently (max 60)</Label>
+                    <div className="mt-1 flex gap-2">
+                      <select
+                        value={form.currently_emoji}
+                        onChange={(e) => setForm(f => ({ ...f, currently_emoji: e.target.value }))}
+                        className="h-10 rounded-md border bg-surface px-2 text-lg"
+                      >
+                        {["🔎","🏠","📦","🎓","✈️","🔥","🤝","☕️"].map(e => <option key={e}>{e}</option>)}
+                      </select>
+                      <Input
+                        maxLength={60}
+                        placeholder="e.g. Looking near North Campus, Aug–Dec"
+                        value={form.currently_status}
+                        onChange={(e) => setForm(f => ({ ...f, currently_status: e.target.value }))}
+                      />
+                    </div>
                   </div>
                   <div><Label>Bio (max 120)</Label><Textarea maxLength={120} value={form.bio} onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))} /></div>
                   <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
