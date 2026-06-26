@@ -23,12 +23,16 @@ export function ScrollView({
   onSave,
   onMessage,
   onOpen,
+  pinnedIds,
+  onPin,
 }: {
   listings: Listing[];
   savedIds: Set<string>;
   onSave: (l: Listing) => void;
   onMessage: (l: Listing) => void;
   onOpen: (l: Listing) => void;
+  pinnedIds?: Set<string>;
+  onPin?: (l: Listing) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
