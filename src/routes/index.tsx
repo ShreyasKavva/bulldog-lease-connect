@@ -72,6 +72,25 @@ function Home() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [matchOpen, setMatchOpen] = useState(false);
   const [leaseOpen, setLeaseOpen] = useState(false);
+  const [pinned, setPinned] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
+  const pinnedListings = useMemo(
+    () => pinned.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
+    [pinned, listings],
+  );
+
+  function togglePin(l: Listing) {
+    setPinned(prev => {
+      if (prev.includes(l.id)) return prev.filter(id => id !== l.id);
+      if (prev.length >= 3) {
+        toast("Compare up to 3 listings at a time");
+        return prev;
+      }
+      return [...prev, l.id];
+    });
+  }
 
   // Open listing via ?listing= URL param
   useEffect(() => {
