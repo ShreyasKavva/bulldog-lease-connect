@@ -4,6 +4,7 @@ import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useReactionPicker } from "./useReactionPicker";
 
 function isJustPosted(iso: string) {
   return Date.now() - new Date(iso).getTime() < 1000 * 60 * 60 * 2;
@@ -29,6 +30,7 @@ export function ListingCard({
   const justPosted = isJustPosted(listing.created_at);
   const soon = isAvailableSoon(listing.available_from);
   const [pop, setPop] = useState(false);
+  const picker = useReactionPicker(listing.id);
 
   function handleSave(e: React.MouseEvent) {
     e.stopPropagation();
@@ -37,20 +39,31 @@ export function ListingCard({
     onSave();
   }
 
+  function handlePhotoClick(e: React.MouseEvent<HTMLDivElement>) {
+    const res = picker.handleClick(e);
+    if (res.suppressed) { e.stopPropagation(); return; }
+    onOpen();
+  }
+
   return (
     <article
-      onClick={onOpen}
       className={cn(
         "lu-card-hover group cursor-pointer overflow-hidden rounded-xl bg-surface shadow-card",
         justPosted && "border-l-[3px] border-primary",
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div
+        ref={picker.containerRef}
+        className="relative aspect-[4/3] overflow-hidden bg-muted"
+        onClick={handlePhotoClick}
+        {...picker.bind}
+      >
         {photo ? (
           <img src={photo} alt={listing.title} className="lu-card-img h-full w-full object-cover" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
         )}
+        {picker.overlay}
 
         {/* Top-right: save + compare */}
         <div className="absolute right-3 top-3 flex flex-col gap-1.5">
