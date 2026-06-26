@@ -427,6 +427,9 @@ export type Database = {
           bio: string | null
           campus_id: string | null
           created_at: string
+          currently_emoji: string | null
+          currently_status: string | null
+          currently_updated_at: string | null
           email: string
           id: string
           is_admin: boolean
@@ -445,6 +448,9 @@ export type Database = {
           bio?: string | null
           campus_id?: string | null
           created_at?: string
+          currently_emoji?: string | null
+          currently_status?: string | null
+          currently_updated_at?: string | null
           email: string
           id: string
           is_admin?: boolean
@@ -463,6 +469,9 @@ export type Database = {
           bio?: string | null
           campus_id?: string | null
           created_at?: string
+          currently_emoji?: string | null
+          currently_status?: string | null
+          currently_updated_at?: string | null
           email?: string
           id?: string
           is_admin?: boolean

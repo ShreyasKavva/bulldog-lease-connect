@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS currently_status text, ADD COLUMN IF NOT EXISTS currently_emoji text, ADD COLUMN IF NOT EXISTS currently_updated_at timestamptz;
