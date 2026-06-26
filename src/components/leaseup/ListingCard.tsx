@@ -1,16 +1,18 @@
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, BadgeCheck, Bed, MapPin, Eye } from "lucide-react";
+import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale } from "lucide-react";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 
 export function ListingCard({
-  listing, saved, onSave, onOpen,
+  listing, saved, onSave, onOpen, pinned, onPin,
 }: {
   listing: Listing;
   saved: boolean;
   onSave: () => void;
   onOpen: () => void;
+  pinned?: boolean;
+  onPin?: () => void;
 }) {
   const photo = listing.photo_urls?.[0];
   return (
