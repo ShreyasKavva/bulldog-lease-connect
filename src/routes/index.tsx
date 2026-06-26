@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchListings, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { LandingPage } from "@/components/leaseup/LandingPage";
+
 import { MapHome } from "@/components/leaseup/MapHome";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { TopBar } from "@/components/leaseup/TopBar";
@@ -38,12 +38,10 @@ function Home() {
   const { data: listings = [] } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
-    enabled: !!user,
   });
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
-    enabled: !!user,
     staleTime: Infinity,
   });
 
@@ -102,7 +100,6 @@ function Home() {
   }
 
   if (sessionLoading) return <div className="min-h-screen bg-background" />;
-  if (!user) return <LandingPage />;
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background">
@@ -114,22 +111,22 @@ function Home() {
         hotThreshold={hotThreshold}
       />
 
-      <TopBar transparent onOpenMessages={() => { setActiveConv(null); setMessagesOpen(true); }} />
+      <TopBar transparent onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })} />
 
       {/* Stories bar floats over the map */}
       <div className="pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-2">
         <StoriesBar
           campusId={profile?.campus_id ?? null}
-          meId={user.id}
-          onAddYourStory={() => setPosting(true)}
+          meId={user?.id ?? ""}
+          onAddYourStory={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
           onSelectStudent={setProfileViewId}
         />
       </div>
 
       <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
-        onProfile={() => setProfileViewId(user.id)}
+        onPost={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
+        onChat={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })}
+        onProfile={() => user ? setProfileViewId(user.id) : navigate({ to: "/auth", search: { mode: "in" } })}
       />
 
       <ListingDetailSheet
