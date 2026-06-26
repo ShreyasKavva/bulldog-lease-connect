@@ -172,6 +172,84 @@ function Home() {
   const showFilteredEmpty =
     !showEmpty && campusListings.length > 0 && filteredListings.length === 0;
 
+  // Logged-in users: full-screen snap-scroll feed (TikTok/Reels-style).
+  if (user) {
+    const feedListings = campusListings.length ? campusListings : listings;
+    return (
+      <div className="relative h-[100dvh] w-screen overflow-hidden bg-black">
+        {feedListings.length > 0 ? (
+          <ScrollView
+            fullBleed
+            listings={feedListings}
+            savedIds={savedIds}
+            onSave={handleSave}
+            onMessage={handleMessage}
+            onOpen={setSelected}
+          />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-primary to-primary-dark px-6 text-center text-white">
+            <div>
+              <div className="animate-bounce text-7xl">🏠</div>
+              <h2 className="mt-4 text-2xl font-bold">No listings yet</h2>
+              <p className="mt-1 text-sm text-white/80">Be the first to post a sublease on your campus.</p>
+              <button
+                onClick={() => setPosting(true)}
+                className="mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-primary shadow-lg hover:scale-105 transition-transform"
+              >
+                Post a listing
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top: wordmark + bell only (transparent) */}
+        <TopBar
+          transparent
+          onOpenMessages={() => { setActiveConv(null); setMessagesOpen(true); }}
+        />
+
+        {/* Floating Stories bar below the top bar */}
+        <div className="pointer-events-none absolute inset-x-0 top-14 z-20 px-3 pt-2">
+          <div className="pointer-events-auto rounded-2xl bg-black/30 px-3 py-2 backdrop-blur">
+            <StoriesBar
+              campusId={activeCampusId}
+              meId={user.id}
+              onAddYourStory={() => setPosting(true)}
+              onSelectStudent={setProfileViewId}
+            />
+          </div>
+        </div>
+
+        <BottomNav
+          onPost={() => setPosting(true)}
+          onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
+          onProfile={() => setProfileViewId(user.id)}
+        />
+
+        <ListingDetailSheet
+          listing={selected}
+          open={!!selected}
+          onOpenChange={(o) => !o && setSelected(null)}
+          onMessage={handleMessage}
+          onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
+        />
+        <PostListingDialog open={posting} onOpenChange={setPosting} />
+        <ProfileSheet
+          userId={profileViewId}
+          open={!!profileViewId}
+          onOpenChange={(o) => !o && setProfileViewId(null)}
+          onMessage={startConvWith}
+        />
+        <MessagesSheet
+          open={messagesOpen}
+          onOpenChange={setMessagesOpen}
+          initialConversationId={activeConv}
+        />
+      </div>
+    );
+  }
+
+  // Guests: map-first experience with campus picker.
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background">
       <MapHome
@@ -182,35 +260,15 @@ function Home() {
         hotThreshold={hotThreshold}
       />
 
-      <TopBar
-        transparent
-        onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : gotoAuth("in")}
-      />
+      <TopBar transparent onOpenMessages={() => gotoAuth("in")} />
 
-      {/* Overlay column: campus selector + filters + stories */}
       <div className="pointer-events-none absolute inset-x-0 top-14 z-20 flex flex-col items-center gap-2 px-3 pt-2">
         <MapCampusSelector
           activeId={activeCampusId}
-          onSelect={(c) => {
-            if (user) {
-              // Authenticated users: deep-link to the campus SEO page for now;
-              // they can change their primary campus from Profile.
-              navigate({ to: "/sublease/$slug", params: { slug: c.slug } });
-            } else {
-              handleGuestPickCampus(c);
-            }
-          }}
+          onSelect={(c) => handleGuestPickCampus(c)}
         />
         <div className="w-full max-w-md">
           <MapFilters value={filters} onChange={setFilters} />
-        </div>
-        <div className="w-full">
-          <StoriesBar
-            campusId={activeCampusId}
-            meId={user?.id ?? ""}
-            onAddYourStory={() => user ? setPosting(true) : gotoAuth("up")}
-            onSelectStudent={setProfileViewId}
-          />
         </div>
         {filteredListings.length > 0 && (
           <span className="pointer-events-none rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-bold text-foreground shadow-card-sm backdrop-blur">
@@ -223,7 +281,7 @@ function Home() {
       {showEmpty && (
         <MapEmptyState
           campusName={activeCampus.short_name ?? activeCampus.name}
-          onPost={() => user ? setPosting(true) : gotoAuth("up")}
+          onPost={() => gotoAuth("up")}
         />
       )}
 
@@ -231,10 +289,7 @@ function Home() {
         <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 justify-center px-4">
           <div className="pointer-events-auto rounded-2xl bg-surface/95 px-4 py-3 text-center shadow-card-md backdrop-blur">
             <div className="text-sm font-bold">No matches</div>
-            <button
-              onClick={() => setFilters(DEFAULT_FILTERS)}
-              className="mt-1 text-xs font-semibold text-primary hover:underline"
-            >
+            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="mt-1 text-xs font-semibold text-primary hover:underline">
               Reset filters
             </button>
           </div>
@@ -242,12 +297,12 @@ function Home() {
       )}
 
       <BottomNav
-        onPost={() => user ? setPosting(true) : gotoAuth("up")}
-        onChat={() => user ? (setActiveConv(null), setMessagesOpen(true)) : gotoAuth("in")}
-        onProfile={() => user ? setProfileViewId(user.id) : gotoAuth("in")}
+        onPost={() => gotoAuth("up")}
+        onChat={() => gotoAuth("in")}
+        onProfile={() => gotoAuth("in")}
       />
 
-      {!user && <GuestRibbon />}
+      <GuestRibbon />
 
       <ListingDetailSheet
         listing={selected}
