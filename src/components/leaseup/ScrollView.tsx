@@ -3,6 +3,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar, Scale } from "lucide-react";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
+import { useReactionPicker } from "./useReactionPicker";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -183,9 +184,9 @@ function ScrollCard({
   pinned: boolean;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
-  const [floatHeart, setFloatHeart] = useState<{ x: number; y: number; key: number } | null>(null);
   const [pulseText, setPulseText] = useState<string | null>(null);
   const lastTap = useRef(0);
+  const picker = useReactionPicker(l.id);
 
   useEffect(() => {
     if (!active) return;
@@ -206,26 +207,19 @@ function ScrollCard({
   }, [active, l, fire]);
 
   function handlePhotoTap(e: React.MouseEvent<HTMLDivElement>) {
-    const now = Date.now();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Double-tap to save
-    if (now - lastTap.current < 280) {
-      lastTap.current = 0;
-      setFloatHeart({ x, y, key: now });
-      setTimeout(() => setFloatHeart(null), 1100);
-      if (!saved) onSave();
-      return;
-    }
-    lastTap.current = now;
+    // Long-press / double-tap → reactions
+    const res = picker.handleClick(e);
+    if (res.suppressed) return;
 
     // Single tap: photo nav
     if (photos.length <= 1) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
     const isLeft = x < rect.width / 2;
+    const now = Date.now();
+    lastTap.current = now;
     setTimeout(() => {
-      if (lastTap.current !== now) return; // got double-tapped
+      if (lastTap.current !== now) return; // got double-tapped meanwhile
       setPhotoIdx((p) => {
         if (isLeft) return p === 0 ? photos.length - 1 : p - 1;
         return p === photos.length - 1 ? 0 : p + 1;
@@ -237,10 +231,12 @@ function ScrollCard({
 
   return (
     <section className="relative h-full w-full snap-start snap-always overflow-hidden">
-      {/* Photo with double-tap area */}
+      {/* Photo with long-press / double-tap area */}
       <div
+        ref={picker.containerRef}
         className="absolute inset-0 cursor-pointer"
         onClick={handlePhotoTap}
+        {...picker.bind}
       >
         {photo ? (
           <img
@@ -253,6 +249,7 @@ function ScrollCard({
         ) : (
           <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/40 to-primary-dark/60 text-7xl">🏠</div>
         )}
+        {picker.overlay}
       </div>
 
       {/* Photo progress bars */}
