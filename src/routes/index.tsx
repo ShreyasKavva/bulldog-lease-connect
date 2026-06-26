@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchListings, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchListings, getOrCreateConversation, fetchSavedIds, toggleSaved } from "@/lib/leaseup/queries";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
+import { ScrollView } from "@/components/leaseup/ScrollView";
 import { MapHome } from "@/components/leaseup/MapHome";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { TopBar } from "@/components/leaseup/TopBar";
