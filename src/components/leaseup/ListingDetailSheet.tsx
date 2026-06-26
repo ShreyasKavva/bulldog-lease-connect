@@ -148,11 +148,59 @@ export function ListingDetailSheet({
             </div>
           </div>
 
+          {/* Social-proof stats row */}
+          <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
+            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label="views" />
+            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label="saves" />
+            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label="messages" />
+            <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
+          </div>
+
+          {/* SafeScore animated gauge */}
+          <div className="flex items-center gap-4 rounded-xl border bg-background p-3">
+            <SafeScoreGauge score={listing.safe_score} />
+            <ul className="flex-1 space-y-1 text-xs text-muted-foreground">
+              {(listing.photo_urls?.length ?? 0) >= 3 && <li>✓ {listing.photo_urls!.length} photos</li>}
+              {listing.profile?.verified_email && <li>✓ .edu verified poster</li>}
+              {listing.available_from && listing.available_to && <li>✓ Exact dates listed</li>}
+              {listing.description && listing.description.length >= 200 && <li>✓ Detailed description</li>}
+              {!listing.profile?.verified_email && <li>⚠ Poster not .edu verified</li>}
+            </ul>
+          </div>
+
+          {/* Price comparison bar */}
+          {priceBar && (
+            <div className="rounded-xl border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between text-xs">
+                <span className="font-bold uppercase text-muted-foreground">{listing.beds}BR range nearby</span>
+                {priceBar.below > 5 ? (
+                  <span className="rounded-full bg-orange-500/15 px-2 py-0.5 font-bold text-orange-600">🔥 {Math.round(priceBar.below)}% below avg</span>
+                ) : priceBar.below < -5 ? (
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">{Math.round(-priceBar.below)}% above avg</span>
+                ) : (
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">Around avg</span>
+                )}
+              </div>
+              <div className="relative h-2 rounded-full bg-muted">
+                <div
+                  className="absolute -top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-primary shadow"
+                  style={{ left: `${Math.max(2, Math.min(98, priceBar.pct))}%`, transition: "left 600ms ease-out" }}
+                />
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+                <span>${Math.round(priceBar.min)}</span>
+                <span className="font-bold text-foreground">${listing.price.toLocaleString()} this listing</span>
+                <span>${Math.round(priceBar.max)}</span>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
             <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
             <div><Bath className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{Number(listing.baths)} bath</div></div>
             <div><Calendar className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.available_from ? new Date(listing.available_from).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</div></div>
           </div>
+
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <Fact label="Available from" value={listing.available_from ? new Date(listing.available_from).toLocaleDateString() : "—"} />
