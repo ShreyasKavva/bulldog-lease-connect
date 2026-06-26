@@ -92,6 +92,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader><DialogTitle className="text-2xl">Post a sublease</DialogTitle></DialogHeader>
@@ -180,6 +181,12 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
         </div>
       </DialogContent>
     </Dialog>
+    <InviteRoommatesDialog
+      open={inviteOpen}
+      onOpenChange={setInviteOpen}
+      referralCode={(profile as any)?.referral_code ?? null}
+    />
+    </>
   );
 }
 
