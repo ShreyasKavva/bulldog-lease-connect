@@ -1,14 +1,20 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye } from "lucide-react";
-import { useState, useEffect } from "react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SafeScoreBadge } from "./SafeScoreBadge";
+import { SafeScoreGauge } from "./SafeScoreGauge";
+import { CountUp } from "./CountUp";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { fetchListings } from "@/lib/leaseup/queries";
+import { cn } from "@/lib/utils";
+
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
