@@ -287,6 +287,31 @@ export function ListingDetailSheet({
             ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
+          {alsoSaved.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-bold uppercase text-muted-foreground">Students also saved →</h3>
+              <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
+                {alsoSaved.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
+                    className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
+                  >
+                    {l.photo_urls?.[0] ? (
+                      <img src={l.photo_urls[0]} alt="" className="lu-card-img h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-3xl">🏠</div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-left">
+                      <div className="text-sm font-bold text-white">${l.price.toLocaleString()}<span className="text-[10px] font-medium">/mo</span></div>
+                      <div className="line-clamp-1 text-[10px] text-white/80">{l.beds}bd · {l.area ?? "Near campus"}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
@@ -305,3 +330,21 @@ function Fact({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function Stat({ icon, value, label }: { icon: React.ReactNode; value: React.ReactNode; label: string }) {
+  return (
+    <div className="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs">
+      <span className="text-primary">{icon}</span>
+      <span className="font-bold tabular-nums">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function daysAgo(iso: string) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (d <= 0) return "today";
+  if (d === 1) return "1d ago";
+  return `${d}d ago`;
+}
+
