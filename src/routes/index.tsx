@@ -14,6 +14,8 @@ import { ScrollView } from "@/components/leaseup/ScrollView";
 import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { LandingPage } from "@/components/leaseup/LandingPage";
+import { CompareBar } from "@/components/leaseup/CompareBar";
+import { CompareSheet } from "@/components/leaseup/CompareSheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Map as MapIcon, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -24,9 +26,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LeaseUp — Subleases built for students, not scammers" },
-      { name: "description", content: "The trusted student sublease marketplace at UGA. Verified .edu profiles, SafeScore trust signals, AI lease analysis, and zero shady DMs." },
+      { name: "description", content: "The trusted student sublease marketplace. Verified .edu profiles, SafeScore trust signals, AI lease analysis, side-by-side compare, and zero shady DMs." },
       { property: "og:title", content: "LeaseUp — Student subleases done right" },
-      { property: "og:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis. Built at UGA." },
+      { property: "og:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis. For every campus." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "LeaseUp — Student subleases done right" },
