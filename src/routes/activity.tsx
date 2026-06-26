@@ -36,14 +36,19 @@ function ActivityPage() {
   }, [items]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <main className="mx-auto max-w-2xl px-4 py-5">
-        <div className="mb-4 flex items-baseline justify-between">
-          <h1 className="text-2xl font-extrabold">Activity</h1>
-          <div className="text-xs text-muted-foreground">Live · anonymized</div>
+    <div className="min-h-screen bg-background pb-12">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-2xl items-center gap-3 px-4">
+          <Link to="/" className="grid h-9 w-9 place-items-center rounded-full hover:bg-background" aria-label="Back">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex-1">
+            <div className="text-base font-extrabold">Activity</div>
+            <div className="text-[11px] text-muted-foreground">Live · anonymized</div>
+          </div>
         </div>
-
+      </header>
+      <main className="mx-auto max-w-2xl px-4 py-5">
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -71,7 +76,6 @@ function ActivityPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }
