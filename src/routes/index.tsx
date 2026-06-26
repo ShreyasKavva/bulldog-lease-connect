@@ -282,6 +282,21 @@ function Home() {
         onOpenChange={setMatchOpen}
         onOpenListing={(l) => setSelected(l)}
       />
+
+      <CompareBar
+        listings={pinnedListings}
+        onOpen={() => setCompareOpen(true)}
+        onClear={() => setPinned([])}
+        onRemove={(id) => setPinned(prev => prev.filter(p => p !== id))}
+      />
+      <CompareSheet
+        listings={pinnedListings}
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        onOpenListing={setSelected}
+        onMessage={handleMessage}
+        onRemove={(id) => setPinned(prev => prev.filter(p => p !== id))}
+      />
     </div>
   );
 }
