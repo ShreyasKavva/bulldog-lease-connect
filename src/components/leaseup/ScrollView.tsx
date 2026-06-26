@@ -36,6 +36,10 @@ export function ScrollView({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [showHint, setShowHint] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !localStorage.getItem("lu:scroll-hint-seen");
+  });
 
   // Average price per bed count for "🔥 deal" badge
   const avgByBeds = useMemo(() => {
@@ -64,10 +68,14 @@ export function ScrollView({
     const handler = () => {
       const idx = Math.round(el.scrollTop / el.clientHeight);
       setActiveIdx(idx);
+      if (idx > 0 && showHint) {
+        setShowHint(false);
+        try { localStorage.setItem("lu:scroll-hint-seen", "1"); } catch {}
+      }
     };
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
-  }, []);
+  }, [showHint]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -145,6 +153,15 @@ export function ScrollView({
       <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur">
         {activeIdx + 1} / {listings.length}
       </div>
+      {/* First-visit swipe hint */}
+      {showHint && listings.length > 1 && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-30 flex flex-col items-center gap-1 text-white">
+          <div className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold backdrop-blur">
+            Swipe up for more
+          </div>
+          <ArrowRight className="h-5 w-5 -rotate-90 animate-bounce" />
+        </div>
+      )}
     </div>
   );
 }
