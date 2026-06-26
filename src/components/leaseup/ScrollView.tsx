@@ -191,6 +191,18 @@ export function ScrollView({
                 >
                   <MessageCircle className="h-6 w-6" />
                 </button>
+                {onPin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onPin(l); }}
+                    aria-label="Pin to compare"
+                    className={cn(
+                      "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
+                      pinnedIds?.has(l.id) ? "bg-primary text-primary-foreground" : "bg-white/20 text-white hover:bg-white/30",
+                    )}
+                  >
+                    <Scale className="h-6 w-6" />
+                  </button>
+                )}
                 <button
                   onClick={(e) => { e.stopPropagation(); onOpen(l); }}
                   aria-label="View details"
