@@ -184,10 +184,9 @@ function ProfilePage() {
               <ListingCard
                 key={l.id}
                 listing={l}
-                hot={false}
-                pinned={false}
-                onTogglePin={() => {}}
-                onSelect={() => navigate({ to: "/", search: { listing: l.id } as any })}
+                saved={tab === "saved"}
+                onSave={() => {}}
+                onOpen={() => navigate({ to: "/", search: { listing: l.id } as any })}
               />
             ))}
             {(tab === "listings" ? myListings : saved).length === 0 && (
