@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { OfflineIndicator } from "@/components/leaseup/OfflineIndicator";
+import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
 
 function NotFoundComponent() {
   return (
@@ -51,17 +53,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "LeaseUp — Student Subleases at Every Campus" },
       { name: "description", content: "Find your next place. Leave your current one. The trusted student lease marketplace — at every major US campus." },
       { property: "og:title", content: "LeaseUp — Student Subleases" },
       { property: "og:description", content: "Browse and post student subleases at any campus. Verified students, real listings, SafeScore on everything." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "theme-color", content: "#2563EB" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "LeaseUp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "stylesheet", href: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -90,9 +101,14 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+  useEffect(() => {
+    import("@/lib/pwa/register").then((m) => m.registerPwa()).catch(() => {});
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
+      <OfflineIndicator />
       <Outlet />
+      <InstallPrompt />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
