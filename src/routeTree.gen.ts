@@ -13,6 +13,7 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
+import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -36,6 +37,11 @@ const MyListingsRoute = MyListingsRouteImport.update({
 const LookingForRoute = LookingForRouteImport.update({
   id: '/looking-for',
   path: '/looking-for',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/browse'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/browse'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/browse'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  BrowseRoute: typeof BrowseRoute
   LookingForRoute: typeof LookingForRoute
   MyListingsRoute: typeof MyListingsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -164,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookingForRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  BrowseRoute: BrowseRoute,
   LookingForRoute: LookingForRoute,
   MyListingsRoute: MyListingsRoute,
   OnboardingRoute: OnboardingRoute,
