@@ -207,7 +207,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-5xl px-5 py-20 text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Your sublease shouldn't be a leap of faith.</h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-background/70">
-            Join hundreds of UGA students using LeaseUp to find — and post — subleases that don't suck.
+            Join students at campuses across the country using LeaseUp to find — and post — subleases that don't suck.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/auth" search={{ mode: "up" }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
