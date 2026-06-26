@@ -243,6 +243,7 @@ function Browse() {
                   onOpen={() => setSelected(l)}
                   pinned={pinnedSet.has(l.id)}
                   onPin={() => togglePin(l)}
+                  isHotDeal={hotIds.has(l.id)}
                 />
               ))}
             </div>
