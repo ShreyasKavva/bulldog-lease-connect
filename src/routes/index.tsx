@@ -148,6 +148,15 @@ function Home() {
     setProfileViewId(null);
   }
 
+  async function handleSave(listing: Listing) {
+    if (!user) { gotoAuth("up"); return; }
+    const isSaved = savedIds.has(listing.id);
+    try {
+      await toggleSaved(user.id, listing.id, !isSaved);
+      qc.invalidateQueries({ queryKey: ["saved", user.id] });
+    } catch (e: any) { toast.error(e.message); }
+  }
+
   function handleGuestPickCampus(c: Campus) {
     setGuestCampusId(c.id);
     try { localStorage.setItem(GUEST_CAMPUS_KEY, c.id); } catch {}
