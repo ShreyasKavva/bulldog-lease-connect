@@ -21,6 +21,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
+import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
+import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
+import { useMyProfile } from "@/lib/leaseup/use-session";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
