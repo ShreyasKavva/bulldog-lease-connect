@@ -215,6 +215,8 @@ function Home() {
             onSave={handleSave}
             onMessage={handleMessage}
             onOpen={setSelected}
+            pinnedIds={pinnedSet}
+            onPin={togglePin}
           />
         ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -226,7 +228,7 @@ function Home() {
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🏠</div>
             <h3 className="mt-3 text-lg font-bold">No listings yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Be the first to post a sublease at UGA.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Be the first to post a sublease near your campus.</p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" />Post a listing
             </button>
@@ -238,6 +240,8 @@ function Home() {
                 key={l.id} listing={l} saved={savedIds.has(l.id)}
                 onSave={() => handleSave(l)}
                 onOpen={() => setSelected(l)}
+                pinned={pinnedSet.has(l.id)}
+                onPin={() => togglePin(l)}
               />
             ))}
           </div>
