@@ -116,6 +116,14 @@ function ProfilePage() {
               {profile?.major ? ` · ${profile.major}` : ""}
               {myCampus ? ` · ${myCampus.name}` : ""}
             </p>
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              {formatLastActive((profile as any)?.updated_at)}
+            </p>
+
             {profile?.currently_status && (
               <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary-dark">
                 <span>{profile.currently_emoji ?? "🔎"}</span>
@@ -171,11 +179,13 @@ function ProfilePage() {
         )}
 
         {/* Quick stats */}
-        <section className="mt-4 grid grid-cols-3 gap-2">
+        <section className="mt-4 grid grid-cols-4 gap-2">
           <Stat label="Listings" value={myListings.length} />
+          <Stat label="Views" value={myListings.reduce((s, l: any) => s + (l.view_count ?? 0), 0)} />
           <Stat label="Saved" value={saved.length} />
-          <Stat label="SafeScore avg" value={avgScore(myListings)} />
+          <Stat label="SafeScore" value={avgScore(myListings)} />
         </section>
+
 
         {/* Tabs */}
         <section className="mt-6">
@@ -277,6 +287,19 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
       {active && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
     </button>
   );
+}
+
+function formatLastActive(iso?: string | null) {
+  if (!iso) return "New here";
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 2) return "Active now";
+  if (m < 60) return `Active ${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Active ${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `Active ${d}d ago`;
+  return `Active ${Math.floor(d / 7)}w ago`;
 }
 
 function avgScore(listings: { safe_score: number | null }[]) {
