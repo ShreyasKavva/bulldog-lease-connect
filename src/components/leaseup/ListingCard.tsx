@@ -1,11 +1,21 @@
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale } from "lucide-react";
+import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide-react";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+function isJustPosted(iso: string) {
+  return Date.now() - new Date(iso).getTime() < 1000 * 60 * 60 * 2;
+}
+function isAvailableSoon(iso: string | null) {
+  if (!iso) return false;
+  const diff = new Date(iso).getTime() - Date.now();
+  return diff >= 0 && diff < 1000 * 60 * 60 * 24 * 14;
+}
 
 export function ListingCard({
-  listing, saved, onSave, onOpen, pinned, onPin,
+  listing, saved, onSave, onOpen, pinned, onPin, isHotDeal,
 }: {
   listing: Listing;
   saved: boolean;
@@ -13,26 +23,43 @@ export function ListingCard({
   onOpen: () => void;
   pinned?: boolean;
   onPin?: () => void;
+  isHotDeal?: boolean;
 }) {
   const photo = listing.photo_urls?.[0];
+  const justPosted = isJustPosted(listing.created_at);
+  const soon = isAvailableSoon(listing.available_from);
+  const [pop, setPop] = useState(false);
+
+  function handleSave(e: React.MouseEvent) {
+    e.stopPropagation();
+    setPop(true);
+    setTimeout(() => setPop(false), 400);
+    onSave();
+  }
+
   return (
     <article
       onClick={onOpen}
-      className="group cursor-pointer overflow-hidden rounded-xl bg-surface shadow-card transition hover:shadow-card-md"
+      className={cn(
+        "lu-card-hover group cursor-pointer overflow-hidden rounded-xl bg-surface shadow-card",
+        justPosted && "border-l-[3px] border-primary",
+      )}
     >
-      <div className="relative aspect-[4/3] bg-muted">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {photo ? (
-          <img src={photo} alt={listing.title} className="h-full w-full object-cover" loading="lazy" />
+          <img src={photo} alt={listing.title} className="lu-card-img h-full w-full object-cover" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
         )}
+
+        {/* Top-right: save + compare */}
         <div className="absolute right-3 top-3 flex flex-col gap-1.5">
           <button
-            onClick={(e) => { e.stopPropagation(); onSave(); }}
+            onClick={handleSave}
             aria-label="Save"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/95 shadow hover:scale-105 transition"
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/95 shadow transition active:scale-90"
           >
-            <Heart className={cn("h-4 w-4", saved ? "fill-destructive text-destructive" : "text-foreground")} />
+            <Heart className={cn("h-4 w-4 transition", saved ? "fill-destructive text-destructive" : "text-foreground", pop && "lu-heart-pop")} />
           </button>
           {onPin && (
             <button
@@ -40,7 +67,7 @@ export function ListingCard({
               aria-label={pinned ? "Remove from compare" : "Add to compare"}
               title={pinned ? "Pinned for compare" : "Compare"}
               className={cn(
-                "grid h-9 w-9 place-items-center rounded-full shadow hover:scale-105 transition",
+                "grid h-9 w-9 place-items-center rounded-full shadow transition active:scale-90",
                 pinned ? "bg-primary text-primary-foreground" : "bg-white/95 text-foreground",
               )}
             >
@@ -48,24 +75,56 @@ export function ListingCard({
             </button>
           )}
         </div>
-        <div className="absolute left-3 top-3 flex gap-1.5">
-          {isNew(listing.created_at) && (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white">New</span>
+
+        {/* Top-left tags */}
+        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {justPosted ? (
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">New</span>
+          ) : isNew(listing.created_at) && (
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">New</span>
           )}
           <span className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white",
+            "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow",
             listing.type === "transfer" ? "bg-success" : "bg-foreground/80",
           )}>
             {listing.type === "transfer" ? "Transfer" : "Sublease"}
           </span>
+          {isHotDeal && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">
+              <Flame className="h-3 w-3" /> Hot
+            </span>
+          )}
         </div>
-        {(listing.view_count ?? 0) >= 5 && (
-          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-            <Eye className="h-3 w-3" />{listing.view_count} viewed
+
+        {/* Bottom-left badges over photo */}
+        <div className="absolute bottom-2 left-2 flex flex-wrap items-center gap-1.5">
+          {soon && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/95 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+              <Clock className="h-3 w-3" /> Available soon
+            </span>
+          )}
+          {(listing.view_count ?? 0) >= 5 && (
+            <div className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+              <Eye className="h-3 w-3" />{listing.view_count}
+            </div>
+          )}
+        </div>
+
+        {/* Poster avatar — overlaps photo bottom-right */}
+        {listing.profile && (
+          <div className="absolute -bottom-3 right-3 z-10">
+            <div
+              className="grid h-9 w-9 place-items-center rounded-full text-sm ring-2 ring-surface shadow"
+              style={{ background: listing.profile.banner_color ?? "#2563EB" }}
+              title={listing.profile.name}
+            >
+              {listing.profile.avatar_emoji ?? "🙂"}
+            </div>
           </div>
         )}
       </div>
-      <div className="p-3">
+
+      <div className="p-3 pt-4">
         <div className="flex items-baseline justify-between gap-2">
           <div className="text-lg font-extrabold">${listing.price.toLocaleString()}<span className="text-xs font-medium text-muted-foreground">/mo</span></div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -83,10 +142,6 @@ export function ListingCard({
           {listing.pet_friendly && <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-accent-foreground">Pets OK</span>}
         </div>
         <div className="mt-3 flex items-center gap-2 border-t pt-2">
-          <div
-            className="grid h-6 w-6 place-items-center rounded-full text-xs"
-            style={{ background: listing.profile?.banner_color ?? "#2563EB" }}
-          >{listing.profile?.avatar_emoji ?? "🙂"}</div>
           <span className="text-xs font-semibold">{listing.profile?.name ?? "Student"}</span>
           {listing.profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
           <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(listing.created_at)}</span>

@@ -1,14 +1,20 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye } from "lucide-react";
-import { useState, useEffect } from "react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SafeScoreBadge } from "./SafeScoreBadge";
+import { SafeScoreGauge } from "./SafeScoreGauge";
+import { CountUp } from "./CountUp";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { fetchListings } from "@/lib/leaseup/queries";
+import { cn } from "@/lib/utils";
+
 
 export function ListingDetailSheet({
   listing, open, onOpenChange, onMessage, onViewProfile,
@@ -22,18 +28,69 @@ export function ListingDetailSheet({
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
   const [views, setViews] = useState<number | null>(null);
+  const [saveCount, setSaveCount] = useState<number>(0);
+  const [msgCount, setMsgCount] = useState<number>(0);
   const { user } = useSession();
 
   useEffect(() => {
     if (!open || !listing) return;
+    setActivePhoto(0);
     setViews(listing.view_count ?? null);
     const key = `viewed:${listing.id}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
-      if (typeof data === "number") setViews(data);
-    });
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, "1");
+      supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
+        if (typeof data === "number") setViews(data);
+      });
+    }
+    // Load social proof counts
+    (async () => {
+      try {
+        const sav = await supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).eq("listing_id", listing.id);
+        setSaveCount(sav.count ?? 0);
+        const convs = await supabase.from("conversations").select("id").eq("listing_id", listing.id);
+        const convIds = (convs.data ?? []).map((c: any) => c.id);
+        if (convIds.length === 0) { setMsgCount(0); return; }
+        const msg = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds);
+        setMsgCount(msg.count ?? 0);
+      } catch { /* ignore */ }
+    })();
   }, [open, listing]);
+
+
+  // Comp listings (same campus, ±1 bed)
+  const { data: allListings = [] } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+    enabled: open,
+    staleTime: 60_000,
+  });
+
+  const comps = useMemo(() => {
+    if (!listing) return [] as Listing[];
+    return allListings.filter(l =>
+      l.id !== listing.id && l.campus_id === listing.campus_id && Math.abs(l.beds - listing.beds) <= 0
+    );
+  }, [allListings, listing]);
+
+  const priceBar = useMemo(() => {
+    if (!listing || comps.length < 3) return null;
+    const prices = comps.map(c => c.price).concat(listing.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const pct = max === min ? 50 : ((listing.price - min) / (max - min)) * 100;
+    const below = ((avg - listing.price) / avg) * 100;
+    return { min, max, avg, pct, below };
+  }, [comps, listing]);
+
+  const alsoSaved = useMemo(() => {
+    if (!listing) return [] as Listing[];
+    return allListings
+      .filter(l => l.id !== listing.id && l.campus_id === listing.campus_id)
+      .sort((a, b) => Math.abs(a.price - listing.price) - Math.abs(b.price - listing.price))
+      .slice(0, 6);
+  }, [allListings, listing]);
 
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
@@ -41,6 +98,7 @@ export function ListingDetailSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
         <div className="relative aspect-[16/10] bg-muted">
@@ -90,11 +148,59 @@ export function ListingDetailSheet({
             </div>
           </div>
 
+          {/* Social-proof stats row */}
+          <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
+            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label="views" />
+            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label="saves" />
+            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label="messages" />
+            <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
+          </div>
+
+          {/* SafeScore animated gauge */}
+          <div className="flex items-center gap-4 rounded-xl border bg-background p-3">
+            <SafeScoreGauge score={listing.safe_score} />
+            <ul className="flex-1 space-y-1 text-xs text-muted-foreground">
+              {(listing.photo_urls?.length ?? 0) >= 3 && <li>✓ {listing.photo_urls!.length} photos</li>}
+              {listing.profile?.verified_email && <li>✓ .edu verified poster</li>}
+              {listing.available_from && listing.available_to && <li>✓ Exact dates listed</li>}
+              {listing.description && listing.description.length >= 200 && <li>✓ Detailed description</li>}
+              {!listing.profile?.verified_email && <li>⚠ Poster not .edu verified</li>}
+            </ul>
+          </div>
+
+          {/* Price comparison bar */}
+          {priceBar && (
+            <div className="rounded-xl border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between text-xs">
+                <span className="font-bold uppercase text-muted-foreground">{listing.beds}BR range nearby</span>
+                {priceBar.below > 5 ? (
+                  <span className="rounded-full bg-orange-500/15 px-2 py-0.5 font-bold text-orange-600">🔥 {Math.round(priceBar.below)}% below avg</span>
+                ) : priceBar.below < -5 ? (
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">{Math.round(-priceBar.below)}% above avg</span>
+                ) : (
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">Around avg</span>
+                )}
+              </div>
+              <div className="relative h-2 rounded-full bg-muted">
+                <div
+                  className="absolute -top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-primary shadow"
+                  style={{ left: `${Math.max(2, Math.min(98, priceBar.pct))}%`, transition: "left 600ms ease-out" }}
+                />
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+                <span>${Math.round(priceBar.min)}</span>
+                <span className="font-bold text-foreground">${listing.price.toLocaleString()} this listing</span>
+                <span>${Math.round(priceBar.max)}</span>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
             <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
             <div><Bath className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{Number(listing.baths)} bath</div></div>
             <div><Calendar className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.available_from ? new Date(listing.available_from).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</div></div>
           </div>
+
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <Fact label="Available from" value={listing.available_from ? new Date(listing.available_from).toLocaleDateString() : "—"} />
@@ -181,6 +287,31 @@ export function ListingDetailSheet({
             ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
+          {alsoSaved.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-bold uppercase text-muted-foreground">Students also saved →</h3>
+              <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
+                {alsoSaved.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
+                    className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
+                  >
+                    {l.photo_urls?.[0] ? (
+                      <img src={l.photo_urls[0]} alt="" className="lu-card-img h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-3xl">🏠</div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-left">
+                      <div className="text-sm font-bold text-white">${l.price.toLocaleString()}<span className="text-[10px] font-medium">/mo</span></div>
+                      <div className="line-clamp-1 text-[10px] text-white/80">{l.beds}bd · {l.area ?? "Near campus"}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
@@ -199,3 +330,21 @@ function Fact({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function Stat({ icon, value, label }: { icon: React.ReactNode; value: React.ReactNode; label: string }) {
+  return (
+    <div className="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs">
+      <span className="text-primary">{icon}</span>
+      <span className="font-bold tabular-nums">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function daysAgo(iso: string) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (d <= 0) return "today";
+  if (d === 1) return "1d ago";
+  return `${d}d ago`;
+}
+

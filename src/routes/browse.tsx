@@ -83,6 +83,24 @@ function Browse() {
     });
   }
 
+  // Hot-deal computation: 15%+ below campus average for same bed count
+  const hotIds = useMemo(() => {
+    const groups = new Map<string, number[]>();
+    for (const l of listings) {
+      const key = `${l.campus_id ?? ""}|${l.beds}`;
+      const arr = groups.get(key) ?? [];
+      arr.push(l.price); groups.set(key, arr);
+    }
+    const avg = new Map<string, number>();
+    for (const [k, v] of groups) avg.set(k, v.reduce((a, b) => a + b, 0) / v.length);
+    const ids = new Set<string>();
+    for (const l of listings) {
+      const a = avg.get(`${l.campus_id ?? ""}|${l.beds}`);
+      if (a && l.price <= a * 0.85) ids.add(l.id);
+    }
+    return ids;
+  }, [listings]);
+
   const filtered = useMemo(() => {
     let r = listings.filter((l) =>
       (!search || l.title.toLowerCase().includes(search.toLowerCase()) || (l.area ?? "").toLowerCase().includes(search.toLowerCase())) &&
@@ -199,7 +217,14 @@ function Browse() {
           ) : isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] animate-pulse rounded-xl bg-muted" />
+                <div key={i} className="overflow-hidden rounded-xl bg-surface shadow-card">
+                  <div className="lu-shimmer aspect-[4/3] w-full" />
+                  <div className="space-y-2 p-3">
+                    <div className="lu-shimmer h-5 w-24 rounded" />
+                    <div className="lu-shimmer h-4 w-3/4 rounded" />
+                    <div className="lu-shimmer h-3 w-1/2 rounded" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
@@ -218,6 +243,7 @@ function Browse() {
                   onOpen={() => setSelected(l)}
                   pinned={pinnedSet.has(l.id)}
                   onPin={() => togglePin(l)}
+                  isHotDeal={hotIds.has(l.id)}
                 />
               ))}
             </div>

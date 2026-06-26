@@ -111,6 +111,17 @@ function Home() {
     }
   }, [listings]);
 
+  // Cross-component "open this listing" event (used by People also saved)
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      const l = listings.find((x) => x.id === id);
+      if (l) setSelected(l);
+    }
+    window.addEventListener("lu:open-listing", onOpen as EventListener);
+    return () => window.removeEventListener("lu:open-listing", onOpen as EventListener);
+  }, [listings]);
+
   async function handleMessage(listing: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
     if (listing.user_id === user.id) { toast("That's your own listing"); return; }
