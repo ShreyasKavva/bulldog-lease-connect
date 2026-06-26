@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
-import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex" }] }),
@@ -333,12 +333,16 @@ function UsersTab() {
                 <td className="p-2 text-xs">
                   {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1">VERIFIED</span>}
                   {u.is_admin && <span className="rounded bg-primary-light text-primary-dark px-1.5 py-0.5 text-[10px] font-bold mr-1">ADMIN</span>}
+                  {(u as any).is_ambassador && <span className="rounded bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold mr-1">AMBASSADOR</span>}
                   {u.banned && <span className="rounded bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold">BANNED</span>}
                 </td>
                 <td className="p-2">
                   <div className="flex gap-1 justify-end">
                     <Button size="sm" variant="outline" onClick={() => update(u.id, { verified_email: !u.verified_email }, u.verified_email ? "Unverified" : "Verified")} title="Toggle verified">
                       <BadgeCheck className={cn("h-3.5 w-3.5", u.verified_email && "text-success")} />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => update(u.id, { is_ambassador: !(u as any).is_ambassador }, (u as any).is_ambassador ? "Removed ambassador" : "Made ambassador")} title="Toggle ambassador">
+                      <Sparkles className={cn("h-3.5 w-3.5", (u as any).is_ambassador && "text-primary")} />
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => confirm(u.banned ? "Unban?" : "Ban this user?") && update(u.id, { banned: !u.banned }, u.banned ? "Unbanned" : "Banned")} title="Toggle ban">
                       <Ban className={cn("h-3.5 w-3.5", u.banned && "text-red-600")} />
