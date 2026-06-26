@@ -39,8 +39,14 @@ const GUEST_CAMPUS_KEY = "leaseup_guest_campus_id";
 
 function Home() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useMyProfile();
+  const { data: savedIds = new Set<string>() } = useQuery({
+    queryKey: ["saved", user?.id],
+    queryFn: () => fetchSavedIds(user!.id),
+    enabled: !!user?.id,
+  });
 
   const { data: listings = [] } = useQuery({
     queryKey: ["listings"],
