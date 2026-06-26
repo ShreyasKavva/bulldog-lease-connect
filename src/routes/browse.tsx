@@ -54,6 +54,19 @@ function Browse() {
     queryFn: () => fetchSavedIds(user!.id),
     enabled: !!user?.id,
   });
+  const { data: profile } = useMyProfile();
+  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity, enabled: !!user });
+  const myCampus = campuses.find(c => c.id === profile?.campus_id);
+  const { data: trendingIds = [] } = useQuery({
+    queryKey: ["trending-ids", profile?.campus_id ?? "all"],
+    queryFn: () => fetchTrendingIds(profile?.campus_id ?? null, 5),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const trendingListings = useMemo(
+    () => trendingIds.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
+    [trendingIds, listings],
+  );
 
   const [view, setView] = useState<View>("grid");
   const [sort, setSort] = useState<Sort>("newest");
