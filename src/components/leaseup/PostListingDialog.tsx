@@ -139,16 +139,22 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
           </Field>
 
           <Field label={`Photos (${files.length}/10)`}>
-            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-6 text-sm font-semibold text-muted-foreground hover:border-primary hover:text-primary">
-              <Upload className="h-4 w-4" />Click to upload photos
-              <input type="file" accept="image/*" multiple onChange={onFiles} className="hidden" />
-            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-4 text-sm font-semibold text-muted-foreground hover:border-primary hover:text-primary">
+                📷 Take Photo
+                <input type="file" accept="image/*" capture="environment" multiple onChange={onFiles} className="hidden" />
+              </label>
+              <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-4 text-sm font-semibold text-muted-foreground hover:border-primary hover:text-primary">
+                <Upload className="h-4 w-4" />Choose from Library
+                <input type="file" accept="image/*" multiple onChange={onFiles} className="hidden" />
+              </label>
+            </div>
             {files.length > 0 && (
               <div className="mt-2 grid grid-cols-5 gap-2">
                 {files.map((f, i) => (
                   <div key={i} className="relative aspect-square overflow-hidden rounded-md bg-muted">
-                    <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" />
-                    <button onClick={() => setFiles(files.filter((_, j) => j !== i))} className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-white">
+                    <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <button aria-label="Remove photo" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white">
                       <X className="h-3 w-3" />
                     </button>
                   </div>

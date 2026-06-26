@@ -35,9 +35,9 @@ export function BottomNav({
       <NavLink to="/browse" active={isBrowse} label="Browse" icon={LayoutGrid} />
 
       <button
-        onClick={onPost}
+        onClick={() => { import("@/lib/haptics").then((m) => m.haptic(10)); onPost(); }}
         aria-label="Post a listing"
-        className="group flex flex-1 flex-col items-center justify-end gap-0.5 py-2 text-[11px] font-bold text-foreground"
+        className="group flex min-h-11 flex-1 flex-col items-center justify-end gap-0.5 py-2 text-[11px] font-bold text-foreground"
       >
         <span className="relative -mt-5 grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-primary-foreground shadow-card-lg ring-4 ring-surface transition-transform duration-200 group-active:scale-90 group-hover:scale-105">
           <span className="lu-pulse-ring absolute inset-0 rounded-full" aria-hidden />

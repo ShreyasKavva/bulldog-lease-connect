@@ -177,3 +177,11 @@
 @media (prefers-reduced-motion: reduce) {
   .lu-reaction-pop { animation: none !important; }
 }
+
+/* PWA / mobile polish */
+html, body { -webkit-tap-highlight-color: transparent; }
+.lu-scroll, [data-lu-scroll] { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+@supports (padding: env(safe-area-inset-top)) {
+  .lu-safe-top { padding-top: env(safe-area-inset-top); }
+  .lu-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}

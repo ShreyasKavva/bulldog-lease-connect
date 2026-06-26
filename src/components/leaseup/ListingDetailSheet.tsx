@@ -280,12 +280,12 @@ export function ListingDetailSheet({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => {
-                const url = `${window.location.origin}/?listing=${listing.id}`;
-                navigator.clipboard.writeText(url);
-                toast.success("Link copied");
+                import("@/lib/share").then((m) =>
+                  m.shareListing({ id: listing.id, title: listing.title, price: listing.price })
+                );
               }}
-              className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            ><Share2 className="h-3.5 w-3.5" />Copy link</button>
+              className="flex min-h-11 items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            ><Share2 className="h-3.5 w-3.5" />Share</button>
             <ShareToStoryButton listing={listing} />
             <button
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}

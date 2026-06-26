@@ -7,17 +7,69 @@
 import path from "node:path";
 import { loadEnv } from "vite";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { VitePWA } from "vite-plugin-pwa";
 
-// Load all (non-VITE_) env vars into process.env for server-side routes (e.g. SUPABASE_SERVICE_ROLE_KEY).
 const serverEnv = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 Object.assign(process.env, serverEnv);
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
+  plugins: [
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: null,
+      strategies: "generateSW",
+      filename: "sw.js",
+      devOptions: { enabled: false },
+      includeAssets: ["icon-192.png", "icon-512.png", "offline.html"],
+      manifest: false,
+      workbox: {
+        navigateFallback: "/offline.html",
+        navigateFallbackDenylist: [/^\/api\//, /^\/~oauth/],
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "lu-pages",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/__l5e/assets-v1/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "lu-cdn-assets",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            urlPattern: ({ url }) =>
+              /\.(?:png|jpg|jpeg|webp|gif|svg|avif)$/i.test(url.pathname),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "lu-images",
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 14 },
+            },
+          },
+          {
+            urlPattern: ({ url }) =>
+              url.hostname.endsWith(".supabase.co") &&
+              url.pathname.includes("/rest/v1/listings"),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "lu-listings",
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 10 },
+            },
+          },
+        ],
+      },
+    }),
+  ],
   vite: {
     resolve: {
       alias: {
