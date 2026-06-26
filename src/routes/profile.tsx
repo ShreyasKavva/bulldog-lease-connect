@@ -157,6 +157,7 @@ function ProfilePage() {
               {!profile?.bio && <Chip>Add bio</Chip>}
               {!profile?.year && <Chip>Add year</Chip>}
               {!profile?.major && <Chip>Add major</Chip>}
+              {!profile?.currently_status && <Chip>Set "Currently"</Chip>}
               {(profile?.vibe_tags?.length ?? 0) === 0 && <Chip>Pick vibe tags</Chip>}
               {!profile?.verified_email && <Chip><ShieldCheck className="mr-1 inline h-3 w-3" />Verify .edu</Chip>}
             </div>
