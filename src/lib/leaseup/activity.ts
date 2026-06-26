@@ -8,7 +8,9 @@ export type ActivityKind =
   | "price_drop"
   | "listing_closed"
   | "looking_for"
-  | "reaction";
+  | "reaction"
+  | "deal_closed";
+
 
 export type ActivityItem = {
   id: string;
