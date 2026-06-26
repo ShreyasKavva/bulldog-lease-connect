@@ -74,7 +74,7 @@ export function ListingCard({
         </div>
         <h3 className="mt-1 line-clamp-1 text-sm font-bold">{listing.title}</h3>
         <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />{listing.area ?? "Athens, GA"}
+          <MapPin className="h-3 w-3" />{listing.area ?? "Near campus"}
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
           <SafeScoreBadge score={listing.safe_score} />
