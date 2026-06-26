@@ -117,16 +117,16 @@ function Home() {
       <div className="pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-2">
         <StoriesBar
           campusId={profile?.campus_id ?? null}
-          meId={user.id}
-          onAddYourStory={() => setPosting(true)}
+          meId={user?.id ?? ""}
+          onAddYourStory={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
           onSelectStudent={setProfileViewId}
         />
       </div>
 
       <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
-        onProfile={() => setProfileViewId(user.id)}
+        onPost={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
+        onChat={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })}
+        onProfile={() => user ? setProfileViewId(user.id) : navigate({ to: "/auth", search: { mode: "in" } })}
       />
 
       <ListingDetailSheet
