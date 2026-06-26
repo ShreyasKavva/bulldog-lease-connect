@@ -101,7 +101,7 @@ function MyListingsPage() {
                     <span className="font-bold text-sm truncate">{l.title}</span>
                     {!l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
                   </div>
-                  <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Athens"}</div>
+                  <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
                   <div className="mt-1"><SafeScoreBadge score={l.safe_score} /></div>
                 </button>
                 <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
