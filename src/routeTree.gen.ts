@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -28,6 +29,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   SavedRoute: typeof SavedRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -269,6 +282,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -409,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   SavedRoute: SavedRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

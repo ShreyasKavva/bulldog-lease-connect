@@ -134,7 +134,7 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
   return (data ?? []) as Message[];
 }
 
-export async function sendMessage(conversationId: string, senderId: string, recipientId: string, content: string) {
+export async function sendMessage(conversationId: string, senderId: string, recipientId: string, content: string, listingId?: string | null) {
   const { error } = await supabase.from("messages").insert({
     conversation_id: conversationId, sender_id: senderId, recipient_id: recipientId, content,
   });
@@ -142,6 +142,34 @@ export async function sendMessage(conversationId: string, senderId: string, reci
   await supabase.from("conversations").update({
     last_message: content, last_message_at: new Date().toISOString(),
   }).eq("id", conversationId);
+
+  // Fire-and-forget email notification to the recipient.
+  try {
+    const { sendTransactionalEmail } = await import("@/lib/email/send");
+    const [{ data: recipient }, { data: sender }, listingRes] = await Promise.all([
+      supabase.from("profiles").select("email,name").eq("id", recipientId).maybeSingle(),
+      supabase.from("profiles").select("name,email").eq("id", senderId).maybeSingle(),
+      listingId
+        ? supabase.from("listings").select("title").eq("id", listingId).maybeSingle()
+        : Promise.resolve({ data: null } as any),
+    ]);
+    if (recipient?.email) {
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
+      void sendTransactionalEmail({
+        templateName: "new-message",
+        recipientEmail: recipient.email,
+        idempotencyKey: `msg-${conversationId}-${Date.now()}`,
+        templateData: {
+          senderName: sender?.name || (sender?.email ? sender.email.split("@")[0] : "Someone"),
+          preview: content.slice(0, 240),
+          listingTitle: (listingRes as any)?.data?.title ?? null,
+          conversationUrl: `${origin}/chat?conversation=${conversationId}`,
+        },
+      });
+    }
+  } catch (e) {
+    console.warn("[email] sendMessage notify failed", e);
+  }
 }
 
 // ---- Looking For board ----
