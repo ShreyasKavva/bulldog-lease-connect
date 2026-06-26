@@ -221,6 +221,13 @@ function Browse() {
         </div>
 
         <main className="mx-auto max-w-7xl px-4 py-5">
+          {view === "grid" && (
+            <TrendingCarousel
+              listings={trendingListings}
+              campusName={myCampus?.name}
+              onOpen={setSelected}
+            />
+          )}
           {view === "scroll" ? (
             <ScrollView
               listings={filtered}
