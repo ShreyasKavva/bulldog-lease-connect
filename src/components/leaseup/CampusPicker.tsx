@@ -19,7 +19,7 @@ export function CampusPicker({ activeSlug }: { activeSlug?: string }) {
   }, []);
 
   const active = campuses.find(c => c.slug === activeSlug);
-  const label = active?.short_name ?? "UGA";
+  const label = active?.short_name ?? "Pick campus";
 
   return (
     <div className="relative" ref={ref}>

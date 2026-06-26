@@ -14,6 +14,8 @@ import { ScrollView } from "@/components/leaseup/ScrollView";
 import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { LandingPage } from "@/components/leaseup/LandingPage";
+import { CompareBar } from "@/components/leaseup/CompareBar";
+import { CompareSheet } from "@/components/leaseup/CompareSheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Map as MapIcon, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -24,9 +26,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LeaseUp — Subleases built for students, not scammers" },
-      { name: "description", content: "The trusted student sublease marketplace at UGA. Verified .edu profiles, SafeScore trust signals, AI lease analysis, and zero shady DMs." },
+      { name: "description", content: "The trusted student sublease marketplace. Verified .edu profiles, SafeScore trust signals, AI lease analysis, side-by-side compare, and zero shady DMs." },
       { property: "og:title", content: "LeaseUp — Student subleases done right" },
-      { property: "og:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis. Built at UGA." },
+      { property: "og:description", content: "Verified .edu students. SafeScore on every listing. AI lease analysis. For every campus." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "LeaseUp — Student subleases done right" },
@@ -70,6 +72,25 @@ function Home() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [matchOpen, setMatchOpen] = useState(false);
   const [leaseOpen, setLeaseOpen] = useState(false);
+  const [pinned, setPinned] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
+  const pinnedListings = useMemo(
+    () => pinned.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
+    [pinned, listings],
+  );
+
+  function togglePin(l: Listing) {
+    setPinned(prev => {
+      if (prev.includes(l.id)) return prev.filter(id => id !== l.id);
+      if (prev.length >= 3) {
+        toast("Compare up to 3 listings at a time");
+        return prev;
+      }
+      return [...prev, l.id];
+    });
+  }
 
   // Open listing via ?listing= URL param
   useEffect(() => {
@@ -194,6 +215,8 @@ function Home() {
             onSave={handleSave}
             onMessage={handleMessage}
             onOpen={setSelected}
+            pinnedIds={pinnedSet}
+            onPin={togglePin}
           />
         ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -205,7 +228,7 @@ function Home() {
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🏠</div>
             <h3 className="mt-3 text-lg font-bold">No listings yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Be the first to post a sublease at UGA.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Be the first to post a sublease near your campus.</p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" />Post a listing
             </button>
@@ -217,6 +240,8 @@ function Home() {
                 key={l.id} listing={l} saved={savedIds.has(l.id)}
                 onSave={() => handleSave(l)}
                 onOpen={() => setSelected(l)}
+                pinned={pinnedSet.has(l.id)}
+                onPin={() => togglePin(l)}
               />
             ))}
           </div>
@@ -256,6 +281,21 @@ function Home() {
         open={matchOpen}
         onOpenChange={setMatchOpen}
         onOpenListing={(l) => setSelected(l)}
+      />
+
+      <CompareBar
+        listings={pinnedListings}
+        onOpen={() => setCompareOpen(true)}
+        onClear={() => setPinned([])}
+        onRemove={(id) => setPinned(prev => prev.filter(p => p !== id))}
+      />
+      <CompareSheet
+        listings={pinnedListings}
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        onOpenListing={setSelected}
+        onMessage={handleMessage}
+        onRemove={(id) => setPinned(prev => prev.filter(p => p !== id))}
       />
     </div>
   );

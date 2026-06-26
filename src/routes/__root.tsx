@@ -52,10 +52,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LeaseUp — Student Subleases at UGA" },
-      { name: "description", content: "Find your next place. Leave your current one. The trusted student lease marketplace for UGA." },
+      { title: "LeaseUp — Student Subleases at Every Campus" },
+      { name: "description", content: "Find your next place. Leave your current one. The trusted student lease marketplace — at every major US campus." },
       { property: "og:title", content: "LeaseUp — Student Subleases" },
-      { property: "og:description", content: "Browse and post student subleases at UGA. Verified students, real listings." },
+      { property: "og:description", content: "Browse and post student subleases at any campus. Verified students, real listings, SafeScore on everything." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

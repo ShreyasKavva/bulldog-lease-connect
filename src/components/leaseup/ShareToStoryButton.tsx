@@ -58,7 +58,7 @@ export function ShareToStoryButton({ listing }: { listing: Listing }) {
       ctx.fillText("LeaseUp", 60, 140);
       ctx.fillStyle = "#94A3B8";
       ctx.font = "500 32px -apple-system, system-ui, sans-serif";
-      ctx.fillText("Student subleases at UGA", 60, 195);
+      ctx.fillText("Student subleases · verified .edu", 60, 195);
 
       // Price
       ctx.fillStyle = "#FFFFFF";

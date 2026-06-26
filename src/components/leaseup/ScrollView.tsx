@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar } from "lucide-react";
+import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar, Scale } from "lucide-react";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 
@@ -23,12 +23,16 @@ export function ScrollView({
   onSave,
   onMessage,
   onOpen,
+  pinnedIds,
+  onPin,
 }: {
   listings: Listing[];
   savedIds: Set<string>;
   onSave: (l: Listing) => void;
   onMessage: (l: Listing) => void;
   onOpen: (l: Listing) => void;
+  pinnedIds?: Set<string>;
+  onPin?: (l: Listing) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -187,6 +191,18 @@ export function ScrollView({
                 >
                   <MessageCircle className="h-6 w-6" />
                 </button>
+                {onPin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onPin(l); }}
+                    aria-label="Pin to compare"
+                    className={cn(
+                      "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
+                      pinnedIds?.has(l.id) ? "bg-primary text-primary-foreground" : "bg-white/20 text-white hover:bg-white/30",
+                    )}
+                  >
+                    <Scale className="h-6 w-6" />
+                  </button>
+                )}
                 <button
                   onClick={(e) => { e.stopPropagation(); onOpen(l); }}
                   aria-label="View details"

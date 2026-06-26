@@ -1,16 +1,18 @@
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, BadgeCheck, Bed, MapPin, Eye } from "lucide-react";
+import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale } from "lucide-react";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 
 export function ListingCard({
-  listing, saved, onSave, onOpen,
+  listing, saved, onSave, onOpen, pinned, onPin,
 }: {
   listing: Listing;
   saved: boolean;
   onSave: () => void;
   onOpen: () => void;
+  pinned?: boolean;
+  onPin?: () => void;
 }) {
   const photo = listing.photo_urls?.[0];
   return (
@@ -24,13 +26,28 @@ export function ListingCard({
         ) : (
           <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
         )}
-        <button
-          onClick={(e) => { e.stopPropagation(); onSave(); }}
-          aria-label="Save"
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 shadow hover:scale-105 transition"
-        >
-          <Heart className={cn("h-4 w-4", saved ? "fill-destructive text-destructive" : "text-foreground")} />
-        </button>
+        <div className="absolute right-3 top-3 flex flex-col gap-1.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); onSave(); }}
+            aria-label="Save"
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/95 shadow hover:scale-105 transition"
+          >
+            <Heart className={cn("h-4 w-4", saved ? "fill-destructive text-destructive" : "text-foreground")} />
+          </button>
+          {onPin && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPin(); }}
+              aria-label={pinned ? "Remove from compare" : "Add to compare"}
+              title={pinned ? "Pinned for compare" : "Compare"}
+              className={cn(
+                "grid h-9 w-9 place-items-center rounded-full shadow hover:scale-105 transition",
+                pinned ? "bg-primary text-primary-foreground" : "bg-white/95 text-foreground",
+              )}
+            >
+              <Scale className="h-4 w-4" />
+            </button>
+          )}
+        </div>
         <div className="absolute left-3 top-3 flex gap-1.5">
           {isNew(listing.created_at) && (
             <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white">New</span>
@@ -57,7 +74,7 @@ export function ListingCard({
         </div>
         <h3 className="mt-1 line-clamp-1 text-sm font-bold">{listing.title}</h3>
         <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />{listing.area ?? "Athens, GA"}
+          <MapPin className="h-3 w-3" />{listing.area ?? "Near campus"}
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
           <SafeScoreBadge score={listing.safe_score} />

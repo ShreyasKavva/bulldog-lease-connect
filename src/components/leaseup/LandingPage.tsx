@@ -31,13 +31,13 @@ export function LandingPage() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-2 lg:py-28">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-surface px-3 py-1 text-xs font-bold text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> Built at UGA · Free for students
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> Built for students · Free at every campus
             </div>
             <h1 className="mt-5 text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
               Student subleases <span className="text-primary">without the sketch.</span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Verified <span className="font-semibold text-foreground">.edu</span> profiles, a SafeScore on every listing, and an AI that reads your lease before you sign. LeaseUp is the trust layer on top of every "anyone need a sublease?" Instagram story.
+              Verified <span className="font-semibold text-foreground">.edu</span> profiles, a SafeScore on every listing, and an AI that reads your lease before you sign. LeaseUp is the trust layer on top of every "anyone need a sublease?" group chat — at every campus.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link to="/auth" search={{ mode: "up" }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-dark">
@@ -48,9 +48,9 @@ export function LandingPage() {
               </Link>
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-5 text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-success" /> Only .edu emails</span>
+              <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-success" /> Verified .edu emails</span>
               <span className="flex items-center gap-1.5"><Shield className="h-4 w-4 text-primary" /> SafeScore on every listing</span>
-              <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> Built for UGA students</span>
+              <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> Every major US campus</span>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-5xl px-5 py-20 text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Your sublease shouldn't be a leap of faith.</h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-background/70">
-            Join hundreds of UGA students using LeaseUp to find — and post — subleases that don't suck.
+            Join students at campuses across the country using LeaseUp to find — and post — subleases that don't suck.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/auth" search={{ mode: "up" }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-dark">

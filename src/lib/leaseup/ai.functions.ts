@@ -153,7 +153,7 @@ export const findMyMatch = createServerFn({ method: "POST" })
       safe: l.safe_score,
     }));
 
-    const prompt = `Match a UGA student to the best sublease listings based on their preferences.
+    const prompt = `Match a student to the best sublease listings based on their preferences.
 Score each listing 0-100 by fit (budget, location, beds, dates, furnishing, lifestyle).
 Return ONLY JSON (no markdown):
 { "matches": [ { "id": "<listing id>", "score": 0-100, "why": "1 sentence why it fits" } ] }
