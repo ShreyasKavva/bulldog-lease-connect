@@ -138,6 +138,13 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       email_send_log: {
@@ -291,6 +298,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "listing_reactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -339,6 +353,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
           {
@@ -650,10 +671,14 @@ export type Database = {
           email: string
           id: string
           is_admin: boolean
+          is_ambassador: boolean
           last_seen: string | null
           major: string | null
           name: string
           phone: string | null
+          referral_code: string | null
+          referral_count: number
+          referred_by: string | null
           updated_at: string
           verified_email: boolean
           vibe_tags: string[] | null
@@ -672,10 +697,14 @@ export type Database = {
           email: string
           id: string
           is_admin?: boolean
+          is_ambassador?: boolean
           last_seen?: string | null
           major?: string | null
           name?: string
           phone?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           verified_email?: boolean
           vibe_tags?: string[] | null
@@ -694,10 +723,14 @@ export type Database = {
           email?: string
           id?: string
           is_admin?: boolean
+          is_ambassador?: boolean
           last_seen?: string | null
           major?: string | null
           name?: string
           phone?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           verified_email?: boolean
           vibe_tags?: string[] | null
@@ -709,6 +742,59 @@ export type Database = {
             columns: ["campus_id"]
             isOneToOne: false
             referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_events: {
+        Row: {
+          campus_id: string | null
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          campus_id?: string | null
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          campus_id?: string | null
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_events_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -738,6 +824,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -827,7 +920,113 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      trending_listings: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          area: string | null
+          available_from: string | null
+          available_to: string | null
+          baths: number | null
+          beds: number | null
+          campus_id: string | null
+          created_at: string | null
+          description: string | null
+          flagged: boolean | null
+          furnished: boolean | null
+          id: string | null
+          is_active: boolean | null
+          lat: number | null
+          lng: number | null
+          parking: boolean | null
+          pet_friendly: boolean | null
+          photos: string[] | null
+          price: number | null
+          safe_score: number | null
+          semester: string | null
+          title: string | null
+          trending_score: number | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+          utilities_included: boolean | null
+          view_count: number | null
+          views: number | null
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          baths?: number | null
+          beds?: number | null
+          campus_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          flagged?: boolean | null
+          furnished?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          parking?: boolean | null
+          pet_friendly?: boolean | null
+          photos?: string[] | null
+          price?: number | null
+          safe_score?: number | null
+          semester?: string | null
+          title?: string | null
+          trending_score?: never
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          utilities_included?: boolean | null
+          view_count?: number | null
+          views?: number | null
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          baths?: number | null
+          beds?: number | null
+          campus_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          flagged?: boolean | null
+          furnished?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          parking?: boolean | null
+          pet_friendly?: boolean | null
+          photos?: string[] | null
+          price?: number | null
+          safe_score?: number | null
+          semester?: string | null
+          title?: string | null
+          trending_score?: never
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          utilities_included?: boolean | null
+          view_count?: number | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       compute_listing_safe_score: {
@@ -842,6 +1041,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      generate_referral_code: { Args: never; Returns: string }
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
