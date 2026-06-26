@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type LType from "leaflet";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER, isNew } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
@@ -109,8 +112,21 @@ export function MapHome({
     const L = Lref.current; const map = mapRef.current;
     if (!L || !map) return;
     pinsLayerRef.current?.remove();
-    const layer = L.layerGroup().addTo(map);
-    pinsLayerRef.current = layer;
+    const cluster = (L as any).markerClusterGroup({
+      maxClusterRadius: 48,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: (c: any) => {
+        const n = c.getChildCount();
+        const size = n < 10 ? 36 : n < 50 ? 44 : 52;
+        return L.divIcon({
+          className: "",
+          html: `<div style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:50%;background:#2563EB;color:#fff;font-weight:800;font-size:13px;border:3px solid #fff;box-shadow:0 4px 14px rgba(37,99,235,.45);font-family:-apple-system,BlinkMacSystemFont,sans-serif;">${n}</div>`,
+          iconSize: [size, size] as any,
+        });
+      },
+    });
+    pinsLayerRef.current = cluster;
     const selectedId = selectedIdRef.current;
     listingsRef.current.forEach((l) => {
       if (l.lat == null || l.lng == null) return;
@@ -123,9 +139,11 @@ export function MapHome({
           iconAnchor: [30, 28],
         }),
         zIndexOffset: sel ? 1000 : 0,
-      }).addTo(layer);
+      });
       m.on("click", () => setPreview(l));
+      cluster.addLayer(m);
     });
+    cluster.addTo(map);
   }
 
   // re-render pins when listings or selection changes
