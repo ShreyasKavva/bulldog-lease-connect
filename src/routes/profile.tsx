@@ -116,6 +116,14 @@ function ProfilePage() {
               {profile?.major ? ` · ${profile.major}` : ""}
               {myCampus ? ` · ${myCampus.name}` : ""}
             </p>
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              {formatLastActive((profile as any)?.updated_at)}
+            </p>
+
             {profile?.currently_status && (
               <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary-dark">
                 <span>{profile.currently_emoji ?? "🔎"}</span>
