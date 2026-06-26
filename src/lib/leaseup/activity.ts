@@ -195,12 +195,16 @@ export function useActivity() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "looking_for_posts" }, () => {
         qc.invalidateQueries({ queryKey: ["activity"] });
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "closed_deals" }, () => {
+        qc.invalidateQueries({ queryKey: ["activity"] });
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [qc]);
 
   return query;
 }
+
 
 export function activityTimeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
