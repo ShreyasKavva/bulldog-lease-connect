@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchListings, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { LandingPage } from "@/components/leaseup/LandingPage";
+
 import { MapHome } from "@/components/leaseup/MapHome";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { TopBar } from "@/components/leaseup/TopBar";
