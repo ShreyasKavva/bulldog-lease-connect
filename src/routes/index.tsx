@@ -111,7 +111,7 @@ function Home() {
         hotThreshold={hotThreshold}
       />
 
-      <TopBar transparent onOpenMessages={() => { setActiveConv(null); setMessagesOpen(true); }} />
+      <TopBar transparent onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })} />
 
       {/* Stories bar floats over the map */}
       <div className="pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-2">
