@@ -137,7 +137,7 @@ export function ListingCard({
         )}
       </div>
 
-      <div className="p-3 pt-4">
+      <div className="p-3 pt-4" onClick={onOpen}>
         <div className="flex items-baseline justify-between gap-2">
           <div className="text-lg font-extrabold">${listing.price.toLocaleString()}<span className="text-xs font-medium text-muted-foreground">/mo</span></div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
