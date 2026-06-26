@@ -38,12 +38,10 @@ function Home() {
   const { data: listings = [] } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
-    enabled: !!user,
   });
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
-    enabled: !!user,
     staleTime: Infinity,
   });
 
