@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchListings, getOrCreateConversation } from "@/lib/leaseup/queries";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
 import { MapHome } from "@/components/leaseup/MapHome";
@@ -13,6 +13,10 @@ import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
+import { MapCampusSelector } from "@/components/leaseup/MapCampusSelector";
+import { MapFilters, DEFAULT_FILTERS, type MapFiltersValue } from "@/components/leaseup/MapFilters";
+import { MapEmptyState } from "@/components/leaseup/MapEmptyState";
+import { GuestRibbon } from "@/components/leaseup/GuestRibbon";
 import { UGA_CENTER } from "@/lib/leaseup/constants";
 import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
@@ -30,6 +34,8 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+const GUEST_CAMPUS_KEY = "leaseup_guest_campus_id";
+
 function Home() {
   const navigate = useNavigate();
   const { user, loading: sessionLoading } = useSession();
@@ -45,17 +51,30 @@ function Home() {
     staleTime: Infinity,
   });
 
-  const myCampus = useMemo(
-    () => campuses.find((c) => c.id === profile?.campus_id),
-    [campuses, profile?.campus_id],
-  );
-  const center: [number, number] = myCampus ? [myCampus.lat, myCampus.lng] : UGA_CENTER;
+  // For guests, remember campus choice in localStorage. For users, follow their profile.
+  const [guestCampusId, setGuestCampusId] = useState<string | null>(null);
+  useEffect(() => {
+    if (user) return;
+    try {
+      const v = localStorage.getItem(GUEST_CAMPUS_KEY);
+      if (v) setGuestCampusId(v);
+    } catch {}
+  }, [user]);
 
-  // Filter listings to user's campus when possible, so the map matches the center.
+  const activeCampusId = user ? profile?.campus_id ?? null : guestCampusId;
+  const activeCampus = useMemo(
+    () => campuses.find((c) => c.id === activeCampusId) ?? null,
+    [campuses, activeCampusId],
+  );
+  const center: [number, number] = activeCampus
+    ? [activeCampus.lat, activeCampus.lng]
+    : UGA_CENTER;
+
+  // Filter listings to the active campus when one is set.
   const campusListings = useMemo(() => {
-    if (!profile?.campus_id) return listings;
-    return listings.filter((l) => l.campus_id === profile.campus_id);
-  }, [listings, profile?.campus_id]);
+    if (!activeCampusId) return listings;
+    return listings.filter((l) => l.campus_id === activeCampusId);
+  }, [listings, activeCampusId]);
 
   // Hot deal threshold: 15% below average price on this campus
   const hotThreshold = useMemo(() => {
@@ -63,6 +82,18 @@ function Home() {
     const avg = campusListings.reduce((s, l) => s + l.price, 0) / campusListings.length;
     return avg * 0.85;
   }, [campusListings]);
+
+  // Floating filters
+  const [filters, setFilters] = useState<MapFiltersValue>(DEFAULT_FILTERS);
+  const filteredListings = useMemo(() => {
+    return campusListings.filter((l) => {
+      if (filters.type !== "all" && l.type !== filters.type) return false;
+      if (filters.maxPrice != null && l.price > filters.maxPrice) return false;
+      if (filters.minBeds != null && l.beds < filters.minBeds) return false;
+      if (filters.hotOnly && (hotThreshold == null || l.price > hotThreshold)) return false;
+      return true;
+    });
+  }, [campusListings, filters, hotThreshold]);
 
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
@@ -99,35 +130,97 @@ function Home() {
     setProfileViewId(null);
   }
 
+  function handleGuestPickCampus(c: Campus) {
+    setGuestCampusId(c.id);
+    try { localStorage.setItem(GUEST_CAMPUS_KEY, c.id); } catch {}
+  }
+
+  function gotoAuth(mode: "in" | "up") {
+    navigate({ to: "/auth", search: { mode } });
+  }
+
   if (sessionLoading) return <div className="min-h-screen bg-background" />;
+
+  const showEmpty = campusListings.length === 0 && !!activeCampus;
+  const showFilteredEmpty =
+    !showEmpty && campusListings.length > 0 && filteredListings.length === 0;
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background">
       <MapHome
-        listings={campusListings}
+        listings={filteredListings}
         center={center}
         onSelectListing={setSelected}
         onMessageListing={handleMessage}
         hotThreshold={hotThreshold}
       />
 
-      <TopBar transparent onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })} />
+      <TopBar
+        transparent
+        onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : gotoAuth("in")}
+      />
 
-      {/* Stories bar floats over the map */}
-      <div className="pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-2">
-        <StoriesBar
-          campusId={profile?.campus_id ?? null}
-          meId={user?.id ?? ""}
-          onAddYourStory={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
-          onSelectStudent={setProfileViewId}
+      {/* Overlay column: campus selector + filters + stories */}
+      <div className="pointer-events-none absolute inset-x-0 top-14 z-20 flex flex-col items-center gap-2 px-3 pt-2">
+        <MapCampusSelector
+          activeId={activeCampusId}
+          onSelect={(c) => {
+            if (user) {
+              // Authenticated users: deep-link to the campus SEO page for now;
+              // they can change their primary campus from Profile.
+              navigate({ to: "/sublease/$slug", params: { slug: c.slug } });
+            } else {
+              handleGuestPickCampus(c);
+            }
+          }}
         />
+        <div className="w-full max-w-md">
+          <MapFilters value={filters} onChange={setFilters} />
+        </div>
+        <div className="w-full">
+          <StoriesBar
+            campusId={activeCampusId}
+            meId={user?.id ?? ""}
+            onAddYourStory={() => user ? setPosting(true) : gotoAuth("up")}
+            onSelectStudent={setProfileViewId}
+          />
+        </div>
+        {filteredListings.length > 0 && (
+          <span className="pointer-events-none rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-bold text-foreground shadow-card-sm backdrop-blur">
+            {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"}
+            {activeCampus ? ` near ${activeCampus.short_name ?? activeCampus.name}` : ""}
+          </span>
+        )}
       </div>
 
+      {showEmpty && (
+        <MapEmptyState
+          campusName={activeCampus.short_name ?? activeCampus.name}
+          onPost={() => user ? setPosting(true) : gotoAuth("up")}
+        />
+      )}
+
+      {showFilteredEmpty && (
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 justify-center px-4">
+          <div className="pointer-events-auto rounded-2xl bg-surface/95 px-4 py-3 text-center shadow-card-md backdrop-blur">
+            <div className="text-sm font-bold">No matches</div>
+            <button
+              onClick={() => setFilters(DEFAULT_FILTERS)}
+              className="mt-1 text-xs font-semibold text-primary hover:underline"
+            >
+              Reset filters
+            </button>
+          </div>
+        </div>
+      )}
+
       <BottomNav
-        onPost={() => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } })}
-        onChat={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })}
-        onProfile={() => user ? setProfileViewId(user.id) : navigate({ to: "/auth", search: { mode: "in" } })}
+        onPost={() => user ? setPosting(true) : gotoAuth("up")}
+        onChat={() => user ? (setActiveConv(null), setMessagesOpen(true)) : gotoAuth("in")}
+        onProfile={() => user ? setProfileViewId(user.id) : gotoAuth("in")}
       />
+
+      {!user && <GuestRibbon />}
 
       <ListingDetailSheet
         listing={selected}
