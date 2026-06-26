@@ -36,6 +36,7 @@ export function ListingCard({
     e.stopPropagation();
     setPop(true);
     setTimeout(() => setPop(false), 400);
+    import("@/lib/haptics").then((m) => m.haptic(10));
     onSave();
   }
 
