@@ -98,3 +98,19 @@ export type LeaseAnalysis = {
   raw_excerpt: string | null;
   created_at: string;
 };
+
+export type SavedSearch = {
+  id: string;
+  user_id: string;
+  name: string;
+  campus_id: string | null;
+  area: string | null;
+  max_price: number | null;
+  min_beds: number | null;
+  furnished_only: boolean;
+  pet_friendly_only: boolean;
+  keyword: string | null;
+  notify: boolean;
+  last_notified_at: string | null;
+  created_at: string;
+};
