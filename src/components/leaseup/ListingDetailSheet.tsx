@@ -28,18 +28,67 @@ export function ListingDetailSheet({
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
   const [views, setViews] = useState<number | null>(null);
+  const [saveCount, setSaveCount] = useState<number>(0);
+  const [msgCount, setMsgCount] = useState<number>(0);
   const { user } = useSession();
 
   useEffect(() => {
     if (!open || !listing) return;
+    setActivePhoto(0);
     setViews(listing.view_count ?? null);
     const key = `viewed:${listing.id}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
-      if (typeof data === "number") setViews(data);
-    });
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, "1");
+      supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
+        if (typeof data === "number") setViews(data);
+      });
+    }
+    // Load social proof counts
+    Promise.all([
+      supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).eq("listing_id", listing.id),
+      supabase.from("messages").select("id", { count: "exact", head: true })
+        .in("conversation_id",
+          (await supabase.from("conversations").select("id").eq("listing_id", listing.id)).data?.map((c: any) => c.id) ?? ["00000000-0000-0000-0000-000000000000"]
+        ),
+    ]).then(([sav, msg]: any) => {
+      setSaveCount(sav?.count ?? 0);
+      setMsgCount(msg?.count ?? 0);
+    }).catch(() => {});
   }, [open, listing]);
+
+  // Comp listings (same campus, ±1 bed)
+  const { data: allListings = [] } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+    enabled: open,
+    staleTime: 60_000,
+  });
+
+  const comps = useMemo(() => {
+    if (!listing) return [] as Listing[];
+    return allListings.filter(l =>
+      l.id !== listing.id && l.campus_id === listing.campus_id && Math.abs(l.beds - listing.beds) <= 0
+    );
+  }, [allListings, listing]);
+
+  const priceBar = useMemo(() => {
+    if (!listing || comps.length < 3) return null;
+    const prices = comps.map(c => c.price).concat(listing.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const pct = max === min ? 50 : ((listing.price - min) / (max - min)) * 100;
+    const below = ((avg - listing.price) / avg) * 100;
+    return { min, max, avg, pct, below };
+  }, [comps, listing]);
+
+  const alsoSaved = useMemo(() => {
+    if (!listing) return [] as Listing[];
+    return allListings
+      .filter(l => l.id !== listing.id && l.campus_id === listing.campus_id)
+      .sort((a, b) => Math.abs(a.price - listing.price) - Math.abs(b.price - listing.price))
+      .slice(0, 6);
+  }, [allListings, listing]);
 
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
@@ -47,6 +96,7 @@ export function ListingDetailSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
         <div className="relative aspect-[16/10] bg-muted">
