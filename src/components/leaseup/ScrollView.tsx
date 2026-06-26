@@ -105,113 +105,24 @@ export function ScrollView({
         style={{ scrollbarWidth: "none" }}
       >
         {listings.map((l, i) => {
-          const photo = l.photo_urls?.[0] ?? l.photos?.[0];
+          const allPhotos = l.photo_urls?.length ? l.photo_urls : l.photos ?? [];
           const fire = isFireDeal(l);
           const saved = savedIds.has(l.id);
           return (
-            <section
+            <ScrollCard
               key={l.id}
-              className="relative h-full w-full snap-start snap-always overflow-hidden"
-            >
-              {photo ? (
-                <img
-                  src={photo}
-                  alt={l.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading={i < 2 ? "eager" : "lazy"}
-                />
-              ) : (
-                <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/40 to-primary-dark/60 text-7xl">🏠</div>
-              )}
-
-              {/* Top gradient + bottom gradient */}
-              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-
-              {/* Top-left: posted ago */}
-              <div className="absolute left-4 top-4 rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-                Posted {timeAgo(l.created_at)}
-              </div>
-
-              {/* Top-right: SafeScore */}
-              <div className="absolute right-4 top-4">
-                <SafeScoreBadge score={l.safe_score ?? 0} />
-              </div>
-
-              {/* Fire deal */}
-              {fire && (
-                <div className="absolute right-4 top-16 flex items-center gap-1 rounded-full bg-orange-500/90 px-3 py-1 text-xs font-bold text-white shadow-lg animate-pulse">
-                  <Flame className="h-3.5 w-3.5 fill-yellow-300 text-yellow-300" />
-                  Hot deal
-                </div>
-              )}
-
-              {/* Bottom-left: info */}
-              <div className="absolute inset-x-0 bottom-0 p-5 pr-24 text-white">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black tracking-tight">${l.price.toLocaleString()}</span>
-                  <span className="text-sm font-semibold text-white/70">/mo</span>
-                </div>
-                <h2 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{l.title}</h2>
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-white/85">
-                  <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" />{l.beds} bd</span>
-                  <span className="flex items-center gap-1"><Bath className="h-4 w-4" />{l.baths} ba</span>
-                  {l.area && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{l.area}</span>}
-                  {(l.available_from || l.available_to) && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {fmtDate(l.available_from)}{l.available_to ? ` – ${fmtDate(l.available_to)}` : ""}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {l.furnished && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Furnished</span>}
-                  {l.utilities_included && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Utilities incl.</span>}
-                  {l.pet_friendly && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Pets OK</span>}
-                  {l.parking && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Parking</span>}
-                </div>
-              </div>
-
-              {/* Bottom-right: action buttons */}
-              <div className="absolute bottom-5 right-4 flex flex-col items-center gap-3">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onSave(l); }}
-                  aria-label={saved ? "Unsave" : "Save"}
-                  className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
-                    saved ? "bg-red-500 text-white" : "bg-white/20 text-white hover:bg-white/30"
-                  )}
-                >
-                  <Heart className={cn("h-6 w-6", saved && "fill-current")} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onMessage(l); }}
-                  aria-label="Message"
-                  className="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/30 active:scale-90"
-                >
-                  <MessageCircle className="h-6 w-6" />
-                </button>
-                {onPin && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onPin(l); }}
-                    aria-label="Pin to compare"
-                    className={cn(
-                      "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
-                      pinnedIds?.has(l.id) ? "bg-primary text-primary-foreground" : "bg-white/20 text-white hover:bg-white/30",
-                    )}
-                  >
-                    <Scale className="h-6 w-6" />
-                  </button>
-                )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); onOpen(l); }}
-                  aria-label="View details"
-                  className="grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:bg-primary-dark active:scale-90"
-                >
-                  <ArrowRight className="h-6 w-6" />
-                </button>
-              </div>
-            </section>
+              l={l}
+              photos={allPhotos}
+              fire={fire}
+              saved={saved}
+              eager={i < 2}
+              active={i === activeIdx}
+              onSave={() => onSave(l)}
+              onMessage={() => onMessage(l)}
+              onOpen={() => onOpen(l)}
+              onPin={onPin ? () => onPin(l) : undefined}
+              pinned={pinnedIds?.has(l.id) ?? false}
+            />
           );
         })}
       </div>
@@ -237,3 +148,210 @@ export function ScrollView({
     </div>
   );
 }
+
+function ScrollCard({
+  l, photos, fire, saved, eager, active,
+  onSave, onMessage, onOpen, onPin, pinned,
+}: {
+  l: Listing;
+  photos: string[];
+  fire: boolean;
+  saved: boolean;
+  eager: boolean;
+  active: boolean;
+  onSave: () => void;
+  onMessage: () => void;
+  onOpen: () => void;
+  onPin?: () => void;
+  pinned: boolean;
+}) {
+  const [photoIdx, setPhotoIdx] = useState(0);
+  const [floatHeart, setFloatHeart] = useState<{ x: number; y: number; key: number } | null>(null);
+  const [pulseText, setPulseText] = useState<string | null>(null);
+  const lastTap = useRef(0);
+
+  useEffect(() => {
+    if (!active) return;
+    setPhotoIdx(0);
+    // Activity pulse after 1.5s
+    const t = setTimeout(() => {
+      const opts: string[] = [];
+      if ((l.view_count ?? 0) > 0) opts.push(`👀 ${l.view_count} students viewed this`);
+      if (fire) opts.push(`🔥 Priced below campus average`);
+      if (l.safe_score && l.safe_score >= 80) opts.push(`⚡ SafeScore ${l.safe_score} — trusted poster`);
+      if (l.profile?.verified_email) opts.push(`✓ Verified .edu student`);
+      if (opts.length === 0) opts.push(`📍 ${l.area ?? "Near campus"}`);
+      setPulseText(opts[Math.floor(Math.random() * opts.length)]);
+      const t2 = setTimeout(() => setPulseText(null), 3200);
+      return () => clearTimeout(t2);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [active, l, fire]);
+
+  function handlePhotoTap(e: React.MouseEvent<HTMLDivElement>) {
+    const now = Date.now();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Double-tap to save
+    if (now - lastTap.current < 280) {
+      lastTap.current = 0;
+      setFloatHeart({ x, y, key: now });
+      setTimeout(() => setFloatHeart(null), 1100);
+      if (!saved) onSave();
+      return;
+    }
+    lastTap.current = now;
+
+    // Single tap: photo nav
+    if (photos.length <= 1) return;
+    const isLeft = x < rect.width / 2;
+    setTimeout(() => {
+      if (lastTap.current !== now) return; // got double-tapped
+      setPhotoIdx((p) => {
+        if (isLeft) return p === 0 ? photos.length - 1 : p - 1;
+        return p === photos.length - 1 ? 0 : p + 1;
+      });
+    }, 290);
+  }
+
+  const photo = photos[photoIdx];
+
+  return (
+    <section className="relative h-full w-full snap-start snap-always overflow-hidden">
+      {/* Photo with double-tap area */}
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={handlePhotoTap}
+      >
+        {photo ? (
+          <img
+            key={photo}
+            src={photo}
+            alt={l.title}
+            className="absolute inset-0 h-full w-full animate-[lu-card-pop_400ms_ease-out] object-cover"
+            loading={eager ? "eager" : "lazy"}
+          />
+        ) : (
+          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/40 to-primary-dark/60 text-7xl">🏠</div>
+        )}
+      </div>
+
+      {/* Photo progress bars */}
+      {photos.length > 1 && (
+        <div className="pointer-events-none absolute inset-x-3 top-2 z-10 flex gap-1">
+          {photos.map((_, i) => (
+            <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/30">
+              <div className={cn("h-full bg-white transition-all", i === photoIdx ? "w-full" : i < photoIdx ? "w-full opacity-60" : "w-0")} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Top gradient + bottom gradient */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+
+      {/* Top-left: posted ago */}
+      <div className="pointer-events-none absolute left-4 top-5 rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur">
+        Posted {timeAgo(l.created_at)}
+      </div>
+
+      {/* Top-right: SafeScore */}
+      <div className="pointer-events-none absolute right-4 top-5">
+        <SafeScoreBadge score={l.safe_score ?? 0} />
+      </div>
+
+      {fire && (
+        <div className="pointer-events-none absolute right-4 top-16 flex items-center gap-1 rounded-full bg-orange-500/90 px-3 py-1 text-xs font-bold text-white shadow-lg">
+          <Flame className="h-3.5 w-3.5 fill-yellow-300 text-yellow-300" />
+          Hot deal
+        </div>
+      )}
+
+      {/* Floating heart on double-tap */}
+      {floatHeart && (
+        <Heart
+          key={floatHeart.key}
+          className="lu-float-up pointer-events-none absolute h-20 w-20 fill-red-500 text-red-500 drop-shadow-2xl"
+          style={{ left: floatHeart.x - 40, top: floatHeart.y - 40 }}
+        />
+      )}
+
+      {/* Activity pulse */}
+      {pulseText && (
+        <div className="lu-activity-pulse pointer-events-none absolute bottom-32 left-1/2 z-20 rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-foreground shadow-lg backdrop-blur">
+          {pulseText}
+        </div>
+      )}
+
+      {/* Bottom-left: info */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 pr-24 text-white">
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-black tracking-tight">${l.price.toLocaleString()}</span>
+          <span className="text-sm font-semibold text-white/70">/mo</span>
+        </div>
+        <h2 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{l.title}</h2>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-white/85">
+          <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" />{l.beds} bd</span>
+          <span className="flex items-center gap-1"><Bath className="h-4 w-4" />{l.baths} ba</span>
+          {l.area && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{l.area}</span>}
+          {(l.available_from || l.available_to) && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              {fmtDate(l.available_from)}{l.available_to ? ` – ${fmtDate(l.available_to)}` : ""}
+            </span>
+          )}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {l.furnished && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Furnished</span>}
+          {l.utilities_included && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Utilities incl.</span>}
+          {l.pet_friendly && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Pets OK</span>}
+          {l.parking && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-bold backdrop-blur">Parking</span>}
+        </div>
+      </div>
+
+      {/* Bottom-right: action buttons */}
+      <div className="absolute bottom-5 right-4 z-20 flex flex-col items-center gap-3">
+        <button
+          onClick={(e) => { e.stopPropagation(); onSave(); }}
+          aria-label={saved ? "Unsave" : "Save"}
+          className={cn(
+            "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
+            saved ? "bg-red-500 text-white" : "bg-white/20 text-white hover:bg-white/30"
+          )}
+        >
+          <Heart className={cn("h-6 w-6", saved && "fill-current lu-heart-pop")} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onMessage(); }}
+          aria-label="Message"
+          className="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/30 active:scale-90"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+        {onPin && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPin(); }}
+            aria-label="Pin to compare"
+            className={cn(
+              "grid h-12 w-12 place-items-center rounded-full backdrop-blur transition active:scale-90",
+              pinned ? "bg-primary text-primary-foreground" : "bg-white/20 text-white hover:bg-white/30",
+            )}
+          >
+            <Scale className="h-6 w-6" />
+          </button>
+        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); onOpen(); }}
+          aria-label="View details"
+          className="grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:bg-primary-dark active:scale-90"
+        >
+          <ArrowRight className="h-6 w-6" />
+        </button>
+      </div>
+    </section>
+  );
+}
+
