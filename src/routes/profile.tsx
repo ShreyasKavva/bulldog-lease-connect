@@ -179,11 +179,13 @@ function ProfilePage() {
         )}
 
         {/* Quick stats */}
-        <section className="mt-4 grid grid-cols-3 gap-2">
+        <section className="mt-4 grid grid-cols-4 gap-2">
           <Stat label="Listings" value={myListings.length} />
+          <Stat label="Views" value={myListings.reduce((s, l: any) => s + (l.view_count ?? 0), 0)} />
           <Stat label="Saved" value={saved.length} />
-          <Stat label="SafeScore avg" value={avgScore(myListings)} />
+          <Stat label="SafeScore" value={avgScore(myListings)} />
         </section>
+
 
         {/* Tabs */}
         <section className="mt-6">
