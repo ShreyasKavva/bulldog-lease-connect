@@ -100,7 +100,6 @@ function Home() {
   }
 
   if (sessionLoading) return <div className="min-h-screen bg-background" />;
-  if (!user) return <LandingPage />;
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background">
