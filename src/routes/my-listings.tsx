@@ -130,27 +130,46 @@ function MyListingsPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {listings.map(l => (
-              <div key={l.id} className={cn("flex items-center gap-3 rounded-xl bg-surface p-3 shadow-card", !l.is_active && "opacity-60")}>
-                <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
+            {listings.map(l => {
+              const filled = l.status === "filled";
+              return (
+              <div key={l.id} className={cn("flex items-center gap-3 rounded-xl bg-surface p-3 shadow-card", !l.is_active && !filled && "opacity-60")}>
+                <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
                   {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
+                  {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Filled</div>}
                 </button>
                 <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm truncate">{l.title}</span>
-                    {!l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                    {filled
+                      ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Filled</span>
+                      : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
                   </div>
                   <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
                   <div className="mt-1"><SafeScoreBadge score={l.safe_score} /></div>
                 </button>
-                <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
-                  {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
+                {filled ? (
+                  <>
+                    <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => markFilled(l)} title="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
+                      {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </button>
+                  </>
+                )}
                 <button onClick={() => remove(l)} title="Delete" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -160,6 +179,18 @@ function MyListingsPage() {
         onMessage={() => {}} onViewProfile={() => {}}
       />
       <PostListingDialog open={posting} onOpenChange={(o) => { setPosting(o); if (!o) qc.invalidateQueries({ queryKey: ["my-listings", user.id] }); }} />
+      {reviewFor && (
+        <LeaveReviewDialog
+          open={!!reviewFor}
+          onOpenChange={(o) => { if (!o) setReviewFor(null); }}
+          reviewedUserId={reviewFor.userId}
+          reviewedName={reviewFor.name}
+          listingId={reviewFor.listing.id}
+          reviewerRole="poster"
+        />
+      )}
     </div>
   );
 }
+// Star icon kept imported for future use
+void Star;
