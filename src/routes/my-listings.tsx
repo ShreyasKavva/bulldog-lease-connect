@@ -65,6 +65,41 @@ function MyListingsPage() {
     } catch (e: any) { toast.error(e.message); }
   }
 
+  async function markFilled(l: Listing) {
+    if (!confirm(`Mark "${l.title}" as filled? It will be hidden from the feed.`)) return;
+    try {
+      await markListingFilled(l.id);
+      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
+      toast.success("Marked as filled 🎉 — your subletter has been prompted to review you.");
+      // Open review dialog targeting the most recent messenger
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("participant_1_id, participant_2_id")
+        .eq("listing_id", l.id)
+        .or(`participant_1_id.eq.${user!.id},participant_2_id.eq.${user!.id}`)
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle();
+      if (conv) {
+        const otherId = conv.participant_1_id === user!.id ? conv.participant_2_id : conv.participant_1_id;
+        const { data: prof } = await supabase.from("profiles").select("name,email").eq("id", otherId).maybeSingle();
+        const name = (prof?.name || prof?.email?.split("@")[0]) ?? "your subletter";
+        setReviewFor({ listing: l, userId: otherId, name });
+      }
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function reopen(l: Listing) {
+    try {
+      await reopenListing(l.id);
+      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
+      toast.success("Listing reopened");
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Nav
