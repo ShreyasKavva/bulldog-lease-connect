@@ -131,12 +131,57 @@ export function ProfileSheet({
                       ))}
                     </div>
                   )}
+                  {/* Stats row: rating + verified subleases */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {stats.count > 0 && (
+                      <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={1.5} />
+                        {stats.avg.toFixed(1)} · {stats.count} review{stats.count === 1 ? "" : "s"}
+                      </div>
+                    )}
+                    {verifiedCount > 0 && (
+                      <div className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        {verifiedCount} verified sublease{verifiedCount === 1 ? "" : "s"}
+                      </div>
+                    )}
+                  </div>
                   {!isMe && onMessage && (
-                    <Button onClick={() => onMessage(profile.id)} className="mt-4 w-full bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
-                      💬 Message {profile.name?.split(" ")[0]}
-                    </Button>
+                    <div className="mt-4 flex gap-2">
+                      <Button onClick={() => onMessage(profile.id)} className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
+                        💬 Message {profile.name?.split(" ")[0]}
+                      </Button>
+                      {eligible && (
+                        <Button variant="outline" onClick={() => setShowReview(true)} className="font-bold gap-1">
+                          <Star className="h-4 w-4" /> Review
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tabs */}
+                  <div className="mt-6 flex gap-1 border-b">
+                    {(["about", "reviews"] as const).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setTab(t)}
+                        className={cn(
+                          "border-b-2 px-3 py-2 text-sm font-bold capitalize",
+                          tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground",
+                        )}
+                      >
+                        {t === "reviews" ? `Reviews${stats.count ? ` (${stats.count})` : ""}` : t}
+                      </button>
+                    ))}
+                  </div>
+
+                  {tab === "reviews" && (
+                    <div className="mt-4">
+                      <ReviewsList userId={profile.id} />
+                    </div>
                   )}
                 </>
+
               ) : (
                 <div className="space-y-3">
                   <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
