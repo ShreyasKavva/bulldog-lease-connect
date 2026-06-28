@@ -251,6 +251,15 @@ export function ProfileSheet({
           <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
         )}
       </SheetContent>
+      {profile && !isMe && (
+        <LeaveReviewDialog
+          open={showReview}
+          onOpenChange={setShowReview}
+          reviewedUserId={profile.id}
+          reviewedName={profile.name || "this student"}
+          reviewerRole="subletter"
+        />
+      )}
     </Sheet>
   );
 }
