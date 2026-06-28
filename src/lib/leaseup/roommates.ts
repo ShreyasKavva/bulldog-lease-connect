@@ -34,7 +34,7 @@ export type RoommateProfileWithUser = RoommateProfile & {
     id: string;
     name: string | null;
     avatar_emoji: string | null;
-    avatar_color: string | null;
+    banner_color: string | null;
     avatar_url?: string | null;
     year: string | null;
     major: string | null;
@@ -53,7 +53,7 @@ export type RoommateInterest = {
 };
 
 const PROFILE_FIELDS =
-  "id,name,avatar_emoji,avatar_color,avatar_url,year,major,verified_email,is_verified";
+  "id,name,avatar_emoji,banner_color,avatar_url,year,major,verified_email,is_verified";
 
 export async function fetchMyRoommateProfile(userId: string): Promise<RoommateProfile | null> {
   const { data, error } = await supabase

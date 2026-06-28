@@ -291,7 +291,7 @@ function CreateRoommatePage() {
               <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Preview</div>
               <div className="flex items-start gap-3">
                 <div className="grid h-14 w-14 place-items-center rounded-full text-2xl"
-                  style={{ background: profile?.avatar_color ?? "#2563EB", color: "white" }}>
+                  style={{ background: profile?.banner_color ?? "#2563EB", color: "white" }}>
                   {profile?.avatar_emoji ?? "🙂"}
                 </div>
                 <div className="flex-1 min-w-0">

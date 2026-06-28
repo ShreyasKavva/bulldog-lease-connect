@@ -294,7 +294,7 @@ function RoommateCard({ p, me, alreadySent, onConnect }: {
     <article className="rounded-2xl border border-border bg-surface p-4 shadow-card-md transition hover:shadow-card-lg">
       <div className="flex items-start gap-3">
         <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-2xl"
-          style={{ background: u?.avatar_color ?? "#2563EB", color: "white" }}>
+          style={{ background: u?.banner_color ?? "#2563EB", color: "white" }}>
           {u?.avatar_emoji ?? "🙂"}
         </div>
         <div className="flex-1 min-w-0">
@@ -375,7 +375,7 @@ function ConnectSheet({ target, me, onClose, onSent }: {
             <div className="space-y-4 py-4">
               <div className="flex items-center gap-3">
                 <div className="grid h-14 w-14 place-items-center rounded-full text-2xl"
-                  style={{ background: target.profile?.avatar_color ?? "#2563EB", color: "white" }}>
+                  style={{ background: target.profile?.banner_color ?? "#2563EB", color: "white" }}>
                   {target.profile?.avatar_emoji ?? "🙂"}
                 </div>
                 <div className="flex-1">
