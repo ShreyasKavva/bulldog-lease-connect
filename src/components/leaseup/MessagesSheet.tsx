@@ -623,14 +623,15 @@ function ConversationActionsSheet({
 
   async function report() {
     try {
-      await supabase.from("reports").insert({
-        reporter_id: userId,
-        reported_user_id: otherId,
-        reason: "Reported from conversation actions",
-      } as never);
-      toast.success("Report submitted");
-    } catch (_e) {
-      toast.success("Report submitted");
+      if (conv.listing_id) {
+        const { fileReport } = await import("@/lib/leaseup/admin.queries");
+        await fileReport(conv.listing_id, userId, "Reported from conversation", `Reported user: ${otherId}`);
+        toast.success("Report submitted to moderators");
+      } else {
+        toast.message("Open the listing to file a detailed report.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to report");
     }
     onClose();
   }
