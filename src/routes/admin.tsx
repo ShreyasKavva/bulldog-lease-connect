@@ -105,7 +105,7 @@ function OverviewTab() {
   const { data: stats } = useQuery({ queryKey: ["admin", "stats"], queryFn: fetchPlatformStats });
   const { data: growth } = useQuery({
     queryKey: ["admin", "growth"],
-    queryFn: () => import("@/lib/leaseup/analytics.queries").then((m) => m.fetchGrowthMetrics(30)),
+    queryFn: () => fetchGrowthMetrics(30),
   });
   if (!stats) return <div className="text-sm text-muted-foreground">Loading…</div>;
   return (
