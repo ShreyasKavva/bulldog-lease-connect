@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "overview" | "reports" | "listings" | "users" | "revenue" | "deposits";
+type Tab = "overview" | "reports" | "suspicious" | "listings" | "users" | "revenue" | "deposits";
 
 function AdminPage() {
   const { user, loading } = useSession();
