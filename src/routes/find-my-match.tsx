@@ -640,6 +640,16 @@ function MatchCard({
               <div className="truncate text-sm font-extrabold">
                 ${l.price}<span className="text-muted-foreground">/mo</span> · {l.title}
               </div>
+              {dealLabel !== "no_data" && (
+                <div className="mt-0.5">
+                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", LABEL_META[dealLabel].tone)}>
+                    {LABEL_META[dealLabel].icon} {LABEL_META[dealLabel].text}
+                    {dealDiff != null && dealDiff !== 0 && (
+                      <span className="opacity-80">· {dealDiff > 0 ? `+${dealDiff}%` : `${dealDiff}%`} vs median</span>
+                    )}
+                  </span>
+                </div>
+              )}
               <div className="mt-0.5 truncate text-xs text-muted-foreground">
                 {l.beds}BR · {l.area ?? "Athens"}
                 {l.available_from ? ` · ${new Date(l.available_from).toLocaleString("en-US", { month: "short" })}` : ""}
