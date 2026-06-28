@@ -38,6 +38,27 @@ export function ProfileSheet({
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
     currently_status: "", currently_emoji: "🔎",
   });
+  const [tab, setTab] = useState<"about" | "reviews">("about");
+  const [showReview, setShowReview] = useState(false);
+
+  // Eligibility + verified count + review summary
+  const { data: eligible } = useQuery({
+    queryKey: ["review-eligible", user?.id, userId],
+    queryFn: () => canLeaveReview(user!.id, userId!),
+    enabled: !!user && !!userId && !isMe,
+  });
+  const { data: verifiedCount = 0 } = useQuery({
+    queryKey: ["verified-subleases", userId],
+    queryFn: () => fetchVerifiedSubleaseCount(userId!),
+    enabled: !!userId && open,
+  });
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews", userId],
+    queryFn: () => fetchUserReviews(userId!),
+    enabled: !!userId && open,
+  });
+  const stats = computeReviewStats(reviews);
+
 
   useEffect(() => {
     if (profile) setForm({
