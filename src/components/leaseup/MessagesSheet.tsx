@@ -135,6 +135,15 @@ export function MessagesSheet({
           </div>
         ) : (
           <>
+            {canReview && (
+              <div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-900">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={1.5} />
+                <span className="flex-1">Has this sublease been sorted?</span>
+                <button onClick={() => setShowReview(true)} className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold text-amber-950">
+                  Leave a review →
+                </button>
+              </div>
+            )}
             <div className="flex-1 space-y-2 overflow-y-auto bg-background p-4">
               {messages?.map((m) => {
                 const mine = m.sender_id === user?.id;
@@ -161,6 +170,16 @@ export function MessagesSheet({
           </>
         )}
       </SheetContent>
+      {active && otherId && active.other && (
+        <LeaveReviewDialog
+          open={showReview}
+          onOpenChange={setShowReview}
+          reviewedUserId={otherId}
+          reviewedName={active.other.name || "this student"}
+          listingId={active.listing_id ?? null}
+          reviewerRole={user?.id && activeListing && active.listing_id ? "subletter" : "subletter"}
+        />
+      )}
     </Sheet>
   );
 }
