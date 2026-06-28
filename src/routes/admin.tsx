@@ -364,3 +364,222 @@ function UsersTab() {
     </div>
   );
 }
+
+// ────────────────────────────────────────────────────────────────
+// Queue 17 — Revenue + Deposits tabs
+// ────────────────────────────────────────────────────────────────
+
+type BoostRow = {
+  id: string;
+  listing_id: string | null;
+  user_id: string | null;
+  amount_cents: number | null;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  stripe_session_id: string | null;
+};
+
+type DepositRow = {
+  id: string;
+  listing_id: string | null;
+  poster_id: string | null;
+  subletter_id: string | null;
+  deposit_amount_cents: number;
+  platform_fee_cents: number | null;
+  total_charged_cents: number | null;
+  status: string;
+  stripe_payment_intent_id: string | null;
+  move_in_date: string | null;
+  created_at: string;
+  paid_at: string | null;
+  released_at: string | null;
+};
+
+function money(cents?: number | null) {
+  if (!cents) return "$0.00";
+  return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function RevenueTab() {
+  const { data: boosts = [] } = useQuery<BoostRow[]>({
+    queryKey: ["admin", "boosts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("boost_purchases")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as BoostRow[];
+    },
+  });
+  const { data: deposits = [] } = useQuery<DepositRow[]>({
+    queryKey: ["admin", "deposits"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("deposit_agreements")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as DepositRow[];
+    },
+  });
+  const { data: profiles = [] } = useQuery({ queryKey: ["admin", "profiles"], queryFn: adminFetchAllProfiles });
+  const { data: listings = [] } = useQuery({ queryKey: ["admin", "listings"], queryFn: adminFetchAllListings });
+  const userMap = useMemo(() => new Map(profiles.map(p => [p.id, p])), [profiles]);
+  const listingMap = useMemo(() => new Map(listings.map(l => [l.id, l])), [listings]);
+
+  const paidBoosts = boosts.filter(b => b.status === "paid");
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+  const thisMonthBoosts = paidBoosts.filter(b => new Date(b.created_at) >= monthStart);
+  const boostTotalAll = paidBoosts.reduce((s, b) => s + (b.amount_cents ?? 0), 0);
+  const boostTotalMonth = thisMonthBoosts.reduce((s, b) => s + (b.amount_cents ?? 0), 0);
+
+  const heldTotal = deposits.filter(d => d.status === "held" || d.status === "paid").reduce((s, d) => s + d.deposit_amount_cents, 0);
+  const releasedTotal = deposits.filter(d => d.status === "released").reduce((s, d) => s + d.deposit_amount_cents, 0);
+  const refundedTotal = deposits.filter(d => d.status === "refunded").reduce((s, d) => s + d.deposit_amount_cents, 0);
+  const feeTotal = deposits.filter(d => ["held", "paid", "released"].includes(d.status)).reduce((s, d) => s + (d.platform_fee_cents ?? 0), 0);
+
+  const projectedMrr = thisMonthBoosts.length * 9.99;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Boost revenue (all-time)" value={money(boostTotalAll)} />
+        <StatCard label="Boost revenue (this month)" value={money(boostTotalMonth)} />
+        <StatCard label="# boosts this month" value={thisMonthBoosts.length} />
+        <StatCard label="Projected MRR" value={`$${projectedMrr.toFixed(2)}`} />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Deposits held" value={money(heldTotal)} />
+        <StatCard label="Deposits released" value={money(releasedTotal)} />
+        <StatCard label="Deposits refunded" value={money(refundedTotal)} />
+        <StatCard label="Platform fees earned" value={money(feeTotal)} />
+      </div>
+
+      <div className="rounded-xl bg-surface shadow-card overflow-hidden">
+        <div className="border-b p-3 font-black">Featured listing boosts</div>
+        <table className="w-full text-sm">
+          <thead className="bg-background text-xs uppercase">
+            <tr><th className="p-2 text-left">Listing</th><th className="p-2 text-left">Buyer</th><th className="p-2 text-left">Amount</th><th className="p-2 text-left">Status</th><th className="p-2 text-left">Date</th></tr>
+          </thead>
+          <tbody>
+            {boosts.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">No boost purchases yet.</td></tr>}
+            {boosts.map(b => {
+              const l = b.listing_id ? listingMap.get(b.listing_id) : undefined;
+              const u = b.user_id ? userMap.get(b.user_id) : undefined;
+              return (
+                <tr key={b.id} className="border-t">
+                  <td className="p-2 font-semibold max-w-xs truncate">{l?.title ?? "(deleted)"}</td>
+                  <td className="p-2 text-xs">{u?.name ?? "—"}<div className="text-muted-foreground">{u?.email}</div></td>
+                  <td className="p-2 text-xs font-bold tabular-nums">{money(b.amount_cents)}</td>
+                  <td className="p-2 text-xs">
+                    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                      b.status === "paid" ? "bg-success-light text-success" :
+                      b.status === "refunded" ? "bg-red-100 text-red-700" : "bg-muted text-muted-foreground")}>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="p-2 text-xs text-muted-foreground">{timeAgo(b.created_at)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function DepositsTab() {
+  const qc = useQueryClient();
+  const release = useServerFn(adminReleaseDeposit);
+  const refund = useServerFn(adminRefundDeposit);
+  const { data: deposits = [], isLoading } = useQuery<DepositRow[]>({
+    queryKey: ["admin", "deposits"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("deposit_agreements")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as DepositRow[];
+    },
+  });
+  const { data: profiles = [] } = useQuery({ queryKey: ["admin", "profiles"], queryFn: adminFetchAllProfiles });
+  const { data: listings = [] } = useQuery({ queryKey: ["admin", "listings"], queryFn: adminFetchAllListings });
+  const userMap = useMemo(() => new Map(profiles.map(p => [p.id, p])), [profiles]);
+  const listingMap = useMemo(() => new Map(listings.map(l => [l.id, l])), [listings]);
+
+  async function onRelease(id: string) {
+    if (!confirm("Release these funds to the poster? This captures the held payment.")) return;
+    try { await release({ data: { agreementId: id } }); toast.success("Funds released"); qc.invalidateQueries({ queryKey: ["admin", "deposits"] }); }
+    catch (e: any) { toast.error(e.message ?? "Release failed"); }
+  }
+  async function onRefund(id: string) {
+    if (!confirm("Refund this deposit to the subletter? This cannot be undone.")) return;
+    try { await refund({ data: { agreementId: id } }); toast.success("Refunded"); qc.invalidateQueries({ queryKey: ["admin", "deposits"] }); }
+    catch (e: any) { toast.error(e.message ?? "Refund failed"); }
+  }
+
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl bg-surface shadow-card overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-background text-xs uppercase">
+            <tr>
+              <th className="p-2 text-left">Listing</th>
+              <th className="p-2 text-left">Poster ↔ Subletter</th>
+              <th className="p-2 text-left">Amount</th>
+              <th className="p-2 text-left">Move-in</th>
+              <th className="p-2 text-left">Status</th>
+              <th className="p-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {deposits.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">No deposit agreements yet. Once a subletter pays, agreements appear here.</td></tr>}
+            {deposits.map(d => {
+              const l = d.listing_id ? listingMap.get(d.listing_id) : undefined;
+              const poster = d.poster_id ? userMap.get(d.poster_id) : undefined;
+              const subletter = d.subletter_id ? userMap.get(d.subletter_id) : undefined;
+              const canRelease = ["held", "paid"].includes(d.status);
+              const canRefund = ["held", "paid", "pending"].includes(d.status);
+              return (
+                <tr key={d.id} className="border-t align-top">
+                  <td className="p-2 font-semibold max-w-xs truncate">{l?.title ?? "(deleted)"}</td>
+                  <td className="p-2 text-xs">
+                    <div>{poster?.name ?? "—"}</div>
+                    <div className="text-muted-foreground">→ {subletter?.name ?? "—"}</div>
+                  </td>
+                  <td className="p-2 text-xs">
+                    <div className="font-bold tabular-nums">{money(d.deposit_amount_cents)}</div>
+                    <div className="text-muted-foreground">fee {money(d.platform_fee_cents)}</div>
+                  </td>
+                  <td className="p-2 text-xs text-muted-foreground">{d.move_in_date ? new Date(d.move_in_date).toLocaleDateString() : "—"}</td>
+                  <td className="p-2 text-xs">
+                    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                      d.status === "held" || d.status === "paid" ? "bg-amber-100 text-amber-800" :
+                      d.status === "released" ? "bg-success-light text-success" :
+                      d.status === "refunded" ? "bg-red-100 text-red-700" :
+                      d.status === "disputed" ? "bg-orange-100 text-orange-700" :
+                      "bg-muted text-muted-foreground")}>
+                      {d.status}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    <div className="flex gap-1 justify-end">
+                      <Button size="sm" variant="outline" disabled={!canRelease} onClick={() => onRelease(d.id)}>Release</Button>
+                      <Button size="sm" variant="outline" disabled={!canRefund} onClick={() => onRefund(d.id)}>Refund</Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
