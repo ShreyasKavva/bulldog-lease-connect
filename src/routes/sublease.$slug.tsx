@@ -78,7 +78,7 @@ function CampusPage() {
   const qc = useQueryClient();
 
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
-  const { data: campuses = allCampuses } = useQuery({
+  const { data: campuses = allCampuses } = useQuery<Campus[]>({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
     initialData: allCampuses,
