@@ -1601,6 +1601,154 @@ export type Database = {
         }
         Relationships: []
       }
+      tour_availability: {
+        Row: {
+          available_date: string
+          created_at: string
+          end_time: string
+          id: string
+          is_active: boolean
+          listing_id: string
+          poster_id: string
+          slot_duration_minutes: number
+          start_time: string
+        }
+        Insert: {
+          available_date: string
+          created_at?: string
+          end_time: string
+          id?: string
+          is_active?: boolean
+          listing_id: string
+          poster_id: string
+          slot_duration_minutes?: number
+          start_time: string
+        }
+        Update: {
+          available_date?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          listing_id?: string
+          poster_id?: string
+          slot_duration_minutes?: number
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tour_bookings: {
+        Row: {
+          availability_id: string | null
+          cancelled_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          message: string | null
+          poster_id: string
+          poster_survey: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+          subletter_id: string
+          subletter_survey: string | null
+          survey_prompted_at: string | null
+        }
+        Insert: {
+          availability_id?: string | null
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id: string
+          message?: string | null
+          poster_id: string
+          poster_survey?: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status?: string
+          subletter_id: string
+          subletter_survey?: string | null
+          survey_prompted_at?: string | null
+        }
+        Update: {
+          availability_id?: string | null
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          message?: string | null
+          poster_id?: string
+          poster_survey?: string | null
+          scheduled_date?: string
+          scheduled_time?: string
+          status?: string
+          subletter_id?: string
+          subletter_survey?: string | null
+          survey_prompted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_bookings_availability_id_fkey"
+            columns: ["availability_id"]
+            isOneToOne: false
+            referencedRelation: "tour_availability"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       trending_listings: {
@@ -1746,6 +1894,7 @@ export type Database = {
         Returns: boolean
       }
       process_looking_for_expiry: { Args: never; Returns: undefined }
+      process_post_tour_surveys: { Args: never; Returns: undefined }
       process_review_prompts: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
