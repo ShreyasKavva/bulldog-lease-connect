@@ -38,9 +38,14 @@ import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 export const Route = createFileRoute("/looking-for")({
   head: () => ({
     meta: [
-      { title: "Looking For — LeaseUp" },
-      { name: "description", content: "Post what you're looking for. Let other students bring listings to you." },
+      { title: "Looking For a Sublease? Post Here. — LeaseUp" },
+      { name: "description", content: "Tell students what you need. Get notified when a matching listing is posted." },
+      { property: "og:title", content: "Looking For a Sublease? Post Here." },
+      { property: "og:description", content: "Tell students what you need. Get notified when a matching listing is posted." },
+      { property: "og:url", content: "https://leasup.co/looking-for" },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "canonical", href: "https://leasup.co/looking-for" }],
   }),
   component: LookingForPage,
 });

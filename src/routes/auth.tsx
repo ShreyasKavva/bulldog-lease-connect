@@ -11,7 +11,24 @@ const search = z.object({ mode: z.enum(["in", "up"]).catch("in") });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => search.parse(s),
-  head: () => ({ meta: [{ title: "Sign in — LeaseUp" }] }),
+  head: ({ match }) => {
+    const mode = (match.search as { mode?: "in" | "up" })?.mode ?? "in";
+    const isUp = mode === "up";
+    const title = isUp ? "Join LeaseUp — Free for Students" : "Sign in — LeaseUp";
+    const desc = isUp
+      ? "Verified .edu profiles, SafeScore on every listing, zero scams."
+      : "Sign in to LeaseUp to browse and post student subleases.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: "https://leasup.co/auth" },
+        { property: "og:type", content: "website" },
+      ],
+    };
+  },
   component: AuthPage,
 });
 
