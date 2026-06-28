@@ -192,6 +192,14 @@ function MyListingsPage() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
+        {!isLoading && listings.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard icon="👀" label="Total views" value={totals.views} />
+            <StatCard icon="❤️" label="Total saves" value={aggCounts.saves} />
+            <StatCard icon="💬" label="Messages" value={aggCounts.messages} />
+            <StatCard icon="📋" label="Active listings" value={totals.active} />
+          </div>
+        )}
         {!isLoading && listings.some((l) => l.is_active && l.status !== "filled") && (
           <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary to-[#1D4ED8] p-5 text-primary-foreground shadow-card sm:flex-row sm:items-center">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📣</div>
