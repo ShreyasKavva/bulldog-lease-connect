@@ -3,7 +3,7 @@ import { Map as MapIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-re
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useMyProfile } from "@/lib/leaseup/use-session";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function BottomNav({
   onPost, onChat, onProfile: _onProfile,
@@ -15,6 +15,12 @@ export function BottomNav({
   const path = useRouterState({ select: (s) => s.location.pathname });
   const unread = useUnreadCount();
   const { data: profile } = useMyProfile();
+  const [pulse, setPulse] = useState(0);
+  useEffect(() => {
+    const h = () => setPulse((p) => p + 1);
+    window.addEventListener("leaseup:unread-pulse", h);
+    return () => window.removeEventListener("leaseup:unread-pulse", h);
+  }, []);
 
   const isMap = path === "/";
   const isBrowse = path === "/browse";
@@ -53,8 +59,11 @@ export function BottomNav({
         <span className="relative transition-transform group-active:scale-90">
           <MessageSquare className="h-5 w-5" />
           {unread > 0 && (
-            <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface">
-              {unread > 9 ? "9+" : unread}
+            <span
+              key={pulse}
+              className="lu-badge-pulse absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface"
+            >
+              {unread > 99 ? "99+" : unread}
             </span>
           )}
         </span>

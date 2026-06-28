@@ -66,8 +66,31 @@ export type Conversation = {
   last_message: string | null;
   last_message_at: string | null;
   created_at: string;
+  pinned_by_p1?: boolean;
+  pinned_by_p2?: boolean;
+  muted_by_p1?: boolean;
+  muted_by_p2?: boolean;
+  deleted_by_p1?: boolean;
+  deleted_by_p2?: boolean;
   other?: Profile;
-  listing?: { id: string; title: string } | null;
+  listing?: {
+    id: string;
+    title: string;
+    price?: number | null;
+    available_from?: string | null;
+    available_to?: string | null;
+    is_active?: boolean;
+    status?: string | null;
+    photo_url?: string | null;
+  } | null;
+};
+
+export type MessageReaction = {
+  id: string;
+  message_id: string;
+  user_id: string;
+  reaction: string;
+  created_at: string;
 };
 
 export type Message = {
@@ -77,7 +100,13 @@ export type Message = {
   recipient_id: string;
   content: string;
   read: boolean;
+  read_at: string | null;
+  content_type: "text" | "image" | "document";
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
   created_at: string;
+  reactions?: MessageReaction[];
 };
 
 export type LookingForPost = {
