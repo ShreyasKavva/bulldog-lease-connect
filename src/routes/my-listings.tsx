@@ -41,7 +41,31 @@ function MyListingsPage() {
   });
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
+  const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+
+  const totals = {
+    views: listings.reduce((s, l) => s + (l.view_count ?? 0), 0),
+    active: listings.filter((l) => l.is_active && l.status !== "filled").length,
+  };
+  const { data: aggCounts = { saves: 0, messages: 0 } } = useQuery({
+    queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
+    enabled: !!user && listings.length > 0,
+    queryFn: async () => {
+      const ids = listings.map((l) => l.id);
+      const [sav, convs] = await Promise.all([
+        supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).in("listing_id", ids),
+        supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
+      ]);
+      const convIds = (convs.data ?? []).map((c: any) => c.id);
+      let msgCount = 0;
+      if (convIds.length) {
+        const m = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds).neq("sender_id", user!.id);
+        msgCount = m.count ?? 0;
+      }
+      return { saves: sav.count ?? 0, messages: msgCount };
+    },
+  });
 
   // Celebration on return from Stripe Checkout
   useEffect(() => {
