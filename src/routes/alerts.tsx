@@ -170,3 +170,20 @@ function Tag({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
+
+function MatchCount({ searchId }: { searchId: string }) {
+  const { data } = useQuery({
+    queryKey: ["saved-search-matches", searchId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("count_saved_search_matches" as any, { _search_id: searchId });
+      if (error) return 0;
+      return typeof data === "number" ? data : 0;
+    },
+  });
+  if (data == null) return null;
+  return (
+    <p className="mt-2 text-[11px] font-semibold text-primary">
+      This search matches {data} active listing{data === 1 ? "" : "s"}
+    </p>
+  );
+}
