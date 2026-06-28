@@ -216,7 +216,21 @@ function ReportsTab({ adminId }: { adminId: string }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
+                {r.priority && r.priority !== "normal" && (
+                  <span className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                    r.priority === "urgent" && "bg-red-600 text-white animate-pulse",
+                    r.priority === "high" && "bg-orange-500 text-white",
+                    r.priority === "low" && "bg-muted text-muted-foreground",
+                  )}>{r.priority}</span>
+                )}
                 <span className="rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-[10px] font-bold uppercase">{r.reason}</span>
+                {r.auto_flagged && (
+                  <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold uppercase">Auto</span>
+                )}
+                {(r.reportCount ?? 1) > 1 && (
+                  <span className="rounded-full bg-background border px-2 py-0.5 text-[10px] font-bold">×{r.reportCount} on this listing</span>
+                )}
                 <span className="text-[11px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 {r.status !== "open" && (
                   <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold uppercase">{r.status}</span>
