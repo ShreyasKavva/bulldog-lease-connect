@@ -1,5 +1,6 @@
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide-react";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { SecureDepositBadge, FeaturedBadge } from "./SecureDepositBadge";
