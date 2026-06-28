@@ -3,7 +3,7 @@ import { Map as MapIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-re
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useMyProfile } from "@/lib/leaseup/use-session";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function BottomNav({
   onPost, onChat, onProfile: _onProfile,
