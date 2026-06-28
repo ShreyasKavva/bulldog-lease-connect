@@ -7,7 +7,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const search = z.object({ mode: z.enum(["in", "up"]).catch("in") });
+const search = z.object({
+  mode: z.enum(["in", "up"]).catch("in"),
+  message: z.string().optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => search.parse(s),
