@@ -606,6 +606,12 @@ function MatchCard({
     : match.score >= 70 ? "bg-primary text-white"
     : "bg-muted text-muted-foreground";
 
+  // Deal score: pull median for this campus+beds and compute label
+  const { data: stats } = usePriceStats();
+  const stat = findStat(stats, l.campus_id ?? undefined, l.beds);
+  const dealLabel = computePriceLabel(l.price, stat);
+  const dealDiff = stat ? Math.round(((l.price - Number(stat.median_price)) / Number(stat.median_price)) * 100) : null;
+
   return (
     <button
       onClick={onOpen}
