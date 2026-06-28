@@ -156,7 +156,6 @@ function OverviewTab() {
 }
 
 function GrowthMini({ title, data }: { title: string; data: { date: string; count: number }[] }) {
-  const LineChart = require("@/components/leaseup/analytics/Charts").LineChart as any;
   const total = data.reduce((s, d) => s + d.count, 0);
   return (
     <div className="rounded-xl bg-surface p-4 shadow-card">
@@ -164,7 +163,7 @@ function GrowthMini({ title, data }: { title: string; data: { date: string; coun
         <h3 className="text-sm font-bold">{title}</h3>
         <span className="text-lg font-black tabular-nums">{total}</span>
       </div>
-      <div className="mt-2"><LineChart data={data} height={120} /></div>
+      <div className="mt-2"><AnalyticsLineChart data={data} height={120} /></div>
     </div>
   );
 }
