@@ -10,10 +10,11 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
 import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
