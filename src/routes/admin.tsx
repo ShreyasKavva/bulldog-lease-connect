@@ -117,6 +117,13 @@ function OverviewTab() {
         <StatCard label="Messages (7d)" value={stats.messagesThisWeek} />
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Tours requested (7d)" value={stats.toursRequestedWeek} />
+        <StatCard label="Tours confirmed (7d)" value={stats.toursConfirmedWeek} />
+        <StatCard label="Tours completed" value={stats.toursCompleted} />
+        <StatCard label="No-show rate" value={`${stats.noShowRate.toFixed(0)}%`} />
+      </div>
+
       {growth && (
         <div className="grid gap-4 md:grid-cols-3">
           <GrowthMini title="Signups (30d)" data={growth.signups} />
