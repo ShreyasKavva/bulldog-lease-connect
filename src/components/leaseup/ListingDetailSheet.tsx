@@ -179,32 +179,8 @@ export function ListingDetailSheet({
             </ul>
           </div>
 
-          {/* Price comparison bar */}
-          {priceBar && (
-            <div className="rounded-xl border bg-background p-3">
-              <div className="mb-2 flex items-center justify-between text-xs">
-                <span className="font-bold uppercase text-muted-foreground">{listing.beds}BR range nearby</span>
-                {priceBar.below > 5 ? (
-                  <span className="rounded-full bg-orange-500/15 px-2 py-0.5 font-bold text-orange-600">🔥 {Math.round(priceBar.below)}% below avg</span>
-                ) : priceBar.below < -5 ? (
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">{Math.round(-priceBar.below)}% above avg</span>
-                ) : (
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">Around avg</span>
-                )}
-              </div>
-              <div className="relative h-2 rounded-full bg-muted">
-                <div
-                  className="absolute -top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-primary shadow"
-                  style={{ left: `${Math.max(2, Math.min(98, priceBar.pct))}%`, transition: "left 600ms ease-out" }}
-                />
-              </div>
-              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-                <span>${Math.round(priceBar.min)}</span>
-                <span className="font-bold text-foreground">${listing.price.toLocaleString()} this listing</span>
-                <span>${Math.round(priceBar.max)}</span>
-              </div>
-            </div>
-          )}
+          {/* Price comparison panel — powered by campus_price_stats view */}
+          <PriceComparisonPanel price={listing.price} campusId={listing.campus_id ?? null} beds={listing.beds} />
 
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
             <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
