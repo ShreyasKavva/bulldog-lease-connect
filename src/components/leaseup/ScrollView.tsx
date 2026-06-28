@@ -344,6 +344,7 @@ function ScrollCard({
         >
           <MessageCircle className="h-6 w-6" />
         </button>
+        <ShareToStoryButton listing={l} variant="icon" />
         {onPin && (
           <button
             onClick={(e) => { e.stopPropagation(); onPin(); }}
