@@ -335,6 +335,14 @@ function MyListingsPage() {
           reviewerRole="poster"
         />
       )}
+      {tourFor && (
+        <TourAvailabilityDialog
+          listingId={tourFor.id}
+          posterId={user.id}
+          open={!!tourFor}
+          onOpenChange={(o) => { if (!o) setTourFor(null); }}
+        />
+      )}
     </div>
   );
 }
