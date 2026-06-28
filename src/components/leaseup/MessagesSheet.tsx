@@ -336,6 +336,13 @@ export function MessagesSheet({
               </div>
             )}
 
+            <ScamWarningBanner
+              messages={messages as any}
+              currentUserId={user?.id}
+              conversationId={active.id}
+            />
+
+
             <div className="flex-1 space-y-2 overflow-y-auto bg-background p-4">
               {messages?.map((m, idx) => (
                 <MessageBubble
