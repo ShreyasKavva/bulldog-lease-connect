@@ -165,6 +165,55 @@ export type Database = {
           },
         ]
       }
+      deposit_waitlist: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          listing_id: string | null
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          listing_id?: string | null
+          role: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          listing_id?: string | null
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_waitlist_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -446,7 +495,10 @@ export type Database = {
           beds: number
           campus_id: string
           created_at: string
+          deposit_amount: number | null
+          deposit_escrow_enabled: boolean
           description: string
+          featured_until: string | null
           filled_at: string | null
           filled_via_lease_up: boolean
           filled_with_user_id: string | null
@@ -454,6 +506,7 @@ export type Database = {
           furnished: boolean
           id: string
           is_active: boolean
+          is_featured: boolean
           lat: number | null
           lng: number | null
           parking: boolean
@@ -481,7 +534,10 @@ export type Database = {
           beds?: number
           campus_id: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_escrow_enabled?: boolean
           description?: string
+          featured_until?: string | null
           filled_at?: string | null
           filled_via_lease_up?: boolean
           filled_with_user_id?: string | null
@@ -489,6 +545,7 @@ export type Database = {
           furnished?: boolean
           id?: string
           is_active?: boolean
+          is_featured?: boolean
           lat?: number | null
           lng?: number | null
           parking?: boolean
@@ -516,7 +573,10 @@ export type Database = {
           beds?: number
           campus_id?: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_escrow_enabled?: boolean
           description?: string
+          featured_until?: string | null
           filled_at?: string | null
           filled_via_lease_up?: boolean
           filled_with_user_id?: string | null
@@ -524,6 +584,7 @@ export type Database = {
           furnished?: boolean
           id?: string
           is_active?: boolean
+          is_featured?: boolean
           lat?: number | null
           lng?: number | null
           parking?: boolean
@@ -779,6 +840,89 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_intents: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          listing_id: string | null
+          metadata: Json
+          payee_id: string | null
+          payer_id: string | null
+          purpose: string
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          listing_id?: string | null
+          metadata?: Json
+          payee_id?: string | null
+          payer_id?: string | null
+          purpose?: string
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          listing_id?: string | null
+          metadata?: Json
+          payee_id?: string | null
+          payer_id?: string | null
+          purpose?: string
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_payee_id_fkey"
+            columns: ["payee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
