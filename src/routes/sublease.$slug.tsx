@@ -16,9 +16,12 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
-    const campus = await fetchCampusBySlug(params.slug);
+    const [campus, allCampuses] = await Promise.all([
+      fetchCampusBySlug(params.slug),
+      fetchCampuses(),
+    ]);
     if (!campus) throw notFound();
-    return { campus };
+    return { campus, allCampuses };
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
