@@ -4,10 +4,11 @@ import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/qu
 import { useSession } from "@/lib/leaseup/use-session";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { markConversationRead } from "@/hooks/use-unread";
+import { LeaveReviewDialog } from "./LeaveReviewDialog";
 
 export function MessagesSheet({
   open, onOpenChange, initialConversationId,
