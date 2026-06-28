@@ -634,6 +634,51 @@ export type Database = {
           },
         ]
       }
+      listing_stats_daily: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          listing_id: string
+          messages: number
+          saves: number
+          views: number
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          listing_id: string
+          messages?: number
+          saves?: number
+          views?: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          listing_id?: string
+          messages?: number
+          saves?: number
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_stats_daily_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_stats_daily_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string | null
@@ -1671,6 +1716,10 @@ export type Database = {
         Args: { _listing_id: string }
         Returns: number
       }
+      count_saved_search_matches: {
+        Args: { _search_id: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1680,6 +1729,7 @@ export type Database = {
         Returns: number
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_listing_benchmark: { Args: { _listing_id: string }; Returns: Json }
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
@@ -1705,6 +1755,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      snapshot_listing_stats: { Args: never; Returns: undefined }
       user_in_message_convo: {
         Args: { _message: string; _user: string }
         Returns: boolean

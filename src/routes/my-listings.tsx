@@ -12,11 +12,13 @@ import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2 } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
+import { StatCard } from "@/components/leaseup/analytics/Charts";
+import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
@@ -39,7 +41,31 @@ function MyListingsPage() {
   });
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
+  const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+
+  const totals = {
+    views: listings.reduce((s, l) => s + (l.view_count ?? 0), 0),
+    active: listings.filter((l) => l.is_active && l.status !== "filled").length,
+  };
+  const { data: aggCounts = { saves: 0, messages: 0 } } = useQuery({
+    queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
+    enabled: !!user && listings.length > 0,
+    queryFn: async () => {
+      const ids = listings.map((l) => l.id);
+      const [sav, convs] = await Promise.all([
+        supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).in("listing_id", ids),
+        supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
+      ]);
+      const convIds = (convs.data ?? []).map((c: any) => c.id);
+      let msgCount = 0;
+      if (convIds.length) {
+        const m = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds).neq("sender_id", user!.id);
+        msgCount = m.count ?? 0;
+      }
+      return { saves: sav.count ?? 0, messages: msgCount };
+    },
+  });
 
   // Celebration on return from Stripe Checkout
   useEffect(() => {
@@ -166,6 +192,14 @@ function MyListingsPage() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
+        {!isLoading && listings.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard icon="👀" label="Total views" value={totals.views} />
+            <StatCard icon="❤️" label="Total saves" value={aggCounts.saves} />
+            <StatCard icon="💬" label="Messages" value={aggCounts.messages} />
+            <StatCard icon="📋" label="Active listings" value={totals.active} />
+          </div>
+        )}
         {!isLoading && listings.some((l) => l.is_active && l.status !== "filled") && (
           <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary to-[#1D4ED8] p-5 text-primary-foreground shadow-card sm:flex-row sm:items-center">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📣</div>
@@ -223,6 +257,13 @@ function MyListingsPage() {
                     </div>
                   </button>
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
+                  <button
+                    onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
+                    title="Stats"
+                    className={cn("rounded-md p-2 hover:bg-background", statsOpen[l.id] && "bg-primary/10 text-primary")}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </button>
                   {filled ? (
                     <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
@@ -241,6 +282,7 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
+                {statsOpen[l.id] && <ListingStatsPanel listing={l} />}
                 {showNudge && (
                   <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="text-xl">📣</div>

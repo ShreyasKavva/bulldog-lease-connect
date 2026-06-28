@@ -123,9 +123,10 @@ function AlertsPage() {
                       {a.pet_friendly_only && <Tag>Pets ok</Tag>}
                       {a.keyword && <Tag>"{a.keyword}"</Tag>}
                     </div>
+                    <MatchCount searchId={a.id} />
                     {a.last_notified_at && (
-                      <p className="mt-2 text-[11px] text-muted-foreground">
-                        Last match: {new Date(a.last_notified_at).toLocaleDateString()}
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Last checked: {new Date(a.last_notified_at).toLocaleString()}
                       </p>
                     )}
                   </div>
@@ -167,5 +168,22 @@ function Tag({ children }: { children: React.ReactNode }) {
     <span className="rounded-full bg-background px-2 py-0.5 font-semibold text-foreground">
       {children}
     </span>
+  );
+}
+
+function MatchCount({ searchId }: { searchId: string }) {
+  const { data } = useQuery({
+    queryKey: ["saved-search-matches", searchId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("count_saved_search_matches" as any, { _search_id: searchId });
+      if (error) return 0;
+      return typeof data === "number" ? data : 0;
+    },
+  });
+  if (data == null) return null;
+  return (
+    <p className="mt-2 text-[11px] font-semibold text-primary">
+      This search matches {data} active listing{data === 1 ? "" : "s"}
+    </p>
   );
 }

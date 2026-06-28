@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
+import { fetchGrowthMetrics } from "@/lib/leaseup/analytics.queries";
+import { LineChart as AnalyticsLineChart } from "@/components/leaseup/analytics/Charts";
 import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
@@ -101,6 +103,10 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 
 function OverviewTab() {
   const { data: stats } = useQuery({ queryKey: ["admin", "stats"], queryFn: fetchPlatformStats });
+  const { data: growth } = useQuery({
+    queryKey: ["admin", "growth"],
+    queryFn: () => fetchGrowthMetrics(30),
+  });
   if (!stats) return <div className="text-sm text-muted-foreground">Loading…</div>;
   return (
     <div className="space-y-6">
@@ -110,6 +116,26 @@ function OverviewTab() {
         <StatCard label="Signups today" value={stats.signupsToday} />
         <StatCard label="Messages (7d)" value={stats.messagesThisWeek} />
       </div>
+
+      {growth && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <GrowthMini title="Signups (30d)" data={growth.signups} />
+          <GrowthMini title="New listings (30d)" data={growth.listings} />
+          <GrowthMini title="Messages (30d)" data={growth.messages} />
+        </div>
+      )}
+
+      {growth && (
+        <div className="rounded-xl bg-surface p-5 shadow-card">
+          <h2 className="font-black mb-3">Listing mix (last 30 days)</h2>
+          <div className="grid grid-cols-3 gap-3 text-center text-sm">
+            <div><div className="text-2xl font-black text-success">{growth.listingMix.active}</div><div className="text-xs text-muted-foreground">Active</div></div>
+            <div><div className="text-2xl font-black text-primary">{growth.listingMix.filled}</div><div className="text-xs text-muted-foreground">Filled</div></div>
+            <div><div className="text-2xl font-black text-muted-foreground">{growth.listingMix.inactive}</div><div className="text-xs text-muted-foreground">Inactive</div></div>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl bg-surface p-5 shadow-card">
         <h2 className="font-black mb-3">Active listings per campus</h2>
         {stats.perCampus.length === 0 ? (
@@ -125,6 +151,19 @@ function OverviewTab() {
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+function GrowthMini({ title, data }: { title: string; data: { date: string; count: number }[] }) {
+  const total = data.reduce((s, d) => s + d.count, 0);
+  return (
+    <div className="rounded-xl bg-surface p-4 shadow-card">
+      <div className="flex items-baseline justify-between">
+        <h3 className="text-sm font-bold">{title}</h3>
+        <span className="text-lg font-black tabular-nums">{total}</span>
+      </div>
+      <div className="mt-2"><AnalyticsLineChart data={data} height={120} /></div>
     </div>
   );
 }
