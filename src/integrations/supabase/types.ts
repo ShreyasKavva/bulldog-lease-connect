@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      boost_purchases: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          listing_id: string | null
+          paid_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          listing_id?: string | null
+          paid_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          listing_id?: string | null
+          paid_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_purchases_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campuses: {
         Row: {
           city: string
@@ -161,6 +222,95 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposit_agreements: {
+        Row: {
+          agreed_at: string | null
+          created_at: string
+          deposit_amount_cents: number
+          disputed_at: string | null
+          id: string
+          listing_id: string | null
+          move_in_date: string | null
+          paid_at: string | null
+          platform_fee_cents: number | null
+          poster_id: string | null
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          subletter_id: string | null
+          total_charged_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          agreed_at?: string | null
+          created_at?: string
+          deposit_amount_cents: number
+          disputed_at?: string | null
+          id?: string
+          listing_id?: string | null
+          move_in_date?: string | null
+          paid_at?: string | null
+          platform_fee_cents?: number | null
+          poster_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          subletter_id?: string | null
+          total_charged_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agreed_at?: string | null
+          created_at?: string
+          deposit_amount_cents?: number
+          disputed_at?: string | null
+          id?: string
+          listing_id?: string | null
+          move_in_date?: string | null
+          paid_at?: string | null
+          platform_fee_cents?: number | null
+          poster_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          subletter_id?: string | null
+          total_charged_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_agreements_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -498,6 +648,7 @@ export type Database = {
           deposit_amount: number | null
           deposit_escrow_enabled: boolean
           description: string
+          featured_purchased_at: string | null
           featured_until: string | null
           filled_at: string | null
           filled_via_lease_up: boolean
@@ -537,6 +688,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_escrow_enabled?: boolean
           description?: string
+          featured_purchased_at?: string | null
           featured_until?: string | null
           filled_at?: string | null
           filled_via_lease_up?: boolean
@@ -576,6 +728,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_escrow_enabled?: boolean
           description?: string
+          featured_purchased_at?: string | null
           featured_until?: string | null
           filled_at?: string | null
           filled_via_lease_up?: boolean
