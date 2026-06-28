@@ -68,7 +68,7 @@ export async function fetchSuspiciousListings(): Promise<SuspiciousListing[]> {
     if ((error as any).code === "42P01") return [];
     throw error;
   }
-  return (data ?? []) as SuspiciousListing[];
+  return (data ?? []) as unknown as SuspiciousListing[];
 }
 
 export type UserRiskRow = {
@@ -87,7 +87,7 @@ export async function fetchUserRiskScores(): Promise<UserRiskRow[]> {
     if ((error as any).code === "42P01") return [];
     throw error;
   }
-  const rows = (data ?? []) as UserRiskRow[];
+  const rows = (data ?? []) as unknown as UserRiskRow[];
   rows.sort((a, b) => (RISK_RANK[a.risk_level] ?? 9) - (RISK_RANK[b.risk_level] ?? 9));
   return rows;
 }
