@@ -59,8 +59,11 @@ export function BottomNav({
         <span className="relative transition-transform group-active:scale-90">
           <MessageSquare className="h-5 w-5" />
           {unread > 0 && (
-            <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface">
-              {unread > 9 ? "9+" : unread}
+            <span
+              key={pulse}
+              className="lu-badge-pulse absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface"
+            >
+              {unread > 99 ? "99+" : unread}
             </span>
           )}
         </span>
