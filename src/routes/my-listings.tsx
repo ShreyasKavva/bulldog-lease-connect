@@ -141,7 +141,23 @@ function MyListingsPage() {
           </Button>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-5">
+      <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
+        {!isLoading && listings.some((l) => l.is_active && l.status !== "filled") && (
+          <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary to-[#1D4ED8] p-5 text-primary-foreground shadow-card sm:flex-row sm:items-center">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📣</div>
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">Share your listing</div>
+              <div className="text-sm opacity-90">Get more eyes on your listing — share to Instagram. Every Story reaches your whole following.</div>
+            </div>
+            <ShareToStoryButton
+              listing={listings.find((l) => l.is_active && l.status !== "filled")!}
+              variant="block"
+              label="Create Story Graphic"
+              className="bg-white text-primary hover:bg-white/90"
+            />
+          </div>
+        )}
+
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />)}</div>
         ) : listings.length === 0 ? (
@@ -154,41 +170,63 @@ function MyListingsPage() {
           <div className="space-y-2">
             {listings.map(l => {
               const filled = l.status === "filled";
+              const stats = shareStats[l.id] ?? { count: 0, lastAt: null };
+              const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
+              const showNudge = !filled && l.is_active && (l.view_count ?? 0) < 50 && lastShareDays >= 7;
               return (
-              <div key={l.id} className={cn("flex items-center gap-3 rounded-xl bg-surface p-3 shadow-card", !l.is_active && !filled && "opacity-60")}>
-                <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
-                  {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
-                  {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Filled</div>}
-                </button>
-                <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm truncate">{l.title}</span>
-                    {filled
-                      ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Filled</span>
-                      : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
-                  </div>
-                  <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
-                  <div className="mt-1"><SafeScoreBadge score={l.safe_score} /></div>
-                </button>
-                {filled ? (
-                  <>
+              <div key={l.id} className={cn("rounded-xl bg-surface p-3 shadow-card", !l.is_active && !filled && "opacity-60")}>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
+                    {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
+                    {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Filled</div>}
+                  </button>
+                  <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm truncate">{l.title}</span>
+                      {filled
+                        ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Filled</span>
+                        : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <SafeScoreBadge score={l.safe_score} />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                        <Eye className="h-3 w-3" />{l.view_count ?? 0}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                        <Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                  </button>
+                  {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
+                  {filled ? (
                     <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => markFilled(l)} title="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
-                      {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                  </>
+                  ) : (
+                    <>
+                      <button onClick={() => markFilled(l)} title="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
+                        <CheckCircle2 className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
+                        {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </button>
+                    </>
+                  )}
+                  <button onClick={() => remove(l)} title="Delete" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                {showNudge && (
+                  <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                    <div className="text-xl">📣</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-bold">Your listing could use more eyes.</div>
+                      <div className="text-xs text-muted-foreground">Share it to your Instagram Story → takes 30 seconds.</div>
+                    </div>
+                    <ShareToStoryButton listing={l} variant="block" label="Create Story Graphic →" />
+                  </div>
                 )}
-                <button onClick={() => remove(l)} title="Delete" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-4 w-4" />
-                </button>
               </div>
               );
             })}
