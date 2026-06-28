@@ -251,6 +251,15 @@ function MyListingsPage() {
                     <ShareToStoryButton listing={l} variant="block" label="Create Story Graphic →" />
                   </div>
                 )}
+                {!filled && l.is_active && (
+                  <div className="mt-3"><BoostCard listingId={l.id} isFeatured={l.is_featured} featuredUntil={l.featured_until} /></div>
+                )}
+                {l.deposit_escrow_enabled && (
+                  <div className="mt-2 flex items-center gap-2 text-[11px]">
+                    <SecureDepositBadge />
+                    <span className="text-muted-foreground">${(l.deposit_amount ?? 0).toLocaleString()} held via LeaseUp</span>
+                  </div>
+                )}
               </div>
               );
             })}
