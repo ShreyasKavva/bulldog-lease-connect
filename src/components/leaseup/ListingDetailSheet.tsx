@@ -183,6 +183,24 @@ export function ListingDetailSheet({
           {/* Price comparison panel — powered by campus_price_stats view */}
           <PriceComparisonPanel price={listing.price} campusId={listing.campus_id ?? null} beds={listing.beds} />
 
+          {/* Similar listings */}
+          {comps.length > 0 && (
+            <div className="rounded-xl border bg-background p-3 text-xs">
+              <div className="mb-2 font-bold uppercase text-muted-foreground">Similar listings</div>
+              <div className="space-y-1.5">
+                {[...comps].sort((a, b) => Math.abs(a.price - listing.price) - Math.abs(b.price - listing.price)).slice(0, 3).map(c => (
+                  <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50">
+                    <div className="min-w-0 flex-1 truncate">
+                      <span className="font-bold">{c.title}</span>
+                      <span className="text-muted-foreground"> · {c.beds}BR · ${c.price}/mo</span>
+                    </div>
+                    <PriceLabelBadge price={c.price} campusId={c.campus_id ?? null} beds={c.beds} size="xs" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
             <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
             <div><Bath className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{Number(listing.baths)} bath</div></div>
