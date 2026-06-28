@@ -62,6 +62,11 @@ export type Listing = {
   featured_purchased_at?: string | null;
   deposit_amount?: number | null;
   deposit_escrow_enabled?: boolean;
+  // Queue 21 — trust & safety
+  pending_review?: boolean;
+  pending_review_since?: string | null;
+  verification_tier?: "unverified" | "basic" | "verified" | "premium";
+  auto_flagged_at?: string | null;
 };
 
 export type Conversation = {
