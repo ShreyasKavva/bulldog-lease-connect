@@ -126,6 +126,13 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
             </Field>
           </div>
 
+          <PriceGuidance
+            campusId={profile?.campus_id ?? null}
+            beds={form.beds ? parseInt(form.beds) : null}
+            price={form.price ? parseInt(form.price) : null}
+            onPickMedian={(m) => setField("price", String(m))}
+          />
+
           <div className="grid grid-cols-2 gap-3">
             <Field label="Available from"><Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} /></Field>
             <Field label="Available until"><Input type="date" value={form.available_to} onChange={(e) => setField("available_to", e.target.value)} /></Field>
