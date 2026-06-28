@@ -43,6 +43,7 @@ function MyListingsPage() {
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
+  const [tourFor, setTourFor] = useState<Listing | null>(null);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
 
   const totals = {
