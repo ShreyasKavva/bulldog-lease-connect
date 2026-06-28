@@ -5,6 +5,7 @@ import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 import { useReactionPicker } from "./useReactionPicker";
 import { ShareToStoryButton } from "./ShareToStoryButton";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -304,6 +305,7 @@ function ScrollCard({
         <div className="flex items-baseline gap-2">
           <span className="text-4xl font-black tracking-tight">${l.price.toLocaleString()}</span>
           <span className="text-sm font-semibold text-white/70">/mo</span>
+          <PriceLabelBadge price={l.price} campusId={(l as any).campus_id} beds={l.beds} size="sm" />
         </div>
         <h2 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{l.title}</h2>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-white/85">

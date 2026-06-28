@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { VIBE_TAGS } from "@/lib/leaseup/constants";
+import { findStat, computePriceLabel, LABEL_META } from "@/lib/leaseup/pricing";
+import { usePriceStats } from "@/components/leaseup/PriceLabelBadge";
 
 export const Route = createFileRoute("/find-my-match")({
   head: () => ({
@@ -606,6 +608,12 @@ function MatchCard({
     : match.score >= 70 ? "bg-primary text-white"
     : "bg-muted text-muted-foreground";
 
+  // Deal score: pull median for this campus+beds and compute label
+  const { data: stats } = usePriceStats();
+  const stat = findStat(stats, l.campus_id ?? undefined, l.beds);
+  const dealLabel = computePriceLabel(l.price, stat);
+  const dealDiff = stat ? Math.round(((l.price - Number(stat.median_price)) / Number(stat.median_price)) * 100) : null;
+
   return (
     <button
       onClick={onOpen}
@@ -632,6 +640,16 @@ function MatchCard({
               <div className="truncate text-sm font-extrabold">
                 ${l.price}<span className="text-muted-foreground">/mo</span> · {l.title}
               </div>
+              {dealLabel !== "no_data" && (
+                <div className="mt-0.5">
+                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", LABEL_META[dealLabel].tone)}>
+                    {LABEL_META[dealLabel].icon} {LABEL_META[dealLabel].text}
+                    {dealDiff != null && dealDiff !== 0 && (
+                      <span className="opacity-80">· {dealDiff > 0 ? `+${dealDiff}%` : `${dealDiff}%`} vs median</span>
+                    )}
+                  </span>
+                </div>
+              )}
               <div className="mt-0.5 truncate text-xs text-muted-foreground">
                 {l.beds}BR · {l.area ?? "Athens"}
                 {l.available_from ? ` · ${new Date(l.available_from).toLocaleString("en-US", { month: "short" })}` : ""}

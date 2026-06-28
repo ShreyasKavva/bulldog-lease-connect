@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
+import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
@@ -125,6 +126,13 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
               </Select>
             </Field>
           </div>
+
+          <PriceGuidance
+            campusId={profile?.campus_id ?? null}
+            beds={form.beds ? parseInt(form.beds) : null}
+            price={form.price ? parseInt(form.price) : null}
+            onPickMedian={(m: number) => setField("price", String(m))}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Available from"><Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} /></Field>

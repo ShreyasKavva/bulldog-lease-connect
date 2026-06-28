@@ -18,6 +18,8 @@ import { ReactionBar } from "./ReactionBar";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
 import { TourBookingPanel } from "./TourBookingPanel";
+import { PriceComparisonPanel } from "./PriceComparisonPanel";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 
 
@@ -179,29 +181,23 @@ export function ListingDetailSheet({
             </ul>
           </div>
 
-          {/* Price comparison bar */}
-          {priceBar && (
-            <div className="rounded-xl border bg-background p-3">
-              <div className="mb-2 flex items-center justify-between text-xs">
-                <span className="font-bold uppercase text-muted-foreground">{listing.beds}BR range nearby</span>
-                {priceBar.below > 5 ? (
-                  <span className="rounded-full bg-orange-500/15 px-2 py-0.5 font-bold text-orange-600">🔥 {Math.round(priceBar.below)}% below avg</span>
-                ) : priceBar.below < -5 ? (
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">{Math.round(-priceBar.below)}% above avg</span>
-                ) : (
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-muted-foreground">Around avg</span>
-                )}
-              </div>
-              <div className="relative h-2 rounded-full bg-muted">
-                <div
-                  className="absolute -top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-primary shadow"
-                  style={{ left: `${Math.max(2, Math.min(98, priceBar.pct))}%`, transition: "left 600ms ease-out" }}
-                />
-              </div>
-              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-                <span>${Math.round(priceBar.min)}</span>
-                <span className="font-bold text-foreground">${listing.price.toLocaleString()} this listing</span>
-                <span>${Math.round(priceBar.max)}</span>
+          {/* Price comparison panel — powered by campus_price_stats view */}
+          <PriceComparisonPanel price={listing.price} campusId={listing.campus_id ?? null} beds={listing.beds} />
+
+          {/* Similar listings */}
+          {comps.length > 0 && (
+            <div className="rounded-xl border bg-background p-3 text-xs">
+              <div className="mb-2 font-bold uppercase text-muted-foreground">Similar listings</div>
+              <div className="space-y-1.5">
+                {[...comps].sort((a, b) => Math.abs(a.price - listing.price) - Math.abs(b.price - listing.price)).slice(0, 3).map(c => (
+                  <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50">
+                    <div className="min-w-0 flex-1 truncate">
+                      <span className="font-bold">{c.title}</span>
+                      <span className="text-muted-foreground"> · {c.beds}BR · ${c.price}/mo</span>
+                    </div>
+                    <PriceLabelBadge price={c.price} campusId={c.campus_id ?? null} beds={c.beds} size="xs" />
+                  </div>
+                ))}
               </div>
             </div>
           )}

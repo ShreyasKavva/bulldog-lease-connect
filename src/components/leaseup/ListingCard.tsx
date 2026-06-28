@@ -1,5 +1,6 @@
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide-react";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { SecureDepositBadge, FeaturedBadge } from "./SecureDepositBadge";
@@ -144,7 +145,10 @@ export function ListingCard({
 
       <div className="p-3 pt-4" onClick={onOpen}>
         <div className="flex items-baseline justify-between gap-2">
-          <div className="text-lg font-extrabold">${listing.price.toLocaleString()}<span className="text-xs font-medium text-muted-foreground">/mo</span></div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-lg font-extrabold">${listing.price.toLocaleString()}<span className="text-xs font-medium text-muted-foreground">/mo</span></div>
+            <PriceLabelBadge price={listing.price} campusId={(listing as any).campus_id} beds={listing.beds} size="xs" />
+          </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Bed className="h-3 w-3" />{listing.beds} bd · {Number(listing.baths)} ba
           </div>
