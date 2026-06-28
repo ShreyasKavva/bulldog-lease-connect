@@ -55,9 +55,8 @@ function MyListingsPage() {
      
   }, [search.boosted, search.deposit]);
 
-  const [selected, setSelected] = useState<Listing | null>(null);
-  const [posting, setPosting] = useState(false);
-  const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+
+
 
   const { data: shareStats = {} } = useQuery({
     queryKey: ["my-listing-shares", user?.id, listings.map((l) => l.id).join(",")],
