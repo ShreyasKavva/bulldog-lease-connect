@@ -47,6 +47,10 @@ export type Listing = {
   flagged?: boolean;
   safe_score: number | null;
   view_count?: number;
+  status?: "active" | "filled" | "inactive";
+  filled_at?: string | null;
+  filled_with_user_id?: string | null;
+  filled_via_lease_up?: boolean;
   created_at: string;
   profile?: Profile;
   photo_urls?: string[];
