@@ -401,7 +401,8 @@ function UsersTab() {
                 <td className="p-2 text-xs">{listingCount.get(u.id) ?? 0}</td>
                 <td className="p-2 text-xs text-muted-foreground">{timeAgo(u.created_at)}</td>
                 <td className="p-2 text-xs">
-                  {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1">VERIFIED</span>}
+                  <RiskBadge userId={u.id} banned={!!u.banned} verified={!!u.verified_email} safeScore={(u as any).safe_score ?? null} />
+                  {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1 ml-1">VERIFIED</span>}
                   {u.is_admin && <span className="rounded bg-primary-light text-primary-dark px-1.5 py-0.5 text-[10px] font-bold mr-1">ADMIN</span>}
                   {(u as any).is_ambassador && <span className="rounded bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold mr-1">AMBASSADOR</span>}
                   {u.banned && <span className="rounded bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold">BANNED</span>}
