@@ -996,6 +996,150 @@ export type Database = {
           },
         ]
       }
+      roommate_interests: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          note: string | null
+          status: string
+          to_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          note?: string | null
+          status?: string
+          to_user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          note?: string | null
+          status?: string
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_interests_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_interests_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_profiles: {
+        Row: {
+          about_me: string | null
+          areas_preferred: string[]
+          beds_wanted: number | null
+          budget_max: number | null
+          budget_min: number | null
+          campus_id: string | null
+          created_at: string
+          gender_preference: string
+          has_pets: boolean
+          id: string
+          is_active: boolean
+          lease_length: string | null
+          lifestyle_clean: number | null
+          lifestyle_early_bird: boolean
+          lifestyle_night_owl: boolean
+          lifestyle_quiet: number | null
+          lifestyle_social: boolean
+          lifestyle_studious: boolean
+          move_in_date: string | null
+          pet_friendly: boolean
+          smoker_ok: boolean
+          smokes: boolean
+          updated_at: string
+          user_id: string
+          vibe_tags: string[]
+          view_count: number
+        }
+        Insert: {
+          about_me?: string | null
+          areas_preferred?: string[]
+          beds_wanted?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          campus_id?: string | null
+          created_at?: string
+          gender_preference?: string
+          has_pets?: boolean
+          id?: string
+          is_active?: boolean
+          lease_length?: string | null
+          lifestyle_clean?: number | null
+          lifestyle_early_bird?: boolean
+          lifestyle_night_owl?: boolean
+          lifestyle_quiet?: number | null
+          lifestyle_social?: boolean
+          lifestyle_studious?: boolean
+          move_in_date?: string | null
+          pet_friendly?: boolean
+          smoker_ok?: boolean
+          smokes?: boolean
+          updated_at?: string
+          user_id: string
+          vibe_tags?: string[]
+          view_count?: number
+        }
+        Update: {
+          about_me?: string | null
+          areas_preferred?: string[]
+          beds_wanted?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          campus_id?: string | null
+          created_at?: string
+          gender_preference?: string
+          has_pets?: boolean
+          id?: string
+          is_active?: boolean
+          lease_length?: string | null
+          lifestyle_clean?: number | null
+          lifestyle_early_bird?: boolean
+          lifestyle_night_owl?: boolean
+          lifestyle_quiet?: number | null
+          lifestyle_social?: boolean
+          lifestyle_studious?: boolean
+          move_in_date?: string | null
+          pet_friendly?: boolean
+          smoker_ok?: boolean
+          smokes?: boolean
+          updated_at?: string
+          user_id?: string
+          vibe_tags?: string[]
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_profiles_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_listings: {
         Row: {
           created_at: string
