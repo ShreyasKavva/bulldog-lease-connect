@@ -172,7 +172,7 @@ export async function setConversationFlag(
 ) {
   const side = conv.participant_1_id === userId ? "p1" : "p2";
   const col = `${flag}_by_${side}`;
-  const { error } = await supabase.from("conversations").update({ [col]: value }).eq("id", conv.id);
+  const { error } = await supabase.from("conversations").update({ [col]: value } as never).eq("id", conv.id);
   if (error) throw error;
 }
 
