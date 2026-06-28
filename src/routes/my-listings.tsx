@@ -203,7 +203,7 @@ function MyListingsPage() {
             <StatCard icon="📋" label="Active listings" value={totals.active} />
           </div>
         )}
-        {user && <StaleListingsNudge userId={user.id} onEdit={(id) => navigate({ to: "/my-listings/$listingId/analytics", params: { listingId: id } })} />}
+        {user && <StaleListingsNudge userId={user.id} onEdit={(id: string) => navigate({ to: "/my-listings/$listingId/analytics", params: { listingId: id } })} />}
         {!isLoading && listings.some((l) => l.is_active && l.status !== "filled") && (
           <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary to-[#1D4ED8] p-5 text-primary-foreground shadow-card sm:flex-row sm:items-center">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📣</div>
