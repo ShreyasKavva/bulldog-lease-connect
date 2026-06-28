@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
+import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
