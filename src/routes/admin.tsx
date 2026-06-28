@@ -69,6 +69,7 @@ function AdminPage() {
           {([
             ["overview", "Overview", Home],
             ["reports", "Reports", AlertTriangle],
+            ["suspicious", "Suspicious", ShieldAlert],
             ["listings", "Listings", Home],
             ["users", "Users", Users],
             ["revenue", "Revenue", DollarSign],
@@ -84,6 +85,7 @@ function AdminPage() {
 
         {tab === "overview" && <OverviewTab />}
         {tab === "reports" && <ReportsTab adminId={user!.id} />}
+        {tab === "suspicious" && <SuspiciousTab />}
         {tab === "listings" && <ListingsTab />}
         {tab === "users" && <UsersTab />}
         {tab === "revenue" && <RevenueTab />}
