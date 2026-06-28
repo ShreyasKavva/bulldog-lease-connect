@@ -18,6 +18,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
+import { Route as MarketRouteImport } from './routes/market'
 import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
 import { Route as JoinRouteImport } from './routes/join'
@@ -84,6 +85,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const MyListingsRoute = MyListingsRouteImport.update({
   id: '/my-listings',
   path: '/my-listings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketRoute = MarketRouteImport.update({
+  id: '/market',
+  path: '/market',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LookingForRoute = LookingForRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
+  '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
+  '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
+  '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/lease-analysis'
     | '/looking-for'
+    | '/market'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/lease-analysis'
     | '/looking-for'
+    | '/market'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/lease-analysis'
     | '/looking-for'
+    | '/market'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -415,6 +427,7 @@ export interface RootRouteChildren {
   JoinRoute: typeof JoinRoute
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
   LookingForRoute: typeof LookingForRoute
+  MarketRoute: typeof MarketRoute
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/my-listings'
       fullPath: '/my-listings'
       preLoaderRoute: typeof MyListingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market': {
+      id: '/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof MarketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/looking-for': {
@@ -693,6 +713,7 @@ const rootRouteChildren: RootRouteChildren = {
   JoinRoute: JoinRoute,
   LeaseAnalysisRoute: LeaseAnalysisRoute,
   LookingForRoute: LookingForRoute,
+  MarketRoute: MarketRoute,
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
