@@ -105,30 +105,48 @@ export type Database = {
       conversations: {
         Row: {
           created_at: string
+          deleted_by_p1: boolean
+          deleted_by_p2: boolean
           id: string
           last_message: string | null
           last_message_at: string | null
           listing_id: string | null
+          muted_by_p1: boolean
+          muted_by_p2: boolean
           participant_1_id: string
           participant_2_id: string
+          pinned_by_p1: boolean
+          pinned_by_p2: boolean
         }
         Insert: {
           created_at?: string
+          deleted_by_p1?: boolean
+          deleted_by_p2?: boolean
           id?: string
           last_message?: string | null
           last_message_at?: string | null
           listing_id?: string | null
+          muted_by_p1?: boolean
+          muted_by_p2?: boolean
           participant_1_id: string
           participant_2_id: string
+          pinned_by_p1?: boolean
+          pinned_by_p2?: boolean
         }
         Update: {
           created_at?: string
+          deleted_by_p1?: boolean
+          deleted_by_p2?: boolean
           id?: string
           last_message?: string | null
           last_message_at?: string | null
           listing_id?: string | null
+          muted_by_p1?: boolean
+          muted_by_p2?: boolean
           participant_1_id?: string
           participant_2_id?: string
+          pinned_by_p1?: boolean
+          pinned_by_p2?: boolean
         }
         Relationships: [
           {
@@ -595,31 +613,85 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_url: string | null
           content: string
+          content_type: string
           conversation_id: string
           created_at: string
           id: string
           read: boolean
+          read_at: string | null
           recipient_id: string
           sender_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           content: string
+          content_type?: string
           conversation_id: string
           created_at?: string
           id?: string
           read?: boolean
+          read_at?: string | null
           recipient_id: string
           sender_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           content?: string
+          content_type?: string
           conversation_id?: string
           created_at?: string
           id?: string
           read?: boolean
+          read_at?: string | null
           recipient_id?: string
           sender_id?: string
         }
@@ -1145,6 +1217,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      user_in_message_convo: {
+        Args: { _message: string; _user: string }
+        Returns: boolean
       }
     }
     Enums: {
