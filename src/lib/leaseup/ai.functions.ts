@@ -177,3 +177,87 @@ ${JSON.stringify(compact)}`;
     parsed.matches = (parsed.matches ?? []).filter(m => valid.has(m.id)).slice(0, 6);
     return parsed;
   });
+
+// ---- LISTING SCREENING (Queue 21) ----
+const ScreenInput = z.object({
+  title: z.string().min(1),
+  description: z.string().default(""),
+  price: z.number().int().nonnegative(),
+  beds: z.number().int().nonnegative(),
+  campus: z.string().default(""),
+  has_contact: z.boolean().default(false),
+  photo_count: z.number().int().nonnegative().default(0),
+});
+
+export type ScreenResult = {
+  quality_score: number;
+  scam_risk: "low" | "medium" | "high";
+  issues: string[];
+  auto_reject: boolean;
+  warnings: string[];
+};
+
+export const screenListing = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ScreenInput.parse(d))
+  .handler(async ({ data }): Promise<ScreenResult> => {
+    const provider = gateway();
+    const prompt = `You are a content moderator for a student housing marketplace called LeaseUp.
+Analyze the listing below and return ONLY a JSON object (no markdown) with this exact shape:
+{
+  "quality_score": 0-100,
+  "scam_risk": "low" | "medium" | "high",
+  "issues": [string],
+  "auto_reject": boolean,
+  "warnings": [string]
+}
+
+Set auto_reject true ONLY for obvious scams, illegal content, hate speech, or fraud.
+"high" scam_risk: strong signals (off-platform payment, out-of-country, mailing keys, urgency + no specifics).
+"medium": some signals but plausible.
+
+Scam signals:
+- Price drastically below market for student housing
+- "Send money via Venmo / CashApp / Zelle / wire to hold"
+- Requests for SSN / bank info upfront
+- "Out of the country, I'll mail the keys"
+- Generic / copied description, zero specifics
+- 0 photos
+- Hyper-urgent language ("must sign today")
+
+Quality signals:
+- Specific unit details, neighborhood, dates
+- Clear price + lease terms
+- 3+ photos
+- Mentions utilities, furnishing
+
+LISTING:
+Title: ${data.title}
+Description: ${data.description.slice(0, 1500)}
+Price: $${data.price}/mo
+Beds: ${data.beds}BR
+Campus: ${data.campus}
+Photos uploaded: ${data.photo_count}
+Has contact info: ${data.has_contact}`;
+
+    const { text } = await generateText({
+      model: provider(MODEL),
+      prompt,
+      temperature: 0.1,
+    });
+
+    let parsed: ScreenResult;
+    try {
+      parsed = extractJson<ScreenResult>(text);
+    } catch {
+      parsed = { quality_score: 60, scam_risk: "low", issues: [], auto_reject: false, warnings: [] };
+    }
+    return {
+      quality_score: Math.max(0, Math.min(100, Math.round(parsed.quality_score ?? 60))),
+      scam_risk: (["low", "medium", "high"] as const).includes(parsed.scam_risk) ? parsed.scam_risk : "low",
+      issues: Array.isArray(parsed.issues) ? parsed.issues.slice(0, 8) : [],
+      auto_reject: Boolean(parsed.auto_reject),
+      warnings: Array.isArray(parsed.warnings) ? parsed.warnings.slice(0, 6) : [],
+    };
+  });
+
