@@ -3,13 +3,18 @@ import { useActivity, activityTimeAgo, type ActivityItem } from "@/lib/leaseup/a
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/leaseup/use-session";
 
 export const Route = createFileRoute("/activity")({
   head: () => ({
     meta: [
       { title: "Activity — LeaseUp" },
       { name: "description", content: "Live activity from students posting, saving, and reacting to subleases." },
+      { property: "og:title", content: "Live Activity — LeaseUp" },
+      { property: "og:description", content: "See what students are posting, saving, and reacting to right now." },
+      { property: "og:url", content: "https://leasup.co/activity" },
     ],
+    links: [{ rel: "canonical", href: "https://leasup.co/activity" }],
   }),
   component: ActivityPage,
 });
