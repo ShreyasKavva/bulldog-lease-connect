@@ -31,6 +31,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -149,6 +150,12 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyListingsListingIdAnalyticsRoute =
+  MyListingsListingIdAnalyticsRouteImport.update({
+    id: '/$listingId/analytics',
+    path: '/$listingId/analytics',
+    getParentRoute: () => MyListingsRoute,
+  } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -200,7 +207,7 @@ export interface FileRoutesByFullPath {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
-  '/my-listings': typeof MyListingsRoute
+  '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -231,7 +239,7 @@ export interface FileRoutesByTo {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
-  '/my-listings': typeof MyListingsRoute
+  '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
@@ -244,6 +252,7 @@ export interface FileRoutesByTo {
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -263,7 +272,7 @@ export interface FileRoutesById {
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
-  '/my-listings': typeof MyListingsRoute
+  '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
@@ -276,6 +285,7 @@ export interface FileRoutesById {
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
+    | '/my-listings/$listingId/analytics'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
+    | '/my-listings/$listingId/analytics'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -371,6 +383,7 @@ export interface FileRouteTypes {
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
+    | '/my-listings/$listingId/analytics'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -390,7 +403,7 @@ export interface RootRouteChildren {
   JoinRoute: typeof JoinRoute
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
   LookingForRoute: typeof LookingForRoute
-  MyListingsRoute: typeof MyListingsRoute
+  MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
@@ -565,6 +578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-listings/$listingId/analytics': {
+      id: '/my-listings/$listingId/analytics'
+      path: '/$listingId/analytics'
+      fullPath: '/my-listings/$listingId/analytics'
+      preLoaderRoute: typeof MyListingsListingIdAnalyticsRouteImport
+      parentRoute: typeof MyListingsRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -617,6 +637,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MyListingsRouteChildren {
+  MyListingsListingIdAnalyticsRoute: typeof MyListingsListingIdAnalyticsRoute
+}
+
+const MyListingsRouteChildren: MyListingsRouteChildren = {
+  MyListingsListingIdAnalyticsRoute: MyListingsListingIdAnalyticsRoute,
+}
+
+const MyListingsRouteWithChildren = MyListingsRoute._addFileChildren(
+  MyListingsRouteChildren,
+)
+
 interface RoommatesRouteChildren {
   RoommatesCreateRoute: typeof RoommatesCreateRoute
 }
@@ -641,7 +673,7 @@ const rootRouteChildren: RootRouteChildren = {
   JoinRoute: JoinRoute,
   LeaseAnalysisRoute: LeaseAnalysisRoute,
   LookingForRoute: LookingForRoute,
-  MyListingsRoute: MyListingsRoute,
+  MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
