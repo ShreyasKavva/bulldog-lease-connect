@@ -131,7 +131,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
             campusId={profile?.campus_id ?? null}
             beds={form.beds ? parseInt(form.beds) : null}
             price={form.price ? parseInt(form.price) : null}
-            onPickMedian={(m) => setField("price", String(m))}
+            onPickMedian={(m: number) => setField("price", String(m))}
           />
 
           <div className="grid grid-cols-2 gap-3">
