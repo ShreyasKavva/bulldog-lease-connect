@@ -390,6 +390,9 @@ export type Database = {
           campus_id: string
           created_at: string
           description: string
+          filled_at: string | null
+          filled_via_lease_up: boolean
+          filled_with_user_id: string | null
           flagged: boolean
           furnished: boolean
           id: string
@@ -402,6 +405,7 @@ export type Database = {
           price: number
           safe_score: number | null
           semester: string | null
+          status: string
           title: string
           type: string
           updated_at: string
@@ -421,6 +425,9 @@ export type Database = {
           campus_id: string
           created_at?: string
           description?: string
+          filled_at?: string | null
+          filled_via_lease_up?: boolean
+          filled_with_user_id?: string | null
           flagged?: boolean
           furnished?: boolean
           id?: string
@@ -433,6 +440,7 @@ export type Database = {
           price: number
           safe_score?: number | null
           semester?: string | null
+          status?: string
           title: string
           type?: string
           updated_at?: string
@@ -452,6 +460,9 @@ export type Database = {
           campus_id?: string
           created_at?: string
           description?: string
+          filled_at?: string | null
+          filled_via_lease_up?: boolean
+          filled_with_user_id?: string | null
           flagged?: boolean
           furnished?: boolean
           id?: string
@@ -464,6 +475,7 @@ export type Database = {
           price?: number
           safe_score?: number | null
           semester?: string | null
+          status?: string
           title?: string
           type?: string
           updated_at?: string
@@ -799,6 +811,71 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          is_removed: boolean
+          listing_id: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          reviewer_role: string | null
+          stars: number
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_removed?: boolean
+          listing_id?: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          reviewer_role?: string | null
+          stars: number
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_removed?: boolean
+          listing_id?: string | null
+          reviewed_user_id?: string
+          reviewer_id?: string
+          reviewer_role?: string | null
+          stars?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_listings: {
         Row: {
           created_at: string
@@ -1054,6 +1131,7 @@ export type Database = {
         Returns: number
       }
       process_looking_for_expiry: { Args: never; Returns: undefined }
+      process_review_prompts: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
