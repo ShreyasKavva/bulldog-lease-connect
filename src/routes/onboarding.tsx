@@ -130,7 +130,13 @@ function Onboarding() {
     if (!user) return;
     setSaving(true);
     try {
-      const patch: Record<string, unknown> = {
+      const patch: {
+        onboarding_completed: boolean;
+        vibe_tags: string[];
+        avatar_emoji?: string;
+        year?: string;
+        bio?: string;
+      } = {
         onboarding_completed: true,
         vibe_tags: vibes,
       };
