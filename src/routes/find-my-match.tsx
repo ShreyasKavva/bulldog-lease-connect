@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { VIBE_TAGS } from "@/lib/leaseup/constants";
+import { findStat, computePriceLabel, LABEL_META } from "@/lib/leaseup/pricing";
+import { usePriceStats } from "@/components/leaseup/PriceLabelBadge";
 
 export const Route = createFileRoute("/find-my-match")({
   head: () => ({
