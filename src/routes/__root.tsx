@@ -69,11 +69,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "stylesheet", href: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
       { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
       { rel: "sitemap", type: "application/xml", href: "/sitemap.xml" },
+    ],
+    scripts: [
+      {
+        children: `(function(){try{var t=localStorage.getItem('leaseup:theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d)r.classList.add('dark');r.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -104,6 +112,9 @@ function RootComponent() {
   }, [router, queryClient]);
   useEffect(() => {
     import("@/lib/pwa/register").then((m) => m.registerPwa()).catch(() => {});
+  }, []);
+  useEffect(() => {
+    import("@/lib/leaseup/theme").then((m) => m.applyTheme(m.getStoredTheme())).catch(() => {});
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
