@@ -26,6 +26,9 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [screenResult, setScreenResult] = useState<ScreenResult | null>(null);
+  const [pendingForm, setPendingForm] = useState<null | (() => Promise<void>)>(null);
+  const runScreen = useServerFn(screenListing);
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
     beds: "1", baths: "1", area: NEIGHBORHOODS[0].name,
