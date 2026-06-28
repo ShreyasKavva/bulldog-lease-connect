@@ -18,6 +18,7 @@ import { MapCampusSelector } from "@/components/leaseup/MapCampusSelector";
 import { MapFilters, DEFAULT_FILTERS, type MapFiltersValue } from "@/components/leaseup/MapFilters";
 import { MapEmptyState } from "@/components/leaseup/MapEmptyState";
 import { GuestRibbon } from "@/components/leaseup/GuestRibbon";
+import { ProfileCompletionBanner } from "@/components/leaseup/ProfileCompletionBanner";
 import { UGA_CENTER } from "@/lib/leaseup/constants";
 import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
