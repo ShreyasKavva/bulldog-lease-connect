@@ -1,17 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMyListings, deleteListing, setListingActive } from "@/lib/leaseup/queries";
+import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
+import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
