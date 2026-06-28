@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReferralCard } from "@/components/leaseup/ReferralCard";
+import { ThemeToggle } from "@/components/leaseup/ThemeToggle";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -252,6 +253,9 @@ function ProfilePage() {
               <Sparkles className="h-4 w-4" />Ambassador dashboard
             </Link>
           )}
+          <div className="col-span-2">
+            <ThemeToggle />
+          </div>
           <button
             onClick={signOut}
             className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-bold text-foreground shadow-card-md hover:bg-background"
@@ -260,6 +264,7 @@ function ProfilePage() {
           </button>
         </section>
       </main>
+
 
       <BottomNav
         onPost={() => setPosting(true)}
