@@ -22,6 +22,7 @@ import { markConversationRead } from "@/hooks/use-unread";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import type { Conversation, Message, MessageReaction } from "@/lib/leaseup/types";
 import { toast } from "sonner";
+import { ScamWarningBanner } from "./ScamWarningBanner";
 
 const REACTION_EMOJI = ["👍", "❤️", "😂", "😮", "🙏", "🔥"];
 
@@ -335,6 +336,13 @@ export function MessagesSheet({
                 </button>
               </div>
             )}
+
+            <ScamWarningBanner
+              messages={messages as any}
+              currentUserId={user?.id}
+              conversationId={active.id}
+            />
+
 
             <div className="flex-1 space-y-2 overflow-y-auto bg-background p-4">
               {messages?.map((m, idx) => (

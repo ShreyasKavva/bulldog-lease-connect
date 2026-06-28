@@ -12,10 +12,12 @@ import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ShieldAlert, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
+import { useServerFn } from "@tanstack/react-start";
+import { screenListing, type ScreenResult } from "@/lib/leaseup/ai.functions";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
@@ -24,6 +26,9 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [screenResult, setScreenResult] = useState<ScreenResult | null>(null);
+  const [pendingForm, setPendingForm] = useState<null | (() => Promise<void>)>(null);
+  const runScreen = useServerFn(screenListing);
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
     beds: "1", baths: "1", area: NEIGHBORHOODS[0].name,
@@ -51,49 +56,91 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     if (!form.title || !form.price) { toast.error("Title and price required"); return; }
     setSubmitting(true);
     try {
-      // Check if this is the user's first listing for the invite prompt
-      const { count: existingCount } = await supabase
-        .from("listings")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      const photos = files.length ? await uploadListingPhotos(user.id, files) : [];
-      const hood = NEIGHBORHOODS.find(n => n.name === form.area);
-      const { error } = await supabase.from("listings").insert({
-        user_id: user.id,
-        campus_id: profile.campus_id,
-        title: form.title,
-        description: form.description,
-        type: form.type,
-        price: parseInt(form.price),
-        beds: parseInt(form.beds),
-        baths: parseFloat(form.baths),
-        area: form.area,
-        lat: hood?.lat, lng: hood?.lng,
-        furnished: form.furnished,
-        utilities_included: form.utilities_included,
-        pet_friendly: form.pet_friendly,
-        parking: form.parking,
-        available_from: form.available_from || null,
-        available_to: form.available_to || null,
-        amenities: form.amenities,
-        photos,
-        deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
-        deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
-      });
-      if (error) throw error;
-      toast.success("🎉 Listing posted!");
-      qc.invalidateQueries({ queryKey: ["listings"] });
-      onOpenChange(false);
-      setForm({ ...form, title: "", description: "", price: "" });
-      setFiles([]);
-      if ((existingCount ?? 0) === 0) {
-        setInviteOpen(true);
+      // Queue 21 — pre-publish screening
+      let screen: ScreenResult | null = null;
+      try {
+        screen = await runScreen({
+          data: {
+            title: form.title,
+            description: form.description ?? "",
+            price: parseInt(form.price) || 0,
+            beds: parseInt(form.beds) || 0,
+            campus: profile?.campus_id ?? "",
+            has_contact: !!profile?.phone,
+            photo_count: files.length,
+          },
+        });
+      } catch (_e) {
+        // If screening fails (gateway down), do not block legitimate users
+        screen = null;
       }
+
+      if (screen?.auto_reject) {
+        setScreenResult(screen);
+        setSubmitting(false);
+        return;
+      }
+
+      const doPublish = async () => {
+        const { count: existingCount } = await supabase
+          .from("listings")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        const photos = files.length ? await uploadListingPhotos(user.id, files) : [];
+        const hood = NEIGHBORHOODS.find(n => n.name === form.area);
+        const { error } = await supabase.from("listings").insert({
+          user_id: user.id,
+          campus_id: profile.campus_id,
+          title: form.title,
+          description: form.description,
+          type: form.type,
+          price: parseInt(form.price),
+          beds: parseInt(form.beds),
+          baths: parseFloat(form.baths),
+          area: form.area,
+          lat: hood?.lat, lng: hood?.lng,
+          furnished: form.furnished,
+          utilities_included: form.utilities_included,
+          pet_friendly: form.pet_friendly,
+          parking: form.parking,
+          available_from: form.available_from || null,
+          available_to: form.available_to || null,
+          amenities: form.amenities,
+          photos,
+          deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+          deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
+          // Queue 21: temporary review hold for high-risk content
+          pending_review: screen?.scam_risk === "high",
+          pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
+        } as any);
+        if (error) throw error;
+        toast.success(screen?.scam_risk === "high"
+          ? "Posted — under brief review before going public"
+          : "🎉 Listing posted!");
+        qc.invalidateQueries({ queryKey: ["listings"] });
+        onOpenChange(false);
+        setForm({ ...form, title: "", description: "", price: "" });
+        setFiles([]);
+        if ((existingCount ?? 0) === 0) setInviteOpen(true);
+        setScreenResult(null);
+        setPendingForm(null);
+      };
+
+      // Quality nudge — confirm before publishing
+      if (screen && (screen.quality_score < 40 || screen.warnings.length > 0)) {
+        setScreenResult(screen);
+        setPendingForm(() => doPublish);
+        setSubmitting(false);
+        return;
+      }
+
+      await doPublish();
     } catch (e: any) {
       toast.error(e.message ?? "Failed to post");
     } finally { setSubmitting(false); }
   }
+
 
   return (
     <>
@@ -210,6 +257,56 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
       onOpenChange={setInviteOpen}
       referralCode={(profile as any)?.referral_code ?? null}
     />
+    <Dialog open={!!screenResult} onOpenChange={(o) => { if (!o) { setScreenResult(null); setPendingForm(null); } }}>
+      <DialogContent className="max-w-md">
+        {screenResult?.auto_reject ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <ShieldAlert className="h-5 w-5 text-destructive" /> We couldn't publish your listing
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Our system detected content that may violate LeaseUp's community guidelines:
+            </p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {screenResult.issues.map((it, i) => <li key={i}>{it}</li>)}
+            </ul>
+            <Button onClick={() => { setScreenResult(null); setPendingForm(null); }} className="w-full">
+              Edit listing
+            </Button>
+          </>
+        ) : screenResult ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-primary" /> Your listing could perform better
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 text-sm">
+              {screenResult.quality_score < 40 && (
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-500/10 p-2 text-amber-900 dark:text-amber-100">
+                  Quality score: <b>{screenResult.quality_score}/100</b>
+                </div>
+              )}
+              {screenResult.warnings.length > 0 && (
+                <ul className="list-disc space-y-1 pl-5">
+                  {screenResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                </ul>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => { setScreenResult(null); setPendingForm(null); }}>
+                Improve my listing
+              </Button>
+              <Button className="flex-1" onClick={async () => { const fn = pendingForm; setScreenResult(null); setPendingForm(null); if (fn) { setSubmitting(true); try { await fn(); } finally { setSubmitting(false); } } }}>
+                Post anyway
+              </Button>
+            </div>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
     </>
   );
 }

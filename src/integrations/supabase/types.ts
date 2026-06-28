@@ -63,6 +63,20 @@ export type Database = {
             foreignKeyName: "boost_purchases_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -71,6 +85,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -161,6 +182,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "closed_deals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversations: {
@@ -215,6 +243,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -296,6 +338,20 @@ export type Database = {
             foreignKeyName: "deposit_agreements_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -307,10 +363,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "deposit_agreements_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "deposit_agreements_subletter_id_fkey"
             columns: ["subletter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -352,6 +422,20 @@ export type Database = {
             foreignKeyName: "deposit_waitlist_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -360,6 +444,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -518,6 +609,20 @@ export type Database = {
             foreignKeyName: "listing_reactions_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -528,14 +633,24 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "listing_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       listing_reports: {
         Row: {
+          auto_flagged: boolean
+          auto_score: number
           created_at: string
           details: string | null
           id: string
           listing_id: string
+          priority: string
           reason: string
           reporter_id: string
           resolved_at: string | null
@@ -543,10 +658,13 @@ export type Database = {
           status: string
         }
         Insert: {
+          auto_flagged?: boolean
+          auto_score?: number
           created_at?: string
           details?: string | null
           id?: string
           listing_id: string
+          priority?: string
           reason: string
           reporter_id: string
           resolved_at?: string | null
@@ -554,10 +672,13 @@ export type Database = {
           status?: string
         }
         Update: {
+          auto_flagged?: boolean
+          auto_score?: number
           created_at?: string
           details?: string | null
           id?: string
           listing_id?: string
+          priority?: string
           reason?: string
           reporter_id?: string
           resolved_at?: string | null
@@ -576,6 +697,20 @@ export type Database = {
             foreignKeyName: "listing_reports_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -587,10 +722,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "listing_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "listing_reports_resolved_by_fkey"
             columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -623,6 +772,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_shares_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_shares_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -674,6 +837,20 @@ export type Database = {
             foreignKeyName: "listing_stats_daily_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_stats_daily_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_stats_daily_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -684,6 +861,7 @@ export type Database = {
           address: string | null
           amenities: string[] | null
           area: string | null
+          auto_flagged_at: string | null
           available_from: string | null
           available_to: string | null
           baths: number
@@ -706,6 +884,8 @@ export type Database = {
           lat: number | null
           lng: number | null
           parking: boolean
+          pending_review: boolean
+          pending_review_since: string | null
           pet_friendly: boolean
           photos: string[] | null
           price: number
@@ -717,6 +897,7 @@ export type Database = {
           updated_at: string
           user_id: string
           utilities_included: boolean
+          verification_tier: string
           view_count: number
           views: number
         }
@@ -724,6 +905,7 @@ export type Database = {
           address?: string | null
           amenities?: string[] | null
           area?: string | null
+          auto_flagged_at?: string | null
           available_from?: string | null
           available_to?: string | null
           baths?: number
@@ -746,6 +928,8 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           parking?: boolean
+          pending_review?: boolean
+          pending_review_since?: string | null
           pet_friendly?: boolean
           photos?: string[] | null
           price: number
@@ -757,6 +941,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           utilities_included?: boolean
+          verification_tier?: string
           view_count?: number
           views?: number
         }
@@ -764,6 +949,7 @@ export type Database = {
           address?: string | null
           amenities?: string[] | null
           area?: string | null
+          auto_flagged_at?: string | null
           available_from?: string | null
           available_to?: string | null
           baths?: number
@@ -786,6 +972,8 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           parking?: boolean
+          pending_review?: boolean
+          pending_review_since?: string | null
           pet_friendly?: boolean
           photos?: string[] | null
           price?: number
@@ -797,6 +985,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           utilities_included?: boolean
+          verification_tier?: string
           view_count?: number
           views?: number
         }
@@ -842,6 +1031,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "looking_for_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -946,6 +1142,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1103,6 +1306,20 @@ export type Database = {
             foreignKeyName: "payment_intents_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -1114,10 +1331,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payment_intents_payee_id_fkey"
+            columns: ["payee_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payment_intents_payer_id_fkey"
             columns: ["payer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1225,6 +1456,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       referral_events: {
@@ -1265,10 +1503,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referral_events_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referral_events_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1319,6 +1571,20 @@ export type Database = {
             foreignKeyName: "reviews_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -1330,10 +1596,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1372,10 +1652,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "roommate_interests_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "roommate_interests_to_user_id_fkey"
             columns: ["to_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_interests_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1480,6 +1774,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "roommate_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       saved_listings: {
@@ -1507,6 +1808,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -1647,6 +1962,20 @@ export type Database = {
             foreignKeyName: "tour_availability_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -1655,6 +1984,13 @@ export type Database = {
             columns: ["poster_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1730,6 +2066,20 @@ export type Database = {
             foreignKeyName: "tour_bookings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
@@ -1741,10 +2091,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tour_bookings_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tour_bookings_subletter_id_fkey"
             columns: ["subletter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -1762,6 +2126,62 @@ export type Database = {
           min_price: number | null
           p25_price: number | null
           p75_price: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suspicious_listings: {
+        Row: {
+          beds: number | null
+          campus_id: string | null
+          created_at: string | null
+          flag_reason: string | null
+          id: string | null
+          median_price: number | null
+          p25_price: number | null
+          p75_price: number | null
+          pending_review: boolean | null
+          photos: string[] | null
+          price: number | null
+          title: string | null
+          user_id: string | null
+          verification_tier: string | null
+          view_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suspicious_listings_filtered: {
+        Row: {
+          beds: number | null
+          campus_id: string | null
+          created_at: string | null
+          flag_reason: string | null
+          id: string | null
+          median_price: number | null
+          p25_price: number | null
+          p75_price: number | null
+          pending_review: boolean | null
+          photos: string[] | null
+          price: number | null
+          title: string | null
+          user_id: string | null
+          verification_tier: string | null
+          view_count: number | null
         }
         Relationships: [
           {
@@ -1880,11 +2300,55 @@ export type Database = {
           },
         ]
       }
+      user_risk_scores: {
+        Row: {
+          avg_rating: number | null
+          banned: boolean | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          name: string | null
+          reports_filed: number | null
+          reports_received: number | null
+          risk_level: string | null
+          verified_email: boolean | null
+        }
+        Insert: {
+          avg_rating?: never
+          banned?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          name?: string | null
+          reports_filed?: never
+          reports_received?: never
+          risk_level?: never
+          verified_email?: boolean | null
+        }
+        Update: {
+          avg_rating?: never
+          banned?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          name?: string | null
+          reports_filed?: never
+          reports_received?: never
+          risk_level?: never
+          verified_email?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      auto_approve_pending_listings: { Args: never; Returns: undefined }
       compute_listing_safe_score: {
         Args: { _listing_id: string }
         Returns: number
+      }
+      compute_verification_tier: {
+        Args: { _listing_id: string }
+        Returns: string
       }
       count_saved_search_matches: {
         Args: { _search_id: string }

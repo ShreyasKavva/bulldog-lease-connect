@@ -5,6 +5,7 @@ import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import {
   fetchReports, resolveReport, adminFetchAllListings, adminFetchAllProfiles,
   adminSetListing, adminDeleteListing, adminSetProfile, fetchPlatformStats,
+  fetchSuspiciousListings, fetchUserRiskScores,
 } from "@/lib/leaseup/admin.queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { Nav } from "@/components/leaseup/Nav";
@@ -15,7 +16,7 @@ import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { fetchGrowthMetrics } from "@/lib/leaseup/analytics.queries";
 import { LineChart as AnalyticsLineChart } from "@/components/leaseup/analytics/Charts";
-import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.functions";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "overview" | "reports" | "listings" | "users" | "revenue" | "deposits";
+type Tab = "overview" | "reports" | "suspicious" | "listings" | "users" | "revenue" | "deposits";
 
 function AdminPage() {
   const { user, loading } = useSession();
@@ -68,6 +69,7 @@ function AdminPage() {
           {([
             ["overview", "Overview", Home],
             ["reports", "Reports", AlertTriangle],
+            ["suspicious", "Suspicious", ShieldAlert],
             ["listings", "Listings", Home],
             ["users", "Users", Users],
             ["revenue", "Revenue", DollarSign],
@@ -83,6 +85,7 @@ function AdminPage() {
 
         {tab === "overview" && <OverviewTab />}
         {tab === "reports" && <ReportsTab adminId={user!.id} />}
+        {tab === "suspicious" && <SuspiciousTab />}
         {tab === "listings" && <ListingsTab />}
         {tab === "users" && <UsersTab />}
         {tab === "revenue" && <RevenueTab />}
@@ -213,7 +216,21 @@ function ReportsTab({ adminId }: { adminId: string }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
+                {r.priority && r.priority !== "normal" && (
+                  <span className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                    r.priority === "urgent" && "bg-red-600 text-white animate-pulse",
+                    r.priority === "high" && "bg-orange-500 text-white",
+                    r.priority === "low" && "bg-muted text-muted-foreground",
+                  )}>{r.priority}</span>
+                )}
                 <span className="rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-[10px] font-bold uppercase">{r.reason}</span>
+                {r.auto_flagged && (
+                  <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold uppercase">Auto</span>
+                )}
+                {(r.reportCount ?? 1) > 1 && (
+                  <span className="rounded-full bg-background border px-2 py-0.5 text-[10px] font-bold">×{r.reportCount} on this listing</span>
+                )}
                 <span className="text-[11px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 {r.status !== "open" && (
                   <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold uppercase">{r.status}</span>
@@ -384,7 +401,8 @@ function UsersTab() {
                 <td className="p-2 text-xs">{listingCount.get(u.id) ?? 0}</td>
                 <td className="p-2 text-xs text-muted-foreground">{timeAgo(u.created_at)}</td>
                 <td className="p-2 text-xs">
-                  {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1">VERIFIED</span>}
+                  <RiskBadge userId={u.id} banned={!!u.banned} verified={!!u.verified_email} safeScore={(u as any).safe_score ?? null} />
+                  {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1 ml-1">VERIFIED</span>}
                   {u.is_admin && <span className="rounded bg-primary-light text-primary-dark px-1.5 py-0.5 text-[10px] font-bold mr-1">ADMIN</span>}
                   {(u as any).is_ambassador && <span className="rounded bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold mr-1">AMBASSADOR</span>}
                   {u.banned && <span className="rounded bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold">BANNED</span>}
@@ -626,6 +644,106 @@ function DepositsTab() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// Queue 21 — Trust & Safety: Suspicious tab + Risk badges
+// ────────────────────────────────────────────────────────────────
+
+function useRiskScores() {
+  return useQuery({ queryKey: ["admin", "risk-scores"], queryFn: fetchUserRiskScores, staleTime: 60_000 });
+}
+
+function RiskBadge({ userId, banned, verified, safeScore }: { userId: string; banned: boolean; verified: boolean; safeScore: number | null }) {
+  const { data: rows } = useRiskScores();
+  const row = rows?.find(r => r.id === userId);
+  const level = row?.risk_level
+    ?? (banned ? "banned" : !verified ? "unverified" : (safeScore != null && safeScore < 3) ? "low_trust" : "good_standing");
+  const map: Record<string, { label: string; cls: string }> = {
+    banned: { label: "BANNED", cls: "bg-red-600 text-white" },
+    high_risk: { label: "HIGH RISK", cls: "bg-red-100 text-red-700" },
+    low_trust: { label: "LOW TRUST", cls: "bg-amber-100 text-amber-800" },
+    unverified: { label: "UNVERIFIED", cls: "bg-muted text-muted-foreground" },
+    good_standing: { label: "OK", cls: "bg-success-light text-success" },
+  };
+  const m = map[level] ?? map.good_standing;
+  return (
+    <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-black", m.cls)} title={`${row?.reports_received ?? 0} reports received`}>
+      {m.label}
+    </span>
+  );
+}
+
+function SuspiciousTab() {
+  const qc = useQueryClient();
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["admin", "suspicious"],
+    queryFn: fetchSuspiciousListings,
+  });
+
+  async function clearFlag(id: string) {
+    try {
+      await adminSetListing(id, { is_active: true });
+      // approval = mark verified to remove from view
+      await supabase.from("listings").update({ is_verified: true, pending_review: false } as any).eq("id", id);
+      qc.invalidateQueries({ queryKey: ["admin"] });
+      toast.success("Approved");
+    } catch (e: any) { toast.error(e.message); }
+  }
+  async function remove(id: string) {
+    if (!confirm("Remove this listing?")) return;
+    try {
+      await adminSetListing(id, { is_active: false, flagged: true });
+      qc.invalidateQueries({ queryKey: ["admin"] });
+      toast.success("Removed");
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  if (isLoading) return <div className="text-sm text-muted-foreground">Scanning…</div>;
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-xl bg-surface p-8 text-center shadow-card text-sm text-muted-foreground">
+        ✨ No suspicious listings right now.
+      </div>
+    );
+  }
+
+  const flagCopy: Record<string, string> = {
+    price_too_low: "Price is far below market — common scam signal",
+    price_too_high: "Price is far above market",
+    high_views_no_messages: "500+ views but no messages — likely fake or broken",
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="text-xs text-muted-foreground">{rows.length} listing{rows.length === 1 ? "" : "s"} flagged by automated scan.</div>
+      {rows.map((l) => (
+        <div key={l.id} className="rounded-xl bg-surface p-4 shadow-card flex items-start gap-3">
+          {l.photos?.[0] && (
+            <img src={l.photos[0]} alt="" className="h-16 w-16 rounded-lg object-cover" />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-black uppercase">
+                {flagCopy[l.flag_reason ?? ""] ?? l.flag_reason ?? "Flagged"}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{timeAgo(l.created_at)}</span>
+            </div>
+            <div className="mt-1 font-bold truncate">{l.title}</div>
+            <div className="text-xs text-muted-foreground">
+              ${l.price}/mo · {l.beds}BR · {l.area}
+              {l.median_price ? <> · median ${Math.round(l.median_price)}</> : null}
+              {" · "}{l.view_count ?? 0} views
+            </div>
+          </div>
+          <div className="flex gap-1.5 shrink-0">
+            <Button size="sm" variant="outline" onClick={() => clearFlag(l.id)}><BadgeCheck className="h-3.5 w-3.5 mr-1" />Approve</Button>
+            <Button size="sm" variant="destructive" onClick={() => remove(l.id)}><Trash2 className="h-3.5 w-3.5 mr-1" />Remove</Button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

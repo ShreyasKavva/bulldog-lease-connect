@@ -11,8 +11,12 @@ export type ListingReport = {
   resolved_by: string | null;
   resolved_at: string | null;
   created_at: string;
+  priority?: "urgent" | "high" | "normal" | "low";
+  auto_score?: number;
+  auto_flagged?: boolean;
   listing?: Listing | null;
   reporter?: Profile | null;
+  reportCount?: number;
 };
 
 export async function fileReport(listingId: string, reporterId: string, reason: string, details?: string) {
@@ -22,6 +26,8 @@ export async function fileReport(listingId: string, reporterId: string, reason: 
   if (error) throw error;
 }
 
+const PRIO_RANK: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
+
 export async function fetchReports(status: "open" | "all" = "open"): Promise<ListingReport[]> {
   let q = supabase.from("listing_reports").select("*").order("created_at", { ascending: false });
   if (status === "open") q = q.eq("status", "open");
@@ -30,14 +36,62 @@ export async function fetchReports(status: "open" | "all" = "open"): Promise<Lis
   const rows = (data ?? []) as ListingReport[];
   const listingIds = Array.from(new Set(rows.map(r => r.listing_id)));
   const reporterIds = Array.from(new Set(rows.map(r => r.reporter_id)));
-  const [{ data: listings }, { data: profs }] = await Promise.all([
+  const [{ data: listings }, { data: profs }, { data: allReports }] = await Promise.all([
     listingIds.length ? supabase.from("listings").select("*").in("id", listingIds) : Promise.resolve({ data: [] as any }),
     reporterIds.length ? supabase.from("profiles").select("*").in("id", reporterIds) : Promise.resolve({ data: [] as any }),
+    listingIds.length ? supabase.from("listing_reports").select("listing_id").in("listing_id", listingIds) : Promise.resolve({ data: [] as any }),
   ]);
   const lm = new Map<string, Listing>((listings ?? []).map((l: any) => [l.id, l]));
   const pm = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
-  return rows.map(r => ({ ...r, listing: lm.get(r.listing_id) ?? null, reporter: pm.get(r.reporter_id) ?? null }));
+  const rc = new Map<string, number>();
+  (allReports ?? []).forEach((r: any) => rc.set(r.listing_id, (rc.get(r.listing_id) ?? 0) + 1));
+  const enriched = rows.map(r => ({
+    ...r,
+    listing: lm.get(r.listing_id) ?? null,
+    reporter: pm.get(r.reporter_id) ?? null,
+    reportCount: rc.get(r.listing_id) ?? 1,
+  }));
+  enriched.sort((a, b) => {
+    const ap = PRIO_RANK[a.priority ?? "normal"] ?? 2;
+    const bp = PRIO_RANK[b.priority ?? "normal"] ?? 2;
+    if (ap !== bp) return ap - bp;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  return enriched;
 }
+
+// ---- Queue 21: Suspicious listings + user risk scores ----
+export type SuspiciousListing = Listing & { flag_reason: string | null; median_price: number | null };
+export async function fetchSuspiciousListings(): Promise<SuspiciousListing[]> {
+  const { data, error } = await supabase.from("suspicious_listings" as any).select("*").limit(200);
+  if (error) {
+    if ((error as any).code === "42P01") return [];
+    throw error;
+  }
+  return (data ?? []) as unknown as SuspiciousListing[];
+}
+
+export type UserRiskRow = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  safe_score: number | null;
+  reports_received: number;
+  reports_filed: number;
+  risk_level: "banned" | "high_risk" | "low_trust" | "unverified" | "good_standing";
+};
+const RISK_RANK: Record<string, number> = { banned: 0, high_risk: 1, low_trust: 2, unverified: 3, good_standing: 4 };
+export async function fetchUserRiskScores(): Promise<UserRiskRow[]> {
+  const { data, error } = await supabase.from("user_risk_scores" as any).select("*").limit(500);
+  if (error) {
+    if ((error as any).code === "42P01") return [];
+    throw error;
+  }
+  const rows = (data ?? []) as unknown as UserRiskRow[];
+  rows.sort((a, b) => (RISK_RANK[a.risk_level] ?? 9) - (RISK_RANK[b.risk_level] ?? 9));
+  return rows;
+}
+
 
 export async function resolveReport(id: string, status: "dismissed" | "actioned", adminId: string) {
   const { error } = await supabase.from("listing_reports").update({
