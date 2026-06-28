@@ -257,6 +257,56 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
       onOpenChange={setInviteOpen}
       referralCode={(profile as any)?.referral_code ?? null}
     />
+    <Dialog open={!!screenResult} onOpenChange={(o) => { if (!o) { setScreenResult(null); setPendingForm(null); } }}>
+      <DialogContent className="max-w-md">
+        {screenResult?.auto_reject ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <ShieldAlert className="h-5 w-5 text-destructive" /> We couldn't publish your listing
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Our system detected content that may violate LeaseUp's community guidelines:
+            </p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {screenResult.issues.map((it, i) => <li key={i}>{it}</li>)}
+            </ul>
+            <Button onClick={() => { setScreenResult(null); setPendingForm(null); }} className="w-full">
+              Edit listing
+            </Button>
+          </>
+        ) : screenResult ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-primary" /> Your listing could perform better
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 text-sm">
+              {screenResult.quality_score < 40 && (
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-500/10 p-2 text-amber-900 dark:text-amber-100">
+                  Quality score: <b>{screenResult.quality_score}/100</b>
+                </div>
+              )}
+              {screenResult.warnings.length > 0 && (
+                <ul className="list-disc space-y-1 pl-5">
+                  {screenResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                </ul>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => { setScreenResult(null); setPendingForm(null); }}>
+                Improve my listing
+              </Button>
+              <Button className="flex-1" onClick={async () => { const fn = pendingForm; setScreenResult(null); setPendingForm(null); if (fn) { setSubmitting(true); try { await fn(); } finally { setSubmitting(false); } } }}>
+                Post anyway
+              </Button>
+            </div>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
