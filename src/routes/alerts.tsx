@@ -123,9 +123,10 @@ function AlertsPage() {
                       {a.pet_friendly_only && <Tag>Pets ok</Tag>}
                       {a.keyword && <Tag>"{a.keyword}"</Tag>}
                     </div>
+                    <MatchCount searchId={a.id} />
                     {a.last_notified_at && (
-                      <p className="mt-2 text-[11px] text-muted-foreground">
-                        Last match: {new Date(a.last_notified_at).toLocaleDateString()}
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Last checked: {new Date(a.last_notified_at).toLocaleString()}
                       </p>
                     )}
                   </div>
