@@ -30,6 +30,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .from("listings")
     .select("*")
     .eq("is_active", true)
+    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);

@@ -29,6 +29,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     available_from: "", available_to: "",
     furnished: false, utilities_included: false, pet_friendly: false, parking: false,
     amenities: [] as string[],
+    deposit_amount: "", deposit_escrow_enabled: false,
   });
 
   function setField<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
@@ -76,6 +77,8 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
         available_to: form.available_to || null,
         amenities: form.amenities,
         photos,
+        deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+        deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
       });
       if (error) throw error;
       toast.success("🎉 Listing posted!");
@@ -174,6 +177,19 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
             )}
           </Field>
+
+          <div className="rounded-xl border-2 border-dashed border-success/40 bg-success-light/30 p-4">
+            <div className="flex items-center gap-2 text-sm font-bold">💰 Secure Deposit <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-success">Optional</span></div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Collect a refundable deposit through LeaseUp. Funds are held until move-in — protects both sides. A 2.5% platform fee is charged to the subletter at payment.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Field label="Deposit amount ($)">
+                <Input type="number" min="0" placeholder="500" value={form.deposit_amount} onChange={(e) => setField("deposit_amount", e.target.value)} />
+              </Field>
+              <ToggleField label="Enable secure deposit" checked={form.deposit_escrow_enabled} onChange={(v) => setField("deposit_escrow_enabled", v)} />
+            </div>
+          </div>
 
           <Button disabled={submitting} onClick={submit} className="w-full bg-primary hover:bg-primary-dark text-primary-foreground font-bold h-11">
             {submitting ? "Posting…" : "Post listing"}

@@ -15,6 +15,9 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchListings } from "@/lib/leaseup/queries";
 import { cn } from "@/lib/utils";
 import { ReactionBar } from "./ReactionBar";
+import { SecureDepositDialog } from "./SecureDepositDialog";
+import { SecureDepositBadge } from "./SecureDepositBadge";
+import { Lock } from "lucide-react";
 
 
 export function ListingDetailSheet({
@@ -31,6 +34,7 @@ export function ListingDetailSheet({
   const [views, setViews] = useState<number | null>(null);
   const [saveCount, setSaveCount] = useState<number>(0);
   const [msgCount, setMsgCount] = useState<number>(0);
+  const [depositOpen, setDepositOpen] = useState(false);
   const { user } = useSession();
 
   useEffect(() => {
@@ -277,6 +281,21 @@ export function ListingDetailSheet({
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
 
+          {listing.deposit_escrow_enabled && listing.deposit_amount ? (
+            <div className="rounded-xl border-2 border-success/40 bg-success-light/30 p-3">
+              <div className="flex items-center gap-2 text-sm font-bold"><SecureDepositBadge /> ${listing.deposit_amount.toLocaleString()} refundable deposit</div>
+              <p className="mt-1 text-xs text-muted-foreground">Funds are held by LeaseUp until move-in. Protects both sides.</p>
+              {user && user.id !== listing.user_id && (
+                <Button
+                  onClick={() => setDepositOpen(true)}
+                  className="mt-2 h-10 w-full bg-success font-bold text-white hover:bg-success/90"
+                >
+                  <Lock className="mr-1.5 h-4 w-4" />Pay deposit securely
+                </Button>
+              )}
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <ShareToStoryButton listing={listing} label="Share to Story" />
             <button
@@ -316,6 +335,7 @@ export function ListingDetailSheet({
         </div>
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
+      <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />
     </Sheet>
   );
 }

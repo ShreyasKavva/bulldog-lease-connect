@@ -2,6 +2,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide-react";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
+import { SecureDepositBadge, FeaturedBadge } from "./SecureDepositBadge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
@@ -51,6 +52,7 @@ export function ListingCard({
       className={cn(
         "lu-card-hover group cursor-pointer overflow-hidden rounded-xl bg-surface shadow-card",
         justPosted && "border-l-[3px] border-primary",
+        listing.is_featured && "ring-2 ring-orange-400/70 ring-offset-1",
       )}
     >
       <div
@@ -92,6 +94,7 @@ export function ListingCard({
 
         {/* Top-left tags */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {listing.is_featured && <FeaturedBadge />}
           {justPosted ? (
             <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">New</span>
           ) : isNew(listing.created_at) && (
@@ -108,6 +111,7 @@ export function ListingCard({
               <Flame className="h-3 w-3" /> Hot
             </span>
           )}
+          {listing.deposit_escrow_enabled && <SecureDepositBadge compact />}
         </div>
 
         {/* Bottom-left badges over photo */}

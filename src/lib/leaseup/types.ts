@@ -56,6 +56,12 @@ export type Listing = {
   created_at: string;
   profile?: Profile;
   photo_urls?: string[];
+  // Queue 17 — payments
+  is_featured?: boolean;
+  featured_until?: string | null;
+  featured_purchased_at?: string | null;
+  deposit_amount?: number | null;
+  deposit_escrow_enabled?: boolean;
 };
 
 export type Conversation = {
