@@ -266,6 +266,15 @@ function MyListingsPage() {
                   >
                     <BarChart3 className="h-4 w-4" />
                   </button>
+                  {!filled && (
+                    <button
+                      onClick={() => setTourFor(l)}
+                      title="Tour availability"
+                      className="rounded-md p-2 hover:bg-background"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </button>
+                  )}
                   {filled ? (
                     <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
