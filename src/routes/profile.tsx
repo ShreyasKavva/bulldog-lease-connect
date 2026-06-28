@@ -74,7 +74,13 @@ function ProfilePage() {
   }, [profile]);
 
   if (loading) return <div className="min-h-screen bg-background" />;
-  if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return null; }
+  if (!user) {
+    navigate({
+      to: "/auth",
+      search: { mode: "up", message: "Create a profile to post and browse subleases" },
+    });
+    return null;
+  }
 
   async function signOut() {
     await supabase.auth.signOut();

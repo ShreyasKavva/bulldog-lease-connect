@@ -10,12 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as LookingForRouteImport } from './routes/looking-for'
+import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as FindMyMatchRouteImport } from './routes/find-my-match'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmbassadorRouteImport } from './routes/ambassador'
@@ -35,6 +38,11 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedRoute = SavedRouteImport.update({
@@ -62,9 +70,19 @@ const LookingForRoute = LookingForRouteImport.update({
   path: '/looking-for',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaseAnalysisRoute = LeaseAnalysisRouteImport.update({
+  id: '/lease-analysis',
+  path: '/lease-analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindMyMatchRoute = FindMyMatchRouteImport.update({
+  id: '/find-my-match',
+  path: '/find-my-match',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowseRoute = BrowseRouteImport.update({
@@ -154,12 +172,15 @@ export interface FileRoutesByFullPath {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
+  '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -178,12 +199,15 @@ export interface FileRoutesByTo {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
+  '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -203,12 +227,15 @@ export interface FileRoutesById {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
+  '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/my-listings': typeof MyListingsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/saved': typeof SavedRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -229,12 +256,15 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/find-my-match'
     | '/join'
+    | '/lease-analysis'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
@@ -253,12 +283,15 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/find-my-match'
     | '/join'
+    | '/lease-analysis'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
@@ -277,12 +310,15 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/find-my-match'
     | '/join'
+    | '/lease-analysis'
     | '/looking-for'
     | '/my-listings'
     | '/onboarding'
     | '/profile'
     | '/saved'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/sublease/$slug'
@@ -302,12 +338,15 @@ export interface RootRouteChildren {
   AmbassadorRoute: typeof AmbassadorRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  FindMyMatchRoute: typeof FindMyMatchRoute
   JoinRoute: typeof JoinRoute
+  LeaseAnalysisRoute: typeof LeaseAnalysisRoute
   LookingForRoute: typeof LookingForRoute
   MyListingsRoute: typeof MyListingsRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   SavedRoute: typeof SavedRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -326,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saved': {
@@ -363,11 +409,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookingForRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lease-analysis': {
+      id: '/lease-analysis'
+      path: '/lease-analysis'
+      fullPath: '/lease-analysis'
+      preLoaderRoute: typeof LeaseAnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/join': {
       id: '/join'
       path: '/join'
       fullPath: '/join'
       preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/find-my-match': {
+      id: '/find-my-match'
+      path: '/find-my-match'
+      fullPath: '/find-my-match'
+      preLoaderRoute: typeof FindMyMatchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browse': {
@@ -486,12 +546,15 @@ const rootRouteChildren: RootRouteChildren = {
   AmbassadorRoute: AmbassadorRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  FindMyMatchRoute: FindMyMatchRoute,
   JoinRoute: JoinRoute,
+  LeaseAnalysisRoute: LeaseAnalysisRoute,
   LookingForRoute: LookingForRoute,
   MyListingsRoute: MyListingsRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   SavedRoute: SavedRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
@@ -505,13 +568,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -16,9 +16,12 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
-    const campus = await fetchCampusBySlug(params.slug);
+    const [campus, allCampuses] = await Promise.all([
+      fetchCampusBySlug(params.slug),
+      fetchCampuses(),
+    ]);
     if (!campus) throw notFound();
-    return { campus };
+    return { campus, allCampuses };
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
@@ -69,13 +72,17 @@ export const Route = createFileRoute("/sublease/$slug")({
 });
 
 function CampusPage() {
-  const { campus } = Route.useLoaderData();
+  const { campus, allCampuses } = Route.useLoaderData();
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
 
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+  const { data: campuses = allCampuses } = useQuery<Campus[]>({
+    queryKey: ["campuses"],
+    queryFn: fetchCampuses,
+    initialData: allCampuses,
+  });
   const { data: savedIds = new Set<string>() } = useQuery({
     queryKey: ["saved", user?.id],
     queryFn: () => fetchSavedIds(user!.id),
@@ -151,6 +158,12 @@ function CampusPage() {
             <Link to="/looking-for" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
               <Sparkles className="h-4 w-4" /> I'm looking
             </Link>
+            <Link to="/lease-analysis" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
+              <ShieldCheck className="h-4 w-4" /> 🤖 Analyze My Lease
+            </Link>
+            <Link to="/find-my-match" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
+              <Sparkles className="h-4 w-4" /> 🎯 Find My Match
+            </Link>
           </div>
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-semibold text-muted-foreground">
             <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1"><ShieldCheck className="h-3 w-3 text-primary" />Verified .edu students</span>
@@ -188,11 +201,24 @@ function CampusPage() {
 
         {/* Other campuses */}
         <section className="mt-12 border-t pt-8">
-          <h2 className="font-black mb-3">Browse other campuses</h2>
-          <div className="flex flex-wrap gap-2">
-            {campuses.filter(c => c.slug !== campus.slug).map(c => (
-              <Link key={c.id} to="/sublease/$slug" params={{ slug: c.slug }}
-                className="rounded-full bg-surface border px-3 py-1.5 text-xs font-semibold hover:border-primary">
+          <div className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            More campuses on LeaseUp →
+          </div>
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {campuses.filter((c: Campus) => c.slug !== campus.slug).map((c: Campus) => (
+              <Link
+                key={c.id}
+                to="/sublease/$slug"
+                params={{ slug: c.slug }}
+                className="flex-shrink-0 rounded-full border text-sm font-medium transition-colors hover:opacity-90"
+                style={{
+                  background: "#EFF6FF",
+                  color: "#2563EB",
+                  borderColor: "#BFDBFE",
+                  padding: "8px 16px",
+                  borderRadius: 20,
+                }}
+              >
                 {c.short_name}
               </Link>
             ))}

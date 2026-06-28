@@ -7,16 +7,36 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const search = z.object({ mode: z.enum(["in", "up"]).catch("in") });
+const search = z.object({
+  mode: z.enum(["in", "up"]).catch("in"),
+  message: z.string().optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => search.parse(s),
-  head: () => ({ meta: [{ title: "Sign in — LeaseUp" }] }),
+  head: ({ match }) => {
+    const mode = (match.search as { mode?: "in" | "up" })?.mode ?? "in";
+    const isUp = mode === "up";
+    const title = isUp ? "Join LeaseUp — Free for Students" : "Sign in — LeaseUp";
+    const desc = isUp
+      ? "Verified .edu profiles, SafeScore on every listing, zero scams."
+      : "Sign in to LeaseUp to browse and post student subleases.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: "https://leasup.co/auth" },
+        { property: "og:type", content: "website" },
+      ],
+    };
+  },
   component: AuthPage,
 });
 
 function AuthPage() {
-  const { mode: initial } = Route.useSearch();
+  const { mode: initial, message } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"in" | "up">(initial);
   const [email, setEmail] = useState("");
@@ -64,6 +84,11 @@ function AuthPage() {
             <span className="text-primary">Lease</span><span>Up</span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Find your next place. Leave your current one.</p>
+          {message && (
+            <div className="mt-3 rounded-md bg-primary-light px-3 py-2 text-xs font-semibold text-primary-dark">
+              {message}
+            </div>
+          )}
         </div>
 
         <div className="flex rounded-lg bg-background p-1 mb-5">
