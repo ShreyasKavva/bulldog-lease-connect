@@ -228,6 +228,9 @@ function Home() {
               onSelectStudent={setProfileViewId}
             />
           </div>
+          <div className="pointer-events-auto mt-2">
+            <ProfileCompletionBanner />
+          </div>
         </div>
 
         <BottomNav
