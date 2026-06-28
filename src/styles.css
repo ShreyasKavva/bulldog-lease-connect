@@ -185,3 +185,31 @@ html, body { -webkit-tap-highlight-color: transparent; }
   .lu-safe-top { padding-top: env(safe-area-inset-top); }
   .lu-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
+
+/* Onboarding animations */
+@keyframes lu-spring-in {
+  0%   { opacity: 0; transform: translateY(40px) scale(0.6); }
+  60%  { opacity: 1; transform: translateY(-8px) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lu-spring-in { animation: lu-spring-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes lu-pop-in {
+  0%   { opacity: 0; transform: scale(0.5); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.lu-pop-in { animation: lu-pop-in 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes lu-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+.lu-shake { animation: lu-shake 360ms ease-in-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lu-spring-in, .lu-pop-in, .lu-shake { animation: none !important; }
+}
