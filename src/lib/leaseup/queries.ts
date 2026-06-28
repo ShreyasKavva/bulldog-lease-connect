@@ -109,15 +109,31 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
     .order("last_message_at", { ascending: false, nullsFirst: false });
   if (error) throw error;
   const convs = (data ?? []) as Conversation[];
-  const otherIds = Array.from(new Set(convs.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
-  const listingIds = Array.from(new Set(convs.map((c) => c.listing_id).filter(Boolean) as string[]));
+  // Filter out soft-deleted by this user
+  const visible = convs.filter((c) =>
+    c.participant_1_id === userId ? !c.deleted_by_p1 : !c.deleted_by_p2,
+  );
+  const otherIds = Array.from(new Set(visible.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
+  const listingIds = Array.from(new Set(visible.map((c) => c.listing_id).filter(Boolean) as string[]));
   const [{ data: profs }, { data: lists }] = await Promise.all([
     otherIds.length ? supabase.from("profiles").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
-    listingIds.length ? supabase.from("listings").select("id,title").in("id", listingIds) : Promise.resolve({ data: [] as any }),
+    listingIds.length
+      ? supabase.from("listings").select("id,title,price,available_from,available_to,is_active,status,photos").in("id", listingIds)
+      : Promise.resolve({ data: [] as any }),
   ]);
+  // Sign first photo of each listing
+  const firstPaths = (lists ?? []).map((l: any) => (l.photos && l.photos[0]) || null).filter(Boolean) as string[];
+  const signedMap = new Map<string, string>();
+  if (firstPaths.length) {
+    const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(firstPaths, SIGNED_URL_TTL);
+    signed?.forEach((s) => { if (s.path && s.signedUrl) signedMap.set(s.path, s.signedUrl); });
+  }
   const pMap = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
-  const lMap = new Map<string, any>((lists ?? []).map((l: any) => [l.id, l]));
-  return convs.map((c) => ({
+  const lMap = new Map<string, any>((lists ?? []).map((l: any) => {
+    const first = l.photos && l.photos[0];
+    return [l.id, { ...l, photo_url: first ? signedMap.get(first) ?? null : null }];
+  }));
+  return visible.map((c) => ({
     ...c,
     other: pMap.get(c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id),
     listing: c.listing_id ? lMap.get(c.listing_id) ?? null : null,
@@ -131,7 +147,95 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as Message[];
+  const messages = (data ?? []) as Message[];
+  if (messages.length === 0) return messages;
+  const ids = messages.map((m) => m.id);
+  const { data: reactions } = await supabase
+    .from("message_reactions")
+    .select("*")
+    .in("message_id", ids);
+  const rMap = new Map<string, any[]>();
+  (reactions ?? []).forEach((r: any) => {
+    const arr = rMap.get(r.message_id) ?? [];
+    arr.push(r);
+    rMap.set(r.message_id, arr);
+  });
+  return messages.map((m) => ({ ...m, reactions: rMap.get(m.id) ?? [] }));
+}
+
+// Conversation flags (per-side pin/mute/delete)
+export async function setConversationFlag(
+  conv: Conversation,
+  userId: string,
+  flag: "pinned" | "muted" | "deleted",
+  value: boolean,
+) {
+  const side = conv.participant_1_id === userId ? "p1" : "p2";
+  const col = `${flag}_by_${side}`;
+  const { error } = await supabase.from("conversations").update({ [col]: value }).eq("id", conv.id);
+  if (error) throw error;
+}
+
+// Message reactions
+export async function toggleMessageReaction(messageId: string, userId: string, emoji: string) {
+  const { data: existing } = await supabase
+    .from("message_reactions")
+    .select("id,reaction")
+    .eq("message_id", messageId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (existing && existing.reaction === emoji) {
+    await supabase.from("message_reactions").delete().eq("id", existing.id);
+    return null;
+  }
+  if (existing) {
+    await supabase.from("message_reactions").update({ reaction: emoji }).eq("id", existing.id);
+    return emoji;
+  }
+  await supabase.from("message_reactions").insert({ message_id: messageId, user_id: userId, reaction: emoji });
+  return emoji;
+}
+
+// Attachment upload (photo or doc) — path scoped to conversation id so storage RLS can validate
+export async function uploadChatAttachment(conversationId: string, file: File): Promise<string> {
+  const ext = file.name.split(".").pop() || "bin";
+  const path = `${conversationId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("messages-attachments")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  return path;
+}
+
+export async function signChatAttachment(path: string): Promise<string | null> {
+  const { data } = await supabase.storage.from("messages-attachments").createSignedUrl(path, 60 * 60 * 24);
+  return data?.signedUrl ?? null;
+}
+
+export async function sendAttachmentMessage(
+  conversationId: string,
+  senderId: string,
+  recipientId: string,
+  kind: "image" | "document",
+  file: File,
+) {
+  const path = await uploadChatAttachment(conversationId, file);
+  const label = kind === "image" ? "📷 Photo" : `📄 ${file.name}`;
+  const { error } = await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    sender_id: senderId,
+    recipient_id: recipientId,
+    content: label,
+    content_type: kind,
+    attachment_url: path,
+    attachment_name: file.name,
+    attachment_size: file.size,
+  });
+  if (error) throw error;
+  await supabase.from("conversations").update({
+    last_message: label,
+    last_message_at: new Date().toISOString(),
+  }).eq("id", conversationId);
 }
 
 export async function sendMessage(conversationId: string, senderId: string, recipientId: string, content: string, listingId?: string | null) {
