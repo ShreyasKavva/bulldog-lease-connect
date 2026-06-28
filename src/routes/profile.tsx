@@ -246,6 +246,12 @@ function ProfilePage() {
           >
             <Bell className="h-4 w-4" />Search alerts
           </Link>
+          <Link
+            to="/roommates"
+            className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-bold text-foreground shadow-card-md hover:bg-background"
+          >
+            <span aria-hidden>👥</span>Roommate matching
+          </Link>
           {(profile as any)?.is_ambassador && (
             <Link
               to="/ambassador"

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
@@ -168,8 +168,17 @@ function Browse() {
       <TopBar onOpenMessages={() => { setActiveConv(null); setMessagesOpen(true); }} />
 
       <div className="pt-14">
+        {/* Browse sub-tabs */}
+        <div className="sticky top-14 z-30 border-b bg-surface">
+          <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 text-sm font-bold">
+            <span className="rounded-full bg-primary px-3 py-1.5 text-primary-foreground">🏠 Available</span>
+            <Link to="/looking-for" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">🔍 Looking For</Link>
+            <Link to="/roommates" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">👥 Roommates</Link>
+          </div>
+        </div>
+
         {/* Search + filters */}
-        <div className="sticky top-14 z-20 border-b bg-surface">
+        <div className="sticky top-[6.5rem] z-20 border-b bg-surface">
           <div className="mx-auto max-w-7xl space-y-2 px-4 py-3">
             <div className="flex items-center gap-2 rounded-full bg-background px-4 h-10">
               <Search className="h-4 w-4 text-muted-foreground" />

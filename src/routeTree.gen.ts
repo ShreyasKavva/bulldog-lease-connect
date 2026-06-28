@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as RoommatesRouteImport } from './routes/roommates'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -28,6 +29,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
+import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -49,6 +51,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoommatesRoute = RoommatesRouteImport.update({
+  id: '/roommates',
+  path: '/roommates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -131,6 +138,11 @@ const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   path: '/sublease/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => RoommatesRoute,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -186,10 +198,12 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -214,10 +228,12 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -243,10 +259,12 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -273,10 +291,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/roommates'
     | '/saved'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/roommates/create'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
     | '/lovable/email/auth/preview'
@@ -301,10 +321,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/roommates'
     | '/saved'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/roommates/create'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
     | '/lovable/email/auth/preview'
@@ -329,10 +351,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/roommates'
     | '/saved'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/roommates/create'
     | '/sublease/$slug'
     | '/lovable/email/suppression'
     | '/lovable/email/auth/preview'
@@ -358,6 +382,7 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
+  RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedRoute: typeof SavedRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -392,6 +417,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roommates': {
+      id: '/roommates'
+      path: '/roommates'
+      fullPath: '/roommates'
+      preLoaderRoute: typeof RoommatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -506,6 +538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubleaseSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/roommates/create': {
+      id: '/roommates/create'
+      path: '/create'
+      fullPath: '/roommates/create'
+      preLoaderRoute: typeof RoommatesCreateRouteImport
+      parentRoute: typeof RoommatesRoute
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -558,6 +597,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface RoommatesRouteChildren {
+  RoommatesCreateRoute: typeof RoommatesCreateRoute
+}
+
+const RoommatesRouteChildren: RoommatesRouteChildren = {
+  RoommatesCreateRoute: RoommatesCreateRoute,
+}
+
+const RoommatesRouteWithChildren = RoommatesRoute._addFileChildren(
+  RoommatesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
@@ -574,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
+  RoommatesRoute: RoommatesRouteWithChildren,
   SavedRoute: SavedRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
