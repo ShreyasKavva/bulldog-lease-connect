@@ -4,6 +4,7 @@ import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calen
 import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 import { useReactionPicker } from "./useReactionPicker";
+import { ShareToStoryButton } from "./ShareToStoryButton";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -343,6 +344,7 @@ function ScrollCard({
         >
           <MessageCircle className="h-6 w-6" />
         </button>
+        <ShareToStoryButton listing={l} variant="icon" />
         {onPin && (
           <button
             onClick={(e) => { e.stopPropagation(); onPin(); }}
