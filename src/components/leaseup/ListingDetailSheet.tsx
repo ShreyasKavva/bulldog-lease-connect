@@ -19,6 +19,7 @@ import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
 import { TourBookingPanel } from "./TourBookingPanel";
 import { PriceComparisonPanel } from "./PriceComparisonPanel";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 
 
