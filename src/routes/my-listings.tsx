@@ -20,6 +20,7 @@ import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 import { StatCard } from "@/components/leaseup/analytics/Charts";
 import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
 import { TourAvailabilityDialog } from "@/components/leaseup/TourAvailabilityDialog";
+import { StaleListingsNudge } from "@/components/leaseup/StaleListingsNudge";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
