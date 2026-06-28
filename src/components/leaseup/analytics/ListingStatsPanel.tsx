@@ -41,9 +41,9 @@ export function ListingStatsPanel({ listing }: { listing: Listing }) {
   // Convert running totals to deltas
   const deltas: number[] = days.map((d, i) => Math.max(0, d.views - (i > 0 ? days[i - 1].views : d.views)));
   const viewCount = listing.view_count ?? 0;
-  // Ensure today shows current view_count if no snapshot today yet
-  if (deltas.every((v) => v === 0) && viewCount > 0) {
-    deltas[deltas.length - 1] = viewCount;
+  const allZero = deltas.reduce((a, b) => a + b, 0) === 0;
+  if (allZero && viewCount > 0 && deltas.length > 0) {
+    deltas.splice(deltas.length - 1, 1, viewCount);
   }
 
   const ageDays = Math.max(0, Math.floor((Date.now() - new Date(listing.created_at).getTime()) / 86400000));
