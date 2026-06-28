@@ -278,15 +278,7 @@ export function ListingDetailSheet({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <button
-              onClick={() => {
-                import("@/lib/share").then((m) =>
-                  m.shareListing({ id: listing.id, title: listing.title, price: listing.price })
-                );
-              }}
-              className="flex min-h-11 items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            ><Share2 className="h-3.5 w-3.5" />Share</button>
-            <ShareToStoryButton listing={listing} />
+            <ShareToStoryButton listing={listing} label="Share to Story" />
             <button
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
               className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
