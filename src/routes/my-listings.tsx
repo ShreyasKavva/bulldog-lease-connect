@@ -1,17 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMyListings, deleteListing, setListingActive } from "@/lib/leaseup/queries";
+import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
+import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
@@ -29,6 +31,8 @@ function MyListingsPage() {
   });
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
+  const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+
 
   if (!user) {
     return (
@@ -61,6 +65,41 @@ function MyListingsPage() {
     } catch (e: any) { toast.error(e.message); }
   }
 
+  async function markFilled(l: Listing) {
+    if (!confirm(`Mark "${l.title}" as filled? It will be hidden from the feed.`)) return;
+    try {
+      await markListingFilled(l.id);
+      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
+      toast.success("Marked as filled 🎉 — your subletter has been prompted to review you.");
+      // Open review dialog targeting the most recent messenger
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("participant_1_id, participant_2_id")
+        .eq("listing_id", l.id)
+        .or(`participant_1_id.eq.${user!.id},participant_2_id.eq.${user!.id}`)
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle();
+      if (conv) {
+        const otherId = conv.participant_1_id === user!.id ? conv.participant_2_id : conv.participant_1_id;
+        const { data: prof } = await supabase.from("profiles").select("name,email").eq("id", otherId).maybeSingle();
+        const name = (prof?.name || prof?.email?.split("@")[0]) ?? "your subletter";
+        setReviewFor({ listing: l, userId: otherId, name });
+      }
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function reopen(l: Listing) {
+    try {
+      await reopenListing(l.id);
+      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
+      toast.success("Listing reopened");
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Nav
@@ -91,27 +130,46 @@ function MyListingsPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {listings.map(l => (
-              <div key={l.id} className={cn("flex items-center gap-3 rounded-xl bg-surface p-3 shadow-card", !l.is_active && "opacity-60")}>
-                <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
+            {listings.map(l => {
+              const filled = l.status === "filled";
+              return (
+              <div key={l.id} className={cn("flex items-center gap-3 rounded-xl bg-surface p-3 shadow-card", !l.is_active && !filled && "opacity-60")}>
+                <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
                   {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
+                  {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Filled</div>}
                 </button>
                 <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm truncate">{l.title}</span>
-                    {!l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                    {filled
+                      ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Filled</span>
+                      : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
                   </div>
                   <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
                   <div className="mt-1"><SafeScoreBadge score={l.safe_score} /></div>
                 </button>
-                <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
-                  {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
+                {filled ? (
+                  <>
+                    <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => markFilled(l)} title="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
+                      {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </button>
+                  </>
+                )}
                 <button onClick={() => remove(l)} title="Delete" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -121,6 +179,18 @@ function MyListingsPage() {
         onMessage={() => {}} onViewProfile={() => {}}
       />
       <PostListingDialog open={posting} onOpenChange={(o) => { setPosting(o); if (!o) qc.invalidateQueries({ queryKey: ["my-listings", user.id] }); }} />
+      {reviewFor && (
+        <LeaveReviewDialog
+          open={!!reviewFor}
+          onOpenChange={(o) => { if (!o) setReviewFor(null); }}
+          reviewedUserId={reviewFor.userId}
+          reviewedName={reviewFor.name}
+          listingId={reviewFor.listing.id}
+          reviewerRole="poster"
+        />
+      )}
     </div>
   );
 }
+// Star icon kept imported for future use
+void Star;

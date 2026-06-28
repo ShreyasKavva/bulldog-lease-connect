@@ -332,3 +332,22 @@ export async function setListingActive(id: string, active: boolean) {
   const { error } = await supabase.from("listings").update({ is_active: active }).eq("id", id);
   if (error) throw error;
 }
+
+export async function markListingFilled(id: string, filledWithUserId?: string | null) {
+  const payload: any = {
+    status: "filled",
+    is_active: false,
+    filled_at: new Date().toISOString(),
+  };
+  if (filledWithUserId) payload.filled_with_user_id = filledWithUserId;
+  const { error } = await supabase.from("listings").update(payload).eq("id", id);
+  if (error) throw error;
+}
+
+export async function reopenListing(id: string) {
+  const { error } = await supabase
+    .from("listings")
+    .update({ status: "active", is_active: true, filled_at: null })
+    .eq("id", id);
+  if (error) throw error;
+}

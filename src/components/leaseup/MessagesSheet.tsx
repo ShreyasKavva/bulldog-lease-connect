@@ -4,10 +4,11 @@ import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/qu
 import { useSession } from "@/lib/leaseup/use-session";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { markConversationRead } from "@/hooks/use-unread";
+import { LeaveReviewDialog } from "./LeaveReviewDialog";
 
 export function MessagesSheet({
   open, onOpenChange, initialConversationId,
@@ -34,6 +35,27 @@ export function MessagesSheet({
     queryFn: () => fetchMessages(activeId!),
     enabled: !!activeId,
   });
+
+  // Look up listing status to decide whether to show the review CTA.
+  const { data: activeListing } = useQuery({
+    queryKey: ["conv-listing", active?.listing_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("listings")
+        .select("id,title,status,is_active")
+        .eq("id", active!.listing_id!)
+        .maybeSingle();
+      return data as { id: string; title: string; status: string | null; is_active: boolean } | null;
+    },
+    enabled: !!active?.listing_id,
+  });
+  const otherId = active && user ? (active.participant_1_id === user.id ? active.participant_2_id : active.participant_1_id) : null;
+  const lastMsgAt = active?.last_message_at ? new Date(active.last_message_at).getTime() : 0;
+  const quiet14 = lastMsgAt > 0 && Date.now() - lastMsgAt > 14 * 24 * 60 * 60 * 1000;
+  const listingDone = !!activeListing && (activeListing.status === "filled" || activeListing.is_active === false);
+  const canReview = !!(active && otherId && (listingDone || quiet14));
+  const [showReview, setShowReview] = useState(false);
+
 
   // Realtime subscription for messages in active conversation
   useEffect(() => {
@@ -113,6 +135,15 @@ export function MessagesSheet({
           </div>
         ) : (
           <>
+            {canReview && (
+              <div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-900">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={1.5} />
+                <span className="flex-1">Has this sublease been sorted?</span>
+                <button onClick={() => setShowReview(true)} className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold text-amber-950">
+                  Leave a review →
+                </button>
+              </div>
+            )}
             <div className="flex-1 space-y-2 overflow-y-auto bg-background p-4">
               {messages?.map((m) => {
                 const mine = m.sender_id === user?.id;
@@ -139,6 +170,16 @@ export function MessagesSheet({
           </>
         )}
       </SheetContent>
+      {active && otherId && active.other && (
+        <LeaveReviewDialog
+          open={showReview}
+          onOpenChange={setShowReview}
+          reviewedUserId={otherId}
+          reviewedName={active.other.name || "this student"}
+          listingId={active.listing_id ?? null}
+          reviewerRole={user?.id && activeListing && active.listing_id ? "subletter" : "subletter"}
+        />
+      )}
     </Sheet>
   );
 }

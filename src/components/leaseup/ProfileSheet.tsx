@@ -9,9 +9,12 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { AVATAR_EMOJIS, BANNER_COLORS, VIBE_TAGS, YEARS } from "@/lib/leaseup/constants";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BadgeCheck, Pencil } from "lucide-react";
+import { BadgeCheck, Pencil, Star, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ReviewsList } from "./ReviewsList";
+import { LeaveReviewDialog } from "./LeaveReviewDialog";
+import { canLeaveReview, fetchVerifiedSubleaseCount, computeReviewStats, fetchUserReviews } from "@/lib/leaseup/reviews.queries";
 
 export function ProfileSheet({
   userId, open, onOpenChange, onMessage,
@@ -35,6 +38,27 @@ export function ProfileSheet({
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
     currently_status: "", currently_emoji: "🔎",
   });
+  const [tab, setTab] = useState<"about" | "reviews">("about");
+  const [showReview, setShowReview] = useState(false);
+
+  // Eligibility + verified count + review summary
+  const { data: eligible } = useQuery({
+    queryKey: ["review-eligible", user?.id, userId],
+    queryFn: () => canLeaveReview(user!.id, userId!),
+    enabled: !!user && !!userId && !isMe,
+  });
+  const { data: verifiedCount = 0 } = useQuery({
+    queryKey: ["verified-subleases", userId],
+    queryFn: () => fetchVerifiedSubleaseCount(userId!),
+    enabled: !!userId && open,
+  });
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews", userId],
+    queryFn: () => fetchUserReviews(userId!),
+    enabled: !!userId && open,
+  });
+  const stats = computeReviewStats(reviews);
+
 
   useEffect(() => {
     if (profile) setForm({
@@ -107,12 +131,57 @@ export function ProfileSheet({
                       ))}
                     </div>
                   )}
+                  {/* Stats row: rating + verified subleases */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {stats.count > 0 && (
+                      <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={1.5} />
+                        {stats.avg.toFixed(1)} · {stats.count} review{stats.count === 1 ? "" : "s"}
+                      </div>
+                    )}
+                    {verifiedCount > 0 && (
+                      <div className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        {verifiedCount} verified sublease{verifiedCount === 1 ? "" : "s"}
+                      </div>
+                    )}
+                  </div>
                   {!isMe && onMessage && (
-                    <Button onClick={() => onMessage(profile.id)} className="mt-4 w-full bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
-                      💬 Message {profile.name?.split(" ")[0]}
-                    </Button>
+                    <div className="mt-4 flex gap-2">
+                      <Button onClick={() => onMessage(profile.id)} className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
+                        💬 Message {profile.name?.split(" ")[0]}
+                      </Button>
+                      {eligible && (
+                        <Button variant="outline" onClick={() => setShowReview(true)} className="font-bold gap-1">
+                          <Star className="h-4 w-4" /> Review
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tabs */}
+                  <div className="mt-6 flex gap-1 border-b">
+                    {(["about", "reviews"] as const).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setTab(t)}
+                        className={cn(
+                          "border-b-2 px-3 py-2 text-sm font-bold capitalize",
+                          tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground",
+                        )}
+                      >
+                        {t === "reviews" ? `Reviews${stats.count ? ` (${stats.count})` : ""}` : t}
+                      </button>
+                    ))}
+                  </div>
+
+                  {tab === "reviews" && (
+                    <div className="mt-4">
+                      <ReviewsList userId={profile.id} />
+                    </div>
                   )}
                 </>
+
               ) : (
                 <div className="space-y-3">
                   <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
@@ -182,6 +251,15 @@ export function ProfileSheet({
           <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
         )}
       </SheetContent>
+      {profile && !isMe && (
+        <LeaveReviewDialog
+          open={showReview}
+          onOpenChange={setShowReview}
+          reviewedUserId={profile.id}
+          reviewedName={profile.name || "this student"}
+          reviewerRole="subletter"
+        />
+      )}
     </Sheet>
   );
 }
