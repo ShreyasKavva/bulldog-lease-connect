@@ -1751,6 +1751,28 @@ export type Database = {
       }
     }
     Views: {
+      campus_price_stats: {
+        Row: {
+          avg_price: number | null
+          beds: number | null
+          campus_id: string | null
+          listing_count: number | null
+          max_price: number | null
+          median_price: number | null
+          min_price: number | null
+          p25_price: number | null
+          p75_price: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trending_listings: {
         Row: {
           address: string | null
@@ -1877,7 +1899,36 @@ export type Database = {
         Returns: number
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_campus_price_stats: {
+        Args: { bed_count: number; campus: string }
+        Returns: Json
+      }
       get_listing_benchmark: { Args: { _listing_id: string }; Returns: Json }
+      get_neighborhood_price_breakdown: {
+        Args: { campus: string }
+        Returns: {
+          area: string
+          avg_price: number
+          listing_count: number
+          median_price: number
+        }[]
+      }
+      get_price_label: {
+        Args: { bed_count: number; campus: string; listing_price: number }
+        Returns: string
+      }
+      get_stale_listings_for_user: {
+        Args: { _uid: string }
+        Returns: {
+          beds: number
+          campus_id: string
+          days_active: number
+          listing_id: string
+          median_price: number
+          price: number
+          title: string
+        }[]
+      }
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
