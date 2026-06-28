@@ -18,6 +18,7 @@ import { ReactionBar } from "./ReactionBar";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
 import { TourBookingPanel } from "./TourBookingPanel";
+import { PriceComparisonPanel } from "./PriceComparisonPanel";
 import { Lock } from "lucide-react";
 
 
