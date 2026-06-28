@@ -45,7 +45,7 @@ function MarketPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Nav />
+      <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
       <main className="mx-auto max-w-5xl px-4 py-8">
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Sublease market data</h1>
