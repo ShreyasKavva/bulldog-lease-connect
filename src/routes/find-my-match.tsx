@@ -165,19 +165,22 @@ function FindMyMatchPage() {
         ...quiz,
         vibes: hasProfileVibes ? (profile?.vibe_tags ?? []) : quiz.vibes,
       });
-      const { error } = await supabase.from("looking_for_posts").insert({
+      const insertRow = {
         user_id: user.id,
         campus_id: profile?.campus_id ?? null,
         title,
         description,
         max_price: quiz.budget,
         beds_min: quiz.beds,
-        furnished: quiz.musts.includes("furnished") || null,
-        pet_friendly: quiz.musts.includes("pets") || null,
+        furnished: quiz.musts.includes("furnished") ? true : null,
+        pet_friendly: quiz.musts.includes("pets") ? true : null,
         date_start: moveInDate,
         date_end: moveOutDate,
         is_active: true,
-      });
+      };
+      const { error } = await supabase
+        .from("looking_for_posts")
+        .insert(insertRow as never);
       if (error) throw error;
       toast.success("We'll email you when a match is posted ✨");
       navigate({ to: "/looking-for" });
