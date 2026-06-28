@@ -687,7 +687,7 @@ function SuspiciousTab() {
     try {
       await adminSetListing(id, { is_active: true });
       // approval = mark verified to remove from view
-      await supabase.from("listings").update({ is_verified: true, pending_review: false }).eq("id", id);
+      await supabase.from("listings").update({ is_verified: true, pending_review: false } as any).eq("id", id);
       qc.invalidateQueries({ queryKey: ["admin"] });
       toast.success("Approved");
     } catch (e: any) { toast.error(e.message); }
