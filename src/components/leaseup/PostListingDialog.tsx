@@ -12,10 +12,12 @@ import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ShieldAlert, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
+import { useServerFn } from "@tanstack/react-start";
+import { screenListing, type ScreenResult } from "@/lib/leaseup/ai.functions";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
