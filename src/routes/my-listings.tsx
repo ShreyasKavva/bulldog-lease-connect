@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -9,6 +9,8 @@ import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
 import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
+import { BoostCard } from "@/components/leaseup/BoostListingButton";
+import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
 import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +20,10 @@ import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    boosted: typeof s.boosted === "string" ? s.boosted : undefined,
+    deposit: typeof s.deposit === "string" ? s.deposit : undefined,
+  }),
   component: MyListingsPage,
 });
 
@@ -25,11 +31,30 @@ function MyListingsPage() {
   const { user } = useSession();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const search = useSearch({ from: "/my-listings" });
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["my-listings", user?.id],
     queryFn: () => fetchMyListings(user!.id),
     enabled: !!user,
   });
+  const [selected, setSelected] = useState<Listing | null>(null);
+  const [posting, setPosting] = useState(false);
+  const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+
+  // Celebration on return from Stripe Checkout
+  useEffect(() => {
+    if (search.boosted) {
+      toast.success("🎉 Your listing is now featured for 7 days!", { duration: 6000 });
+      // Strip the query param so refreshes don't re-fire
+      navigate({ to: "/my-listings", search: {}, replace: true });
+    }
+    if (search.deposit === "ok") {
+      toast.success("🔒 Deposit secured.");
+      navigate({ to: "/my-listings", search: {}, replace: true });
+    }
+     
+  }, [search.boosted, search.deposit]);
+
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
