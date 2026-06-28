@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { ReactionBar } from "./ReactionBar";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
+import { TourBookingPanel } from "./TourBookingPanel";
 import { Lock } from "lucide-react";
 
 
@@ -280,6 +281,8 @@ export function ListingDetailSheet({
               className="gap-2"
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
+          <TourBookingPanel listing={listing} />
+
 
           {listing.deposit_escrow_enabled && listing.deposit_amount ? (
             <div className="rounded-xl border-2 border-success/40 bg-success-light/30 p-3">

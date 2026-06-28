@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as ToursRouteImport } from './routes/tours'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as RoommatesRouteImport } from './routes/roommates'
@@ -43,6 +44,11 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToursRoute = ToursRouteImport.update({
+  id: '/tours',
+  path: '/tours',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -279,6 +287,7 @@ export interface FileRoutesById {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved'
     | '/sitemap.xml'
+    | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/roommates/create'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved'
     | '/sitemap.xml'
+    | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/roommates/create'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved'
     | '/sitemap.xml'
+    | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
     | '/roommates/create'
@@ -410,6 +422,7 @@ export interface RootRouteChildren {
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedRoute: typeof SavedRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -429,6 +442,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tours': {
+      id: '/tours'
+      path: '/tours'
+      fullPath: '/tours'
+      preLoaderRoute: typeof ToursRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -680,6 +700,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedRoute: SavedRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,

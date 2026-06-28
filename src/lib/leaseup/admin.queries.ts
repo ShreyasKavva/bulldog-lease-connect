@@ -79,19 +79,27 @@ export type PlatformStats = {
   signupsToday: number;
   messagesThisWeek: number;
   perCampus: { campus: string; count: number }[];
+  toursRequestedWeek: number;
+  toursConfirmedWeek: number;
+  toursCompleted: number;
+  noShowRate: number;
 };
 
 export async function fetchPlatformStats(): Promise<PlatformStats> {
   const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
-  const [users, active, signups, msgs, campusBreak, campuses] = await Promise.all([
+  const [users, active, signups, msgs, campusBreak, campuses, tReq, tConf, tComp, tNo] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("is_active", true),
     supabase.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", dayAgo),
     supabase.from("messages").select("id", { count: "exact", head: true }).gte("created_at", weekAgo),
     supabase.from("listings").select("campus_id").eq("is_active", true),
     supabase.from("campuses").select("id, short_name"),
+    supabase.from("tour_bookings" as any).select("id", { count: "exact", head: true }).gte("created_at", weekAgo),
+    supabase.from("tour_bookings" as any).select("id", { count: "exact", head: true }).eq("status", "confirmed").gte("created_at", weekAgo),
+    supabase.from("tour_bookings" as any).select("id", { count: "exact", head: true }).not("poster_survey", "is", null),
+    supabase.from("tour_bookings" as any).select("id", { count: "exact", head: true }).eq("poster_survey", "no_show"),
   ]);
 
   const nameMap = new Map<string, string>((campuses.data ?? []).map((c: any) => [c.id, c.short_name]));
@@ -101,11 +109,19 @@ export async function fetchPlatformStats(): Promise<PlatformStats> {
     .map(([cid, count]) => ({ campus: nameMap.get(cid) ?? "Unknown", count }))
     .sort((a, b) => b.count - a.count);
 
+  const completed = tComp.count ?? 0;
+  const noShow = tNo.count ?? 0;
+  const noShowRate = completed > 0 ? (noShow / (completed + noShow)) * 100 : 0;
+
   return {
     totalUsers: users.count ?? 0,
     activeListings: active.count ?? 0,
     signupsToday: signups.count ?? 0,
     messagesThisWeek: msgs.count ?? 0,
     perCampus,
+    toursRequestedWeek: tReq.count ?? 0,
+    toursConfirmedWeek: tConf.count ?? 0,
+    toursCompleted: completed,
+    noShowRate,
   };
 }

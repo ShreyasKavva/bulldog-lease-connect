@@ -12,13 +12,14 @@ import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3 } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 import { StatCard } from "@/components/leaseup/analytics/Charts";
 import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
+import { TourAvailabilityDialog } from "@/components/leaseup/TourAvailabilityDialog";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
@@ -42,6 +43,7 @@ function MyListingsPage() {
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
+  const [tourFor, setTourFor] = useState<Listing | null>(null);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
 
   const totals = {
@@ -264,6 +266,15 @@ function MyListingsPage() {
                   >
                     <BarChart3 className="h-4 w-4" />
                   </button>
+                  {!filled && (
+                    <button
+                      onClick={() => setTourFor(l)}
+                      title="Tour availability"
+                      className="rounded-md p-2 hover:bg-background"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </button>
+                  )}
                   {filled ? (
                     <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
@@ -322,6 +333,14 @@ function MyListingsPage() {
           reviewedName={reviewFor.name}
           listingId={reviewFor.listing.id}
           reviewerRole="poster"
+        />
+      )}
+      {tourFor && (
+        <TourAvailabilityDialog
+          listingId={tourFor.id}
+          posterId={user.id}
+          open={!!tourFor}
+          onOpenChange={(o) => { if (!o) setTourFor(null); }}
         />
       )}
     </div>
