@@ -257,6 +257,13 @@ function MyListingsPage() {
                     </div>
                   </button>
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
+                  <button
+                    onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
+                    title="Stats"
+                    className={cn("rounded-md p-2 hover:bg-background", statsOpen[l.id] && "bg-primary/10 text-primary")}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </button>
                   {filled ? (
                     <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
@@ -275,6 +282,7 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
+                {statsOpen[l.id] && <ListingStatsPanel listing={l} />}
                 {showNudge && (
                   <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="text-xl">📣</div>
