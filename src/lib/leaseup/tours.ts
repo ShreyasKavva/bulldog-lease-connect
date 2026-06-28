@@ -97,7 +97,7 @@ export async function createBooking(args: {
     .select("id")
     .single();
   if (error) throw error;
-  return data as { id: string };
+  return data as unknown as { id: string };
 }
 
 export async function updateBookingStatus(id: string, status: Booking["status"]) {
