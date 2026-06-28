@@ -43,6 +43,15 @@ function Home() {
   const qc = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useMyProfile();
+
+  // First-run onboarding gate. Send authenticated users who haven't finished
+  // the welcome flow to /onboarding before showing the home feed.
+  useEffect(() => {
+    if (user && profile && profile.onboarding_completed === false) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [user, profile?.onboarding_completed, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const { data: savedIds = new Set<string>() } = useQuery({
     queryKey: ["saved", user?.id],
     queryFn: () => fetchSavedIds(user!.id),
