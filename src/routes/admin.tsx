@@ -13,14 +13,17 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
-import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "overview" | "reports" | "listings" | "users";
+type Tab = "overview" | "reports" | "listings" | "users" | "revenue" | "deposits";
 
 function AdminPage() {
   const { user, loading } = useSession();
@@ -65,6 +68,8 @@ function AdminPage() {
             ["reports", "Reports", AlertTriangle],
             ["listings", "Listings", Home],
             ["users", "Users", Users],
+            ["revenue", "Revenue", DollarSign],
+            ["deposits", "Deposits", Lock],
           ] as const).map(([t, label, Icon]) => (
             <button key={t} onClick={() => setTab(t)}
               className={cn("flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-bold whitespace-nowrap",
@@ -78,6 +83,8 @@ function AdminPage() {
         {tab === "reports" && <ReportsTab adminId={user!.id} />}
         {tab === "listings" && <ListingsTab />}
         {tab === "users" && <UsersTab />}
+        {tab === "revenue" && <RevenueTab />}
+        {tab === "deposits" && <DepositsTab />}
       </div>
     </div>
   );
