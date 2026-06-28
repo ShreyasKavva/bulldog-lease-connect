@@ -9,9 +9,12 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { AVATAR_EMOJIS, BANNER_COLORS, VIBE_TAGS, YEARS } from "@/lib/leaseup/constants";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BadgeCheck, Pencil } from "lucide-react";
+import { BadgeCheck, Pencil, Star, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ReviewsList } from "./ReviewsList";
+import { LeaveReviewDialog } from "./LeaveReviewDialog";
+import { canLeaveReview, fetchVerifiedSubleaseCount, computeReviewStats, fetchUserReviews } from "@/lib/leaseup/reviews.queries";
 
 export function ProfileSheet({
   userId, open, onOpenChange, onMessage,
