@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
+import { fetchGrowthMetrics } from "@/lib/leaseup/analytics.queries";
+import { LineChart as AnalyticsLineChart } from "@/components/leaseup/analytics/Charts";
 import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
