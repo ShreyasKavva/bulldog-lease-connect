@@ -682,11 +682,13 @@ export type Database = {
           currently_updated_at: string | null
           email: string
           id: string
+          intent: string | null
           is_admin: boolean
           is_ambassador: boolean
           last_seen: string | null
           major: string | null
           name: string
+          onboarding_completed: boolean
           phone: string | null
           referral_code: string | null
           referral_count: number
@@ -708,11 +710,13 @@ export type Database = {
           currently_updated_at?: string | null
           email: string
           id: string
+          intent?: string | null
           is_admin?: boolean
           is_ambassador?: boolean
           last_seen?: string | null
           major?: string | null
           name?: string
+          onboarding_completed?: boolean
           phone?: string | null
           referral_code?: string | null
           referral_count?: number
@@ -734,11 +738,13 @@ export type Database = {
           currently_updated_at?: string | null
           email?: string
           id?: string
+          intent?: string | null
           is_admin?: boolean
           is_ambassador?: boolean
           last_seen?: string | null
           major?: string | null
           name?: string
+          onboarding_completed?: boolean
           phone?: string | null
           referral_code?: string | null
           referral_count?: number

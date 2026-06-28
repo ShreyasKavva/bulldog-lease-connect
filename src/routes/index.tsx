@@ -18,6 +18,7 @@ import { MapCampusSelector } from "@/components/leaseup/MapCampusSelector";
 import { MapFilters, DEFAULT_FILTERS, type MapFiltersValue } from "@/components/leaseup/MapFilters";
 import { MapEmptyState } from "@/components/leaseup/MapEmptyState";
 import { GuestRibbon } from "@/components/leaseup/GuestRibbon";
+import { ProfileCompletionBanner } from "@/components/leaseup/ProfileCompletionBanner";
 import { UGA_CENTER } from "@/lib/leaseup/constants";
 import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
@@ -42,6 +43,15 @@ function Home() {
   const qc = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useMyProfile();
+
+  // First-run onboarding gate. Send authenticated users who haven't finished
+  // the welcome flow to /onboarding before showing the home feed.
+  useEffect(() => {
+    if (user && profile && profile.onboarding_completed === false) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [user, profile?.onboarding_completed, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const { data: savedIds = new Set<string>() } = useQuery({
     queryKey: ["saved", user?.id],
     queryFn: () => fetchSavedIds(user!.id),
@@ -217,6 +227,9 @@ function Home() {
               onAddYourStory={() => setPosting(true)}
               onSelectStudent={setProfileViewId}
             />
+          </div>
+          <div className="pointer-events-auto mt-2">
+            <ProfileCompletionBanner />
           </div>
         </div>
 

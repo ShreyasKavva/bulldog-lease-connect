@@ -19,6 +19,8 @@ export type Profile = {
   last_seen?: string | null;
   updated_at?: string | null;
   created_at: string;
+  onboarding_completed?: boolean;
+  intent?: "listing" | "looking" | null;
 };
 
 
