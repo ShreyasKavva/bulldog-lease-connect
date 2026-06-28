@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { OfflineIndicator } from "@/components/leaseup/OfflineIndicator";
 import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
+import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 
 function NotFoundComponent() {
   return (
@@ -119,6 +120,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <OfflineIndicator />
+      <NotificationToastListener />
       <Outlet />
       <InstallPrompt />
       <Toaster position="top-center" richColors />

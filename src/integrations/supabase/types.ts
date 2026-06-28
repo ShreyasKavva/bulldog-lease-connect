@@ -760,6 +760,7 @@ export type Database = {
           last_seen: string | null
           major: string | null
           name: string
+          notification_preferences: Json
           onboarding_completed: boolean
           phone: string | null
           referral_code: string | null
@@ -788,6 +789,7 @@ export type Database = {
           last_seen?: string | null
           major?: string | null
           name?: string
+          notification_preferences?: Json
           onboarding_completed?: boolean
           phone?: string | null
           referral_code?: string | null
@@ -816,6 +818,7 @@ export type Database = {
           last_seen?: string | null
           major?: string | null
           name?: string
+          notification_preferences?: Json
           onboarding_completed?: boolean
           phone?: string | null
           referral_code?: string | null
@@ -1207,6 +1210,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      notif_pref_enabled: {
+        Args: { _key: string; _uid: string }
+        Returns: boolean
       }
       process_looking_for_expiry: { Args: never; Returns: undefined }
       process_review_prompts: { Args: never; Returns: undefined }

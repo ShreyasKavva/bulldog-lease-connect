@@ -1,8 +1,8 @@
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Bell, MessageSquare, TrendingDown, Sparkles, Check, X, Activity as ActivityIcon, ArrowRight } from "lucide-react";
+import { Bell, Check, X, Activity as ActivityIcon, ArrowRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   useNotifications,
@@ -12,6 +12,8 @@ import {
   type Notification,
 } from "@/hooks/use-notifications";
 import { useActivity, activityTimeAgo } from "@/lib/leaseup/activity";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { notificationMeta } from "@/lib/leaseup/notification-meta";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -25,25 +27,34 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
-function iconFor(type: string) {
-  if (type === "message") return <MessageSquare className="h-4 w-4 text-primary" />;
-  if (type === "price_drop") return <TrendingDown className="h-4 w-4 text-emerald-600" />;
-  if (type === "looking_for_match") return <Sparkles className="h-4 w-4 text-amber-500" />;
-  return <Bell className="h-4 w-4 text-muted-foreground" />;
-}
-
 export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => void }) {
   const { data: notifications = [] } = useNotifications();
   const markAll = useMarkAllNotificationsRead();
   const markOne = useMarkNotificationRead();
   const del = useDeleteNotification();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState<"notifications" | "activity">("notifications");
+  const [open, setOpen] = useState(false);
   const unread = notifications.filter((n) => !n.read).length;
+
+  // Pulse badge briefly when unread count grows
+  const prevUnread = useRef(unread);
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    if (unread > prevUnread.current) {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 320);
+      return () => clearTimeout(t);
+    }
+    prevUnread.current = unread;
+  }, [unread]);
 
   function handleClick(n: Notification) {
     if (!n.read) markOne.mutate(n.id);
-    if (n.type === "message" && onOpenMessages) {
+    setOpen(false);
+    const isMessage = n.type === "new_message" || n.type === "message";
+    if (isMessage && onOpenMessages) {
       onOpenMessages();
       return;
     }
@@ -53,21 +64,37 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
     }
   }
 
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          aria-label="Notifications"
-          className="relative rounded-full bg-background p-2 hover:bg-border"
-        >
-          <Bell className="h-5 w-5" />
-          {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
+  const trigger = (
+    <button
+      aria-label="Notifications"
+      className="relative rounded-full bg-background p-2 hover:bg-border"
+    >
+      <Bell className="h-5 w-5" />
+      {unread > 0 && (
+        <span
+          className={cn(
+            "absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white",
+            pulse && "lu-badge-pulse",
           )}
-        </button>
-      </PopoverTrigger>
+        >
+          {unread > 99 ? "99+" : unread}
+        </span>
+      )}
+    </button>
+  );
+
+  // On mobile: clicking the bell goes to the full /notifications page.
+  if (isMobile) {
+    return (
+      <Link to="/notifications" aria-label="Notifications" className="relative inline-block">
+        {trigger}
+      </Link>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent align="end" className="w-[380px] p-0">
         <div className="flex items-center justify-between border-b">
           <div className="flex">
@@ -89,51 +116,93 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
         </div>
 
         {tab === "notifications" ? (
-          <ScrollArea className="max-h-[420px]">
+          <ScrollArea className="max-h-[480px]">
             {notifications.length === 0 ? (
-              <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-                <Bell className="mx-auto mb-2 h-6 w-6 opacity-50" />
-                You're all caught up.
-              </div>
+              <EmptyState />
             ) : (
               <ul className="divide-y">
                 {notifications.map((n) => (
-                  <li
+                  <NotificationRow
                     key={n.id}
-                    className={`group relative flex items-start gap-3 px-4 py-3 hover:bg-background ${
-                      !n.read ? "bg-primary-light/40" : ""
-                    }`}
-                  >
-                    <button onClick={() => handleClick(n)} className="flex flex-1 items-start gap-3 text-left">
-                      <div className="mt-0.5">{iconFor(n.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold leading-tight">{n.title}</div>
-                        {n.body && (
-                          <div className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.body}</div>
-                        )}
-                        <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
-                          {timeAgo(n.created_at)} ago
-                        </div>
-                      </div>
-                      {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />}
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); del.mutate(n.id); }}
-                      aria-label="Dismiss"
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                    </button>
-                  </li>
+                    n={n}
+                    onClick={() => handleClick(n)}
+                    onDismiss={() => del.mutate(n.id)}
+                  />
                 ))}
               </ul>
             )}
+            <div className="border-t p-2">
+              <Link
+                to="/notifications"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-1 rounded-md py-2 text-xs font-bold text-primary hover:bg-background"
+              >
+                See all notifications <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </ScrollArea>
         ) : (
           <ActivityTab />
         )}
       </PopoverContent>
     </Popover>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+      <Bell className="mx-auto mb-3 h-8 w-8 opacity-40" />
+      <div className="font-semibold text-foreground">You're all caught up 👋</div>
+      <div className="mt-1 text-xs">Notifications will appear here as students interact with your listings.</div>
+    </div>
+  );
+}
+
+function NotificationRow({
+  n,
+  onClick,
+  onDismiss,
+}: {
+  n: Notification;
+  onClick: () => void;
+  onDismiss: () => void;
+}) {
+  const meta = notificationMeta(n.type);
+  const Icon = meta.icon;
+  return (
+    <li
+      className={cn(
+        "group relative flex items-start gap-3 px-4 py-3 hover:bg-background transition",
+        !n.read && "border-l-[3px] border-primary bg-primary-light/30",
+      )}
+    >
+      <button onClick={onClick} className="flex flex-1 items-start gap-3 text-left">
+        <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-full", meta.tone)}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={cn("text-sm leading-tight", !n.read ? "font-bold" : "font-semibold")}>{n.title}</div>
+          {n.body && (
+            <div className="mt-0.5 text-[13px] text-muted-foreground line-clamp-2">{n.body}</div>
+          )}
+          <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+            {timeAgo(n.created_at)} ago
+          </div>
+        </div>
+        {!n.read && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />}
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss();
+        }}
+        aria-label="Dismiss"
+        className="opacity-0 transition-opacity group-hover:opacity-100"
+      >
+        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+      </button>
+    </li>
   );
 }
 

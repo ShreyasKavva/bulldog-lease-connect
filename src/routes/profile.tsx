@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReferralCard } from "@/components/leaseup/ReferralCard";
 import { ThemeToggle } from "@/components/leaseup/ThemeToggle";
+import { NotificationPreferences } from "@/components/leaseup/NotificationPreferences";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -255,6 +256,9 @@ function ProfilePage() {
           )}
           <div className="col-span-2">
             <ThemeToggle />
+          </div>
+          <div className="col-span-2">
+            <NotificationPreferences />
           </div>
           <button
             onClick={signOut}
