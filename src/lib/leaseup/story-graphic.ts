@@ -159,7 +159,7 @@ export async function renderStoryGraphic(listing: Listing): Promise<Blob | null>
   wrapText(ctx, metaParts.join(" · "), padX, 1175, W - padX * 2, 40, 1);
 
   // Dates
-  const range = formatRange(listing.start_date, listing.end_date);
+  const range = formatRange(listing.available_from, listing.available_to);
   if (range) {
     ctx.fillText(`📅 ${range}`, padX, 1240);
   }
