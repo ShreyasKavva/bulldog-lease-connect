@@ -15,6 +15,12 @@ export function BottomNav({
   const path = useRouterState({ select: (s) => s.location.pathname });
   const unread = useUnreadCount();
   const { data: profile } = useMyProfile();
+  const [pulse, setPulse] = useState(0);
+  useEffect(() => {
+    const h = () => setPulse((p) => p + 1);
+    window.addEventListener("leaseup:unread-pulse", h);
+    return () => window.removeEventListener("leaseup:unread-pulse", h);
+  }, []);
 
   const isMap = path === "/";
   const isBrowse = path === "/browse";
