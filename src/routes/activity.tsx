@@ -20,10 +20,13 @@ export const Route = createFileRoute("/activity")({
 });
 
 function ActivityPage() {
+  const { user, loading } = useSession();
   const { data: items = [], isLoading } = useActivity();
   const [visible, setVisible] = useState(50);
   const seenIds = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
+
+  if (!loading && !user) return <ActivityLoggedOut />;
 
   useEffect(() => {
     const fresh = new Set<string>();
