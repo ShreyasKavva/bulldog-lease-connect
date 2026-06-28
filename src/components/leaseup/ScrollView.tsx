@@ -5,6 +5,7 @@ import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 import { useReactionPicker } from "./useReactionPicker";
 import { ShareToStoryButton } from "./ShareToStoryButton";
+import { PriceLabelBadge } from "./PriceLabelBadge";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
