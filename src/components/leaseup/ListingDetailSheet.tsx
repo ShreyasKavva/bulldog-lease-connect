@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { ReactionBar } from "./ReactionBar";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
+import { TourBookingPanel } from "./TourBookingPanel";
 import { Lock } from "lucide-react";
 
 
