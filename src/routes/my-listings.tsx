@@ -34,6 +34,27 @@ function MyListingsPage() {
   const [posting, setPosting] = useState(false);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
 
+  const { data: shareStats = {} } = useQuery({
+    queryKey: ["my-listing-shares", user?.id, listings.map((l) => l.id).join(",")],
+    enabled: !!user && listings.length > 0,
+    queryFn: async () => {
+      const ids = listings.map((l) => l.id);
+      const { data } = await supabase
+        .from("listing_shares")
+        .select("listing_id, created_at")
+        .in("listing_id", ids);
+      const out: Record<string, { count: number; lastAt: string | null }> = {};
+      for (const id of ids) out[id] = { count: 0, lastAt: null };
+      for (const r of (data ?? []) as { listing_id: string; created_at: string }[]) {
+        const e = out[r.listing_id];
+        if (!e) continue;
+        e.count += 1;
+        if (!e.lastAt || r.created_at > e.lastAt) e.lastAt = r.created_at;
+      }
+      return out;
+    },
+  });
+
 
   if (!user) {
     return (
