@@ -22,6 +22,7 @@ import { markConversationRead } from "@/hooks/use-unread";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import type { Conversation, Message, MessageReaction } from "@/lib/leaseup/types";
 import { toast } from "sonner";
+import { ScamWarningBanner } from "./ScamWarningBanner";
 
 const REACTION_EMOJI = ["👍", "❤️", "😂", "😮", "🙏", "🔥"];
 
