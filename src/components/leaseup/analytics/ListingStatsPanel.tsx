@@ -39,10 +39,11 @@ export function ListingStatsPanel({ listing }: { listing: Listing }) {
     days.push({ date: d, views: row?.views ?? 0 });
   }
   // Convert running totals to deltas
-  const deltas = days.map((d, i) => Math.max(0, d.views - (i > 0 ? days[i - 1].views : d.views)));
-  // Ensure today shows current view_count - yesterday snapshot if no snapshot today yet
-  if (deltas.every((v) => v === 0) && listing.view_count) {
-    deltas[deltas.length - 1] = listing.view_count;
+  const deltas: number[] = days.map((d, i) => Math.max(0, d.views - (i > 0 ? days[i - 1].views : d.views)));
+  const viewCount = listing.view_count ?? 0;
+  // Ensure today shows current view_count if no snapshot today yet
+  if (deltas.every((v) => v === 0) && viewCount > 0) {
+    deltas[deltas.length - 1] = viewCount;
   }
 
   const ageDays = Math.max(0, Math.floor((Date.now() - new Date(listing.created_at).getTime()) / 86400000));
@@ -51,7 +52,7 @@ export function ListingStatsPanel({ listing }: { listing: Listing }) {
 
   let compareLine = "📊 Stats build up over the first 48 hours";
   if (ageDays >= 2 && avgViews > 0) {
-    const diff = Math.round(((listing.view_count - avgViews) / avgViews) * 100);
+    const diff = Math.round(((viewCount - avgViews) / avgViews) * 100);
     if (diff >= 10) compareLine = `📈 Your listing gets ${diff}% more views than similar ${listing.beds}BR listings nearby`;
     else if (diff <= -10) compareLine = `📉 Similar ${listing.beds}BR listings average ${avgViews} views — yours has ${listing.view_count}. Consider lowering your price or adding photos.`;
     else compareLine = `📊 Your listing performs in line with similar ${listing.beds}BR listings (avg ${avgViews})`;
