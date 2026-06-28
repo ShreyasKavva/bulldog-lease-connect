@@ -205,7 +205,7 @@ function CampusPage() {
             More campuses on LeaseUp →
           </div>
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {campuses.filter(c => c.slug !== campus.slug).map(c => (
+            {campuses.filter((c: Campus) => c.slug !== campus.slug).map((c: Campus) => (
               <Link
                 key={c.id}
                 to="/sublease/$slug"
