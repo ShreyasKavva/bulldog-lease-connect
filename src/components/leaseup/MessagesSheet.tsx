@@ -36,6 +36,27 @@ export function MessagesSheet({
     enabled: !!activeId,
   });
 
+  // Look up listing status to decide whether to show the review CTA.
+  const { data: activeListing } = useQuery({
+    queryKey: ["conv-listing", active?.listing_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("listings")
+        .select("id,title,status,is_active")
+        .eq("id", active!.listing_id!)
+        .maybeSingle();
+      return data as { id: string; title: string; status: string | null; is_active: boolean } | null;
+    },
+    enabled: !!active?.listing_id,
+  });
+  const otherId = active && user ? (active.participant_1_id === user.id ? active.participant_2_id : active.participant_1_id) : null;
+  const lastMsgAt = active?.last_message_at ? new Date(active.last_message_at).getTime() : 0;
+  const quiet14 = lastMsgAt > 0 && Date.now() - lastMsgAt > 14 * 24 * 60 * 60 * 1000;
+  const listingDone = !!activeListing && (activeListing.status === "filled" || activeListing.is_active === false);
+  const canReview = !!(active && otherId && (listingDone || quiet14));
+  const [showReview, setShowReview] = useState(false);
+
+
   // Realtime subscription for messages in active conversation
   useEffect(() => {
     if (!activeId) return;
