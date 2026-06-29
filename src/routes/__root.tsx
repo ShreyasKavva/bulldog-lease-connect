@@ -1,3 +1,24 @@
+/**
+ * Root route. Owns the <html>/<head>/<body> shell, the global head() metadata,
+ * and all app-wide providers/listeners. Everything else renders inside <Outlet/>.
+ *
+ * head() entries CONCATENATE into every route — leaf routes can add their own
+ * meta but cannot remove root meta. Keep og:image OUT of root (it would
+ * override per-listing share images).
+ *
+ * The inline <script> at the bottom of head() runs BEFORE hydration to set
+ * the dark-mode class and color-scheme. This prevents a flash of the wrong
+ * theme. Don't remove without replacing — the FOUC is jarring.
+ *
+ * Providers mounted here:
+ *   - QueryClientProvider (per-request QueryClient from router context)
+ *   - OfflineIndicator + InstallPrompt + Toaster (global UI)
+ *   - NotificationToastListener (subscribes to the notifications table and
+ *     shows a sonner toast for each new row for the current user)
+ *
+ * Effects on mount: register PWA service worker, apply stored theme,
+ * invalidate the router + query cache on Supabase auth state changes.
+ */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,

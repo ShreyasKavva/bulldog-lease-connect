@@ -1,3 +1,18 @@
+/**
+ * MapHome — the Snapchat-style price-bubble map. Default home for guests
+ * and an opt-in view for logged-in users.
+ *
+ * Built on Leaflet + leaflet.markercluster. The Leaflet CSS is loaded once
+ * from __root.tsx via <link>; do not import it here (would double-load).
+ *
+ * Refs (mapRef, pinsLayerRef, etc.) are used heavily because Leaflet is
+ * imperative — we mutate the live map instead of re-creating it on every
+ * React render. listingsRef/hotRef/selectedIdRef shadow props so popup
+ * callbacks always see the latest values without re-binding.
+ *
+ * hotThreshold: listings priced below this are styled as "hot deals" with
+ * a flame pin. Computed upstream from the campus median.
+ */
 import { useEffect, useRef, useState } from "react";
 import type LType from "leaflet";
 import "leaflet.markercluster";

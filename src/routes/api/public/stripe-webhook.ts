@@ -1,3 +1,33 @@
+/**
+ * STRIPE WEBHOOK (PUBLIC). The async side of every payment flow.
+ *
+ * Lives under /api/public/* so it bypasses our auth gate on the published
+ * site — the security model is the Stripe signature check below. If that
+ * verification is removed or weakened, anyone on the internet could mark
+ * listings as featured or escrow deposits as released. Don't.
+ *
+ * Idempotency: Stripe retries on any non-2xx response. Every handler is
+ * written so a re-delivery of the same event is a no-op (we update by
+ * stripe_session_id / stripe_payment_intent_id, never blindly insert).
+ *
+ * Event → effect map:
+ *   checkout.session.completed (metadata.type=boost)
+ *     → listings.is_featured=true, featured_until=now+7d, notification
+ *   payment_intent.amount_capturable_updated (metadata.type=deposit)
+ *     → deposit_agreements.status='held' (funds authorized, awaiting capture)
+ *   payment_intent.succeeded (metadata.type=deposit, fully captured)
+ *     → deposit_agreements.status='released'
+ *   payment_intent.payment_failed
+ *     → deposit_agreements.status='pending' (reset for retry)
+ *   charge.refunded
+ *     → deposit_agreements.status='refunded' OR boost_purchases.status='refunded'
+ *
+ * supabaseAdmin is dynamic-imported INSIDE the handler. Top-level imports of
+ * *.server.ts from a route file leak the service-role client into the
+ * client-bundle graph — see ENGINEER_NOTES.md §5.
+ *
+ * Required env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET.
+ */
 import { createFileRoute } from "@tanstack/react-router";
 
 /**

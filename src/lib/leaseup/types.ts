@@ -1,3 +1,19 @@
+/**
+ * Domain types — the single source of truth for the LeaseUp data model on
+ * the client. These mirror the Postgres schema in supabase/migrations/.
+ *
+ * If you add a column to a table, update the type here too — most components
+ * import from this file rather than from the auto-generated Supabase types,
+ * because we project extra UI-only fields onto these objects (e.g. `profile`,
+ * `photo_urls`, `interest_count`).
+ *
+ * Conventions:
+ * - snake_case to match Postgres column names exactly. Do NOT camelCase here.
+ * - Optional fields (`?`) are columns added in later migrations; older rows
+ *   may not have them set. Code should defensively check.
+ * - `photo_urls` on Listing is NOT a DB column; it's populated client-side
+ *   in queries.ts::attachSignedUrls() from the `photos` Storage paths.
+ */
 export type Profile = {
   id: string;
   email: string;

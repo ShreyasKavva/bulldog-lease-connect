@@ -1,3 +1,17 @@
+/**
+ * /profile — the current user's profile + settings.
+ *
+ * Sections: avatar/identity header with completion %, "Currently" status,
+ * vibe tags, bio, contact, referral card (ambassador program), notification
+ * preferences, theme toggle, and quick links to My Listings / Saved.
+ *
+ * Profile completion % is computed in lib/leaseup/profile-completion.ts —
+ * keep the field weights in sync with the ProfileCompletionBanner used on
+ * the home feed.
+ *
+ * Sign-out clears the Supabase session; the auth listener in __root.tsx
+ * handles router invalidation.
+ */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";

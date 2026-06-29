@@ -1,3 +1,25 @@
+/**
+ * AI server functions. All AI calls in the app funnel through here.
+ *
+ * Powered by the Lovable AI Gateway (see ai-gateway.server.ts). The gateway
+ * key (LOVABLE_API_KEY) is auto-provisioned on Lovable Cloud; we read it
+ * inside each handler — never at module scope — per server-fn env rules.
+ *
+ * Functions exported from this file:
+ *   - analyzeLease   tenant-advocate review of a lease (text or PDF base64).
+ *                    Persists a row in `lease_analyses`.
+ *   - findMyMatch    ranks listings against a user's vibe-quiz payload.
+ *   - screenListing  pre-publish moderation — returns auto_reject /
+ *                    pending_review / quality_nudge / ok. Called by
+ *                    PostListingDialog before the insert.
+ *
+ * Output parsing: the LLM is asked for strict JSON. extractJson() tolerates
+ * ```json fences and partial prose wrapping. If you change a system prompt,
+ * keep the JSON-only contract or the parser will throw.
+ *
+ * MODEL is centralized — bump cautiously and re-run lease analysis fixtures
+ * before shipping.
+ */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText } from "ai";
