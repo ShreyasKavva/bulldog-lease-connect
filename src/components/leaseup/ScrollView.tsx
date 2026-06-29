@@ -1,3 +1,18 @@
+/**
+ * ScrollView — TikTok/Reels-style vertical snap feed. The DEFAULT home view
+ * for authenticated users (see routes/index.tsx).
+ *
+ * Implementation notes:
+ *   - Uses CSS scroll-snap on a full-height container; each listing is one
+ *     snap point. Don't add intermediate non-snapping elements between cards
+ *     or scroll behavior breaks on iOS.
+ *   - View tracking: each card increments listings.view_count when it enters
+ *     the viewport (debounced upstream to one count per session per listing).
+ *   - Gestures: double-tap = save (heart), long-press = reaction picker,
+ *     horizontal swipe on the image gallery = next photo.
+ *   - Overlaid UI (action rail, poster avatar, gradient) sits on top of the
+ *     image with absolute positioning. Keep z-index discipline.
+ */
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar, Scale } from "lucide-react";

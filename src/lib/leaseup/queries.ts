@@ -1,3 +1,19 @@
+/**
+ * Client-side Supabase reads/writes for the LeaseUp app.
+ *
+ * Conventions:
+ * - All listing reads run through fetchListings/fetchListing/etc. which
+ *   ALWAYS call attachProfiles() + attachSignedUrls() before returning. The
+ *   `photos` column stores Storage paths, not URLs — we mint 7-day signed
+ *   URLs (SIGNED_URL_TTL) on each read and expose them as `photo_urls`.
+ * - Feed ordering is `is_featured DESC, created_at DESC` — paid boosts must
+ *   stay pinned to the top. Preserve this if you add new sort orders.
+ * - Conversations are deduped by (participant_1, participant_2, listing_id)
+ *   via getOrCreateConversation. Messages cannot be inserted until the
+ *   conversation row exists — RLS enforces this.
+ * - Mutations here run under the user's RLS scope. Anything that needs
+ *   service-role privileges belongs in a server fn, not this file.
+ */
 import { supabase } from "@/integrations/supabase/client";
 import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSearch } from "./types";
 

@@ -1,3 +1,25 @@
+/**
+ * Admin/moderation dashboard. Visibility is gated client-side by
+ * profile.is_admin, but every mutation also passes through RLS policies
+ * that re-check is_admin — never rely on the client gate alone.
+ *
+ * Tabs:
+ *   overview    Platform stats, growth charts, per-campus breakdown.
+ *   reports     User-filed reports queue, sorted by priority (urgent→low),
+ *               with auto-flag indicators + report-volume counts.
+ *   suspicious  Listings the AI screener marked pending_review or that the
+ *               suspicious_listings view caught (price/text anomalies,
+ *               duplicate photos, etc.).
+ *   listings    All listings with hide/show/delete actions.
+ *   users       All profiles with verified/admin/ambassador/ban toggles
+ *               and a RiskBadge from user_risk_scores.
+ *   revenue     Boost purchases — total revenue, refunds, time series.
+ *   deposits    Escrow agreements with release/refund actions
+ *               (adminReleaseDeposit / adminRefundDeposit server fns).
+ *
+ * head() sets robots=noindex — do not remove. This route must never be
+ * crawlable.
+ */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

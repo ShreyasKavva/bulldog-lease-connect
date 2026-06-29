@@ -1,3 +1,17 @@
+/**
+ * Poster dashboard ("/my-listings"). Shows everything the user has posted,
+ * with per-listing actions (edit, hide/show, delete, boost, secure deposit,
+ * mark filled, reopen, share to Story, view analytics, set tour
+ * availability) and a stats header.
+ *
+ * search params:
+ *   ?boosted=<listingId>  → highlight after returning from Stripe success
+ *   ?deposit=<listingId>  → highlight after enabling escrow
+ *
+ * StaleListingsNudge surfaces listings with no recent engagement so the
+ * poster can refresh price/photos. ListingStatsPanel drills into
+ * per-listing analytics (my-listings.$listingId.analytics.tsx).
+ */
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

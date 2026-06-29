@@ -1,3 +1,23 @@
+/**
+ * PostListingDialog — the create/edit flow for listings.
+ *
+ * Submit pipeline:
+ *   1. Validate form locally.
+ *   2. Call screenListing (AI moderation, ai.functions.ts).
+ *      - auto_reject     → block, surface reasons.
+ *      - pending_review  → insert with pending_review=true (lands in admin
+ *                          Suspicious tab).
+ *      - quality_nudge   → show nudge dialog; user can fix or publish anyway.
+ *      - ok              → proceed.
+ *   3. Upload photos to the listing-photos Storage bucket via uploadListingPhotos.
+ *      We persist STORAGE PATHS in listings.photos, not URLs — signed URLs
+ *      are minted on read.
+ *   4. Insert the listing row (RLS scopes user_id = auth.uid()).
+ *   5. Optionally open InviteRoommatesDialog for viral growth.
+ *
+ * PriceGuidance shows live Deal/Fair/Above-market feedback as the user
+ * types a price, sourced from campus_price_stats.
+ */
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

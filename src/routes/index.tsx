@@ -1,3 +1,21 @@
+/**
+ * HOME ("/"). The most important route in the product.
+ *
+ * Two modes share this file:
+ *   - GUEST (no session)  → MapHome: full-screen Snapchat-style map of pins.
+ *                           Campus selection persists in localStorage
+ *                           (GUEST_CAMPUS_KEY) so they don't have to re-pick.
+ *   - LOGGED-IN           → ScrollView: TikTok-style vertical snap feed.
+ *                           Toggle to map is available from the top bar.
+ *
+ * Onboarding gate: any authenticated user with profile.onboarding_completed
+ * === false is redirected to /onboarding. This effect MUST stay in sync
+ * with the DB default and the onboarding flow itself.
+ *
+ * This route hosts the persistent app chrome (TopBar, BottomNav, sheets for
+ * Profile / Messages / PostListing / ListingDetail). Other routes mount
+ * their own copies of these as needed.
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

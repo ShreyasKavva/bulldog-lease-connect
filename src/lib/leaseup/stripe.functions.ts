@@ -1,3 +1,30 @@
+/**
+ * Stripe server functions — the WRITE side of payments. The webhook at
+ * src/routes/api/public/stripe-webhook.ts handles asynchronous results.
+ *
+ * Two flows live here:
+ *
+ * 1. Featured Listing Boost ($9.99 / 7 days)
+ *    createBoostCheckout → Stripe Checkout Session.
+ *    On checkout.session.completed the webhook flips listings.is_featured=true,
+ *    sets featured_until, and writes boost_purchases.status='paid'.
+ *
+ * 2. Deposit Escrow
+ *    createDepositIntent → Stripe PaymentIntent with capture_method='manual'.
+ *    Funds are authorized but held until adminReleaseDeposit (capture) or
+ *    adminRefundDeposit (refund). State mirror in deposit_agreements:
+ *    pending → held → released | refunded.
+ *
+ * Authorization: every fn uses requireSupabaseAuth and then verifies
+ * ownership (poster) or admin role before talking to Stripe. Do NOT relax
+ * these checks — these are real money operations.
+ *
+ * The Stripe SDK is require()'d lazily inside getStripeServer() so the bundle
+ * stays small and so process.env.STRIPE_SECRET_KEY is read at call-time
+ * (module-scope reads can be undefined in some bundling paths).
+ *
+ * Required secrets: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SITE_URL.
+ */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 

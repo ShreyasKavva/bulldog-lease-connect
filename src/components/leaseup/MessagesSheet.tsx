@@ -1,3 +1,25 @@
+/**
+ * MessagesSheet — the chat UI. Slides in from the right; lists conversations
+ * on the left, the open thread on the right (or full-screen on mobile).
+ *
+ * Realtime: subscribes to the `messages` table filtered by conversation_id
+ * for the open thread, and to the conversation list for last-message
+ * updates. Clean up the channel on unmount or you'll leak subscriptions
+ * across opens.
+ *
+ * Message types: text | image | document. Attachments are uploaded to the
+ * chat-attachments bucket; signChatAttachment() mints a short-lived signed
+ * URL for display.
+ *
+ * Per-user conversation flags (pinned/muted/deleted) are stored as two
+ * columns on `conversations` (pinned_by_p1 / pinned_by_p2, etc.) so we can
+ * write with a single update regardless of which side you're on. See
+ * setConversationFlag in queries.ts.
+ *
+ * ScamWarningBanner runs lightweight pattern detection on incoming text
+ * (Venmo/CashApp asks, off-platform contact, "out of country") and surfaces
+ * a banner inside the thread. It does NOT block messages.
+ */
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {

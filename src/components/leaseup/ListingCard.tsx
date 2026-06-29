@@ -1,3 +1,20 @@
+/**
+ * ListingCard — the canonical listing tile used in grid views (browse,
+ * saved, my-listings, trending, etc.). ScrollView renders its own
+ * full-screen variant; keep visual parity between them.
+ *
+ * Layered signals on the card (order matters for visual hierarchy):
+ *   - FeaturedBadge       (paid boost active)
+ *   - VerificationBadge   (unverified/basic/verified/premium tier)
+ *   - SecureDepositBadge  (escrow enabled)
+ *   - PriceLabelBadge     (Deal / Fair / Above Market vs. campus median)
+ *   - SafeScoreBadge      (0–100 trust score)
+ *   - "Just posted" + "Available soon" + "Hot deal" flame
+ *
+ * Reactions: long-press / double-tap opens useReactionPicker. Toggling a
+ * reaction writes to listing_reactions and fires a notification to the
+ * poster.
+ */
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide-react";
 import { PriceLabelBadge } from "./PriceLabelBadge";

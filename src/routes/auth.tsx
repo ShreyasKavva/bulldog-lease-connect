@@ -1,3 +1,20 @@
+/**
+ * /auth — single page for sign-in AND sign-up (toggle via ?mode=in|up).
+ *
+ * Providers:
+ *   - Email + password (any domain; .edu emails are auto-flipped to
+ *     verified_email=true by a DB trigger on auth.users insert).
+ *   - Google OAuth. The Supabase Google provider MUST be configured in the
+ *     project for this button to work, otherwise sign-in throws
+ *     "Unsupported provider".
+ *
+ * After successful auth, the SIGNED_IN listener in __root.tsx invalidates
+ * the router; if profile.onboarding_completed is false the index route
+ * redirects to /onboarding.
+ *
+ * ?message= surfaces a one-time toast (used for password-reset / email-
+ * confirmation success).
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";

@@ -1,3 +1,19 @@
+/**
+ * TanStack Start instance configuration.
+ *
+ * functionMiddleware runs on EVERY createServerFn call.
+ *   - attachSupabaseAuth: client-side middleware that grabs the current
+ *     Supabase session and attaches `Authorization: Bearer <token>` so server
+ *     fns guarded by requireSupabaseAuth can identify the caller. If you
+ *     replace it, the replacement MUST still set the Authorization header or
+ *     every protected server fn will 401.
+ *
+ * requestMiddleware runs on every server request (SSR + server routes).
+ *   - errorMiddleware: catches uncaught throws, logs them, and renders the
+ *     friendly error page from lib/error-page. We bypass it for /lovable/*
+ *     (the Lovable email integration owns its own responses) and the
+ *     unsubscribe link (must always return its own redirect).
+ */
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";

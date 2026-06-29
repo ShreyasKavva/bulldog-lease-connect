@@ -1,3 +1,23 @@
+/**
+ * Admin/moderation reads and writes. UI lives in src/routes/admin.tsx.
+ *
+ * These run with the caller's RLS — the admin RLS policies on each table
+ * (gated by profiles.is_admin) are what actually grant access. There's no
+ * service-role escape hatch in this file; it's intentionally client-safe.
+ *
+ * Reports queue: fetchReports() enriches each report with its listing,
+ * reporter profile, and report-volume count, then sorts by computed
+ * priority (urgent/high/normal/low) so the queue is actionable at a glance.
+ *
+ * Suspicious listings + user risk scores are read from DB VIEWS
+ * (`suspicious_listings`, `user_risk_scores`) defined in Queue 21
+ * migrations. They return [] gracefully if the view doesn't exist yet
+ * (error code 42P01 = undefined_table) so this file stays safe across
+ * deploys before/after the migration.
+ *
+ * fetchPlatformStats() is one big parallel fan-out — keep additions inside
+ * the Promise.all to avoid serial round-trips.
+ */
 import { supabase } from "@/integrations/supabase/client";
 import type { Listing, Profile } from "./types";
 
