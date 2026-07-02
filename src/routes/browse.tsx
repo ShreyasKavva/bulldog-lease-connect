@@ -305,14 +305,7 @@ function Browse() {
         onMessage={handleMessage}
         onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
       />
-      {user && (
-        <ProfileSheet
-          userId={profileViewId}
-          open={!!profileViewId}
-          onOpenChange={(o) => !o && setProfileViewId(null)}
-          onMessage={startConvWith}
-        />
-      )}
+      <PostListingDialog open={posting} onOpenChange={setPosting} />
       <ProfileSheet
         userId={profileViewId}
         open={!!profileViewId}
