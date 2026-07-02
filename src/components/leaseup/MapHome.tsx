@@ -51,13 +51,17 @@ export function MapHome({
   // init map
   useEffect(() => {
     let cancelled = false;
+    if (typeof window === "undefined") return;
     (async () => {
-      const L = (await import("leaflet")).default;
+      const leafletSpec = "leaflet";
+      const clusterSpec = "leaflet.markercluster";
+      const L = (await import(/* @vite-ignore */ leafletSpec)).default;
       // markercluster is a Leaflet plugin that expects window.L to exist
       // before its module runs, so load it only after Leaflet is ready.
       (window as unknown as { L: typeof LType }).L = L;
-      await import("leaflet.markercluster");
+      await import(/* @vite-ignore */ clusterSpec);
       if (cancelled || !ref.current || mapRef.current) return;
+
       Lref.current = L;
 
       const map = L.map(ref.current, { zoomControl: false, attributionControl: false }).setView(center, 15);
