@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Map as MapIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-react";
+import { Home as HomeIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useMyProfile } from "@/lib/leaseup/use-session";
@@ -22,7 +22,7 @@ export function BottomNav({
     return () => window.removeEventListener("leaseup:unread-pulse", h);
   }, []);
 
-  const isMap = path === "/";
+  const isHome = path === "/";
   const isBrowse = path === "/browse";
   const isProfile = path === "/profile";
 
@@ -37,7 +37,7 @@ export function BottomNav({
       className="fixed bottom-0 inset-x-0 z-50 flex items-stretch justify-around border-t border-border bg-surface/95 backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <NavLink to="/" active={isMap} label="Map" icon={MapIcon} />
+      <NavLink to="/" active={isHome} label="Home" icon={HomeIcon} />
       <NavLink to="/browse" active={isBrowse} label="Browse" icon={LayoutGrid} />
 
       <button
