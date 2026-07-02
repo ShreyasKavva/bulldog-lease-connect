@@ -160,13 +160,17 @@ function Home() {
         onPost={handlePost}
       />
 
-      {user && (
-        <BottomNav
-          onPost={handlePost}
-          onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
-          onProfile={() => setProfileViewId(user.id)}
-        />
-      )}
+      <BottomNav
+        onPost={handlePost}
+        onChat={() => {
+          if (!user) { navigate({ to: "/auth", search: { mode: "in", next: "/" } }); return; }
+          setActiveConv(null); setMessagesOpen(true);
+        }}
+        onProfile={() => {
+          if (!user) { navigate({ to: "/auth", search: { mode: "in", next: "/profile" } }); return; }
+          setProfileViewId(user.id);
+        }}
+      />
 
       <ListingDetailSheet
         listing={selected}
