@@ -27,7 +27,15 @@ import { z } from "zod";
 const search = z.object({
   mode: z.enum(["in", "up"]).catch("in"),
   message: z.string().optional().catch(undefined),
+  next: z.string().optional().catch(undefined),
 });
+
+function safeNext(next: string | undefined): string {
+  if (!next) return "/";
+  // Only allow same-origin relative paths.
+  if (!next.startsWith("/") || next.startsWith("//")) return "/";
+  return next;
+}
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => search.parse(s),
@@ -53,17 +61,20 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode: initial, message } = Route.useSearch();
+  const { mode: initial, message, next } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"in" | "up">(initial);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const dest = safeNext(next);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/" }); });
-  }, [navigate]);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.assign(dest);
+    });
+  }, [dest]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,11 +93,14 @@ function AuthPage() {
         if (error) throw error;
         try { if (ref) localStorage.removeItem("lu_ref"); } catch {}
         toast.success("Welcome to LeaseUp 🎉");
+        // Send new users through onboarding, then bounce to `next` after.
+        try { sessionStorage.setItem("lu_post_onboarding_next", dest); } catch {}
         navigate({ to: "/onboarding" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/" });
+        // Full navigation so ?post=1 / ?message=1 handlers on the target route run cleanly.
+        window.location.assign(dest);
       }
     } catch (e: any) {
       toast.error(e.message ?? "Auth failed");
