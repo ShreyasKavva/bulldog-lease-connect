@@ -47,7 +47,6 @@ function Browse() {
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
-    enabled: !!user,
   });
   const { data: savedIds = new Set<string>() } = useQuery({
     queryKey: ["saved", user?.id],
@@ -55,12 +54,11 @@ function Browse() {
     enabled: !!user?.id,
   });
   const { data: profile } = useMyProfile();
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity, enabled: !!user });
+  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
   const myCampus = campuses.find(c => c.id === profile?.campus_id);
   const { data: trendingIds = [] } = useQuery({
     queryKey: ["trending-ids", profile?.campus_id ?? "all"],
     queryFn: () => fetchTrendingIds(profile?.campus_id ?? null, 5),
-    enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
   const trendingListings = useMemo(
@@ -143,7 +141,10 @@ function Browse() {
   }
 
   async function handleMessage(listing: Listing) {
-    if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (!user) {
+      navigate({ to: "/auth", search: { mode: "in", next: `/?listing=${listing.id}&message=1` } });
+      return;
+    }
     if (listing.user_id === user.id) { toast("That's your own listing"); return; }
     const id = await getOrCreateConversation(user.id, listing.user_id, listing.id);
     setActiveConv(id);
@@ -159,7 +160,12 @@ function Browse() {
     setProfileViewId(null);
   }
 
-  if (sessionLoading || !user) {
+  function handlePost() {
+    if (!user) { navigate({ to: "/auth", search: { mode: "up", next: "/?post=1" } }); return; }
+    setPosting(true);
+  }
+
+  if (sessionLoading) {
     return <div className="min-h-screen bg-background" />;
   }
 
@@ -284,11 +290,13 @@ function Browse() {
         </main>
       </div>
 
-      <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
-        onProfile={() => setProfileViewId(user.id)}
-      />
+      {user && (
+        <BottomNav
+          onPost={handlePost}
+          onChat={() => { setActiveConv(null); setMessagesOpen(true); }}
+          onProfile={() => setProfileViewId(user.id)}
+        />
+      )}
 
       <ListingDetailSheet
         listing={selected}
@@ -297,7 +305,14 @@ function Browse() {
         onMessage={handleMessage}
         onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
       />
-      <PostListingDialog open={posting} onOpenChange={setPosting} />
+      {user && (
+        <ProfileSheet
+          userId={profileViewId}
+          open={!!profileViewId}
+          onOpenChange={(o) => !o && setProfileViewId(null)}
+          onMessage={startConvWith}
+        />
+      )}
       <ProfileSheet
         userId={profileViewId}
         open={!!profileViewId}
