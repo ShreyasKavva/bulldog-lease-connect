@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Map as MapIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-react";
+import { Home as HomeIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useMyProfile } from "@/lib/leaseup/use-session";
