@@ -15,9 +15,9 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type LType from "leaflet";
-import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER, isNew } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
