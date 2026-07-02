@@ -15,9 +15,9 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type LType from "leaflet";
-import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER, isNew } from "@/lib/leaseup/constants";
 import { SafeScoreBadge } from "./SafeScoreBadge";
@@ -53,8 +53,13 @@ export function MapHome({
     let cancelled = false;
     (async () => {
       const L = (await import("leaflet")).default;
+      // markercluster is a Leaflet plugin that expects window.L to exist
+      // before its module runs, so load it only after Leaflet is ready.
+      (window as unknown as { L: typeof LType }).L = L;
+      await import("leaflet.markercluster");
       if (cancelled || !ref.current || mapRef.current) return;
       Lref.current = L;
+
       const map = L.map(ref.current, { zoomControl: false, attributionControl: false }).setView(center, 15);
       L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
