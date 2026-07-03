@@ -78,11 +78,14 @@ function isMuted(c: Conversation, userId: string) {
 }
 
 export function MessagesSheet({
-  open, onOpenChange, initialConversationId,
+  open, onOpenChange, initialConversationId, initialDraft,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   initialConversationId?: string | null;
+  /** Prefilled composer text — only applied when opening a conversation
+   *  with no prior messages (i.e. the user just started it from a listing). */
+  initialDraft?: string | null;
 }) {
   const { user } = useSession();
   const qc = useQueryClient();
