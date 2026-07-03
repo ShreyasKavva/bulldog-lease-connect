@@ -77,6 +77,7 @@ function Browse() {
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [msgDraft, setMsgDraft] = useState<string | null>(null);
   const [matchOpen, setMatchOpen] = useState(false);
   const [leaseOpen, setLeaseOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
