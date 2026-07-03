@@ -130,9 +130,22 @@ function CampusPage() {
     setSelected(null);
   }
 
-  const filtered = search
-    ? listings.filter(l => l.title.toLowerCase().includes(search.toLowerCase()) || (l.area ?? "").toLowerCase().includes(search.toLowerCase()))
-    : listings;
+  const filtered = useMemo(() => {
+    return listings.filter((l) => {
+      if (search) {
+        const q = search.toLowerCase();
+        if (!l.title.toLowerCase().includes(q) && !(l.area ?? "").toLowerCase().includes(q)) return false;
+      }
+      if (bedFilter !== "any") {
+        if (bedFilter === "3+") { if ((l.beds ?? 0) < 3) return false; }
+        else if ((l.beds ?? 0) !== parseInt(bedFilter)) return false;
+      }
+      if (furnishedOnly && !l.furnished) return false;
+      if (priceFilter === "under700" && (l.price ?? 0) >= 700) return false;
+      if (priceFilter === "under1000" && (l.price ?? 0) >= 1000) return false;
+      return true;
+    });
+  }, [listings, search, bedFilter, furnishedOnly, priceFilter]);
 
   const handlePost = () => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } });
 
