@@ -163,7 +163,13 @@ function Onboarding() {
     if (!user || !intent) return;
     setSaving(true);
     try {
-      const patch: Record<string, unknown> = { onboarding_completed: true };
+      const patch: {
+        onboarding_completed: boolean;
+        name?: string;
+        year?: string;
+        major?: string;
+        avatar_emoji?: string;
+      } = { onboarding_completed: true };
       if (!skip) {
         if (name.trim()) patch.name = name.trim();
         if (year) patch.year = year;
