@@ -76,10 +76,8 @@ function Onboarding() {
   }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-advance from welcome (screen 1) after 2.5s
-  const advancedRef = useRef(false);
   useEffect(() => {
-    if (step !== 1 || advancedRef.current) return;
-    advancedRef.current = true;
+    if (step !== 1) return;
     const t = setTimeout(() => setStep(2), 2500);
     return () => clearTimeout(t);
   }, [step]);
@@ -213,6 +211,12 @@ function Onboarding() {
         <p className="mt-3 text-center text-white/85">
           The student sublease marketplace built for UGA.
         </p>
+        <button
+          onClick={() => setStep(2)}
+          className="mt-8 rounded-full bg-white px-6 py-3 text-sm font-extrabold text-primary shadow-card-md transition-transform hover:scale-[1.02] active:scale-95"
+        >
+          Continue
+        </button>
         {verified && (
           <div className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-xs font-bold text-white lu-pop-in">
             <ShieldCheck className="h-3.5 w-3.5" /> UGA Verified
