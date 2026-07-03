@@ -37,12 +37,14 @@ import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
 import { useServerFn } from "@tanstack/react-start";
+import { useRouter } from "@tanstack/react-router";
 import { screenListing, type ScreenResult } from "@/lib/leaseup/ai.functions";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -73,7 +75,11 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
 
   async function submit() {
     if (!user || !profile?.campus_id) { toast.error("Complete your profile first"); return; }
-    if (!form.title || !form.price) { toast.error("Title and price required"); return; }
+    if (!form.title.trim()) { toast.error("Add a title"); return; }
+    if (!form.price || parseInt(form.price) <= 0) { toast.error("Enter a monthly rent"); return; }
+    if (!form.beds || parseInt(form.beds) < 0) { toast.error("How many bedrooms?"); return; }
+    if (!form.baths || parseFloat(form.baths) <= 0) { toast.error("How many bathrooms?"); return; }
+    if (!form.available_from) { toast.error("Pick a move-in date"); return; }
     setSubmitting(true);
     try {
       // Queue 21 — pre-publish screening
@@ -137,14 +143,18 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
         if (error) throw error;
         toast.success(screen?.scam_risk === "high"
           ? "Posted — under brief review before going public"
-          : "🎉 Listing posted!");
+          : "🎉 Your listing is live!");
         qc.invalidateQueries({ queryKey: ["listings"] });
         onOpenChange(false);
         setForm({ ...form, title: "", description: "", price: "" });
         setFiles([]);
-        if ((existingCount ?? 0) === 0) setInviteOpen(true);
         setScreenResult(null);
         setPendingForm(null);
+        if ((existingCount ?? 0) === 0) {
+          setInviteOpen(true);
+        } else {
+          router.navigate({ to: "/my-listings" });
+        }
       };
 
       // Quality nudge — confirm before publishing
@@ -157,7 +167,9 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
 
       await doPublish();
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to post");
+      console.error("[PostListingDialog] insert failed:", e);
+      const msg = e?.message || e?.error_description || e?.hint || "Failed to post listing";
+      toast.error(msg);
     } finally { setSubmitting(false); }
   }
 
