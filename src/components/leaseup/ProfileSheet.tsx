@@ -34,7 +34,7 @@ export function ProfileSheet({
   });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    name: "", year: "", major: "", bio: "", phone: "",
+    name: "", year: "", major: "", bio: "", phone: "", instagram_handle: "",
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
     currently_status: "", currently_emoji: "🔎",
   });
@@ -64,6 +64,7 @@ export function ProfileSheet({
     if (profile) setForm({
       name: profile.name ?? "", year: profile.year ?? "", major: profile.major ?? "",
       bio: profile.bio ?? "", phone: profile.phone ?? "",
+      instagram_handle: (profile as any).instagram_handle ?? "",
       avatar_emoji: profile.avatar_emoji ?? "🙂", banner_color: profile.banner_color ?? "#2563EB",
       vibe_tags: profile.vibe_tags ?? [],
       currently_status: profile.currently_status ?? "",
@@ -75,6 +76,7 @@ export function ProfileSheet({
     if (!user) return;
     const payload: any = {
       ...form, vibe_tags: form.vibe_tags.slice(0, 3),
+      instagram_handle: form.instagram_handle.trim().replace(/^@/, "") || null,
       currently_status: form.currently_status.trim() || null,
       currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
       currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,

@@ -32,6 +32,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
+import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -157,6 +158,11 @@ const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => RoommatesRoute,
 } as any)
+const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -223,13 +229,14 @@ export interface FileRoutesByFullPath {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -257,13 +264,14 @@ export interface FileRoutesByTo {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -292,13 +300,14 @@ export interface FileRoutesById {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
     | '/api/public/stripe-webhook'
@@ -431,7 +443,7 @@ export interface RootRouteChildren {
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
-  ProfileRoute: typeof ProfileRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedRoute: typeof SavedRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -611,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoommatesCreateRouteImport
       parentRoute: typeof RoommatesRoute
     }
+    '/profile/$userId': {
+      id: '/profile/$userId'
+      path: '/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof ProfileUserIdRouteImport
+      parentRoute: typeof ProfileRoute
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -689,6 +708,17 @@ const MyListingsRouteWithChildren = MyListingsRoute._addFileChildren(
   MyListingsRouteChildren,
 )
 
+interface ProfileRouteChildren {
+  ProfileUserIdRoute: typeof ProfileUserIdRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileUserIdRoute: ProfileUserIdRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 interface RoommatesRouteChildren {
   RoommatesCreateRoute: typeof RoommatesCreateRoute
 }
@@ -717,7 +747,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
-  ProfileRoute: ProfileRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedRoute: SavedRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
