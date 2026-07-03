@@ -34,7 +34,7 @@ export function ProfileSheet({
   });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    name: "", year: "", major: "", bio: "", phone: "",
+    name: "", year: "", major: "", bio: "", phone: "", instagram_handle: "",
     avatar_emoji: "🙂", banner_color: "#2563EB", vibe_tags: [] as string[],
     currently_status: "", currently_emoji: "🔎",
   });
@@ -64,6 +64,7 @@ export function ProfileSheet({
     if (profile) setForm({
       name: profile.name ?? "", year: profile.year ?? "", major: profile.major ?? "",
       bio: profile.bio ?? "", phone: profile.phone ?? "",
+      instagram_handle: (profile as any).instagram_handle ?? "",
       avatar_emoji: profile.avatar_emoji ?? "🙂", banner_color: profile.banner_color ?? "#2563EB",
       vibe_tags: profile.vibe_tags ?? [],
       currently_status: profile.currently_status ?? "",
@@ -75,6 +76,7 @@ export function ProfileSheet({
     if (!user) return;
     const payload: any = {
       ...form, vibe_tags: form.vibe_tags.slice(0, 3),
+      instagram_handle: form.instagram_handle.trim().replace(/^@/, "") || null,
       currently_status: form.currently_status.trim() || null,
       currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
       currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,
@@ -83,6 +85,7 @@ export function ProfileSheet({
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
     qc.invalidateQueries({ queryKey: ["profile"] });
+    qc.invalidateQueries({ queryKey: ["public-profile"] });
     setEditing(false);
   }
 
@@ -214,6 +217,7 @@ export function ProfileSheet({
                   </div>
                   <div><Label>Bio (max 120)</Label><Textarea maxLength={120} value={form.bio} onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))} /></div>
                   <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                  <div><Label>Instagram (optional)</Label><Input placeholder="@handle" value={form.instagram_handle} onChange={(e) => setForm(f => ({ ...f, instagram_handle: e.target.value }))} /></div>
                   <div><Label>Avatar</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {AVATAR_EMOJIS.map(e => (
