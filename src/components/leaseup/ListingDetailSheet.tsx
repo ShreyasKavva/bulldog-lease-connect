@@ -301,10 +301,7 @@ export function ListingDetailSheet({
 
           <div className="grid grid-cols-2 gap-2">
             <Button
-              onClick={() => {
-                if (!user) { toast.error("Sign in to message"); return; }
-                onMessage(listing);
-              }}
+              onClick={() => onMessage(listing)}
               className="bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
             >
               <MessageSquare className="h-4 w-4" />Message
@@ -312,7 +309,7 @@ export function ListingDetailSheet({
             <Button
               variant="outline"
               onClick={() => {
-                if (!user) { toast.error("Sign in to see contact"); return; }
+                if (!user) { onMessage(listing); return; }
                 if (listing.profile?.phone) toast.success(`📞 ${listing.profile.phone}`);
                 else toast(`✉️ ${listing.profile?.email ?? "Use Message instead"}`);
               }}
