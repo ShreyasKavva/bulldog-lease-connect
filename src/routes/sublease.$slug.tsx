@@ -83,6 +83,12 @@ function CampusPage() {
   const { user } = useSession();
   const qc = useQueryClient();
 
+  // Remember which campus the visitor arrived on — pre-selects it in onboarding after signup.
+  useEffect(() => {
+    try { localStorage.setItem("leaseup_campus_hint", campus.slug); } catch {}
+  }, [campus.slug]);
+
+
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = allCampuses } = useQuery<Campus[]>({
     queryKey: ["campuses"],
