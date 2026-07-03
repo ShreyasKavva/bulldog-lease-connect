@@ -1440,6 +1440,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_emoji: string | null
+          avatar_url: string | null
           banned: boolean
           banner_color: string | null
           bio: string | null
@@ -1450,6 +1451,7 @@ export type Database = {
           currently_updated_at: string | null
           email: string
           id: string
+          instagram_handle: string | null
           intent: string | null
           is_admin: boolean
           is_ambassador: boolean
@@ -1462,6 +1464,7 @@ export type Database = {
           referral_code: string | null
           referral_count: number
           referred_by: string | null
+          response_rate: number | null
           updated_at: string
           verified_email: boolean
           vibe_tags: string[] | null
@@ -1469,6 +1472,7 @@ export type Database = {
         }
         Insert: {
           avatar_emoji?: string | null
+          avatar_url?: string | null
           banned?: boolean
           banner_color?: string | null
           bio?: string | null
@@ -1479,6 +1483,7 @@ export type Database = {
           currently_updated_at?: string | null
           email: string
           id: string
+          instagram_handle?: string | null
           intent?: string | null
           is_admin?: boolean
           is_ambassador?: boolean
@@ -1491,6 +1496,7 @@ export type Database = {
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
+          response_rate?: number | null
           updated_at?: string
           verified_email?: boolean
           vibe_tags?: string[] | null
@@ -1498,6 +1504,7 @@ export type Database = {
         }
         Update: {
           avatar_emoji?: string | null
+          avatar_url?: string | null
           banned?: boolean
           banner_color?: string | null
           bio?: string | null
@@ -1508,6 +1515,7 @@ export type Database = {
           currently_updated_at?: string | null
           email?: string
           id?: string
+          instagram_handle?: string | null
           intent?: string | null
           is_admin?: boolean
           is_ambassador?: boolean
@@ -1520,6 +1528,7 @@ export type Database = {
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
+          response_rate?: number | null
           updated_at?: string
           verified_email?: boolean
           vibe_tags?: string[] | null
@@ -2608,6 +2617,7 @@ export type Database = {
         Args: { bed_count: number; campus: string; listing_price: number }
         Returns: string
       }
+      get_public_profile: { Args: { _uid: string }; Returns: Json }
       get_stale_listings_for_user: {
         Args: { _uid: string }
         Returns: {
