@@ -371,6 +371,22 @@ export function ListingDetailSheet({
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
         </div>
+
+        {/* Sticky message-poster footer — the primary conversion action */}
+        {user?.id !== listing.user_id && (
+          <div
+            className="sticky bottom-0 left-0 right-0 z-10 border-t bg-surface/95 p-3 backdrop-blur"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+          >
+            <Button
+              onClick={() => onMessage(listing)}
+              className="h-12 w-full gap-2 bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-dark"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Message {listing.profile?.name?.split(" ")[0] ?? "the poster"} about this listing →
+            </Button>
+          </div>
+        )}
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
       <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />
