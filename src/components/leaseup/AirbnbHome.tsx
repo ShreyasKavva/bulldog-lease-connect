@@ -18,13 +18,10 @@ import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Home, MapPin, Flame, Sparkles, Sofa, CalendarCheck2,
-  DoorOpen, Building2, ArrowRight, Menu,
+  DoorOpen, Building2, ArrowRight,
 } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
-import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { supabase } from "@/integrations/supabase/client";
-import { NotificationsBell } from "./NotificationsBell";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { ListingRail } from "./ListingRail";
 import { cn } from "@/lib/utils";
@@ -94,8 +91,6 @@ export function AirbnbHome({
   onPost: () => void;
 }) {
   const navigate = useNavigate();
-  const { user } = useSession();
-  const { data: profile } = useMyProfile();
   const railsRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
