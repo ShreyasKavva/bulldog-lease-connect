@@ -75,7 +75,11 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
 
   async function submit() {
     if (!user || !profile?.campus_id) { toast.error("Complete your profile first"); return; }
-    if (!form.title || !form.price) { toast.error("Title and price required"); return; }
+    if (!form.title.trim()) { toast.error("Add a title"); return; }
+    if (!form.price || parseInt(form.price) <= 0) { toast.error("Enter a monthly rent"); return; }
+    if (!form.beds || parseInt(form.beds) < 0) { toast.error("How many bedrooms?"); return; }
+    if (!form.baths || parseFloat(form.baths) <= 0) { toast.error("How many bathrooms?"); return; }
+    if (!form.available_from) { toast.error("Pick a move-in date"); return; }
     setSubmitting(true);
     try {
       // Queue 21 — pre-publish screening
