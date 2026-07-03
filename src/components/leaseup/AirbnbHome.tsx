@@ -192,39 +192,9 @@ export function AirbnbHome({
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 dark:bg-background">
-      {/* Minimal top bar — auth controls only */}
-      <header className="absolute inset-x-0 top-0 z-30">
-        <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 py-3 sm:px-6">
-          {user ? (
-            <div className="flex items-center gap-2 rounded-full border bg-white/90 px-1.5 py-1 shadow-sm backdrop-blur hover:shadow dark:bg-surface">
-              <Menu className="ml-1 h-4 w-4 text-muted-foreground" />
-              <NotificationsBell onOpenMessages={() => navigate({ to: "/" })} />
-              <Link
-                to="/profile"
-                className="grid h-8 w-8 place-items-center rounded-full text-base"
-                style={{ background: profile?.banner_color ?? "#2563EB" }}
-                title={profile?.name ?? "Me"}
-              >
-                {profile?.avatar_emoji ?? "🙂"}
-              </Link>
-              <button
-                onClick={signOut}
-                className="hidden pr-2 text-xs text-muted-foreground hover:text-foreground md:inline"
-              >Sign out</button>
-            </div>
-          ) : (
-            <Link
-              to="/auth"
-              search={{ mode: "in" }}
-              className="rounded-full border bg-white/90 px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:shadow dark:bg-surface"
-            >Sign in</Link>
-          )}
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-white dark:bg-background">
       {/* HERO */}
-      <section className="relative pb-6 pt-16 sm:pt-20">
+      <section className="relative pb-6 pt-8 sm:pt-12">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <Link to="/" className="inline-block text-4xl font-black tracking-tight sm:text-5xl">
             <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
@@ -244,7 +214,7 @@ export function AirbnbHome({
       </section>
 
       {/* CATEGORY STRIP */}
-      <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
+      <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
