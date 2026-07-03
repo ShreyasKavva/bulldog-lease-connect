@@ -21,6 +21,7 @@
  * a banner inside the thread. It does NOT block messages.
  */
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { haptic } from "@/lib/leaseup/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchConversations,
