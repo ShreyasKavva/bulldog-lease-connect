@@ -147,6 +147,7 @@ function Browse() {
     }
     if (listing.user_id === user.id) { toast("That's your own listing"); return; }
     const id = await getOrCreateConversation(user.id, listing.user_id, listing.id);
+    setMsgDraft(`Hi! I'm interested in ${listing.title}. Is it still available?`);
     setActiveConv(id);
     setMessagesOpen(true);
     setSelected(null);
