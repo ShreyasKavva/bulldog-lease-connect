@@ -196,6 +196,58 @@ function CampusPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
+        {/* Filter pills */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          {([
+            ["any", "All"],
+            ["0", "Studio"],
+            ["1", "1 BR"],
+            ["2", "2 BR"],
+            ["3+", "3+ BR"],
+          ] as [BedFilter, string][]).map(([val, label]) => (
+            <button
+              key={val}
+              onClick={() => setBedFilter(val)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                bedFilter === val
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:border-primary",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            onClick={() => setFurnishedOnly((v) => !v)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold transition",
+              furnishedOnly
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-surface text-muted-foreground hover:border-primary",
+            )}
+          >
+            Furnished
+          </button>
+          {([
+            ["under700", "< $700"],
+            ["under1000", "< $1,000"],
+          ] as [PriceFilter, string][]).map(([val, label]) => (
+            <button
+              key={val}
+              onClick={() => setPriceFilter((p) => (p === val ? "any" : val))}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                priceFilter === val
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:border-primary",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-black">{filtered.length} listing{filtered.length === 1 ? "" : "s"} at {campus.short_name}</h2>
         </div>
@@ -220,29 +272,34 @@ function CampusPage() {
           </div>
         )}
 
-        {/* Other campuses */}
+        {/* Other campuses — cards with live listing counts */}
         <section className="mt-12 border-t pt-8">
-          <div className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            More campuses on LeaseUp →
-          </div>
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {campuses.filter((c: Campus) => c.slug !== campus.slug).map((c: Campus) => (
-              <Link
-                key={c.id}
-                to="/sublease/$slug"
-                params={{ slug: c.slug }}
-                className="flex-shrink-0 rounded-full border text-sm font-medium transition-colors hover:opacity-90"
-                style={{
-                  background: "#EFF6FF",
-                  color: "#2563EB",
-                  borderColor: "#BFDBFE",
-                  padding: "8px 16px",
-                  borderRadius: 20,
-                }}
-              >
-                {c.short_name}
-              </Link>
-            ))}
+          <h2 className="mb-4 text-xl font-black">Browse other campuses</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {campuses
+              .filter((c: Campus) => c.slug !== campus.slug)
+              .sort((a: Campus, b: Campus) => (listingCounts[b.id] ?? 0) - (listingCounts[a.id] ?? 0))
+              .map((c: Campus) => {
+                const count = listingCounts[c.id] ?? 0;
+                return (
+                  <Link
+                    key={c.id}
+                    to="/sublease/$slug"
+                    params={{ slug: c.slug }}
+                    className="group flex flex-col rounded-xl border border-border bg-surface p-4 transition hover:border-primary hover:shadow-card"
+                  >
+                    <div className="text-sm font-bold text-foreground group-hover:text-primary">
+                      {c.short_name}
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                      {c.city}, {c.state}
+                    </div>
+                    <div className="mt-2 text-xs font-semibold text-primary">
+                      {count > 0 ? `${count} live listing${count === 1 ? "" : "s"}` : "Be the first →"}
+                    </div>
+                  </Link>
+                );
+              })}
           </div>
         </section>
       </main>
