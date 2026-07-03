@@ -73,8 +73,11 @@ export const Route = createFileRoute("/sublease/$slug")({
   component: CampusPage,
 });
 
+type BedFilter = "any" | "0" | "1" | "2" | "3+";
+type PriceFilter = "any" | "under700" | "under1000";
+
 function CampusPage() {
-  const { campus, allCampuses } = Route.useLoaderData();
+  const { campus, allCampuses, listingCounts } = Route.useLoaderData();
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
@@ -96,6 +99,9 @@ function CampusPage() {
     [allListings, campus.id],
   );
 
+  const [bedFilter, setBedFilter] = useState<BedFilter>("any");
+  const [furnishedOnly, setFurnishedOnly] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>("any");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
