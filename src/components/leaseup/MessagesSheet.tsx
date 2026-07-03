@@ -207,6 +207,7 @@ export function MessagesSheet({
     broadcastTyping(false);
     try {
       await sendMessage(active.id, user.id, other, text);
+      haptic("light");
       qc.invalidateQueries({ queryKey: ["messages", active.id] });
       qc.invalidateQueries({ queryKey: ["conversations", user.id] });
     } catch (_e) { setInput(text); }
