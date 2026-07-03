@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { fetchCampusBySlug, fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { Nav } from "@/components/leaseup/Nav";
@@ -12,16 +12,18 @@ import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
 import { ShieldCheck, MapPin, Sparkles, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
-    const [campus, allCampuses] = await Promise.all([
+    const [campus, allCampuses, listingCounts] = await Promise.all([
       fetchCampusBySlug(params.slug),
       fetchCampuses(),
+      fetchActiveListingCountsByCampus(),
     ]);
     if (!campus) throw notFound();
-    return { campus, allCampuses };
+    return { campus, allCampuses, listingCounts };
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
