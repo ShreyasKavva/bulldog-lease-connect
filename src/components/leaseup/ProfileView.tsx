@@ -137,8 +137,8 @@ export function ProfileView({ userId }: { userId: string }) {
 
   async function handleMessage() {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } as any }); return; }
-    const conv = await getOrCreateConversation(user.id, userId, null);
-    navigate({ to: "/", search: { conversation: conv.id } as any });
+    const convId = await getOrCreateConversation(user.id, userId, null);
+    navigate({ to: "/", search: { conversation: convId } as any });
   }
 
   async function handleConnect() {
