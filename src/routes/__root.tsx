@@ -39,18 +39,25 @@ import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
+import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
 import { useRouterState } from "@tanstack/react-router";
 
 function AppShell() {
+  const router = useRouter();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const hideNav = path.startsWith("/auth") || path.startsWith("/onboarding");
+  const handleRefresh = async () => {
+    await router.invalidate();
+  };
   if (hideNav) return <Outlet />;
   return (
     <>
       <TopBar />
-      <div className="min-h-[calc(100dvh-3.5rem)] pb-20">
-        <Outlet />
-      </div>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div key={path} className="lu-page-enter min-h-[calc(100dvh-3.5rem)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
+          <Outlet />
+        </div>
+      </PullToRefresh>
       <BottomNav />
     </>
   );

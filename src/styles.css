@@ -204,6 +204,19 @@
   .lu-card-hover, .lu-card-img { transition: none !important; }
 }
 
+/* Prevent accidental horizontal scroll on narrow mobile viewports */
+html, body { overflow-x: hidden; }
+
+/* Route enter animation — applied by AppShell on pathname change */
+@keyframes lu-page-enter {
+  0%   { opacity: 0; transform: translateX(12px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.lu-page-enter { animation: lu-page-enter 220ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .lu-page-enter { animation: none !important; }
+}
+
 @keyframes lu-reaction-pop {
   0%   { opacity: 0; transform: translateY(8px) scale(0.85); }
   60%  { opacity: 1; transform: translateY(-4px) scale(1.05); }
