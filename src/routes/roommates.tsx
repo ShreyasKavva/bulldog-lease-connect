@@ -149,6 +149,7 @@ function DiscoverView({ userId, campusId }: { userId: string; campusId: string |
   const [sending, setSending] = useState(false);
 
   async function handlePass(target: RoommateProfileWithUser) {
+    haptic("light");
     const next = new Set(passed); next.add(target.user_id); setPassed(next); savePassed(next);
   }
 
@@ -157,6 +158,7 @@ function DiscoverView({ userId, campusId }: { userId: string; campusId: string |
     setSending(true);
     try {
       const row = await sendRoommateInterest(userId, target.user_id);
+      haptic(row.status === "accepted" ? "success" : "medium");
       qc.invalidateQueries({ queryKey: ["roommate-outgoing", userId] });
       if (row.status === "accepted") {
         // Look up the auto-created conversation
