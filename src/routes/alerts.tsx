@@ -4,7 +4,6 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import type { SavedSearch } from "@/lib/leaseup/types";
 import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { useState } from "react";

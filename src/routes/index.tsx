@@ -18,7 +18,6 @@ import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
 import { AirbnbHome } from "@/components/leaseup/AirbnbHome";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";

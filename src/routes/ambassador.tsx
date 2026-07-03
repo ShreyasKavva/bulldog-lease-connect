@@ -5,7 +5,6 @@ import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusOverview, fetchCampusLeaderboard } from "@/lib/leaseup/referral.queries";
 import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";

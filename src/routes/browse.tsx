@@ -13,7 +13,6 @@ import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { TopBar } from "@/components/leaseup/TopBar";
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell } from "lucide-react";
