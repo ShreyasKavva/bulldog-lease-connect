@@ -46,10 +46,13 @@ export const Route = createFileRoute("/my-listings")({
 });
 
 function MyListingsPage() {
-  const { user } = useSession();
+  const { user, loading } = useSession();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const search = useSearch({ from: "/my-listings" });
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth", search: { mode: "in" } as any });
+  }, [loading, user, navigate]);
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["my-listings", user?.id],
     queryFn: () => fetchMyListings(user!.id),
