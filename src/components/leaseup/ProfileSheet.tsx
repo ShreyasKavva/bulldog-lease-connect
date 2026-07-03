@@ -85,6 +85,7 @@ export function ProfileSheet({
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
     qc.invalidateQueries({ queryKey: ["profile"] });
+    qc.invalidateQueries({ queryKey: ["public-profile"] });
     setEditing(false);
   }
 
@@ -216,6 +217,7 @@ export function ProfileSheet({
                   </div>
                   <div><Label>Bio (max 120)</Label><Textarea maxLength={120} value={form.bio} onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))} /></div>
                   <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                  <div><Label>Instagram (optional)</Label><Input placeholder="@handle" value={form.instagram_handle} onChange={(e) => setForm(f => ({ ...f, instagram_handle: e.target.value }))} /></div>
                   <div><Label>Avatar</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {AVATAR_EMOJIS.map(e => (
