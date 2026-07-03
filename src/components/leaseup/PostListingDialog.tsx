@@ -143,14 +143,18 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
         if (error) throw error;
         toast.success(screen?.scam_risk === "high"
           ? "Posted — under brief review before going public"
-          : "🎉 Listing posted!");
+          : "🎉 Your listing is live!");
         qc.invalidateQueries({ queryKey: ["listings"] });
         onOpenChange(false);
         setForm({ ...form, title: "", description: "", price: "" });
         setFiles([]);
-        if ((existingCount ?? 0) === 0) setInviteOpen(true);
         setScreenResult(null);
         setPendingForm(null);
+        if ((existingCount ?? 0) === 0) {
+          setInviteOpen(true);
+        } else {
+          router.navigate({ to: "/my-listings" });
+        }
       };
 
       // Quality nudge — confirm before publishing
@@ -163,7 +167,9 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
 
       await doPublish();
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to post");
+      console.error("[PostListingDialog] insert failed:", e);
+      const msg = e?.message || e?.error_description || e?.hint || "Failed to post listing";
+      toast.error(msg);
     } finally { setSubmitting(false); }
   }
 
