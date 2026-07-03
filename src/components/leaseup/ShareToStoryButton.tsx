@@ -138,6 +138,28 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
               </button>
 
               <button
+                onClick={() => shareListingNative(listing)}
+                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary"><Send className="h-5 w-5" /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-bold">Share via… (iMessage, WhatsApp, Reddit)</div>
+                  <div className="text-xs text-muted-foreground">Opens your phone's share sheet</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => copyGroupMe(listing)}
+                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary"><MessageSquare className="h-5 w-5" /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-bold">📋 Copy for GroupMe</div>
+                  <div className="text-xs text-muted-foreground">Formatted post with emojis + link — paste anywhere</div>
+                </div>
+              </button>
+
+              <button
                 onClick={copyLink}
                 className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
               >
@@ -148,16 +170,6 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
                 </div>
               </button>
 
-              <button
-                onClick={copyLink}
-                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
-              >
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary">📋</div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-base font-bold">Copy your listing URL</div>
-                  <div className="text-xs text-muted-foreground">Paste in your Instagram bio while your Story is live</div>
-                </div>
-              </button>
             </div>
           </>
         )}
