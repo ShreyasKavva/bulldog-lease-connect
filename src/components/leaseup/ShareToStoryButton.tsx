@@ -53,7 +53,7 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
   const [stage, setStage] = useState<"choose" | "loading" | "preview">("choose");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const blobRef = useRef<Blob | null>(null);
-  const listingUrl = `https://leasup.co/listings/${listing.id}`;
+  const listingUrl = buildShareUrl(listing.id, "copy");
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -99,6 +99,7 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
       toast.error("Couldn't copy link");
     }
   }
+
 
   return (
     <div
