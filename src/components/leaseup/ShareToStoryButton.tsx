@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Share2, Loader2, Copy, ImageDown, Download, RefreshCw, X } from "lucide-react";
+import { Share2, Loader2, Copy, ImageDown, Download, RefreshCw, X, MessageSquare, Send } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { renderStoryGraphic } from "@/lib/leaseup/story-graphic";
+import { buildShareUrl, copyGroupMe, shareListingNative } from "@/lib/share";
+
 
 type Variant = "pill" | "icon" | "block";
 
