@@ -6,7 +6,7 @@
  * during the nav rebuild; new call sites can just render <BottomNav />.
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Users, User } from "lucide-react";
+import { Home, Search, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -25,14 +25,17 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   const unread = useUnreadCount();
   const navigate = useNavigate();
 
-  const isListings =
-    path === "/" ||
+  const isHome = path === "/";
+  const isBrowse =
     path.startsWith("/browse") ||
     path.startsWith("/sublease") ||
-    path.startsWith("/listing");
+    path.startsWith("/listing") ||
+    path.startsWith("/looking-for") ||
+    path.startsWith("/map");
   const isRoommates = path === "/roommates" || path.startsWith("/roommates/");
   const isProfile =
     path === "/profile" ||
+    path.startsWith("/profile/") ||
     path.startsWith("/my-listings") ||
     path.startsWith("/settings") ||
     path.startsWith("/messages") ||
@@ -48,10 +51,11 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-3 border-t border-border bg-white dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-border bg-white dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <Tab to="/" active={isListings} label="Listings" Icon={Home} />
+      <Tab to="/" active={isHome} label="Home" Icon={Home} />
+      <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
       <Tab to="/roommates" active={isRoommates} label="Roommates" Icon={Users} />
       <Tab
         to="/profile"
