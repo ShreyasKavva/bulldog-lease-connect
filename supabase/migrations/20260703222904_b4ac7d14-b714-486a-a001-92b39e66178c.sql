@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_intent_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_intent_check CHECK (intent IS NULL OR intent = ANY (ARRAY['find','post','roommate','listing','looking']));
