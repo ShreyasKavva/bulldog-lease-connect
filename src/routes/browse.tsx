@@ -290,17 +290,6 @@ function Browse() {
         </main>
       </div>
 
-      <BottomNav
-        onPost={handlePost}
-        onChat={() => {
-          if (!user) { navigate({ to: "/auth", search: { mode: "in", next: "/browse" } }); return; }
-          setActiveConv(null); setMessagesOpen(true);
-        }}
-        onProfile={() => {
-          if (!user) { navigate({ to: "/auth", search: { mode: "in", next: "/profile" } }); return; }
-          setProfileViewId(user.id);
-        }}
-      />
 
       <ListingDetailSheet
         listing={selected}

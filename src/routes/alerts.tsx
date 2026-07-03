@@ -153,10 +153,6 @@ function AlertsPage() {
         )}
       </main>
 
-      <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => setMessagesOpen(true)}
-      />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
       <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={null} />
     </div>

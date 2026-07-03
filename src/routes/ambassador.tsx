@@ -127,11 +127,6 @@ function AmbassadorPage() {
         </div>
       </main>
 
-      <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => setMessagesOpen(true)}
-        onProfile={() => setEditing(true)}
-      />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
       <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={null} />
       <ProfileSheet userId={editing ? user.id : null} open={editing} onOpenChange={(o) => !o && setEditing(false)} />

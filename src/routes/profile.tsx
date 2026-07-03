@@ -290,11 +290,6 @@ function ProfilePage() {
       </main>
 
 
-      <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => setMessagesOpen(true)}
-        onProfile={() => setEditing(true)}
-      />
 
       <ProfileSheet
         userId={editing ? user.id : null}

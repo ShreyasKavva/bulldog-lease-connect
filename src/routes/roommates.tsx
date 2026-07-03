@@ -170,7 +170,7 @@ function RoommatesPage() {
         </div>
       </main>
 
-      <BottomNav onPost={openPost} onChat={openChat} />
+      
 
       {/* Filters sheet */}
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
