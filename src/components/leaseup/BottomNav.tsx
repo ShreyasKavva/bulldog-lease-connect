@@ -1,114 +1,100 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Home as HomeIcon, LayoutGrid, Plus, MessageSquare, User } from "lucide-react";
+/**
+ * Three-pillar bottom tab bar — Listings · Roommates · Profile.
+ *
+ * The primary navigation on every screen size. Legacy props (onPost, onChat,
+ * onProfile) are accepted-but-ignored so existing call sites keep compiling
+ * during the nav rebuild; new call sites can just render <BottomNav />.
+ */
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Home, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
-import { useMyProfile } from "@/lib/leaseup/use-session";
-import { useEffect, useMemo, useState } from "react";
+import { useSession } from "@/lib/leaseup/use-session";
+import type { LucideIcon } from "lucide-react";
 
-export function BottomNav({
-  onPost, onChat, onProfile: _onProfile,
-}: {
-  onPost: () => void;
-  onChat: () => void;
+// Legacy props kept for backward compatibility — they are ignored.
+type LegacyProps = {
+  onPost?: () => void;
+  onChat?: () => void;
   onProfile?: () => void;
-}) {
+};
+
+export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useSession();
   const unread = useUnreadCount();
-  const { data: profile } = useMyProfile();
-  const [pulse, setPulse] = useState(0);
-  useEffect(() => {
-    const h = () => setPulse((p) => p + 1);
-    window.addEventListener("leaseup:unread-pulse", h);
-    return () => window.removeEventListener("leaseup:unread-pulse", h);
-  }, []);
+  const navigate = useNavigate();
 
-  const isHome = path === "/";
-  const isBrowse = path === "/browse";
-  const isProfile = path === "/profile";
+  const isListings =
+    path === "/" ||
+    path.startsWith("/browse") ||
+    path.startsWith("/sublease") ||
+    path.startsWith("/listing");
+  const isRoommates = path === "/roommates" || path.startsWith("/roommates/");
+  const isProfile =
+    path === "/profile" ||
+    path.startsWith("/my-listings") ||
+    path.startsWith("/settings") ||
+    path.startsWith("/messages") ||
+    path === "/saved" ||
+    path === "/notifications";
 
-  const profileIncomplete = useMemo(() => {
-    if (!profile) return false;
-    const filled = [profile.name, profile.year, profile.major, profile.bio, profile.avatar_emoji, profile.currently_status].filter(Boolean).length;
-    return filled < 4;
-  }, [profile]);
+  function handleProfile(e: React.MouseEvent) {
+    if (!user) {
+      e.preventDefault();
+      navigate({ to: "/auth", search: { mode: "in", next: "/profile" } });
+    }
+  }
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 flex items-stretch justify-around border-t border-border bg-surface/95 backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-3 border-t border-border bg-white dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <NavLink to="/" active={isHome} label="Home" icon={HomeIcon} />
-      <NavLink to="/browse" active={isBrowse} label="Browse" icon={LayoutGrid} />
-
-      <button
-        onClick={() => { import("@/lib/haptics").then((m) => m.haptic(10)); onPost(); }}
-        aria-label="Post a listing"
-        className="group flex min-h-11 flex-1 flex-col items-center justify-end gap-0.5 py-2 text-[11px] font-bold text-foreground"
-      >
-        <span className="relative -mt-5 grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-primary-foreground shadow-card-lg ring-4 ring-surface transition-transform duration-200 group-active:scale-90 group-hover:scale-105">
-          <span className="lu-pulse-ring absolute inset-0 rounded-full" aria-hidden />
-          <Plus className="relative h-6 w-6" strokeWidth={3} />
-        </span>
-        <span>Post</span>
-      </button>
-
-      <button
-        onClick={onChat}
-        className="group flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold text-muted-foreground transition hover:text-foreground"
-      >
-        <span className="relative transition-transform group-active:scale-90">
-          <MessageSquare className="h-5 w-5" />
-          {unread > 0 && (
-            <span
-              key={pulse}
-              className="lu-badge-pulse absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface"
-            >
-              {unread > 99 ? "99+" : unread}
-            </span>
-          )}
-        </span>
-        <span>Chat</span>
-      </button>
-
-      <Link
+      <Tab to="/" active={isListings} label="Listings" Icon={Home} />
+      <Tab to="/roommates" active={isRoommates} label="Roommates" Icon={Users} />
+      <Tab
         to="/profile"
-        className={cn(
-          "group flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition",
-          isProfile ? "text-primary" : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <span className="relative transition-transform group-active:scale-90">
-          <User className={cn("h-5 w-5", isProfile && "stroke-[2.5]")} />
-          {profileIncomplete && !isProfile && (
-            <span className="absolute -right-1 -top-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-surface" />
-          )}
-        </span>
-        <span>Me</span>
-      </Link>
+        active={isProfile}
+        label="Profile"
+        Icon={User}
+        badge={!!user && unread > 0}
+        onClick={handleProfile}
+      />
     </nav>
   );
 }
 
-function NavLink({
-  to, active, label, icon: Icon,
+function Tab({
+  to, active, label, Icon, badge, onClick,
 }: {
   to: string;
   active: boolean;
   label: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  Icon: LucideIcon;
+  badge?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }) {
   return (
     <Link
       to={to}
+      onClick={onClick}
       className={cn(
-        "group relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        "flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition",
+        active ? "text-primary" : "text-gray-400 hover:text-foreground",
       )}
     >
-      {active && (
-        <span className="absolute top-1 h-1 w-8 rounded-full bg-primary" aria-hidden />
-      )}
-      <Icon className={cn("h-5 w-5 transition-transform group-active:scale-90", active && "stroke-[2.5]")} />
+      <span className="relative">
+        <Icon
+          className={cn("transition-transform", active && "scale-105")}
+          size={26}
+          strokeWidth={active ? 2.5 : 2}
+          fill={active ? "currentColor" : "none"}
+        />
+        {badge && (
+          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface" />
+        )}
+      </span>
       <span>{label}</span>
     </Link>
   );

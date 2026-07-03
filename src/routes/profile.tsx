@@ -18,7 +18,6 @@ import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchMyListings, fetchSavedListings } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
@@ -290,11 +289,6 @@ function ProfilePage() {
       </main>
 
 
-      <BottomNav
-        onPost={() => setPosting(true)}
-        onChat={() => setMessagesOpen(true)}
-        onProfile={() => setEditing(true)}
-      />
 
       <ProfileSheet
         userId={editing ? user.id : null}

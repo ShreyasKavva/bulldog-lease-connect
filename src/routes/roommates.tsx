@@ -13,7 +13,6 @@ import {
   type RoommateProfile,
   type RoommateProfileWithUser,
 } from "@/lib/leaseup/roommates";
-import { BottomNav } from "@/components/leaseup/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -170,7 +169,7 @@ function RoommatesPage() {
         </div>
       </main>
 
-      <BottomNav onPost={openPost} onChat={openChat} />
+      
 
       {/* Filters sheet */}
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
