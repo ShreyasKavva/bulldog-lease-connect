@@ -37,6 +37,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { OfflineIndicator } from "@/components/leaseup/OfflineIndicator";
 import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
+import { TopBar } from "@/components/leaseup/TopBar";
+import { BottomNav } from "@/components/leaseup/BottomNav";
+import { useRouterState } from "@tanstack/react-router";
+
+function AppShell() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const hideNav = path.startsWith("/auth") || path.startsWith("/onboarding");
+  if (hideNav) return <Outlet />;
+  return (
+    <>
+      <TopBar />
+      <div className="min-h-[calc(100dvh-3.5rem)] pb-20">
+        <Outlet />
+      </div>
+      <BottomNav />
+    </>
+  );
+}
 
 function NotFoundComponent() {
   return (
@@ -142,7 +160,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <OfflineIndicator />
       <NotificationToastListener />
-      <Outlet />
+      <AppShell />
       <InstallPrompt />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
