@@ -177,10 +177,6 @@ export function AirbnbHome({
       .slice(0, 4);
   }, [campuses, campusCounts]);
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/" });
-  }
 
   function runSearch() {
     railsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
