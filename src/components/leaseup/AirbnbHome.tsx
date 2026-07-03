@@ -260,12 +260,20 @@ export function AirbnbHome({
         {inCat.length === 0 && (
           <div className="mx-auto max-w-md px-6 py-16 text-center">
             <div className="text-6xl">🏠</div>
-            <h2 className="mt-4 text-xl font-bold">No stays match your filters</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Try a different category or clear your search.</p>
-            <button
-              onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); }}
-              className="mt-4 rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
-            >Clear filters</button>
+            <h2 className="mt-4 text-xl font-bold">No subleases here yet</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              LeaseUp is just getting started. Be the first to post — it takes 2 minutes.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => navigate({ to: "/", search: { post: 1 } as any })}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
+              >Post a sublease →</button>
+              <button
+                onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); }}
+                className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
+              >Clear filters</button>
+            </div>
           </div>
         )}
       </div>
