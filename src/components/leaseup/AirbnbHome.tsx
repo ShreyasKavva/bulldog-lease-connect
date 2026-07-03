@@ -1,11 +1,25 @@
 /**
- * Airbnb-style homepage — public browsing for everyone (guest & logged-in).
- * Auth is only required when the user tries to POST or MESSAGE — those
- * actions call the `requireAuth` callback which navigates to /auth?next=...
+ * Airbnb-style public homepage.
+ *
+ * Structure (top → bottom):
+ *   1. Minimal top bar (auth controls only)
+ *   2. Hero — centered wordmark + big search pill + subtitle
+ *   3. Category filter strip (horizontal scroll)
+ *   4. Three listing rails: Near Campus · Best Deals · Just Posted
+ *   5. Campus spotlights (2×2 grid)
+ *   6. Blue CTA strip ("Got a sublease to post?")
+ *   7. Footer
+ *
+ * Everyone (guest + logged-in) sees this exact page. Auth is only required
+ * for save / message / post — those actions call the callbacks passed in
+ * from src/routes/index.tsx which route to /auth?next=... .
  */
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Globe, Menu, Map as MapIcon, LayoutGrid } from "lucide-react";
+import {
+  Home, MapPin, Flame, Sparkles, Sofa, CalendarCheck2,
+  DoorOpen, Building2, ArrowRight, Menu,
+} from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
@@ -13,13 +27,63 @@ import { supabase } from "@/integrations/supabase/client";
 import { NotificationsBell } from "./NotificationsBell";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { ListingRail } from "./ListingRail";
-import { MapHome } from "./MapHome";
-import { UGA_CENTER } from "@/lib/leaseup/constants";
+import { cn } from "@/lib/utils";
 
-type Cat = "all" | "sublease" | "transfer";
+type Cat =
+  | "all" | "near-campus" | "best-deals" | "new-today"
+  | "furnished" | "available-now" | "private-room" | "full-apt";
+
+const CATEGORIES: { k: Cat; label: string; Icon: typeof Home }[] = [
+  { k: "all", label: "All", Icon: Home },
+  { k: "near-campus", label: "Near Campus", Icon: MapPin },
+  { k: "best-deals", label: "Best Deals", Icon: Flame },
+  { k: "new-today", label: "New Today", Icon: Sparkles },
+  { k: "furnished", label: "Furnished", Icon: Sofa },
+  { k: "available-now", label: "Available Now", Icon: CalendarCheck2 },
+  { k: "private-room", label: "Private Room", Icon: DoorOpen },
+  { k: "full-apt", label: "Full Apartment", Icon: Building2 },
+];
+
+// Emoji mascots for campus spotlights (falls back to 🎓)
+const CAMPUS_EMOJI: Record<string, string> = {
+  uga: "🐾", "university-of-georgia": "🐾",
+  uf: "🐊", "university-of-florida": "🐊",
+  alabama: "🐘", "university-of-alabama": "🐘",
+  auburn: "🐯", "auburn-university": "🐯",
+};
+function campusEmoji(c: Campus) {
+  return CAMPUS_EMOJI[c.slug] ?? CAMPUS_EMOJI[c.short_name?.toLowerCase() ?? ""] ?? "🎓";
+}
+
+function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string, beds: number) => number | null): boolean {
+  if (cat === "all") return true;
+  const now = Date.now();
+  const ageMs = now - new Date(l.created_at).getTime();
+  const area = (l.area ?? "").toLowerCase();
+  switch (cat) {
+    case "near-campus":
+      return /campus|near|walking|walk to/.test(area);
+    case "best-deals": {
+      const median = medianForCampusBeds(l.campus_id, l.beds);
+      return median !== null ? l.price <= median : false;
+    }
+    case "new-today":
+      return ageMs < 1000 * 60 * 60 * 24;
+    case "furnished":
+      return !!l.furnished;
+    case "available-now": {
+      if (!l.available_from) return true;
+      return new Date(l.available_from).getTime() <= now + 1000 * 60 * 60 * 24 * 30;
+    }
+    case "private-room":
+      return l.beds <= 1;
+    case "full-apt":
+      return l.beds >= 2;
+  }
+}
 
 export function AirbnbHome({
-  listings, campuses, savedIds, onSave, onOpen, onMessage, onPost,
+  listings, campuses, savedIds, onSave, onOpen, onPost,
 }: {
   listings: Listing[];
   campuses: Campus[];
@@ -32,229 +96,265 @@ export function AirbnbHome({
   const navigate = useNavigate();
   const { user } = useSession();
   const { data: profile } = useMyProfile();
+  const railsRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
-  const [view, setView] = useState<"grid" | "map">("grid");
 
-  // Apply search + category filter
-  const filtered = useMemo(() => {
+  // Median price per (campus, beds) for the Best Deals filter/badge.
+  const priceMedian = useMemo(() => {
+    const buckets = new Map<string, number[]>();
+    for (const l of listings) {
+      const k = `${l.campus_id}:${l.beds}`;
+      if (!buckets.has(k)) buckets.set(k, []);
+      buckets.get(k)!.push(l.price);
+    }
+    const out = new Map<string, number>();
+    for (const [k, arr] of buckets) {
+      arr.sort((a, b) => a - b);
+      out.set(k, arr[Math.floor(arr.length / 2)]);
+    }
+    return out;
+  }, [listings]);
+  const medianFor = (campusId: string, beds: number) => priceMedian.get(`${campusId}:${beds}`) ?? null;
+
+  // Search filter (Where / dates / guests) — applied before category filter.
+  const searched = useMemo(() => {
     return listings.filter((l) => {
-      if (cat !== "all" && l.type !== cat) return false;
       if (search.campusId && l.campus_id !== search.campusId) return false;
       if (!search.campusId && search.where.trim()) {
         const q = search.where.toLowerCase();
         if (!(`${l.title} ${l.area ?? ""}`.toLowerCase().includes(q))) return false;
       }
       if (search.guests > 1 && l.beds < Math.ceil(search.guests / 2)) return false;
-      // Loose date overlap
       if (search.from && l.available_to && new Date(l.available_to) < search.from) return false;
       if (search.to && l.available_from && new Date(l.available_from) > search.to) return false;
       return true;
     });
-  }, [listings, cat, search]);
+  }, [listings, search]);
 
-  const activeCampus = search.campusId
-    ? campuses.find((c) => c.id === search.campusId) ?? null
-    : user
-      ? campuses.find((c) => c.id === profile?.campus_id) ?? null
-      : null;
+  const inCat = useMemo(
+    () => searched.filter((l) => matchesCategory(l, cat, medianFor)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searched, cat, priceMedian],
+  );
 
   // Rails
-  const basedOnSearch = filtered.slice(0, 12);
   const nearCampus = useMemo(() => {
-    if (!activeCampus) return [];
-    return listings.filter((l) => l.campus_id === activeCampus.id && l.type !== "transfer").slice(0, 12);
-  }, [listings, activeCampus]);
-  const trending = useMemo(() => {
-    return [...listings]
-      .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
-      .slice(0, 12);
-  }, [listings]);
-  const otherCampuses = useMemo(() => {
-    return campuses
-      .filter((c) => c.id !== activeCampus?.id)
-      .map((c) => ({
-        campus: c,
-        items: listings.filter((l) => l.campus_id === c.id).slice(0, 12),
-      }))
-      .filter((g) => g.items.length >= 3)
-      .slice(0, 3);
-  }, [campuses, listings, activeCampus]);
+    const scoped = search.campusId ? inCat.filter((l) => l.campus_id === search.campusId) : inCat;
+    const hits = scoped.filter((l) => /campus|near|walking|walk to/.test((l.area ?? "").toLowerCase()));
+    return (hits.length >= 4 ? hits : scoped).slice(0, 8);
+  }, [inCat, search.campusId]);
 
-  const mapCenter: [number, number] = activeCampus
-    ? [activeCampus.lat, activeCampus.lng]
-    : UGA_CENTER;
+  const bestDeals = useMemo(() => {
+    const withMedian = inCat
+      .map((l) => ({ l, m: medianFor(l.campus_id, l.beds) }))
+      .filter(({ l, m }) => m !== null && l.price <= m!)
+      .map(({ l }) => l);
+    const source = withMedian.length >= 4
+      ? withMedian
+      : [...inCat].sort((a, b) => a.price - b.price);
+    return source.slice(0, 8);
+  }, [inCat, priceMedian]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const justPosted = useMemo(
+    () => [...inCat].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    ).slice(0, 8),
+    [inCat],
+  );
+
+  // Live campus counts (from currently active listings we already have)
+  const campusCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const l of listings) m.set(l.campus_id, (m.get(l.campus_id) ?? 0) + 1);
+    return m;
+  }, [listings]);
+  const spotlightCampuses = useMemo(() => {
+    const preferred = ["university-of-georgia", "university-of-florida", "university-of-alabama", "auburn-university"];
+    const byPref = preferred
+      .map((s) => campuses.find((c) => c.slug === s))
+      .filter((c): c is Campus => !!c);
+    if (byPref.length >= 4) return byPref.slice(0, 4);
+    // Fall back to the top campuses by listing count.
+    return [...campuses]
+      .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))
+      .slice(0, 4);
+  }, [campuses, campusCounts]);
 
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/" });
   }
 
+  function runSearch() {
+    railsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link to="/" className="text-2xl font-black tracking-tight">
-            <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
-          </Link>
-
-          {/* Category tabs */}
-          <div className="hidden items-center gap-6 md:flex">
-            {([
-              { k: "all", label: "All" },
-              { k: "sublease", label: "Sublets" },
-              { k: "transfer", label: "Transfers" },
-            ] as { k: Cat; label: string }[]).map((c) => (
-              <button
-                key={c.k}
-                onClick={() => setCat(c.k)}
-                className={`relative pb-1 text-sm font-semibold transition ${
-                  cat === c.k ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
+    <div className="min-h-screen bg-white pb-24 dark:bg-background">
+      {/* Minimal top bar — auth controls only */}
+      <header className="absolute inset-x-0 top-0 z-30">
+        <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 py-3 sm:px-6">
+          {user ? (
+            <div className="flex items-center gap-2 rounded-full border bg-white/90 px-1.5 py-1 shadow-sm backdrop-blur hover:shadow dark:bg-surface">
+              <Menu className="ml-1 h-4 w-4 text-muted-foreground" />
+              <NotificationsBell onOpenMessages={() => navigate({ to: "/" })} />
+              <Link
+                to="/profile"
+                className="grid h-8 w-8 place-items-center rounded-full text-base"
+                style={{ background: profile?.banner_color ?? "#2563EB" }}
+                title={profile?.name ?? "Me"}
               >
-                {c.label}
-                {cat === c.k && (
-                  <span className="absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-foreground" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onPost}
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-foreground hover:bg-background sm:inline-flex"
-            >
-              Become a host
-            </button>
-            <button className="hidden h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-background sm:inline-flex" aria-label="Language">
-              <Globe className="h-4 w-4" />
-            </button>
-            {user ? (
-              <div className="flex items-center gap-2 rounded-full border bg-surface px-1.5 py-1 shadow-sm hover:shadow">
-                <Menu className="ml-1 h-4 w-4 text-muted-foreground" />
-                <NotificationsBell onOpenMessages={() => navigate({ to: "/" })} />
-                <Link
-                  to="/profile"
-                  className="grid h-8 w-8 place-items-center rounded-full text-base"
-                  style={{ background: profile?.banner_color ?? "#2563EB" }}
-                  title={profile?.name ?? "Me"}
-                >
-                  {profile?.avatar_emoji ?? "🙂"}
-                </Link>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 rounded-full border bg-surface px-2 py-1 shadow-sm">
-                <Menu className="h-4 w-4 text-muted-foreground" />
-                <Link
-                  to="/auth"
-                  search={{ mode: "in" }}
-                  className="rounded-full px-3 py-1 text-sm font-semibold hover:bg-background"
-                >
-                  Sign in
-                </Link>
-              </div>
-            )}
-            {user && (
+                {profile?.avatar_emoji ?? "🙂"}
+              </Link>
               <button
                 onClick={signOut}
-                className="hidden text-xs text-muted-foreground hover:text-foreground md:inline"
+                className="hidden pr-2 text-xs text-muted-foreground hover:text-foreground md:inline"
               >Sign out</button>
-            )}
-          </div>
-        </div>
-
-        {/* Search pill */}
-        <div className="mx-auto max-w-7xl px-4 pb-4 pt-1 sm:px-6">
-          <SearchPill value={search} onChange={setSearch} />
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              search={{ mode: "in" }}
+              className="rounded-full border bg-white/90 px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:shadow dark:bg-surface"
+            >Sign in</Link>
+          )}
         </div>
       </header>
 
-      {/* View toggle */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 pt-4 sm:px-6">
-        <div className="text-xs font-semibold text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "stay" : "stays"}
-          {activeCampus ? ` near ${activeCampus.short_name ?? activeCampus.name}` : ""}
+      {/* HERO */}
+      <section className="relative pb-6 pt-16 sm:pt-20">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <Link to="/" className="inline-block text-4xl font-black tracking-tight sm:text-5xl">
+            <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
+          </Link>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Student subleases at every US campus
+          </p>
         </div>
-        <div className="flex items-center gap-1 rounded-full border bg-surface p-1 shadow-sm">
-          <button
-            onClick={() => setView("grid")}
-            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${view === "grid" ? "bg-foreground text-background" : "text-muted-foreground"}`}
-          ><LayoutGrid className="h-3.5 w-3.5" />Grid</button>
-          <button
-            onClick={() => setView("map")}
-            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${view === "map" ? "bg-foreground text-background" : "text-muted-foreground"}`}
-          ><MapIcon className="h-3.5 w-3.5" />Map</button>
+
+        <div className="mx-auto mt-6 max-w-3xl px-4 sm:px-6">
+          <SearchPill value={search} onChange={setSearch} onSearch={runSearch} />
+        </div>
+
+        <p className="mx-auto mt-4 max-w-md px-4 text-center text-xs text-muted-foreground">
+          Browse verified student subleases — no sign-up required
+        </p>
+      </section>
+
+      {/* CATEGORY STRIP */}
+      <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
+        <div
+          className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
+        >
+          {CATEGORIES.map(({ k, label, Icon }) => {
+            const active = cat === k;
+            return (
+              <button
+                key={k}
+                onClick={() => setCat(k)}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border bg-white text-foreground hover:bg-background dark:bg-surface",
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {view === "map" ? (
-        <div className="relative mx-auto mt-3 h-[70vh] max-w-7xl overflow-hidden rounded-2xl border">
-          <MapHome
-            listings={filtered}
-            center={mapCenter}
-            onSelectListing={onOpen}
-            onMessageListing={onMessage}
-          />
+      {/* RAILS */}
+      <div ref={railsRef} className="scroll-mt-20">
+        <ListingRail
+          title={<span className="inline-flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Near Campus</span>}
+          listings={nearCampus}
+          savedIds={savedIds}
+          onSave={onSave}
+          onOpen={onOpen}
+          onSeeAll={() => navigate({ to: "/browse" })}
+        />
+        <ListingRail
+          title={<span className="inline-flex items-center gap-2"><Flame className="h-5 w-5 text-orange-500" /> Best Deals</span>}
+          listings={bestDeals}
+          savedIds={savedIds}
+          onSave={onSave}
+          onOpen={onOpen}
+          onSeeAll={() => navigate({ to: "/browse" })}
+        />
+        <ListingRail
+          title={<span className="inline-flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Just Posted</span>}
+          listings={justPosted}
+          savedIds={savedIds}
+          onSave={onSave}
+          onOpen={onOpen}
+          onSeeAll={() => navigate({ to: "/browse" })}
+        />
+
+        {inCat.length === 0 && (
+          <div className="mx-auto max-w-md px-6 py-16 text-center">
+            <div className="text-6xl">🏠</div>
+            <h2 className="mt-4 text-xl font-bold">No stays match your filters</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Try a different category or clear your search.</p>
+            <button
+              onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); }}
+              className="mt-4 rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
+            >Clear filters</button>
+          </div>
+        )}
+      </div>
+
+      {/* CAMPUS SPOTLIGHTS */}
+      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+        <h2 className="mb-4 text-xl font-extrabold sm:text-2xl">Explore campuses</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {spotlightCampuses.map((c) => {
+            const count = campusCounts.get(c.id) ?? 0;
+            return (
+              <Link
+                key={c.id}
+                to="/sublease/$slug"
+                params={{ slug: c.slug }}
+                className="group flex items-center gap-4 rounded-2xl bg-gray-50 p-5 transition hover:bg-gray-100 dark:bg-background dark:hover:bg-background/70"
+              >
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-border">
+                  {campusEmoji(c)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-base font-bold">{c.short_name ?? c.name}</div>
+                  <div className="truncate text-xs text-muted-foreground">{c.city}, {c.state}</div>
+                  <div className="mt-1 text-xs font-semibold text-primary">
+                    {count} active {count === 1 ? "listing" : "listings"}
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+              </Link>
+            );
+          })}
         </div>
-      ) : (
-        <>
-          {(search.where || search.from || search.guests > 1) && basedOnSearch.length > 0 && (
-            <ListingRail
-              title={<>Based on your search</>}
-              listings={basedOnSearch}
-              savedIds={savedIds}
-              onSave={onSave}
-              onOpen={onOpen}
-            />
-          )}
+      </section>
 
-          {activeCampus && nearCampus.length > 0 && (
-            <ListingRail
-              title={<>Stay near {activeCampus.short_name ?? activeCampus.name}</>}
-              listings={nearCampus}
-              savedIds={savedIds}
-              onSave={onSave}
-              onOpen={onOpen}
-            />
-          )}
-
-          {trending.length > 0 && (
-            <ListingRail
-              title={<>Trending on LeaseUp</>}
-              listings={trending}
-              savedIds={savedIds}
-              onSave={onSave}
-              onOpen={onOpen}
-            />
-          )}
-
-          {otherCampuses.map(({ campus, items }) => (
-            <ListingRail
-              key={campus.id}
-              title={<>Popular in {campus.short_name ?? campus.name}</>}
-              listings={items}
-              savedIds={savedIds}
-              onSave={onSave}
-              onOpen={onOpen}
-            />
-          ))}
-
-          {filtered.length === 0 && (
-            <div className="mx-auto max-w-md px-6 py-16 text-center">
-              <div className="text-6xl">🏠</div>
-              <h2 className="mt-4 text-xl font-bold">No stays match your search</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Try clearing filters or exploring a different campus.</p>
-              <button
-                onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); }}
-                className="mt-4 rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
-              >Clear filters</button>
-            </div>
-          )}
-        </>
-      )}
+      {/* CTA STRIP */}
+      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+        <div className="overflow-hidden rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground sm:px-10 sm:py-14">
+          <h2 className="text-2xl font-extrabold sm:text-3xl">Got a sublease to post?</h2>
+          <p className="mt-2 text-sm opacity-90 sm:text-base">
+            It takes 2 minutes. Free to post — always.
+          </p>
+          <button
+            onClick={onPost}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25 sm:text-base"
+          >
+            Post Your Sublease
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 text-xs text-muted-foreground sm:px-6">
