@@ -36,13 +36,14 @@ import { Upload, X, ShieldAlert, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn, useRouter } from "@tanstack/react-router";
 import { screenListing, type ScreenResult } from "@/lib/leaseup/ai.functions";
 
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
