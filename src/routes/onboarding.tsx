@@ -95,6 +95,17 @@ function Onboarding() {
     else if (legacy === "find" || legacy === "post" || legacy === "roommate") setIntent(legacy);
   }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Pre-select campus from a /sublease/:slug visit hint (viral GroupMe link → auto-campus).
+  useEffect(() => {
+    if (campusId || campuses.length === 0) return;
+    let hint: string | null = null;
+    try { hint = localStorage.getItem("leaseup_campus_hint"); } catch {}
+    if (!hint) return;
+    const match = campuses.find((c: any) => c.slug === hint);
+    if (match) setCampusId(match.id);
+  }, [campuses, campusId]);
+
+
   // Google users get a name in user_metadata; fall back to that.
   useEffect(() => {
     if (name || !user) return;
