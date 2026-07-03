@@ -21,6 +21,7 @@ import { TourBookingPanel } from "./TourBookingPanel";
 import { PriceComparisonPanel } from "./PriceComparisonPanel";
 import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
+import { haptic } from "@/lib/leaseup/haptics";
 
 
 export function ListingDetailSheet({
@@ -148,7 +149,7 @@ export function ListingDetailSheet({
           {onSave && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onSave(listing); }}
+              onClick={(e) => { e.stopPropagation(); haptic("light"); onSave(listing); }}
               aria-label={isSaved ? "Unsave listing" : "Save listing"}
               className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
             >
