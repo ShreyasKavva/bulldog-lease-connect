@@ -107,15 +107,55 @@ export function ListingDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0 pb-24">
 
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
-        <div className="relative aspect-[16/10] bg-muted">
-          {photos[activePhoto] ? (
-            <img src={photos[activePhoto]} alt="" className="h-full w-full object-cover" />
+        {/* Photo gallery — horizontal snap-scroll, no photos = gradient placeholder */}
+        <div className="relative bg-muted">
+          {photos.length > 0 ? (
+            <div
+              className="flex aspect-[16/10] snap-x snap-mandatory overflow-x-auto scroll-smooth"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                const i = Math.round(el.scrollLeft / el.clientWidth);
+                if (i !== activePhoto) setActivePhoto(i);
+              }}
+            >
+              {photos.map((p, i) => (
+                <img
+                  key={i}
+                  src={p}
+                  alt={`${listing.title} — photo ${i + 1}`}
+                  className="h-full w-full flex-shrink-0 snap-start object-cover"
+                />
+              ))}
+            </div>
           ) : (
-            <div className="grid h-full w-full place-items-center text-6xl">🏠</div>
+            <div className="grid aspect-[16/10] w-full place-items-center bg-gradient-to-br from-primary/20 via-primary-light to-primary/10 text-7xl">
+              🏠
+            </div>
+          )}
+
+          {/* Photo X of Y counter */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+              {activePhoto + 1} / {photos.length}
+            </div>
+          )}
+
+          {/* Save heart — top-right overlay */}
+          {onSave && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSave(listing); }}
+              aria-label={isSaved ? "Unsave listing" : "Save listing"}
+              className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+            >
+              <HeartIcon
+                className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
+              />
+            </button>
           )}
         </div>
         {photos.length > 1 && (
