@@ -35,7 +35,8 @@ function firstName(profile: { name?: string | null; email?: string | null } | nu
 function Onboarding() {
   const navigate = useNavigate();
   const { user, loading } = useSession();
-  const { data: profile } = useMyProfile();
+  const profileQuery = useMyProfile();
+  const { data: profile, error: profileError, isError: profileFailed, isFetching: profileFetching } = profileQuery;
   const qc = useQueryClient();
 
   // Returning users (created > 1 hour ago) with onboarding_completed=false get the
@@ -91,6 +92,41 @@ function Onboarding() {
   useEffect(() => {
     if (profile?.onboarding_completed) navigate({ to: "/" });
   }, [profile?.onboarding_completed, navigate]);
+
+  if (!loading && user && profileFailed) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background px-5 text-center">
+        <div className="max-w-sm">
+          <h1 className="text-2xl font-black">LeaseUp</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            We couldn&apos;t load your profile. Please try again.
+          </p>
+          <Button onClick={() => profileQuery.refetch()} className="mt-6 bg-primary text-primary-foreground hover:bg-primary-dark">
+            Try again
+          </Button>
+          {profileError instanceof Error && (
+            <p className="mt-3 text-xs text-muted-foreground">{profileError.message}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && user && !profile && !profileFetching) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background px-5 text-center">
+        <div className="max-w-sm">
+          <h1 className="text-2xl font-black">LeaseUp</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Your account is signed in, but the profile setup record is missing.
+          </p>
+          <Button onClick={() => profileQuery.refetch()} className="mt-6 bg-primary text-primary-foreground hover:bg-primary-dark">
+            Refresh
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || !user || !profile) {
     return (
