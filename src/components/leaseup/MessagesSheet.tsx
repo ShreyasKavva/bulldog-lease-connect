@@ -78,11 +78,14 @@ function isMuted(c: Conversation, userId: string) {
 }
 
 export function MessagesSheet({
-  open, onOpenChange, initialConversationId,
+  open, onOpenChange, initialConversationId, initialDraft,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   initialConversationId?: string | null;
+  /** Prefilled composer text — only applied when opening a conversation
+   *  with no prior messages (i.e. the user just started it from a listing). */
+  initialDraft?: string | null;
 }) {
   const { user } = useSession();
   const qc = useQueryClient();
@@ -173,6 +176,19 @@ export function MessagesSheet({
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages?.length, otherTyping]);
+
+  // Prefill the composer with the initial draft the first time we open a
+  // conversation that has no messages yet. Users can edit or clear it before
+  // sending — this just kills the blank-page friction on brand-new threads.
+  const draftAppliedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeId || !initialDraft || !messages) return;
+    if (messages.length > 0) return;
+    if (draftAppliedRef.current === activeId) return;
+    if (input.trim().length > 0) return;
+    draftAppliedRef.current = activeId;
+    setInput(initialDraft);
+  }, [activeId, initialDraft, messages, input]);
 
   function broadcastTyping(typing: boolean) {
     if (!typingChannelRef.current || !user?.id) return;

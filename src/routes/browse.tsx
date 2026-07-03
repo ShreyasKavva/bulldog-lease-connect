@@ -77,6 +77,7 @@ function Browse() {
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [msgDraft, setMsgDraft] = useState<string | null>(null);
   const [matchOpen, setMatchOpen] = useState(false);
   const [leaseOpen, setLeaseOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
@@ -146,6 +147,7 @@ function Browse() {
     }
     if (listing.user_id === user.id) { toast("That's your own listing"); return; }
     const id = await getOrCreateConversation(user.id, listing.user_id, listing.id);
+    setMsgDraft(`Hi! I'm interested in ${listing.title}. Is it still available?`);
     setActiveConv(id);
     setMessagesOpen(true);
     setSelected(null);
@@ -296,6 +298,8 @@ function Browse() {
         onOpenChange={(o) => !o && setSelected(null)}
         onMessage={handleMessage}
         onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
+        onSave={handleSave}
+        isSaved={selected ? savedIds.has(selected.id) : false}
       />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
       <ProfileSheet
@@ -304,7 +308,12 @@ function Browse() {
         onOpenChange={(o) => !o && setProfileViewId(null)}
         onMessage={startConvWith}
       />
-      <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={activeConv} />
+      <MessagesSheet
+        open={messagesOpen}
+        onOpenChange={(o) => { setMessagesOpen(o); if (!o) setMsgDraft(null); }}
+        initialConversationId={activeConv}
+        initialDraft={msgDraft}
+      />
       <LeaseAnalysisDialog open={leaseOpen} onOpenChange={setLeaseOpen} />
       <FindMyMatchDialog open={matchOpen} onOpenChange={setMatchOpen} onOpenListing={(l) => setSelected(l)} />
 

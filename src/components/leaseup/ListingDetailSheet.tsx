@@ -24,13 +24,15 @@ import { Lock } from "lucide-react";
 
 
 export function ListingDetailSheet({
-  listing, open, onOpenChange, onMessage, onViewProfile,
+  listing, open, onOpenChange, onMessage, onViewProfile, onSave, isSaved,
 }: {
   listing: Listing | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onMessage: (listing: Listing) => void;
   onViewProfile: (userId: string) => void;
+  onSave?: (listing: Listing) => void;
+  isSaved?: boolean;
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
@@ -105,15 +107,55 @@ export function ListingDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0 pb-24">
 
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
-        <div className="relative aspect-[16/10] bg-muted">
-          {photos[activePhoto] ? (
-            <img src={photos[activePhoto]} alt="" className="h-full w-full object-cover" />
+        {/* Photo gallery — horizontal snap-scroll, no photos = gradient placeholder */}
+        <div className="relative bg-muted">
+          {photos.length > 0 ? (
+            <div
+              className="flex aspect-[16/10] snap-x snap-mandatory overflow-x-auto scroll-smooth"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                const i = Math.round(el.scrollLeft / el.clientWidth);
+                if (i !== activePhoto) setActivePhoto(i);
+              }}
+            >
+              {photos.map((p, i) => (
+                <img
+                  key={i}
+                  src={p}
+                  alt={`${listing.title} — photo ${i + 1}`}
+                  className="h-full w-full flex-shrink-0 snap-start object-cover"
+                />
+              ))}
+            </div>
           ) : (
-            <div className="grid h-full w-full place-items-center text-6xl">🏠</div>
+            <div className="grid aspect-[16/10] w-full place-items-center bg-gradient-to-br from-primary/20 via-primary-light to-primary/10 text-7xl">
+              🏠
+            </div>
+          )}
+
+          {/* Photo X of Y counter */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+              {activePhoto + 1} / {photos.length}
+            </div>
+          )}
+
+          {/* Save heart — top-right overlay */}
+          {onSave && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSave(listing); }}
+              aria-label={isSaved ? "Unsave listing" : "Save listing"}
+              className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+            >
+              <HeartIcon
+                className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
+              />
+            </button>
           )}
         </div>
         {photos.length > 1 && (
@@ -259,10 +301,7 @@ export function ListingDetailSheet({
 
           <div className="grid grid-cols-2 gap-2">
             <Button
-              onClick={() => {
-                if (!user) { toast.error("Sign in to message"); return; }
-                onMessage(listing);
-              }}
+              onClick={() => onMessage(listing)}
               className="bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
             >
               <MessageSquare className="h-4 w-4" />Message
@@ -270,7 +309,7 @@ export function ListingDetailSheet({
             <Button
               variant="outline"
               onClick={() => {
-                if (!user) { toast.error("Sign in to see contact"); return; }
+                if (!user) { onMessage(listing); return; }
                 if (listing.profile?.phone) toast.success(`📞 ${listing.profile.phone}`);
                 else toast(`✉️ ${listing.profile?.email ?? "Use Message instead"}`);
               }}
@@ -332,6 +371,22 @@ export function ListingDetailSheet({
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
         </div>
+
+        {/* Sticky message-poster footer — the primary conversion action */}
+        {user?.id !== listing.user_id && (
+          <div
+            className="sticky bottom-0 left-0 right-0 z-10 border-t bg-surface/95 p-3 backdrop-blur"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+          >
+            <Button
+              onClick={() => onMessage(listing)}
+              className="h-12 w-full gap-2 bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-dark"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Message {listing.profile?.name?.split(" ")[0] ?? "the poster"} about this listing →
+            </Button>
+          </div>
+        )}
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
       <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />

@@ -64,6 +64,7 @@ function Home() {
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [msgDraft, setMsgDraft] = useState<string | null>(null);
 
   /** Redirect to /auth preserving the current URL + an intent flag. */
   function requireAuth(intent: "post" | "message" | "save", ctx?: { listingId?: string }) {
@@ -79,6 +80,7 @@ function Home() {
     if (listing.user_id === user.id) { toast("That's your own listing"); return; }
     try {
       const id = await getOrCreateConversation(user.id, listing.user_id, listing.id);
+      setMsgDraft(`Hi! I'm interested in ${listing.title}. Is it still available?`);
       setActiveConv(id);
       setMessagesOpen(true);
       setSelected(null);
@@ -166,6 +168,8 @@ function Home() {
         onOpenChange={(o) => !o && setSelected(null)}
         onMessage={handleMessage}
         onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
+        onSave={handleSave}
+        isSaved={selected ? savedIds.has(selected.id) : false}
       />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
       <ProfileSheet
@@ -176,8 +180,9 @@ function Home() {
       />
       <MessagesSheet
         open={messagesOpen}
-        onOpenChange={setMessagesOpen}
+        onOpenChange={(o) => { setMessagesOpen(o); if (!o) setMsgDraft(null); }}
         initialConversationId={activeConv}
+        initialDraft={msgDraft}
       />
     </>
   );
