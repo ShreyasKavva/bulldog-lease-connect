@@ -91,6 +91,13 @@ export type Database = {
             foreignKeyName: "boost_purchases_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -180,6 +187,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closed_deals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -366,6 +380,13 @@ export type Database = {
             foreignKeyName: "deposit_agreements_poster_id_fkey"
             columns: ["poster_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -374,6 +395,13 @@ export type Database = {
             columns: ["subletter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_agreements_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -444,6 +472,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_waitlist_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -637,6 +672,13 @@ export type Database = {
             foreignKeyName: "listing_reactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -725,6 +767,13 @@ export type Database = {
             foreignKeyName: "listing_reports_reporter_id_fkey"
             columns: ["reporter_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -733,6 +782,13 @@ export type Database = {
             columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reports_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1037,6 +1093,13 @@ export type Database = {
             foreignKeyName: "looking_for_interests_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "looking_for_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1142,6 +1205,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1334,6 +1404,13 @@ export type Database = {
             foreignKeyName: "payment_intents_payee_id_fkey"
             columns: ["payee_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_payee_id_fkey"
+            columns: ["payee_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1342,6 +1419,13 @@ export type Database = {
             columns: ["payer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1460,6 +1544,13 @@ export type Database = {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1506,6 +1597,13 @@ export type Database = {
             foreignKeyName: "referral_events_referred_id_fkey"
             columns: ["referred_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1514,6 +1612,13 @@ export type Database = {
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1599,6 +1704,13 @@ export type Database = {
             foreignKeyName: "reviews_reviewed_user_id_fkey"
             columns: ["reviewed_user_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1607,6 +1719,13 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1655,6 +1774,13 @@ export type Database = {
             foreignKeyName: "roommate_interests_from_user_id_fkey"
             columns: ["from_user_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_interests_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -1663,6 +1789,13 @@ export type Database = {
             columns: ["to_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_interests_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1772,6 +1905,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roommate_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1990,6 +2130,13 @@ export type Database = {
             foreignKeyName: "tour_availability_poster_id_fkey"
             columns: ["poster_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_availability_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -2094,6 +2241,13 @@ export type Database = {
             foreignKeyName: "tour_bookings_poster_id_fkey"
             columns: ["poster_id"]
             isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_poster_id_fkey"
+            columns: ["poster_id"]
+            isOneToOne: false
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
@@ -2102,6 +2256,13 @@ export type Database = {
             columns: ["subletter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_subletter_id_fkey"
+            columns: ["subletter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -2130,6 +2291,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "listings_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_public: {
+        Row: {
+          avatar_emoji: string | null
+          banner_color: string | null
+          bio: string | null
+          campus_id: string | null
+          created_at: string | null
+          currently_emoji: string | null
+          currently_status: string | null
+          currently_updated_at: string | null
+          id: string | null
+          is_ambassador: boolean | null
+          major: string | null
+          name: string | null
+          updated_at: string | null
+          verified_email: boolean | null
+          vibe_tags: string[] | null
+          year: string | null
+        }
+        Insert: {
+          avatar_emoji?: string | null
+          banner_color?: string | null
+          bio?: string | null
+          campus_id?: string | null
+          created_at?: string | null
+          currently_emoji?: string | null
+          currently_status?: string | null
+          currently_updated_at?: string | null
+          id?: string | null
+          is_ambassador?: boolean | null
+          major?: string | null
+          name?: string | null
+          updated_at?: string | null
+          verified_email?: boolean | null
+          vibe_tags?: string[] | null
+          year?: string | null
+        }
+        Update: {
+          avatar_emoji?: string | null
+          banner_color?: string | null
+          bio?: string | null
+          campus_id?: string | null
+          created_at?: string | null
+          currently_emoji?: string | null
+          currently_status?: string | null
+          currently_updated_at?: string | null
+          id?: string | null
+          is_ambassador?: boolean | null
+          major?: string | null
+          name?: string | null
+          updated_at?: string | null
+          verified_email?: boolean | null
+          vibe_tags?: string[] | null
+          year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_campus_id_fkey"
             columns: ["campus_id"]
             isOneToOne: false
             referencedRelation: "campuses"
