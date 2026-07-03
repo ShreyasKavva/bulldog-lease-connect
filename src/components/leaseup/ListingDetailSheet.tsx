@@ -24,13 +24,15 @@ import { Lock } from "lucide-react";
 
 
 export function ListingDetailSheet({
-  listing, open, onOpenChange, onMessage, onViewProfile,
+  listing, open, onOpenChange, onMessage, onViewProfile, onSave, isSaved,
 }: {
   listing: Listing | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onMessage: (listing: Listing) => void;
   onViewProfile: (userId: string) => void;
+  onSave?: (listing: Listing) => void;
+  isSaved?: boolean;
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
