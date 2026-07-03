@@ -64,6 +64,7 @@ function Home() {
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [msgDraft, setMsgDraft] = useState<string | null>(null);
 
   /** Redirect to /auth preserving the current URL + an intent flag. */
   function requireAuth(intent: "post" | "message" | "save", ctx?: { listingId?: string }) {
