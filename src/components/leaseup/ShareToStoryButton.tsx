@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Share2, Loader2, Copy, ImageDown, Download, RefreshCw, X } from "lucide-react";
+import { Share2, Loader2, Copy, ImageDown, Download, RefreshCw, X, MessageSquare, Send } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { renderStoryGraphic } from "@/lib/leaseup/story-graphic";
+import { buildShareUrl, copyGroupMe, shareListingNative } from "@/lib/share";
+
 
 type Variant = "pill" | "icon" | "block";
 
@@ -51,7 +53,7 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
   const [stage, setStage] = useState<"choose" | "loading" | "preview">("choose");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const blobRef = useRef<Blob | null>(null);
-  const listingUrl = `https://leasup.co/listings/${listing.id}`;
+  const listingUrl = buildShareUrl(listing.id, "copy");
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -98,6 +100,7 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
     }
   }
 
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center"
@@ -135,6 +138,28 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
               </button>
 
               <button
+                onClick={() => shareListingNative(listing)}
+                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary"><Send className="h-5 w-5" /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-bold">Share via… (iMessage, WhatsApp, Reddit)</div>
+                  <div className="text-xs text-muted-foreground">Opens your phone's share sheet</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => copyGroupMe(listing)}
+                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary"><MessageSquare className="h-5 w-5" /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-bold">📋 Copy for GroupMe</div>
+                  <div className="text-xs text-muted-foreground">Formatted post with emojis + link — paste anywhere</div>
+                </div>
+              </button>
+
+              <button
                 onClick={copyLink}
                 className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
               >
@@ -145,16 +170,6 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
                 </div>
               </button>
 
-              <button
-                onClick={copyLink}
-                className="flex w-full items-center gap-3 rounded-2xl bg-background p-4 text-left transition hover:bg-muted active:scale-[0.99]"
-              >
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary">📋</div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-base font-bold">Copy your listing URL</div>
-                  <div className="text-xs text-muted-foreground">Paste in your Instagram bio while your Story is live</div>
-                </div>
-              </button>
             </div>
           </>
         )}

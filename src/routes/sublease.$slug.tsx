@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -81,6 +82,12 @@ function CampusPage() {
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
+
+  // Remember which campus the visitor arrived on — pre-selects it in onboarding after signup.
+  useEffect(() => {
+    try { localStorage.setItem("leaseup_campus_hint", campus.slug); } catch {}
+  }, [campus.slug]);
+
 
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = allCampuses } = useQuery<Campus[]>({
