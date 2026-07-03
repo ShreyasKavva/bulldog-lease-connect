@@ -168,6 +168,8 @@ function Home() {
         onOpenChange={(o) => !o && setSelected(null)}
         onMessage={handleMessage}
         onViewProfile={(id) => { setSelected(null); setProfileViewId(id); }}
+        onSave={handleSave}
+        isSaved={selected ? savedIds.has(selected.id) : false}
       />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
       <ProfileSheet
@@ -178,8 +180,9 @@ function Home() {
       />
       <MessagesSheet
         open={messagesOpen}
-        onOpenChange={setMessagesOpen}
+        onOpenChange={(o) => { setMessagesOpen(o); if (!o) setMsgDraft(null); }}
         initialConversationId={activeConv}
+        initialDraft={msgDraft}
       />
     </>
   );
