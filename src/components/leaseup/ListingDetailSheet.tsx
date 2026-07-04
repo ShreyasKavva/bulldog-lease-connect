@@ -42,6 +42,7 @@ export function ListingDetailSheet({
   const [saveCount, setSaveCount] = useState<number>(0);
   const [msgCount, setMsgCount] = useState<number>(0);
   const [depositOpen, setDepositOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { user } = useSession();
 
   useEffect(() => {
