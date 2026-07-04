@@ -59,8 +59,8 @@ export function ListingDetailSheet({
     // Load social proof counts
     (async () => {
       try {
-        const sav = await supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).eq("listing_id", listing.id);
-        setSaveCount(sav.count ?? 0);
+        const sav = await supabase.from("saved_listing_counts" as any).select("save_count").eq("listing_id", listing.id).maybeSingle();
+        setSaveCount(((sav.data as any)?.save_count as number | undefined) ?? 0);
         const convs = await supabase.from("conversations").select("id").eq("listing_id", listing.id);
         const convIds = (convs.data ?? []).map((c: any) => c.id);
         if (convIds.length === 0) { setMsgCount(0); return; }
