@@ -104,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "LeaseUp — Student Subleases at Every Campus" },
       { name: "description", content: "Find your next place. Leave your current one. The trusted student lease marketplace — at every major US campus." },
       { property: "og:title", content: "LeaseUp — Student Subleases" },
-      { property: "og:description", content: "Browse and post student subleases at any campus. Verified students, real listings, SafeScore on everything." },
+      { property: "og:description", content: "Browse and post verified student subleases at every major US campus. Connect with verified students at your campus." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "theme-color", content: "#2563EB" },
