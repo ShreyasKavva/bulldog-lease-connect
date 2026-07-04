@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
       { title: "LeaseUp — Student subleases at your campus" },
       { name: "description", content: "Browse verified student subleases and transfers at campuses nationwide. Search by destination, dates, and roommates — no sign-up required." },
       { property: "og:title", content: "LeaseUp — Student subleases" },
-      { property: "og:description", content: "Search verified subleases at any campus. Message the host in one tap." },
+      { property: "og:description", content: "Search verified student subleases at any campus. Connect with verified students at your campus." },
       { property: "og:type", content: "website" },
     ],
   }),

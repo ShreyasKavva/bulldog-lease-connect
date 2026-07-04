@@ -5,14 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { ShieldCheck, MapPin, Sparkles, Plus } from "lucide-react";
+import { MapPin, Sparkles, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -158,15 +157,6 @@ function CampusPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
-      <Nav
-        onPost={handlePost}
-        onOpenMessages={() => user ? (setActiveConv(null), setMessagesOpen(true)) : navigate({ to: "/auth", search: { mode: "in" } })}
-        onOpenProfile={() => user ? setProfileId(user.id) : navigate({ to: "/auth", search: { mode: "in" } })}
-        search={search}
-        onSearch={setSearch}
-        activeCampusSlug={campus.slug}
-      />
-
       {/* Hero */}
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
@@ -186,21 +176,10 @@ function CampusPage() {
             <Link to="/looking-for" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
               <Sparkles className="h-4 w-4" /> I'm looking
             </Link>
-            <Link to="/lease-analysis" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
-              <ShieldCheck className="h-4 w-4" /> 🤖 Analyze My Lease
-            </Link>
-            <Link to="/find-my-match" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
-              <Sparkles className="h-4 w-4" /> 🎯 Find My Match
-            </Link>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-semibold text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1"><ShieldCheck className="h-3 w-3 text-primary" />Verified .edu students</span>
-            <span className="rounded-full bg-background px-2.5 py-1">SafeScore on every listing</span>
-            <span className="rounded-full bg-background px-2.5 py-1">In-app messaging</span>
-            <span className="rounded-full bg-background px-2.5 py-1">AI lease analysis</span>
           </div>
         </div>
       </header>
+
 
       <main className="mx-auto max-w-7xl px-4 py-6">
         {/* Filter pills */}
