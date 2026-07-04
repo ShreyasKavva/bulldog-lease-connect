@@ -358,7 +358,11 @@ export function MessagesSheet({
                 </div>
                 {active.listing.is_active !== false && (
                   <button
-                    onClick={() => { onOpenChange(false); window.location.href = `/listing/${active.listing!.id}`; }}
+                    onClick={() => {
+                      const id = active.listing!.id;
+                      onOpenChange(false);
+                      window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: id }));
+                    }}
                     className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground"
                   >
                     View
