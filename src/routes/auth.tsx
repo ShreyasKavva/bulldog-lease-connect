@@ -49,12 +49,12 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { message, next } = Route.useSearch();
+  const { message, next, redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<"in" | "up" | "google" | null>(null);
-  const dest = safeNext(next);
+  const dest = safeNext(next ?? redirect);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
