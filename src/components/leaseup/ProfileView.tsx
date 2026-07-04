@@ -13,7 +13,7 @@ import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, Zap, MapPin, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
+import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type PublicProfile = {
