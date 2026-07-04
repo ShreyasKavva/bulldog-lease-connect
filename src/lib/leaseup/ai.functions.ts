@@ -117,6 +117,88 @@ export const analyzeLease = createServerFn({ method: "POST" })
     return row;
   });
 
+const LeaseReviewInput = z.object({
+  leaseText: z.string().min(80, "Paste at least a few paragraphs of lease text.").max(60000),
+});
+
+export type LeaseReviewItem = {
+  category: string;
+  status: "red" | "yellow" | "green";
+  finding: string;
+  advice: string;
+};
+
+export type LeaseReviewResult = {
+  summary: string;
+  items: LeaseReviewItem[];
+};
+
+const LEASE_REVIEW_CATEGORIES = [
+  "sublease clause",
+  "early termination",
+  "rent increases",
+  "security deposit",
+  "utilities",
+  "guest policy",
+  "notice to vacate",
+  "auto-renewal",
+];
+
+function normalizeLeaseReview(parsed: Partial<LeaseReviewResult>): LeaseReviewResult {
+  const items = Array.isArray(parsed.items) ? parsed.items : [];
+  const normalized = items.map((item) => ({
+    category: String(item?.category ?? "Lease term"),
+    status: (["red", "yellow", "green"] as const).includes(item?.status as any) ? item.status : "yellow",
+    finding: String(item?.finding ?? "This lease term needs a closer look."),
+    advice: String(item?.advice ?? "Ask your landlord to explain this in writing before you sign."),
+  })).slice(0, 8);
+
+  return {
+    summary: String(parsed.summary ?? "We reviewed the lease text and highlighted the clauses most likely to affect a student sublease."),
+    items: normalized.length > 0 ? normalized : LEASE_REVIEW_CATEGORIES.map((category) => ({
+      category,
+      status: "yellow" as const,
+      finding: "The lease text did not make this term clear.",
+      advice: "Ask the landlord or property manager for the exact policy in writing.",
+    })),
+  };
+}
+
+export const analyzeLeaseText = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => LeaseReviewInput.parse(d))
+  .handler(async ({ data }): Promise<LeaseReviewResult> => {
+    const provider = gateway();
+    const prompt = `You are a tenant-friendly lease reviewer for college students. Review the lease text below for subleasing risk and common student housing traps.
+
+Return ONLY valid JSON with exactly this shape:
+{
+  "summary": "2-3 sentence plain English summary",
+  "items": [
+    { "category": "sublease clause", "status": "red|yellow|green", "finding": "plain English finding", "advice": "specific next step" }
+  ]
+}
+
+You must include one item for each category: ${LEASE_REVIEW_CATEGORIES.join(", ")}.
+Use status red for risky/prohibited, yellow for unclear/requires permission, green for favorable/clear.
+
+Lease: ${data.leaseText.slice(0, 50000)}`;
+
+    const { text } = await generateText({
+      model: provider(MODEL),
+      prompt,
+      temperature: 0.2,
+    });
+
+    try {
+      return normalizeLeaseReview(extractJson<LeaseReviewResult>(text));
+    } catch {
+      return normalizeLeaseReview({
+        summary: text.slice(0, 500),
+        items: [],
+      });
+    }
+  });
+
 export const listLeaseAnalyses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
