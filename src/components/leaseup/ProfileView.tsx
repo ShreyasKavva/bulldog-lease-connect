@@ -35,7 +35,30 @@ type PublicProfile = {
   review_count: number;
   listing_count: number;
   active_listing_count: number;
+  created_at: string | null;
 };
+
+const CAMPUS_ABBREV: Record<string, string> = {
+  "University of Georgia": "UGA",
+  "Auburn University": "Auburn",
+  "University of Florida": "UF",
+  "Georgia Tech": "GT",
+  "Georgia Institute of Technology": "GT",
+  "University of Alabama": "Alabama",
+};
+
+function abbrevCampus(name: string | null | undefined): string | null {
+  if (!name) return null;
+  if (CAMPUS_ABBREV[name]) return CAMPUS_ABBREV[name];
+  return name.split(/\s+/)[0];
+}
+
+async function fetchCampusSlug(campusId: string | null | undefined) {
+  if (!campusId) return null;
+  const { data } = await supabase.from("campuses").select("slug, short_name, name").eq("id", campusId).maybeSingle();
+  return data ?? null;
+}
+
 
 async function fetchPublicProfile(userId: string): Promise<PublicProfile | null> {
   const { data, error } = await supabase.rpc("get_public_profile", { _uid: userId });
