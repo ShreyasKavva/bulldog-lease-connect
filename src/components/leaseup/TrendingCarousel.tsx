@@ -1,6 +1,6 @@
 import { Flame } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
-import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
+
 
 export function TrendingCarousel({
   listings,
