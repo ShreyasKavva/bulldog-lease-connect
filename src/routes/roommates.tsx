@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { X, Heart, BadgeCheck, MessageCircle, Users, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/roommates")({
   head: () => ({
@@ -75,13 +76,13 @@ function RoommatesPage() {
           LeaseUp matches you with compatible students at your campus based on
           lifestyle, budget, and vibe.
         </p>
-        <Link
-          to="/auth"
-          search={{ mode: "in", next: "/roommates" }}
+        <button
+          type="button"
+          onClick={() => openSignIn("/roommates")}
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
         >
           Sign in to start matching →
-        </Link>
+        </button>
       </div>
     );
   }

@@ -2,10 +2,11 @@
  * /profile — the current user's first-class profile page.
  * Public view lives at /profile/$userId. Both routes render ProfileView.
  */
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useSession } from "@/lib/leaseup/use-session";
 import { ProfileView } from "@/components/leaseup/ProfileView";
 import { Button } from "@/components/ui/button";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -18,7 +19,6 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfilePage() {
-  const navigate = useNavigate();
   const { user, loading } = useSession();
 
   if (loading) return <div className="min-h-screen bg-background" />;
@@ -33,13 +33,13 @@ function ProfilePage() {
             Sign in to manage your listings, see your matches, and build your LeaseUp profile.
           </p>
           <Button
-            onClick={() => navigate({ to: "/auth", search: { mode: "in" } as any })}
+            onClick={() => openSignIn("/profile")}
             className="mt-6 bg-primary hover:bg-primary-dark text-primary-foreground font-bold rounded-full px-6"
           >
             Sign in →
           </Button>
           <div className="mt-6 text-xs text-muted-foreground">
-            New here? <Link to="/auth" search={{ mode: "up" } as any} className="font-semibold text-primary">Create account</Link>
+            New here? <button type="button" onClick={() => openSignIn("/profile")} className="font-semibold text-primary">Create account</button>
           </div>
         </main>
       </div>

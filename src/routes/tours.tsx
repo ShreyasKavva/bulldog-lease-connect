@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Calendar, Check, X, MessageSquare, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/tours")({
   head: () => ({ meta: [{ title: "My tours — LeaseUp" }] }),
@@ -34,7 +35,7 @@ function ToursPage() {
         <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to see your tours</h2>
-          <Link to="/auth" search={{ mode: "in" }} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</Link>
+          <button type="button" onClick={() => openSignIn("/tours")} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</button>
         </div>
       </div>
     );

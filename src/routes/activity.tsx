@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/leaseup/use-session";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/activity")({
   head: () => ({
@@ -190,16 +191,16 @@ function ActivityLoggedOut() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Sign up to see live activity from students at your campus. It's free.
               </p>
-              <Link
-                to="/auth"
-                search={{ mode: "up" }}
+              <button
+                type="button"
+                onClick={() => openSignIn("/activity")}
                 className="mt-4 inline-flex items-center gap-1 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
               >
                 Sign up free
-              </Link>
+              </button>
               <div className="mt-2 text-[11px] text-muted-foreground">
                 Already have an account?{" "}
-                <Link to="/auth" search={{ mode: "in" }} className="font-semibold text-primary hover:underline">Sign in</Link>
+                <button type="button" onClick={() => openSignIn("/activity")} className="font-semibold text-primary hover:underline">Sign in</button>
               </div>
             </div>
           </div>

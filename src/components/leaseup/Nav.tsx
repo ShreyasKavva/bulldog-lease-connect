@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CampusPicker } from "@/components/leaseup/CampusPicker";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export function Nav({
   onPost, onOpenMessages, onOpenProfile, search, onSearch,
@@ -100,8 +101,8 @@ export function Nav({
           </>
         ) : (
           <>
-            <Link to="/auth" search={{ mode: "in" }} className="rounded-md border px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">Sign in</Link>
-            <Link to="/auth" search={{ mode: "up" }} className="rounded-md bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark">Sign up</Link>
+            <button onClick={() => openSignIn()} className="rounded-md border px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">Sign in</button>
+            <button onClick={() => openSignIn()} className="rounded-md bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark">Sign up</button>
           </>
         )}
       </div>
