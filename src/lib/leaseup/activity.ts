@@ -65,7 +65,7 @@ export async function fetchActivity(limit = 50): Promise<ActivityItem[]> {
     .select("listing_id, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
-  const saveRows = (saves ?? []) as Array<{ listing_id: string; created_at: string }>;
+  const saveRows = ((saves ?? []) as unknown) as Array<{ listing_id: string; created_at: string }>;
   const saveListingIds = Array.from(new Set(saveRows.map((r) => r.listing_id)));
   let saveAreas = new Map<string, string | null>();
   if (saveListingIds.length) {
