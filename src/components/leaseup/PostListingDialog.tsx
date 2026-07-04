@@ -256,9 +256,23 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
                 {files.map((f, i) => (
                   <div key={i} className="relative aspect-square overflow-hidden rounded-md bg-muted">
                     <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    {i === 0 && (
+                      <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">Cover</span>
+                    )}
                     <button aria-label="Remove photo" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white">
                       <X className="h-3 w-3" />
                     </button>
+                    {files.length > 1 && i > 0 && (
+                      <button
+                        type="button"
+                        aria-label="Move to front"
+                        onClick={() => setFiles([files[i], ...files.filter((_, j) => j !== i)])}
+                        className="absolute inset-x-0 bottom-0 bg-black/60 py-0.5 text-[9px] font-semibold text-white opacity-0 transition group-hover:opacity-100 hover:opacity-100"
+                        style={{ opacity: 1 }}
+                      >
+                        Move to front
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
