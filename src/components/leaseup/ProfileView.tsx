@@ -308,12 +308,12 @@ export function ProfileView({ userId }: { userId: string }) {
         )}
 
         {/* Trust signals strip */}
-        <section className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <TrustCard icon="✓" label={isEdu ? ".edu Verified" : "Not verified"} sub={isEdu ? "Verified" : "—"} />
-          <TrustCard icon="⭐" label={reviewCount > 0 ? `${rating.toFixed(1)} avg` : "No reviews"} sub="rating" />
-          <TrustCard icon="💬" label={responsePct != null ? `${responsePct}%` : "—"} sub="response" />
-          <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`listing${profile.listing_count === 1 ? "" : "s"} posted`} />
+        <section className="mt-4 grid grid-cols-3 gap-2">
+          <TrustCard icon="✓" label={isEdu ? "✓" : "—"} sub="Verified" />
+          <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`Post${profile.listing_count === 1 ? "" : "s"}`} />
+          <TrustCard icon="📅" label={joinedLabel} sub="Joined" />
         </section>
+
 
         {/* Listings */}
         <section className="mt-6">
