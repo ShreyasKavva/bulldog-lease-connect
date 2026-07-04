@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as RoommatesRouteImport } from './routes/roommates'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PostRouteImport } from './routes/post'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
@@ -71,6 +72,11 @@ const RoommatesRoute = RoommatesRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostRoute = PostRouteImport.update({
+  id: '/post',
+  path: '/post',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/post': typeof PostRoute
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/post': typeof PostRoute
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/post': typeof PostRoute
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
+    | '/post'
     | '/profile'
     | '/roommates'
     | '/saved'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
+    | '/post'
     | '/profile'
     | '/roommates'
     | '/saved'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
+    | '/post'
     | '/profile'
     | '/roommates'
     | '/saved'
@@ -443,6 +455,7 @@ export interface RootRouteChildren {
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
+  PostRoute: typeof PostRoute
   ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedRoute: typeof SavedRoute
@@ -502,6 +515,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post': {
+      id: '/post'
+      path: '/post'
+      fullPath: '/post'
+      preLoaderRoute: typeof PostRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -747,6 +767,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
+  PostRoute: PostRoute,
   ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedRoute: SavedRoute,
