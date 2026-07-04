@@ -13,7 +13,7 @@ import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, Zap, MapPin, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
+import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type PublicProfile = {
@@ -35,7 +35,30 @@ type PublicProfile = {
   review_count: number;
   listing_count: number;
   active_listing_count: number;
+  created_at: string | null;
 };
+
+const CAMPUS_ABBREV: Record<string, string> = {
+  "University of Georgia": "UGA",
+  "Auburn University": "Auburn",
+  "University of Florida": "UF",
+  "Georgia Tech": "GT",
+  "Georgia Institute of Technology": "GT",
+  "University of Alabama": "Alabama",
+};
+
+function abbrevCampus(name: string | null | undefined): string | null {
+  if (!name) return null;
+  if (CAMPUS_ABBREV[name]) return CAMPUS_ABBREV[name];
+  return name.split(/\s+/)[0];
+}
+
+async function fetchCampusSlug(campusId: string | null | undefined) {
+  if (!campusId) return null;
+  const { data } = await supabase.from("campuses").select("slug, short_name, name").eq("id", campusId).maybeSingle();
+  return data ?? null;
+}
+
 
 async function fetchPublicProfile(userId: string): Promise<PublicProfile | null> {
   const { data, error } = await supabase.rpc("get_public_profile", { _uid: userId });
@@ -106,14 +129,20 @@ export function ProfileView({ userId }: { userId: string }) {
     if (!profile) return 0;
     const fields = [
       !!profile.avatar_url,
-      !!profile.bio,
+      !!(profile.bio && profile.bio.trim()),
       !!profile.year,
       !!profile.major,
-      (profile.vibe_tags?.length ?? 0) > 0,
-      !!profile.instagram_handle,
     ];
     return Math.round((fields.filter(Boolean).length / fields.length) * 100);
   }, [profile]);
+
+  const { data: campusRow } = useQuery({
+    queryKey: ["campus-row", profile?.campus_id],
+    queryFn: () => fetchCampusSlug(profile?.campus_id),
+    enabled: !!profile?.campus_id,
+    staleTime: 60 * 60 * 1000,
+  });
+
 
   async function uploadAvatar(file: File) {
     if (!user) return;
@@ -151,10 +180,17 @@ export function ProfileView({ userId }: { userId: string }) {
   if (isLoading) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!profile) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
 
-  const isEdu = profile.verified_email;
+  const isEdu = isOwn
+    ? !!user?.email?.toLowerCase().endsWith(".edu")
+    : profile.verified_email;
   const rating = profile.avg_rating ?? stats.avg;
   const reviewCount = profile.review_count ?? stats.count;
-  const responsePct = profile.response_rate ?? null;
+  const campusAbbrev = abbrevCampus(profile.campus_name);
+  const subtitleParts = [campusAbbrev, profile.year].filter(Boolean);
+  const joinedLabel = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+    : "—";
+
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -187,27 +223,29 @@ export function ProfileView({ userId }: { userId: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-extrabold">{profile.name || "Unnamed"}</h1>
-              <p className="text-sm text-muted-foreground">
-                {profile.campus_name ?? "Student"}{profile.year ? ` · ${profile.year}` : ""}
-              </p>
+              {subtitleParts.length > 0 && (
+                <p className="text-sm text-muted-foreground">{subtitleParts.join(" · ")}</p>
+              )}
               {profile.major && <p className="text-sm text-muted-foreground">{profile.major}</p>}
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold text-orange-700" title="SafeScore reflects your verification, reviews, and response rate.">
-                  <Zap className="h-3 w-3 fill-orange-500 text-orange-500" /> SafeScore {rating > 0 ? rating.toFixed(1) : "—"}
-                </span>
+                {campusRow?.slug && profile.campus_name && (
+                  <Link
+                    to="/sublease/$slug"
+                    params={{ slug: campusRow.slug }}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary-light px-2.5 py-0.5 text-[11px] font-bold text-primary-dark hover:bg-primary/20"
+                  >
+                    🐾 {profile.campus_name}
+                  </Link>
+                )}
                 {isEdu && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
                     <BadgeCheck className="h-3 w-3" /> .edu verified
                   </span>
                 )}
-                {profile.campus_name && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
-                    <MapPin className="h-3 w-3" /> {profile.campus_name}
-                  </span>
-                )}
               </div>
             </div>
           </div>
+
 
           <div className="mt-4">
             {isOwn ? (
@@ -234,12 +272,11 @@ export function ProfileView({ userId }: { userId: string }) {
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
               {!profile.avatar_url && <NudgeChip onClick={() => fileRef.current?.click()}>+ Add a photo</NudgeChip>}
-              {!profile.bio && <NudgeChip onClick={() => setEditOpen(true)}>+ Add your bio</NudgeChip>}
-              {(profile.vibe_tags?.length ?? 0) === 0 && <NudgeChip onClick={() => setEditOpen(true)}>+ Set your vibe</NudgeChip>}
+              {!(profile.bio && profile.bio.trim()) && <NudgeChip onClick={() => setEditOpen(true)}>+ Add your bio</NudgeChip>}
               {!profile.year && <NudgeChip onClick={() => setEditOpen(true)}>+ Add year</NudgeChip>}
               {!profile.major && <NudgeChip onClick={() => setEditOpen(true)}>+ Add major</NudgeChip>}
-              {!profile.instagram_handle && <NudgeChip onClick={() => setEditOpen(true)}>+ Instagram</NudgeChip>}
             </div>
+
           </section>
         )}
 
@@ -271,12 +308,12 @@ export function ProfileView({ userId }: { userId: string }) {
         )}
 
         {/* Trust signals strip */}
-        <section className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <TrustCard icon="✓" label={isEdu ? ".edu Verified" : "Not verified"} sub={isEdu ? "Verified" : "—"} />
-          <TrustCard icon="⭐" label={reviewCount > 0 ? `${rating.toFixed(1)} avg` : "No reviews"} sub="rating" />
-          <TrustCard icon="💬" label={responsePct != null ? `${responsePct}%` : "—"} sub="response" />
-          <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`listing${profile.listing_count === 1 ? "" : "s"} posted`} />
+        <section className="mt-4 grid grid-cols-3 gap-2">
+          <TrustCard icon="✓" label={isEdu ? "✓" : "—"} sub="Verified" />
+          <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`Post${profile.listing_count === 1 ? "" : "s"}`} />
+          <TrustCard icon="📅" label={joinedLabel} sub="Joined" />
         </section>
+
 
         {/* Listings */}
         <section className="mt-6">
