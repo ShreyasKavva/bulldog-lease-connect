@@ -176,7 +176,6 @@ export function ListingCard({
           <MapPin className="h-3 w-3" />{listing.area ?? "Near campus"}
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
-          <SafeScoreBadge score={listing.safe_score} />
           <VerificationBadge tier={(listing as any).verification_tier} pending={(listing as any).pending_review} />
           {listing.furnished && <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-semibold text-primary-dark">Furnished</span>}
           {listing.utilities_included && <span className="rounded-full bg-success-light px-2 py-0.5 text-[10px] font-semibold text-success">Utilities</span>}
