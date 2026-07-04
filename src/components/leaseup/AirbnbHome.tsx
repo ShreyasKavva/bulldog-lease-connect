@@ -199,6 +199,9 @@ export function AirbnbHome({
           <SearchPill value={search} onChange={setSearch} onSearch={runSearch} />
         </div>
 
+        {/* Activity strip — social proof */}
+        <ActivityStrip listings={listings} />
+
         <p className="mx-auto mt-4 max-w-md px-4 text-center text-xs text-muted-foreground">
           Browse verified student subleases — no sign-up required
         </p>
