@@ -51,7 +51,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-border bg-white dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
