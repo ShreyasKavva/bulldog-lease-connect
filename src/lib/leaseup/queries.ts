@@ -36,7 +36,12 @@ async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
 async function attachProfiles(listings: any[]): Promise<Listing[]> {
   const ids = Array.from(new Set(listings.map((l) => l.user_id)));
   if (ids.length === 0) return listings;
-  const { data } = await supabase.from("profiles").select("*").in("id", ids);
+  // Only project safe, public poster columns — RLS additionally scopes rows
+  // to profiles that own an active listing for anonymous viewers.
+  const { data } = await supabase
+    .from("profiles")
+    .select("id,name,email,avatar_emoji,banner_color,verified_email")
+    .in("id", ids);
   const map = new Map<string, Profile>((data ?? []).map((p: any) => [p.id, p]));
   return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));
 }
