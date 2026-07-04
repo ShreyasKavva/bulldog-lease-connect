@@ -20,7 +20,7 @@ import { Heart, BadgeCheck, Bed, MapPin, Eye, Scale, Clock, Flame } from "lucide
 import { PriceLabelBadge } from "./PriceLabelBadge";
 import { VerificationBadge } from "./VerificationBadge";
 import { isNew, timeAgo } from "@/lib/leaseup/constants";
-import { SafeScoreBadge } from "./SafeScoreBadge";
+
 import { SecureDepositBadge, FeaturedBadge } from "./SecureDepositBadge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
