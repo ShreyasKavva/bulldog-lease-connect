@@ -211,7 +211,7 @@ export function MessagesSheet({
       haptic("light");
       qc.invalidateQueries({ queryKey: ["messages", active.id] });
       qc.invalidateQueries({ queryKey: ["conversations", user.id] });
-    } catch (_e) { setInput(text); }
+    } catch (_e) { setInput(text); toast.error("Failed to send message"); }
   }
 
   // Sorted + filtered conversations
