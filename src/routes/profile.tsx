@@ -34,13 +34,13 @@ function ProfilePage() {
             Sign in to manage your listings, see your matches, and build your LeaseUp profile.
           </p>
           <Button
-            onClick={() => navigate({ to: "/auth", search: { mode: "in" } as any })}
+            onClick={() => openSignIn("/profile")}
             className="mt-6 bg-primary hover:bg-primary-dark text-primary-foreground font-bold rounded-full px-6"
           >
             Sign in →
           </Button>
           <div className="mt-6 text-xs text-muted-foreground">
-            New here? <Link to="/auth" search={{ mode: "up" } as any} className="font-semibold text-primary">Create account</Link>
+            New here? <button type="button" onClick={() => openSignIn("/profile")} className="font-semibold text-primary">Create account</button>
           </div>
         </main>
       </div>
