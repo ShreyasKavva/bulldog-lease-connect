@@ -129,14 +129,20 @@ export function ProfileView({ userId }: { userId: string }) {
     if (!profile) return 0;
     const fields = [
       !!profile.avatar_url,
-      !!profile.bio,
+      !!(profile.bio && profile.bio.trim()),
       !!profile.year,
       !!profile.major,
-      (profile.vibe_tags?.length ?? 0) > 0,
-      !!profile.instagram_handle,
     ];
     return Math.round((fields.filter(Boolean).length / fields.length) * 100);
   }, [profile]);
+
+  const { data: campusRow } = useQuery({
+    queryKey: ["campus-row", profile?.campus_id],
+    queryFn: () => fetchCampusSlug(profile?.campus_id),
+    enabled: !!profile?.campus_id,
+    staleTime: 60 * 60 * 1000,
+  });
+
 
   async function uploadAvatar(file: File) {
     if (!user) return;
