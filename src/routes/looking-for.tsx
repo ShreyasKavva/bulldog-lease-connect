@@ -125,12 +125,7 @@ function LookingForPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Nav
-        onPost={openPost}
-        onOpenMessages={() => user && (setActiveConv(null), setMessagesOpen(true))}
-        onOpenProfile={() => user && setProfileId(user.id)}
-        search="" onSearch={() => {}}
-      />
+
 
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-4">
