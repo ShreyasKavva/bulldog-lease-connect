@@ -97,7 +97,7 @@ export async function fetchActivity(limit = 50): Promise<ActivityItem[]> {
   // Reactions — group recent reactions by listing in last 24h
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: rx } = await supabase
-    .from("listing_reactions" as any)
+    .from("listing_reaction_events" as any)
     .select("listing_id, reaction_type, created_at, listing:listings(area)")
     .gte("created_at", since)
     .order("created_at", { ascending: false })
