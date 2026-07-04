@@ -19,7 +19,6 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfilePage() {
-  const navigate = useNavigate();
   const { user, loading } = useSession();
 
   if (loading) return <div className="min-h-screen bg-background" />;
