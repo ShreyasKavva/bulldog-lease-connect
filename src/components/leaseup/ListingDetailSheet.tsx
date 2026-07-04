@@ -117,6 +117,7 @@ export function ListingDetailSheet({
         <div className="relative bg-muted">
           {photos.length > 0 ? (
             <div
+              ref={galleryRef}
               className="flex aspect-[16/10] snap-x snap-mandatory overflow-x-auto scroll-smooth"
               onScroll={(e) => {
                 const el = e.currentTarget;
