@@ -5,14 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { ShieldCheck, MapPin, Sparkles, Plus } from "lucide-react";
+import { MapPin, Sparkles, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
