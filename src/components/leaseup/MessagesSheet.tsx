@@ -490,7 +490,7 @@ export function MessagesSheet({
           reviewedUserId={otherId}
           reviewedName={active.other.name || "this student"}
           listingId={active.listing_id ?? null}
-          reviewerRole={user?.id && active.listing_id ? "subletter" : "subletter"}
+          reviewerRole={active.listing?.user_id === user?.id ? "lister" : "subletter"}
         />
       )}
     </Sheet>
