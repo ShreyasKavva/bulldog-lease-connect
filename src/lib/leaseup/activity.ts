@@ -61,17 +61,28 @@ export async function fetchActivity(limit = 50): Promise<ActivityItem[]> {
 
   // Saves
   const { data: saves } = await supabase
-    .from("saved_listings")
-    .select("listing_id, created_at, listing:listings(area)")
+    .from("saved_listing_events" as any)
+    .select("listing_id, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
-  for (const s of (saves ?? []) as any[]) {
+  const saveRows = (saves ?? []) as Array<{ listing_id: string; created_at: string }>;
+  const saveListingIds = Array.from(new Set(saveRows.map((r) => r.listing_id)));
+  let saveAreas = new Map<string, string | null>();
+  if (saveListingIds.length) {
+    const { data: la } = await supabase
+      .from("listings")
+      .select("id, area")
+      .in("id", saveListingIds);
+    for (const r of (la ?? []) as any[]) saveAreas.set(r.id, r.area ?? null);
+  }
+  for (const s of saveRows) {
+    const a = saveAreas.get(s.listing_id) ?? null;
     items.push({
       id: `sv-${s.listing_id}-${s.created_at}`,
       kind: "listing_saved",
       emoji: "❤️",
-      text: `A student saved a listing in ${area(s.listing?.area)}`,
-      area: s.listing?.area ?? null,
+      text: `A student saved a listing in ${area(a)}`,
+      area: a,
       created_at: s.created_at,
       listing_id: s.listing_id,
     });
