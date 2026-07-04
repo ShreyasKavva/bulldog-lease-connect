@@ -182,7 +182,7 @@ export function ListingCard({
           {listing.pet_friendly && <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-accent-foreground">Pets OK</span>}
         </div>
         <div className="mt-3 flex items-center gap-2 border-t pt-2">
-          <span className="text-xs font-semibold">{listing.profile?.name ?? "Student"}</span>
+          <span className="text-xs font-semibold">{listing.profile?.name || listing.profile?.email?.split("@")[0] || "Student"}</span>
           {listing.profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
           <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(listing.created_at)}</span>
         </div>
