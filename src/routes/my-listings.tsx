@@ -133,7 +133,7 @@ function MyListingsPage() {
         <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to manage your listings</h2>
-          <Link to="/auth" search={{ mode: "in" }} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</Link>
+          <button type="button" onClick={() => openSignIn("/my-listings")} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</button>
         </div>
       </div>
     );
