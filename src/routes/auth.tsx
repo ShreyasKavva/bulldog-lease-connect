@@ -147,7 +147,7 @@ function AuthPage() {
             <span className="text-primary">Lease</span><span>Up</span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Find your next place. Leave your current one.
+            Your campus housing — subleases, roommates, and transfers.
           </p>
           {message && (
             <div className="mt-3 rounded-md bg-primary-light px-3 py-2 text-xs font-semibold text-primary-dark">
