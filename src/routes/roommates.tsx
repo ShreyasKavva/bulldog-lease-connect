@@ -43,7 +43,7 @@ export const Route = createFileRoute("/roommates")({
   head: () => ({
     meta: [
       { title: "Find a roommate — LeaseUp" },
-      { name: "description", content: "Swipe through compatible roommate profiles at your campus and match with students who share your vibe, budget, and schedule." },
+      { name: "description", content: "Swipe through compatible roommate profiles at your campus and find students who share your vibe, budget, and schedule." },
     ],
   }),
   component: RoommatesPage,
@@ -73,7 +73,7 @@ function RoommatesPage() {
         <div className="text-5xl">👥</div>
         <h1 className="mt-4 text-2xl font-extrabold">Find your perfect roommate</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          LeaseUp matches you with compatible students at your campus based on
+          LeaseUp helps you find compatible students at your campus based on
           lifestyle, budget, and vibe.
         </p>
         <button
@@ -81,7 +81,7 @@ function RoommatesPage() {
           onClick={() => openSignIn("/roommates")}
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
         >
-          Sign in to start matching →
+          Sign in to find a roommate →
         </button>
       </div>
     );
@@ -92,7 +92,7 @@ function RoommatesPage() {
       {/* View toggle */}
       <div className="mb-4 flex gap-2">
         <PillTab active={view === "discover"} onClick={() => setView("discover")}>Discover</PillTab>
-        <PillTab active={view === "matches"} onClick={() => setView("matches")}>Matches</PillTab>
+        <PillTab active={view === "matches"} onClick={() => setView("matches")}>Potential roommates</PillTab>
       </div>
 
       {view === "discover"
@@ -324,7 +324,7 @@ function CardBody({ target, score }: { target: RoommateProfileWithUser; score: n
       <div className="mt-auto pt-4">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Compatibility</span>
-          <span className="text-sm font-bold text-orange-500">{score}% match</span>
+          <span className="text-sm font-bold text-orange-500">{score}% compatible</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-background">
           <div className="h-full rounded-full bg-orange-500 transition-all" style={{ width: `${score}%` }} />
@@ -443,7 +443,7 @@ function MatchOverlay({
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/60 px-6">
       <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl dark:bg-surface">
         <div className="text-4xl">🎉</div>
-        <h2 className="mt-2 text-2xl font-extrabold">It's a match!</h2>
+        <h2 className="mt-2 text-2xl font-extrabold">You're both in!</h2>
         <div className="mt-6 flex items-center justify-center gap-4">
           <div
             className="grid h-16 w-16 place-items-center rounded-full text-2xl ring-4 ring-white"
@@ -544,9 +544,9 @@ function MatchesView({ userId }: { userId: string }) {
     return (
       <div className="mx-auto mt-8 max-w-sm rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-surface">
         <Users className="mx-auto h-8 w-8 text-muted-foreground" />
-        <p className="mt-3 text-sm font-semibold">No matches yet — keep swiping!</p>
+        <p className="mt-3 text-sm font-semibold">No connections yet — keep swiping!</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Your matches will appear here when it's mutual.
+          Your potential roommates will appear here once it's mutual.
         </p>
       </div>
     );
@@ -555,7 +555,7 @@ function MatchesView({ userId }: { userId: string }) {
   return (
     <div className="space-y-3">
       <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        {matches.length} {matches.length === 1 ? "match" : "matches"}
+        {matches.length} {matches.length === 1 ? "potential roommate" : "potential roommates"}
       </div>
       {matches.map(m => (
         <MatchRow
@@ -597,7 +597,7 @@ function MatchRow({
             <p className="mt-1 line-clamp-1 text-sm italic text-foreground/80">"{m.about_me}"</p>
           )}
           <div className="mt-2 flex items-center gap-2 text-xs">
-            <span className="font-bold text-orange-500">{score}% match</span>
+            <span className="font-bold text-orange-500">{score}% compatible</span>
           </div>
         </div>
         <button

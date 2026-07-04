@@ -14,7 +14,7 @@ import {
   getOrCreateConversation,
 } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
@@ -125,12 +125,7 @@ function LookingForPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Nav
-        onPost={openPost}
-        onOpenMessages={() => user && (setActiveConv(null), setMessagesOpen(true))}
-        onOpenProfile={() => user && setProfileId(user.id)}
-        search="" onSearch={() => {}}
-      />
+
 
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-4">

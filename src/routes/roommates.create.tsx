@@ -17,7 +17,7 @@ export const Route = createFileRoute("/roommates/create")({
   head: () => ({
     meta: [
       { title: "Create your roommate profile — LeaseUp" },
-      { name: "description", content: "Tell potential roommates about yourself and find a compatible match at your campus." },
+      { name: "description", content: "Tell potential roommates about yourself and find compatible roommates at your campus." },
     ],
   }),
   component: CreateRoommatePage,
@@ -213,7 +213,7 @@ function CreateRoommatePage() {
           <section className="space-y-6 lu-spring">
             <div>
               <h2 className="text-xl font-extrabold">What kind of roommate are you?</h2>
-              <p className="text-sm text-muted-foreground">Be honest — it helps you match with compatible people.</p>
+              <p className="text-sm text-muted-foreground">Be honest — it helps you find compatible roommates.</p>
             </div>
 
             <SliderRow label="Sleep schedule" left="🌙 Night Owl" right="☀️ Early Bird" value={earlyBird} onChange={setEarlyBird} />
