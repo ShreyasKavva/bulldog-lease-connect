@@ -164,7 +164,15 @@ export function ListingDetailSheet({
         {photos.length > 1 && (
           <div className="flex gap-2 overflow-x-auto p-3">
             {photos.map((p, i) => (
-              <button key={i} onClick={() => setActivePhoto(i)} className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}>
+              <button
+                key={i}
+                onClick={() => {
+                  setActivePhoto(i);
+                  const el = galleryRef.current;
+                  if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+                }}
+                className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}
+              >
                 <img src={p} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
