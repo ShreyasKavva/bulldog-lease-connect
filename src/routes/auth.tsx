@@ -24,6 +24,7 @@ const search = z.object({
   mode: z.enum(["in", "up"]).catch("in"),
   message: z.string().optional().catch(undefined),
   next: z.string().optional().catch(undefined),
+  redirect: z.string().optional().catch(undefined),
 });
 
 function safeNext(next: string | undefined): string {
