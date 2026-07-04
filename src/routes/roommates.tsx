@@ -73,7 +73,7 @@ function RoommatesPage() {
         <div className="text-5xl">👥</div>
         <h1 className="mt-4 text-2xl font-extrabold">Find your perfect roommate</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          LeaseUp matches you with compatible students at your campus based on
+          LeaseUp helps you find compatible students at your campus based on
           lifestyle, budget, and vibe.
         </p>
         <button
@@ -81,7 +81,7 @@ function RoommatesPage() {
           onClick={() => openSignIn("/roommates")}
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
         >
-          Sign in to start matching →
+          Sign in to find a roommate →
         </button>
       </div>
     );
