@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CampusPicker } from "@/components/leaseup/CampusPicker";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export function Nav({
   onPost, onOpenMessages, onOpenProfile, search, onSearch,
