@@ -44,14 +44,14 @@ function PostPage() {
         <p className="mt-2 text-base text-gray-500">
           Sign in with your .edu email to post your listing for free.
         </p>
-        <Link
-          to="/auth"
-          search={{ mode: "in", next: "/post" }}
+        <button
+          type="button"
+          onClick={() => openSignIn("/post")}
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700"
         >
           Sign in to post
           <ArrowRight className="h-4 w-4" />
-        </Link>
+        </button>
         <p className="mt-4 text-xs text-gray-400">
           Free — always. Takes about 2 minutes.
         </p>
