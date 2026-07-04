@@ -2307,6 +2307,90 @@ export type Database = {
           },
         ]
       }
+      listing_reaction_counts: {
+        Row: {
+          count: number | null
+          listing_id: string | null
+          reaction_type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_reaction_events: {
+        Row: {
+          created_at: string | null
+          listing_id: string | null
+          reaction_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          listing_id?: string | null
+          reaction_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          listing_id?: string | null
+          reaction_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_reactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles_public: {
         Row: {
           avatar_emoji: string | null
@@ -2368,6 +2452,86 @@ export type Database = {
             columns: ["campus_id"]
             isOneToOne: false
             referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_listing_counts: {
+        Row: {
+          listing_id: string | null
+          save_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_listing_events: {
+        Row: {
+          created_at: string | null
+          listing_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          listing_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          listing_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
             referencedColumns: ["id"]
           },
         ]
