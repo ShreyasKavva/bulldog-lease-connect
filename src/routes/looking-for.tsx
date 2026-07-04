@@ -14,7 +14,7 @@ import {
   getOrCreateConversation,
 } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
