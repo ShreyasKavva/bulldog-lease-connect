@@ -1,6 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock } from "lucide-react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -42,6 +42,7 @@ export function ListingDetailSheet({
   const [saveCount, setSaveCount] = useState<number>(0);
   const [msgCount, setMsgCount] = useState<number>(0);
   const [depositOpen, setDepositOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { user } = useSession();
 
   useEffect(() => {
@@ -130,7 +131,8 @@ export function ListingDetailSheet({
                   key={i}
                   src={p}
                   alt={`${listing.title} — photo ${i + 1}`}
-                  className="h-full w-full flex-shrink-0 snap-start object-cover"
+                  onClick={() => setLightboxIndex(i)}
+                  className="h-full w-full flex-shrink-0 cursor-zoom-in snap-start object-cover"
                 />
               ))}
             </div>
@@ -401,6 +403,49 @@ export function ListingDetailSheet({
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
       <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />
+      {lightboxIndex !== null && photos.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            aria-label="Close"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+          {photos.length > 1 && (
+            <>
+              <button
+                aria-label="Previous"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length); }}
+                className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                aria-label="Next"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % photos.length); }}
+                className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+          <img
+            src={photos[lightboxIndex]}
+            alt={`${listing.title} — photo ${lightboxIndex + 1}`}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+          />
+          {photos.length > 1 && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+              {lightboxIndex + 1} / {photos.length}
+            </div>
+          )}
+        </div>
+      )}
     </Sheet>
   );
 }
