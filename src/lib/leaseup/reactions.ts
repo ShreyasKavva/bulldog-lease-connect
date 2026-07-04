@@ -25,18 +25,26 @@ export function useListingReactions(listingId: string | null | undefined) {
     queryKey: ["listing-reactions", listingId],
     enabled: !!listingId,
     queryFn: async (): Promise<ReactionSummary> => {
-      const { data, error } = await supabase
-        .from("listing_reactions" as any)
-        .select("reaction_type, user_id")
-        .eq("listing_id", listingId!);
-      if (error) throw error;
       const counts: Record<ReactionType, number> = {
         fire: 0, love: 0, wow: 0, pricey: 0, suspicious: 0,
       };
+      const { data: countRows, error: countErr } = await supabase
+        .from("listing_reaction_counts" as any)
+        .select("reaction_type, count")
+        .eq("listing_id", listingId!);
+      if (countErr) throw countErr;
+      for (const row of ((countRows ?? []) as unknown) as Array<{ reaction_type: ReactionType; count: number }>) {
+        counts[row.reaction_type] = row.count ?? 0;
+      }
       let mine: ReactionType | null = null;
-      for (const row of ((data ?? []) as unknown) as Array<{ reaction_type: ReactionType; user_id: string }>) {
-        counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
-        if (user && row.user_id === user.id) mine = row.reaction_type;
+      if (user) {
+        const { data: mineRow } = await supabase
+          .from("listing_reactions" as any)
+          .select("reaction_type")
+          .eq("listing_id", listingId!)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        mine = ((mineRow as any)?.reaction_type as ReactionType | undefined) ?? null;
       }
       return { counts, mine };
     },
