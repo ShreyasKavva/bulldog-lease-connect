@@ -13,7 +13,7 @@ import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
 import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
-import { TopBar } from "@/components/leaseup/TopBar";
+
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell } from "lucide-react";
 import { toast } from "sonner";
@@ -176,9 +176,7 @@ function Browse() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
-      <TopBar onOpenMessages={() => { setActiveConv(null); setMessagesOpen(true); }} />
-
-      <div className="pt-14">
+      <div>
         {/* Browse sub-tabs */}
         <div className="sticky top-14 z-30 border-b bg-surface">
           <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 text-sm font-bold">

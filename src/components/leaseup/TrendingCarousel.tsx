@@ -1,6 +1,6 @@
 import { Flame } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
-import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
+
 
 export function TrendingCarousel({
   listings,
@@ -37,7 +37,7 @@ export function TrendingCarousel({
             <div className="space-y-1 p-3">
               <div className="flex items-center justify-between">
                 <div className="text-base font-extrabold">${l.price}<span className="text-xs font-semibold text-muted-foreground">/mo</span></div>
-                {typeof l.safe_score === "number" && <SafeScoreBadge score={l.safe_score} size="sm" />}
+                
               </div>
               <div className="line-clamp-1 text-sm font-semibold">{l.title}</div>
               <div className="text-[11px] text-muted-foreground">{l.beds} bd · {l.baths} ba{l.area ? ` · ${l.area}` : ""}</div>
