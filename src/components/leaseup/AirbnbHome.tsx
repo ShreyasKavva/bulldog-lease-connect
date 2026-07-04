@@ -343,3 +343,19 @@ export function AirbnbHome({
     </div>
   );
 }
+
+function ActivityStrip({ listings }: { listings: Listing[] }) {
+  const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recent = listings.filter((l) => new Date(l.created_at).getTime() >= week).length;
+  const active = new Set(listings.map((l) => l.campus_id)).size;
+  if (!recent && !active) return null;
+  return (
+    <div className="mx-auto mt-4 max-w-3xl px-4 sm:px-6">
+      <div className="mx-auto inline-flex w-full items-center justify-center gap-3 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-primary/10 dark:text-primary">
+        {recent > 0 && <span>🔥 {recent} sublease{recent === 1 ? "" : "s"} listed this week</span>}
+        {recent > 0 && active > 0 && <span className="opacity-40">·</span>}
+        {active > 0 && <span>🏫 {active} campus{active === 1 ? "" : "es"} active</span>}
+      </div>
+    </div>
+  );
+}
