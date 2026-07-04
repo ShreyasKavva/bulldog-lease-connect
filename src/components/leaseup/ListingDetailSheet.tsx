@@ -131,7 +131,8 @@ export function ListingDetailSheet({
                   key={i}
                   src={p}
                   alt={`${listing.title} — photo ${i + 1}`}
-                  className="h-full w-full flex-shrink-0 snap-start object-cover"
+                  onClick={() => setLightboxIndex(i)}
+                  className="h-full w-full flex-shrink-0 cursor-zoom-in snap-start object-cover"
                 />
               ))}
             </div>
