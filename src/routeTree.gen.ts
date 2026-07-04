@@ -19,6 +19,7 @@ import { Route as PostRouteImport } from './routes/post'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
@@ -34,6 +35,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
+import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -92,6 +94,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const MyListingsRoute = MyListingsRouteImport.update({
   id: '/my-listings',
   path: '/my-listings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketRoute = MarketRouteImport.update({
@@ -169,6 +176,11 @@ const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
   path: '/$userId',
   getParentRoute: () => ProfileRoute,
 } as any)
+const MessagesListingIdRoute = MessagesListingIdRouteImport.update({
+  id: '/$listingId',
+  path: '/$listingId',
+  getParentRoute: () => MessagesRoute,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -232,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -243,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -268,6 +282,7 @@ export interface FileRoutesByTo {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -279,6 +294,7 @@ export interface FileRoutesByTo {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -305,6 +321,7 @@ export interface FileRoutesById {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -316,6 +333,7 @@ export interface FileRoutesById {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -343,6 +361,7 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
+    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -354,6 +373,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
@@ -379,6 +399,7 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
+    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -390,6 +411,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
@@ -415,6 +437,7 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
+    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -426,6 +449,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
     | '/sublease/$slug'
@@ -452,6 +476,7 @@ export interface RootRouteChildren {
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
   LookingForRoute: typeof LookingForRoute
   MarketRoute: typeof MarketRoute
+  MessagesRoute: typeof MessagesRouteWithChildren
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -543,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/my-listings'
       fullPath: '/my-listings'
       preLoaderRoute: typeof MyListingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/market': {
@@ -650,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileUserIdRouteImport
       parentRoute: typeof ProfileRoute
     }
+    '/messages/$listingId': {
+      id: '/messages/$listingId'
+      path: '/$listingId'
+      fullPath: '/messages/$listingId'
+      preLoaderRoute: typeof MessagesListingIdRouteImport
+      parentRoute: typeof MessagesRoute
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -716,6 +755,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MessagesRouteChildren {
+  MessagesListingIdRoute: typeof MessagesListingIdRoute
+}
+
+const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesListingIdRoute: MessagesListingIdRoute,
+}
+
+const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
+  MessagesRouteChildren,
+)
+
 interface MyListingsRouteChildren {
   MyListingsListingIdAnalyticsRoute: typeof MyListingsListingIdAnalyticsRoute
 }
@@ -764,6 +815,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaseAnalysisRoute: LeaseAnalysisRoute,
   LookingForRoute: LookingForRoute,
   MarketRoute: MarketRoute,
+  MessagesRoute: MessagesRouteWithChildren,
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
