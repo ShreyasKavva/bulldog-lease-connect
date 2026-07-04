@@ -42,23 +42,23 @@
 
 :root {
   --radius: 0.75rem;
-  /* LeaseUp brand — light */
-  --background: oklch(0.965 0.003 264);          /* #F0F2F5 */
-  --foreground: oklch(0.205 0.01 264);           /* #1C1E21 */
-  --surface: oklch(1 0 0);                        /* #FFFFFF */
-  --surface-2: oklch(0.985 0.003 264);            /* #F8F9FA */
+  /* LeaseUp brand — Airbnb-style light */
+  --background: oklch(1 0 0);                     /* #FFFFFF */
+  --foreground: oklch(0.205 0.03 264);            /* #111827 gray-900 */
+  --surface: oklch(1 0 0);                        /* #FFFFFF cards */
+  --surface-2: oklch(0.975 0.002 264);            /* #F7F7F7 off-white */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0.01 264);
+  --card-foreground: oklch(0.205 0.03 264);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0.01 264);
+  --popover-foreground: oklch(0.205 0.03 264);
   --primary: oklch(0.557 0.235 261);              /* #2563EB */
   --primary-foreground: oklch(1 0 0);
   --primary-dark: oklch(0.49 0.22 263);           /* #1D4ED8 */
   --primary-light: oklch(0.97 0.025 261);         /* #EFF6FF */
-  --secondary: oklch(0.965 0.003 264);
-  --secondary-foreground: oklch(0.205 0.01 264);
-  --muted: oklch(0.965 0.003 264);
-  --muted-foreground: oklch(0.5 0.01 264);        /* #65676B */
+  --secondary: oklch(0.975 0.002 264);            /* #F7F7F7 */
+  --secondary-foreground: oklch(0.205 0.03 264);
+  --muted: oklch(0.975 0.002 264);                /* #F7F7F7 */
+  --muted-foreground: oklch(0.556 0.02 264);      /* #6B7280 gray-500 */
   --accent: oklch(0.97 0.025 261);
   --accent-foreground: oklch(0.49 0.22 263);
   --destructive: oklch(0.6 0.22 25);
@@ -66,8 +66,8 @@
   --success: oklch(0.62 0.19 145);                /* #16A34A */
   --success-foreground: oklch(1 0 0);
   --success-light: oklch(0.97 0.04 145);          /* #F0FDF4 */
-  --border: oklch(0.92 0.005 264);                /* #E4E6EB */
-  --input: oklch(0.92 0.005 264);
+  --border: oklch(0.922 0.005 264);               /* #E5E7EB gray-200 */
+  --input: oklch(0.922 0.005 264);
   --ring: oklch(0.557 0.235 261);
 }
 

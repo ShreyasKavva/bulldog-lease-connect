@@ -218,8 +218,8 @@ export function AirbnbHome({
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition",
                   active
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border bg-white text-foreground hover:bg-background dark:bg-surface",
+                    ? "border-gray-900 bg-gray-900 text-white shadow-sm"
+                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
                 )}
               >
                 <Icon className="h-4 w-4" />

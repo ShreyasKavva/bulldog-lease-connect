@@ -23,9 +23,9 @@ export function applyTheme(pref: ThemePref) {
 }
 
 export function getStoredTheme(): ThemePref {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
   const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === "light" || v === "dark" || v === "system" ? v : "system";
+  return v === "light" || v === "dark" || v === "system" ? v : "light";
 }
 
 export function setStoredTheme(pref: ThemePref) {
