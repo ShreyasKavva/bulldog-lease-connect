@@ -180,10 +180,17 @@ export function ProfileView({ userId }: { userId: string }) {
   if (isLoading) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!profile) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
 
-  const isEdu = profile.verified_email;
+  const isEdu = isOwn
+    ? !!user?.email?.toLowerCase().endsWith(".edu")
+    : profile.verified_email;
   const rating = profile.avg_rating ?? stats.avg;
   const reviewCount = profile.review_count ?? stats.count;
-  const responsePct = profile.response_rate ?? null;
+  const campusAbbrev = abbrevCampus(profile.campus_name);
+  const subtitleParts = [campusAbbrev, profile.year].filter(Boolean);
+  const joinedLabel = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+    : "—";
+
 
   return (
     <div className="min-h-screen bg-background pb-24">
