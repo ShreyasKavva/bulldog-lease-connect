@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { X, Heart, BadgeCheck, MessageCircle, Users, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/roommates")({
   head: () => ({
