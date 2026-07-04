@@ -35,6 +35,7 @@ import { StatCard } from "@/components/leaseup/analytics/Charts";
 import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
 import { TourAvailabilityDialog } from "@/components/leaseup/TourAvailabilityDialog";
 import { StaleListingsNudge } from "@/components/leaseup/StaleListingsNudge";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
