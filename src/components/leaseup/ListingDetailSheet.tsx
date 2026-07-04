@@ -36,6 +36,7 @@ export function ListingDetailSheet({
   isSaved?: boolean;
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
+  const galleryRef = useRef<HTMLDivElement | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [views, setViews] = useState<number | null>(null);
   const [saveCount, setSaveCount] = useState<number>(0);
