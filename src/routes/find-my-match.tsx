@@ -357,7 +357,7 @@ function MatchCard({ match }: { match: { score: number; why: string; listing: Li
   const photo = l.photo_urls?.[0];
 
   return (
-    <Link to="/listings/$listingId" params={{ listingId: l.id }} className="group relative block w-full overflow-hidden rounded-2xl border bg-surface text-left shadow-card-sm transition-all hover:shadow-card-md hover:-translate-y-0.5">
+    <Link to="/" search={{ listing: l.id } as any} className="group relative block w-full overflow-hidden rounded-2xl border bg-surface text-left shadow-card-sm transition-all hover:shadow-card-md hover:-translate-y-0.5">
       <div className="flex gap-3 p-3">
         <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
           {photo ? (
