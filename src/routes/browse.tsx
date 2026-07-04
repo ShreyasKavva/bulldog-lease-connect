@@ -117,8 +117,12 @@ function Browse() {
   }, [listings]);
 
   const filtered = useMemo(() => {
+    const q = search.toLowerCase();
     let r = listings.filter((l) =>
-      (!search || l.title.toLowerCase().includes(search.toLowerCase()) || (l.area ?? "").toLowerCase().includes(search.toLowerCase())) &&
+      (!search ||
+        l.title.toLowerCase().includes(q) ||
+        (l.area ?? "").toLowerCase().includes(q) ||
+        (l.description ?? "").toLowerCase().includes(q)) &&
       l.price <= maxPrice &&
       (!area || l.area === area) &&
       (!furnishedOnly || l.furnished)

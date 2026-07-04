@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -36,6 +36,7 @@ export function ListingDetailSheet({
   isSaved?: boolean;
 }) {
   const [activePhoto, setActivePhoto] = useState(0);
+  const galleryRef = useRef<HTMLDivElement | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [views, setViews] = useState<number | null>(null);
   const [saveCount, setSaveCount] = useState<number>(0);
@@ -116,6 +117,7 @@ export function ListingDetailSheet({
         <div className="relative bg-muted">
           {photos.length > 0 ? (
             <div
+              ref={galleryRef}
               className="flex aspect-[16/10] snap-x snap-mandatory overflow-x-auto scroll-smooth"
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -162,7 +164,15 @@ export function ListingDetailSheet({
         {photos.length > 1 && (
           <div className="flex gap-2 overflow-x-auto p-3">
             {photos.map((p, i) => (
-              <button key={i} onClick={() => setActivePhoto(i)} className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}>
+              <button
+                key={i}
+                onClick={() => {
+                  setActivePhoto(i);
+                  const el = galleryRef.current;
+                  if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+                }}
+                className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}
+              >
                 <img src={p} alt="" className="h-full w-full object-cover" />
               </button>
             ))}

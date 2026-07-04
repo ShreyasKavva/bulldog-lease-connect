@@ -109,6 +109,7 @@ export type Conversation = {
     is_active?: boolean;
     status?: string | null;
     photo_url?: string | null;
+    user_id?: string | null;
   } | null;
 };
 

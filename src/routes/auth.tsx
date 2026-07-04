@@ -24,6 +24,7 @@ const search = z.object({
   mode: z.enum(["in", "up"]).catch("in"),
   message: z.string().optional().catch(undefined),
   next: z.string().optional().catch(undefined),
+  redirect: z.string().optional().catch(undefined),
 });
 
 function safeNext(next: string | undefined): string {
@@ -48,12 +49,12 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { message, next } = Route.useSearch();
+  const { message, next, redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<"in" | "up" | "google" | null>(null);
-  const dest = safeNext(next);
+  const dest = safeNext(next ?? redirect);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

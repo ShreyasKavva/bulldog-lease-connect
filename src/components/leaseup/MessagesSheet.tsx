@@ -211,7 +211,7 @@ export function MessagesSheet({
       haptic("light");
       qc.invalidateQueries({ queryKey: ["messages", active.id] });
       qc.invalidateQueries({ queryKey: ["conversations", user.id] });
-    } catch (_e) { setInput(text); }
+    } catch (_e) { setInput(text); toast.error("Failed to send message"); }
   }
 
   // Sorted + filtered conversations
@@ -358,7 +358,11 @@ export function MessagesSheet({
                 </div>
                 {active.listing.is_active !== false && (
                   <button
-                    onClick={() => { onOpenChange(false); window.location.href = `/listing/${active.listing!.id}`; }}
+                    onClick={() => {
+                      const id = active.listing!.id;
+                      onOpenChange(false);
+                      window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: id }));
+                    }}
                     className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground"
                   >
                     View
@@ -486,7 +490,7 @@ export function MessagesSheet({
           reviewedUserId={otherId}
           reviewedName={active.other.name || "this student"}
           listingId={active.listing_id ?? null}
-          reviewerRole={user?.id && active.listing_id ? "subletter" : "subletter"}
+          reviewerRole={active.listing?.user_id === user?.id ? "poster" : "subletter"}
         />
       )}
     </Sheet>
