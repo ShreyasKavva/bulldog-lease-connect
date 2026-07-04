@@ -223,27 +223,29 @@ export function ProfileView({ userId }: { userId: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-extrabold">{profile.name || "Unnamed"}</h1>
-              <p className="text-sm text-muted-foreground">
-                {profile.campus_name ?? "Student"}{profile.year ? ` · ${profile.year}` : ""}
-              </p>
+              {subtitleParts.length > 0 && (
+                <p className="text-sm text-muted-foreground">{subtitleParts.join(" · ")}</p>
+              )}
               {profile.major && <p className="text-sm text-muted-foreground">{profile.major}</p>}
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold text-orange-700" title="SafeScore reflects your verification, reviews, and response rate.">
-                  <Zap className="h-3 w-3 fill-orange-500 text-orange-500" /> SafeScore {rating > 0 ? rating.toFixed(1) : "—"}
-                </span>
+                {campusRow?.slug && profile.campus_name && (
+                  <Link
+                    to="/sublease/$slug"
+                    params={{ slug: campusRow.slug }}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary-light px-2.5 py-0.5 text-[11px] font-bold text-primary-dark hover:bg-primary/20"
+                  >
+                    🐾 {profile.campus_name}
+                  </Link>
+                )}
                 {isEdu && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
                     <BadgeCheck className="h-3 w-3" /> .edu verified
                   </span>
                 )}
-                {profile.campus_name && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
-                    <MapPin className="h-3 w-3" /> {profile.campus_name}
-                  </span>
-                )}
               </div>
             </div>
           </div>
+
 
           <div className="mt-4">
             {isOwn ? (
