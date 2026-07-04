@@ -11,6 +11,7 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({ meta: [{ title: "Saved listings — LeaseUp" }] }),
