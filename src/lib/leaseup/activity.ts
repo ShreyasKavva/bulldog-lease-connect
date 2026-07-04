@@ -109,17 +109,24 @@ export async function fetchActivity(limit = 50): Promise<ActivityItem[]> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: rx } = await supabase
     .from("listing_reaction_events" as any)
-    .select("listing_id, reaction_type, created_at, listing:listings(area)")
+    .select("listing_id, reaction_type, created_at")
     .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(200);
   if (rx && Array.isArray(rx)) {
+    const rxRows = (rx as unknown) as Array<{ listing_id: string; reaction_type: string; created_at: string }>;
+    const rxIds = Array.from(new Set(rxRows.map((r) => r.listing_id)));
+    const rxAreas = new Map<string, string | null>();
+    if (rxIds.length) {
+      const { data: la } = await supabase.from("listings").select("id, area").in("id", rxIds);
+      for (const r of (la ?? []) as any[]) rxAreas.set(r.id, r.area ?? null);
+    }
     const groups = new Map<string, { count: number; latest: string; area: string | null; listingId: string }>();
-    for (const r of rx as any[]) {
-      const key = r.listing_id as string;
+    for (const r of rxRows) {
+      const key = r.listing_id;
       const g = groups.get(key);
       if (g) { g.count += 1; if (r.created_at > g.latest) g.latest = r.created_at; }
-      else groups.set(key, { count: 1, latest: r.created_at, area: r.listing?.area ?? null, listingId: key });
+      else groups.set(key, { count: 1, latest: r.created_at, area: rxAreas.get(key) ?? null, listingId: key });
     }
     for (const [, g] of groups) {
       if (g.count < 1) continue;
