@@ -43,6 +43,13 @@ const INITIAL_QUIZ: Quiz = {
 };
 
 const FEATURED_CAMPUS_LABELS = ["UGA", "UF", "Alabama", "Auburn", "GT"];
+const FEATURED_CAMPUS_ALIASES: Record<string, string[]> = {
+  UGA: ["uga", "university of georgia"],
+  UF: ["uf", "university of florida", "florida"],
+  Alabama: ["alabama", "university of alabama"],
+  Auburn: ["auburn", "auburn university"],
+  GT: ["gt", "georgia tech", "georgia institute of technology"],
+};
 const BUDGET_OPTIONS: BudgetOption[] = [
   { label: "Under $500", min: 0, max: 499 },
   { label: "$500–$650", min: 500, max: 650 },
@@ -167,8 +174,14 @@ function StepTitle({ children, sub }: { children: React.ReactNode; sub?: string 
 function CampusStep({ campuses, loading, value, onPick }: { campuses: Campus[]; loading: boolean; value: string; onPick: (campus: Campus) => void }) {
   const [search, setSearch] = useState("");
   const featured = useMemo(() => {
-    const byName = new Map(campuses.map((campus) => [campus.short_name?.toLowerCase(), campus]));
-    return FEATURED_CAMPUS_LABELS.map((label) => byName.get(label.toLowerCase())).filter(Boolean) as Campus[];
+    return FEATURED_CAMPUS_LABELS.map((label) => {
+      const aliases = FEATURED_CAMPUS_ALIASES[label].map((alias) => alias.toLowerCase());
+      const campus = campuses.find((candidate) => {
+        const haystack = [candidate.short_name, candidate.name, candidate.slug].filter(Boolean).join(" ").toLowerCase();
+        return aliases.some((alias) => haystack.includes(alias));
+      });
+      return campus ? { ...campus, short_name: label } : null;
+    }).filter(Boolean) as Campus[];
   }, [campuses]);
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
