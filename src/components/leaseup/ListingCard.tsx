@@ -114,11 +114,11 @@ export function ListingCard({
         {/* Top-left tags */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {listing.is_featured && <FeaturedBadge />}
-          {justPosted ? (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">New</span>
-          ) : isNew(listing.created_at) && (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">New</span>
-          )}
+          {justPosted || isNew(listing.created_at) ? (
+            <span className="rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">✨ New</span>
+          ) : (listing.view_count ?? 0) >= 20 ? (
+            <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">🔥 Popular</span>
+          ) : null}
           <span className={cn(
             "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow",
             listing.type === "transfer" ? "bg-success" : "bg-foreground/80",

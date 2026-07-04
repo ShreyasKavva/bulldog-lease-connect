@@ -149,19 +149,40 @@ export function ListingDetailSheet({
             </div>
           )}
 
-          {/* Save heart — top-right overlay */}
-          {onSave && (
+          {/* Save + Share — top-right overlay */}
+          <div className="absolute right-3 top-3 flex flex-col gap-2">
+            {onSave && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); haptic("light"); onSave(listing); }}
+                aria-label={isSaved ? "Unsave listing" : "Save listing"}
+                className="grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+              >
+                <HeartIcon
+                  className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
+                />
+              </button>
+            )}
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); haptic("light"); onSave(listing); }}
-              aria-label={isSaved ? "Unsave listing" : "Save listing"}
-              className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+              onClick={async (e) => {
+                e.stopPropagation();
+                const url = typeof window !== "undefined" ? window.location.href : "";
+                try {
+                  if (typeof navigator !== "undefined" && (navigator as any).share) {
+                    await (navigator as any).share({ title: listing.title, url });
+                  } else if (navigator?.clipboard) {
+                    await navigator.clipboard.writeText(url);
+                    toast.success("Link copied! ✓");
+                  }
+                } catch { /* user cancelled */ }
+              }}
+              aria-label="Share listing"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
             >
-              <HeartIcon
-                className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
-              />
+              <Share2 className="h-4 w-4 text-foreground/70" />
             </button>
-          )}
+          </div>
         </div>
         {photos.length > 1 && (
           <div className="flex gap-2 overflow-x-auto p-3">
