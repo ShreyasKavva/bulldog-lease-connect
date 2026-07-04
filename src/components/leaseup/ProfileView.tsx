@@ -272,12 +272,11 @@ export function ProfileView({ userId }: { userId: string }) {
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
               {!profile.avatar_url && <NudgeChip onClick={() => fileRef.current?.click()}>+ Add a photo</NudgeChip>}
-              {!profile.bio && <NudgeChip onClick={() => setEditOpen(true)}>+ Add your bio</NudgeChip>}
-              {(profile.vibe_tags?.length ?? 0) === 0 && <NudgeChip onClick={() => setEditOpen(true)}>+ Set your vibe</NudgeChip>}
+              {!(profile.bio && profile.bio.trim()) && <NudgeChip onClick={() => setEditOpen(true)}>+ Add your bio</NudgeChip>}
               {!profile.year && <NudgeChip onClick={() => setEditOpen(true)}>+ Add year</NudgeChip>}
               {!profile.major && <NudgeChip onClick={() => setEditOpen(true)}>+ Add major</NudgeChip>}
-              {!profile.instagram_handle && <NudgeChip onClick={() => setEditOpen(true)}>+ Instagram</NudgeChip>}
             </div>
+
           </section>
         )}
 
