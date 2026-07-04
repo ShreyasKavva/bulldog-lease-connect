@@ -1,66 +1,190 @@
 /**
- * Global minimal top bar — LeaseUp wordmark · Post · (Sign in | Bell + Avatar).
+ * Airbnb-style top header.
  *
- * On mobile only the wordmark and Post button show; bell/avatar are reached
- * via the Profile tab in the bottom nav. Legacy props (onOpenMessages,
- * transparent) are accepted-but-ignored for backward compatibility.
+ * Desktop (md+): wordmark · compact search pill (non-home only) ·
+ *   Subleases · Roommates · Post a sublease · Sign In / Avatar-menu.
+ * Mobile: wordmark + Post pill. Auth and profile live in the bottom nav.
+ *
+ * "Sign In" opens the <SignInModal/> — it does NOT navigate to /auth.
+ * Any component can trigger the modal via `openSignIn(next?)`.
  */
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, MapPin, Calendar, Users, Search } from "lucide-react";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
+import { supabase } from "@/integrations/supabase/client";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
+import { SignInModal } from "@/components/leaseup/SignInModal";
 
-type LegacyProps = {
-  onOpenMessages?: () => void;
-  transparent?: boolean;
-};
+type LegacyProps = { onOpenMessages?: () => void; transparent?: boolean };
 
 export function TopBar(_legacy: LegacyProps = {}) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const isHome = path === "/";
+
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [signInNext, setSignInNext] = useState<string | undefined>(undefined);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Global event bus so "Sign in to X" prompts from anywhere open this modal.
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const detail = (e as CustomEvent<{ next?: string }>).detail;
+      setSignInNext(detail?.next);
+      setSignInOpen(true);
+    }
+    window.addEventListener("lu:open-signin", onOpen as EventListener);
+    return () => window.removeEventListener("lu:open-signin", onOpen as EventListener);
+  }, []);
+
+  // Close avatar menu on outside click.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDown(e: MouseEvent) {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [menuOpen]);
 
   function handlePost(e: React.MouseEvent) {
     e.preventDefault();
     if (user) navigate({ to: "/", search: { post: "1" } as any });
-    else navigate({ to: "/auth", search: { mode: "up", next: "/?post=1" } });
+    else { setSignInNext("/?post=1"); setSignInOpen(true); }
   }
 
+  function openSignIn() {
+    setSignInNext(undefined);
+    setSignInOpen(true);
+  }
+
+  async function signOut() {
+    setMenuOpen(false);
+    await supabase.auth.signOut();
+    navigate({ to: "/" });
+  }
+
+  const avatarBg = profile?.banner_color ?? "#2563EB";
+  const avatarChar = profile?.avatar_emoji ?? "🙂";
+
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-gray-100 bg-white px-4 dark:border-border dark:bg-surface">
-      <Link to="/" className="text-xl font-bold text-primary">
-        LeaseUp
-      </Link>
+    <>
+      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-sm dark:border-border dark:bg-surface/95">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+          <Link to="/" className="text-xl font-bold text-primary shrink-0">LeaseUp</Link>
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handlePost}
-          className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-dark"
-        >
-          Post
-          <ArrowRight className="h-3.5 w-3.5" />
-        </button>
-
-        {user ? (
-          <div className="hidden items-center gap-1.5 sm:flex">
-            <NotificationsBell onOpenMessages={() => navigate({ to: "/messages" as any }).catch(() => {})} />
+          {/* Center: compact search pill on non-home routes (desktop only) */}
+          {!isHome && (
             <Link
-              to="/profile"
-              className="grid h-9 w-9 place-items-center rounded-full text-base"
-              style={{ background: profile?.banner_color ?? "#2563EB" }}
-              title={profile?.name ?? "Me"}
+              to="/"
+              className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm hover:shadow md:flex dark:border-border dark:bg-background"
             >
-              {profile?.avatar_emoji ?? "🙂"}
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Where</span>
+              <span className="text-gray-300">|</span>
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">When</span>
+              <span className="text-gray-300">|</span>
+              <Users className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Who</span>
+              <span className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                <Search className="h-3.5 w-3.5" />
+              </span>
             </Link>
+          )}
+
+          {/* Right cluster */}
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            {/* Desktop text links */}
+            <Link
+              to="/browse"
+              className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+            >Subleases</Link>
+            <Link
+              to="/roommates"
+              className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+            >Roommates</Link>
+
+            <button
+              onClick={handlePost}
+              className="hidden items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-dark md:inline-flex"
+            >Post a sublease →</button>
+
+            {/* Mobile Post pill (kept from previous minimal header) */}
+            <button
+              onClick={handlePost}
+              className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground md:hidden"
+            >Post</button>
+
+            {user ? (
+              <>
+                <div className="hidden sm:block">
+                  <NotificationsBell onOpenMessages={() => navigate({ to: "/messages" as any }).catch(() => {})} />
+                </div>
+                <div ref={menuRef} className="relative">
+                  <button
+                    onClick={() => setMenuOpen((v) => !v)}
+                    className="flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1 pr-2 shadow-sm hover:shadow dark:border-border dark:bg-background"
+                    aria-label="Account menu"
+                  >
+                    <span
+                      className="grid h-8 w-8 place-items-center rounded-full text-base"
+                      style={{ background: avatarBg }}
+                    >{avatarChar}</span>
+                    <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
+                  </button>
+
+                  {menuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl dark:border-border dark:bg-surface">
+                      <div className="px-4 pb-2">
+                        <div className="truncate text-sm font-semibold">{profile?.name ?? "You"}</div>
+                        <div className="truncate text-xs text-gray-500">{profile?.email ?? ""}</div>
+                      </div>
+                      <div className="my-1 h-px bg-gray-100 dark:bg-border" />
+                      <MenuItem to="/my-listings" onClick={() => setMenuOpen(false)}>My Listings</MenuItem>
+                      <MenuItem to="/saved" onClick={() => setMenuOpen(false)}>Saved</MenuItem>
+                      <MenuItem to="/messages" onClick={() => setMenuOpen(false)}>Messages</MenuItem>
+                      <MenuItem to="/profile" onClick={() => setMenuOpen(false)}>Profile</MenuItem>
+                      <div className="my-1 h-px bg-gray-100 dark:bg-border" />
+                      <button
+                        onClick={signOut}
+                        className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                      >Sign Out</button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={openSignIn}
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-background dark:border-border"
+              >Sign In</button>
+            )}
           </div>
-        ) : (
-          <Link
-            to="/auth"
-            search={{ mode: "in" }}
-            className="hidden rounded-full border px-4 py-2 text-sm font-semibold hover:bg-background sm:inline-flex"
-          >Sign In</Link>
-        )}
-      </div>
-    </header>
+        </div>
+      </header>
+
+      <SignInModal
+        open={signInOpen}
+        next={signInNext}
+        onClose={() => setSignInOpen(false)}
+      />
+    </>
+  );
+}
+
+function MenuItem({
+  to, children, onClick,
+}: { to: string; children: React.ReactNode; onClick?: () => void }) {
+  return (
+    <Link
+      to={to as any}
+      onClick={onClick}
+      className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-background dark:text-foreground/80"
+    >{children}</Link>
   );
 }

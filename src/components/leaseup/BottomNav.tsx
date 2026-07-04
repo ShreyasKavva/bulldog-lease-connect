@@ -51,7 +51,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-border bg-white dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
@@ -83,12 +83,15 @@ function Tab({
     <Link
       to={to}
       onClick={onClick}
+      aria-label={label}
+      title={label}
       className={cn(
-        "flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition",
+        "flex items-center justify-center transition",
         active ? "text-primary" : "text-gray-400 hover:text-foreground",
       )}
     >
-      <span className="relative">
+      <span className="relative flex flex-col items-center">
+        {active && <span className="absolute -top-2 h-1 w-1 rounded-full bg-primary" />}
         <Icon
           className={cn("transition-transform", active && "scale-105")}
           size={26}
@@ -96,10 +99,9 @@ function Tab({
           fill={active ? "currentColor" : "none"}
         />
         {badge && (
-          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface" />
+          <span className="absolute -right-1.5 -top-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface" />
         )}
       </span>
-      <span>{label}</span>
     </Link>
   );
 }

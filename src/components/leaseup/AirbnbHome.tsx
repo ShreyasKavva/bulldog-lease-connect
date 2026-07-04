@@ -191,7 +191,7 @@ export function AirbnbHome({
             <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
           </Link>
           <p className="mt-2 text-sm text-muted-foreground">
-            Student subleases at every US campus
+            Find a sublease. Find a roommate. Find your people.
           </p>
         </div>
 
