@@ -114,6 +114,15 @@ export function ListingDetailSheet({
 
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
+        {/* View full page link — shareable URL */}
+        <a
+          href={`/listing/${listing.id}`}
+          onClick={() => onOpenChange(false)}
+          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-md backdrop-blur-sm transition hover:bg-white"
+        >
+          View full page →
+        </a>
+
         {/* Photo gallery — horizontal snap-scroll, no photos = gradient placeholder */}
         <div className="relative bg-muted">
           {photos.length > 0 ? (
