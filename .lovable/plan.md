@@ -1,65 +1,83 @@
-## Goal
+## Context
 
-Rebuild `/` as an Airbnb-style, fully public browsing experience. Anyone (logged in or not) sees the same home. Auth is only required when a user tries to **post a listing** or **message a seller** — everything else (browse, search, filter, open listing detail, view photos, view profile card) is open.
+There is no dedicated listing detail route today — the whole product opens listings via a slide-in `ListingDetailSheet`. This queue calls for a real page. I'll add one at `/listing/$id` (since `/sublease/$slug` is already the campus page), keep the existing sheet intact for the fast "peek" flow on `/browse` and `/`, and add a "View full page" link inside the sheet that goes to the new route. Nothing on `/browse`, home, post flow, roommates, onboarding, or the schema will change.
 
-## New homepage layout (matches reference)
+## New route: `src/routes/listing.$id.tsx`
 
-Top bar (sticky, white):
-- LeaseUp wordmark (left)
-- Center category tabs: **All · Homes · Rooms · Sublets** (visual only in v1, filters `listing.type`)
-- Right: `Become a host` → opens Post Listing (auth-gated), globe/menu button
+- SSR loader: fetch the listing with poster profile + campus, plus signed URLs for all `photos[]`. Throw `notFound()` when missing or `is_active=false && status!='filled'`.
+- `head()`: title = listing title + campus short_name; description from first ~155 chars of listing description; `og:image` = first signed photo URL; canonical + og:url self-referencing.
+- `errorComponent` + `notFoundComponent` + shared error page.
+- Increments `view_count` on mount via the existing `increment_listing_view` RPC.
 
-Search pill (centered under top bar, rounded, shadow):
-- **Where** — campus/city autocomplete (uses existing `campuses` list + free-text neighborhood)
-- **When** — date range (move-in / move-out) using existing `Calendar` component
-- **Who** — guests/roommates stepper (1–6)
-- Red circular search button
+## Sections (top to bottom)
 
-Below search:
-- "Continue searching…" recent-search chip (localStorage of last query)
-- **Based on your search** horizontal rail (filtered listings, arrow scroll)
-- **Stay near {campus}** rails — one per nearby/popular campus
-- **Trending on LeaseUp** rail (reuses `TrendingCarousel`)
-- Cards use existing `ListingCard` styling but Airbnb-shaped: rounded 16px image, heart top-right, "Guest favorite" pill top-left when `is_verified` or SafeScore ≥ 80, price + rating below.
+### PART A — Photo gallery (`ListingGallery` component)
+- 0 photos → full-width neutral placeholder (muted background, home icon).
+- 1 → single full-width image.
+- 2–4 → Airbnb split: primary left (2 cols), 2×2 thumbs right.
+- 5+ → same split with "Show all photos" button (bottom-right of primary).
+- Height ~55vh on desktop (`h-[55vh]`), full-width edge-to-edge on mobile.
+- Clicking any photo opens a lightbox (`PhotoLightbox` component: full-screen dialog, keyboard ← → esc, mobile swipe via touch handlers, index dots).
 
-Footer: simple links (About, Safety, Terms).
+### PART B — Details column (left, `lg:col-span-2`)
+- Title (`text-3xl font-black`).
+- Sub-line: `{area} · {beds} bd · {baths} ba` (Studio when beds=0).
+- Available: `{available_from → available_to}` formatted `MMM d, yyyy`.
+- Price: `${price}/mo`.
+- Amenities as chips with lucide icons (Sofa=Furnished, Snowflake=A/C, Car=Parking, WashingMachine=Laundry, PawPrint=Pet-friendly, Zap=Utilities inc.) — derived from booleans on `listings`.
+- Description: full text; on mobile, clamp to 4 lines with "Read more" toggle.
+- Meta line: "Posted {timeAgo} by {poster name}".
 
-Bottom nav stays for logged-in users only; guests get no bottom nav (Airbnb-like).
+### PART C — Poster card (right, `lg:col-span-1`, `lg:sticky lg:top-20`)
+Reuses avatar/emoji + banner color from the profile system:
+- Avatar (emoji tile fallback), name (links to `/profile/$id`), `UGA · Junior` subtitle using the same abbreviator as the profile page, green ✓ .edu badge when `verified_email`, "Member since {Mon YYYY}", "{n} active listings" (uses `get_public_profile` RPC data or a light query).
+- Primary CTA button:
+  - Not signed in → `openSignIn("/messages/" + listing.id)`
+  - Owner → `Edit listing` → `/my-listings`
+  - Otherwise → navigate to `/messages/${listing.id}` (Q51 route)
+- No response-rate line (we don't have it).
 
-## Auth gating (the key behavior change)
+### PART D — Activity signals
+Small muted row under the poster card: `Eye {view_count} views`, `Bookmark {saved_count}`, `Clock Listed {timeAgo}`. `saved_count` comes from a `saved_listings` count query alongside the loader.
 
-Remove the current guest-vs-user split. Both see the same page. Auth prompts only fire on:
+### PART E — Similar listings
+Server function `fetchSimilarListings({ id, campusId, price })` returns up to 3 active listings on the same campus with `price BETWEEN price-150 AND price+150`, `available_to >= today`, excluding the current id, ordered by `abs(price - target)`. Renders in a grid using the existing `ListingCard` (same as `/browse`). Section titled `Similar subleases at {campus.short_name}`. Omit entirely when zero matches.
 
-1. **Post a listing** — `Become a host` button, any "+ Post" CTA, empty-state post buttons → if `!user`, route to `/auth?mode=up&next=/?post=1`; after login, auto-open `PostListingDialog`.
-2. **Message seller** — inside `ListingDetailSheet`, the "Message" button → if `!user`, route to `/auth?mode=in&next=/?listing={id}&message=1`; after login, auto-open the listing and start the conversation.
-3. **Save (heart)** — same pattern, `next=/?listing={id}&save=1`. (Small addition; matches Airbnb.)
+### PART F — Mobile
+- Single column below the gallery (poster card renders inline after details, before similar listings).
+- Sticky bottom bar (`fixed bottom-0 inset-x-0 lg:hidden`) with price on the left and full-width primary "Message {FirstName} →" button. Adds `pb-24` to page container so content isn't hidden behind it.
+- Swipeable carousel on `<md`: horizontal snap scroller with index dots; lightbox reused for full-screen.
 
-Everything else — opening a listing sheet, viewing photos, viewing seller profile card, using search/filters, browsing rails — works without login.
+## Wiring existing UI to the new route
 
-The `/auth` route already accepts a `mode` search param; extend it to also accept `next` and redirect there on success.
+- `ListingCard`: card click still opens the sheet (fast preview). Add a secondary "Open" affordance? Skip — keep card behavior unchanged to avoid scope creep on `/browse`.
+- `ListingDetailSheet`: add a small "View full page →" link in the header that navigates to `/listing/$id` and closes the sheet. This gives users the shareable URL without disrupting the sheet flow.
 
-## Files to change
+## Technical notes
 
-- `src/routes/index.tsx` — replace the guest/user split with a single `AirbnbHome` component; keep sheets mounted; add the `?post=1` / `?message=1` / `?save=1` post-login handlers.
-- `src/components/leaseup/AirbnbHome.tsx` *(new)* — top bar, search pill, rails.
-- `src/components/leaseup/SearchPill.tsx` *(new)* — Where/When/Who control.
-- `src/components/leaseup/ListingRail.tsx` *(new)* — horizontal scroll rail with left/right arrows, reuses `ListingCard`.
-- `src/components/leaseup/ListingCard.tsx` — add a compact "airbnb" variant (rounded, heart overlay, price + rating line). No behavior changes.
-- `src/components/leaseup/ListingDetailSheet.tsx` — message/save buttons call a passed `requireAuth()` helper instead of assuming a session.
-- `src/routes/auth.tsx` — accept optional `next` search param; on successful sign-in/up navigate to `next` (default `/`).
-- `src/components/leaseup/BottomNav.tsx` — only render when `user` is present (already the case on most routes; verify).
+- Loader uses `context.queryClient.ensureQueryData` + `useSuspenseQuery` per the project's canonical read shape.
+- All queries use the browser Supabase client with existing RLS — no schema changes, no new server functions with `requireSupabaseAuth` required.
+- Photos are signed with `createSignedUrls` (5–10 min TTL) inside the loader; SSR-safe.
+- Layout: `grid grid-cols-1 lg:grid-cols-3 gap-8`, details span 2, poster card spans 1.
+- Reuses tokens (`bg-surface`, `text-primary`, `text-muted-foreground`); no hardcoded colors.
+- New files:
+  - `src/routes/listing.$id.tsx`
+  - `src/components/leaseup/listing-detail/ListingGallery.tsx`
+  - `src/components/leaseup/listing-detail/PhotoLightbox.tsx`
+  - `src/components/leaseup/listing-detail/PosterCard.tsx`
+  - `src/components/leaseup/listing-detail/AmenityChips.tsx`
+  - `src/components/leaseup/listing-detail/MobileStickyCTA.tsx`
+  - `src/components/leaseup/listing-detail/SimilarListings.tsx`
+- Minor edit to `ListingDetailSheet` for the "View full page" link.
 
-Map view isn't removed — it moves to `/map` (existing `MapHome` component gets its own tiny route file), reachable from a "Show map" toggle on the search pill. Not the default anymore.
+## Out of scope (as requested)
 
-## Out of scope (this change)
+`/browse`, homepage, post flow, roommate pages, onboarding, database schema — untouched.
 
-- Real geocoded "Where" search beyond campus list + city string filter.
-- Actual date-availability filtering on listings (dates are stored on the search state and passed into filters as `available_from/to` overlap — simple overlap check on `listing.start_date`/`end_date`).
-- Redesigning `ListingDetailSheet` internals; just swap the auth gate.
+## Question before I build
 
-## Verification
+The current sheet-based flow is deep (reactions, share, report, tour booking, secure deposit, price comparison, etc.). For this page, should I:
+1. **Keep it lean** (spec-only: gallery, details, poster card, activity signals, similar) and leave sheet-only features (reactions, secure deposit, tour booking, report) in the sheet — the page becomes the shareable/SEO surface, the sheet stays the power UI.
+2. **Port everything** from the sheet into the page too.
 
-- Signed-out: land on `/`, see rails, open a listing, browse photos — no auth prompt.
-- Click "Message host" signed-out → `/auth?mode=in&next=/?listing=X&message=1` → after login, listing reopens and message thread is created.
-- Click "Become a host" signed-out → `/auth?mode=up&next=/?post=1` → after login, Post dialog opens.
-- Signed-in: same page, plus bottom nav; posting/messaging never redirect.
+I'll default to option 1 unless you say otherwise — it matches the spec exactly and keeps the page focused on conversion.
