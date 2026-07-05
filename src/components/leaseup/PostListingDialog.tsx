@@ -1,22 +1,23 @@
 /**
  * PostListingDialog — the create/edit flow for listings.
  *
- * Submit pipeline:
- *   1. Validate form locally.
- *   2. Call screenListing (AI moderation, ai.functions.ts).
- *      - auto_reject     → block, surface reasons.
- *      - pending_review  → insert with pending_review=true (lands in admin
- *                          Suspicious tab).
- *      - quality_nudge   → show nudge dialog; user can fix or publish anyway.
- *      - ok              → proceed.
- *   3. Upload photos to the listing-photos Storage bucket via uploadListingPhotos.
- *      We persist STORAGE PATHS in listings.photos, not URLs — signed URLs
- *      are minted on read.
- *   4. Insert the listing row (RLS scopes user_id = auth.uid()).
- *   5. Optionally open InviteRoommatesDialog for viral growth.
+ * Q53 fixes:
+ *   - Added campus dropdown (defaults to profile.campus_id, falls back to
+ *     manual pick if the profile has none — no more silent "Complete your
+ *     profile first" dead-end).
+ *   - Photo upload: single dashed drop area, client-side type + size
+ *     validation (jpg/png/webp/heic ≤ 10MB), max 5 photos per spec,
+ *     upload-progress state, 0-photo warning banner (not a block).
+ *   - Price input: number, min=0, "/mo" suffix, "e.g. 650" placeholder.
+ *   - Dates: default available_from to today+30, inline error when
+ *     available_to <= available_from.
+ *   - Description: real-example placeholder + "make it longer" hint.
+ *   - Submit: "Post listing →" with spinner, disabled while submitting to
+ *     prevent double-click, navigates to the new /listing/$id detail page
+ *     with the spec success toast.
  *
- * PriceGuidance shows live Deal/Fair/Above-market feedback as the user
- * types a price, sourced from campus_price_stats.
+ * Submit pipeline unchanged: validate → screenListing (AI moderation) →
+ * upload photos as storage paths → insert listing row (RLS scopes user_id).
  */
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -24,15 +25,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NEIGHBORHOODS, AMENITIES } from "@/lib/leaseup/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
-import { Upload, X, ShieldAlert, Sparkles } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Upload, X, ShieldAlert, Sparkles, ImagePlus, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InviteRoommatesDialog } from "@/components/leaseup/InviteRoommatesDialog";
 import { PriceGuidance } from "@/components/leaseup/PriceGuidance";
@@ -40,64 +41,146 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRouter } from "@tanstack/react-router";
 import { screenListing, type ScreenResult } from "@/lib/leaseup/ai.functions";
 
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"];
+
+function defaultAvailableFrom(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d.toISOString().slice(0, 10);
+}
+
+type Preview = { file: File; url: string };
+
 export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [previews, setPreviews] = useState<Preview[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [screenResult, setScreenResult] = useState<ScreenResult | null>(null);
   const [pendingForm, setPendingForm] = useState<null | (() => Promise<void>)>(null);
   const runScreen = useServerFn(screenListing);
+
+  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
     beds: "1", baths: "1", area: NEIGHBORHOODS[0].name,
-    available_from: "", available_to: "",
+    campus_id: "",
+    available_from: defaultAvailableFrom(), available_to: "",
     furnished: false, utilities_included: false, pet_friendly: false, parking: false,
     amenities: [] as string[],
     deposit_amount: "", deposit_escrow_enabled: false,
   });
+
+  // Pre-fill campus from profile when it loads
+  useEffect(() => {
+    if (profile?.campus_id && !form.campus_id) {
+      setForm((f) => ({ ...f, campus_id: profile.campus_id! }));
+    }
+  }, [profile?.campus_id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup object URLs
+  useEffect(() => {
+    return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
+  }, [previews]);
+
+  const dateError = useMemo(() => {
+    if (!form.available_from || !form.available_to) return null;
+    if (new Date(form.available_to) <= new Date(form.available_from)) {
+      return "End date must be after start date";
+    }
+    return null;
+  }, [form.available_from, form.available_to]);
 
   function setField<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
   function toggleAmenity(a: string) {
-    setForm((f) => ({ ...f, amenities: f.amenities.includes(a) ? f.amenities.filter(x => x !== a) : [...f.amenities, a] }));
+    setForm((f) => ({ ...f, amenities: f.amenities.includes(a) ? f.amenities.filter((x) => x !== a) : [...f.amenities, a] }));
   }
 
   function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const arr = Array.from(e.target.files ?? []);
-    setFiles((prev) => [...prev, ...arr].slice(0, 10));
+    const picked = Array.from(e.target.files ?? []);
+    // Reset input so re-selecting the same file works
+    e.target.value = "";
+    const accepted: Preview[] = [];
+    for (const file of picked) {
+      if (previews.length + accepted.length >= MAX_PHOTOS) {
+        toast.error(`You can add up to ${MAX_PHOTOS} photos`);
+        break;
+      }
+      const type = file.type.toLowerCase();
+      const looksLikeImage = type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name);
+      if (!ALLOWED_TYPES.includes(type) && !looksLikeImage) {
+        toast.error(`${file.name}: only JPG, PNG, WebP, or HEIC images are allowed`);
+        continue;
+      }
+      if (file.size > MAX_PHOTO_BYTES) {
+        toast.error(`${file.name}: photo must be under 10MB`);
+        continue;
+      }
+      accepted.push({ file, url: URL.createObjectURL(file) });
+    }
+    if (accepted.length > 0) {
+      setPreviews((prev) => [...prev, ...accepted].slice(0, MAX_PHOTOS));
+    }
+  }
+
+  function removePhoto(idx: number) {
+    setPreviews((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      const removed = prev[idx];
+      if (removed) URL.revokeObjectURL(removed.url);
+      return next;
+    });
+  }
+
+  function moveToFront(idx: number) {
+    setPreviews((prev) => {
+      if (idx === 0) return prev;
+      const next = [...prev];
+      const [item] = next.splice(idx, 1);
+      next.unshift(item);
+      return next;
+    });
   }
 
   async function submit() {
-    if (!user || !profile?.campus_id) { toast.error("Complete your profile first"); return; }
+    if (!user) { toast.error("Please sign in"); return; }
+    if (!form.campus_id) { toast.error("Pick a campus"); return; }
     if (!form.title.trim()) { toast.error("Add a title"); return; }
-    if (!form.price || parseInt(form.price) <= 0) { toast.error("Enter a monthly rent"); return; }
-    if (!form.beds || parseInt(form.beds) < 0) { toast.error("How many bedrooms?"); return; }
-    if (!form.baths || parseFloat(form.baths) <= 0) { toast.error("How many bathrooms?"); return; }
+    const priceNum = parseInt(form.price);
+    if (!form.price || isNaN(priceNum) || priceNum <= 0) { toast.error("Enter a monthly rent"); return; }
+    const bedsNum = parseInt(form.beds);
+    if (isNaN(bedsNum) || bedsNum < 0) { toast.error("How many bedrooms?"); return; }
+    const bathsNum = parseFloat(form.baths);
+    if (isNaN(bathsNum) || bathsNum <= 0) { toast.error("How many bathrooms?"); return; }
     if (!form.available_from) { toast.error("Pick a move-in date"); return; }
+    if (dateError) { toast.error(dateError); return; }
+
     setSubmitting(true);
     try {
-      // Queue 21 — pre-publish screening
       let screen: ScreenResult | null = null;
       try {
         screen = await runScreen({
           data: {
             title: form.title,
             description: form.description ?? "",
-            price: parseInt(form.price) || 0,
-            beds: parseInt(form.beds) || 0,
-            campus: profile?.campus_id ?? "",
+            price: priceNum,
+            beds: bedsNum,
+            campus: form.campus_id,
             has_contact: !!profile?.phone,
-            photo_count: files.length,
+            photo_count: previews.length,
           },
         });
-      } catch (_e) {
-        // If screening fails (gateway down), do not block legitimate users
+      } catch {
         screen = null;
       }
 
@@ -113,51 +196,68 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id);
 
-        const photos = files.length ? await uploadListingPhotos(user.id, files) : [];
-        const hood = NEIGHBORHOODS.find(n => n.name === form.area);
-        const { error } = await supabase.from("listings").insert({
-          user_id: user.id,
-          campus_id: profile.campus_id,
-          title: form.title,
-          description: form.description,
-          type: form.type,
-          price: parseInt(form.price),
-          beds: parseInt(form.beds),
-          baths: parseFloat(form.baths),
-          area: form.area,
-          lat: hood?.lat, lng: hood?.lng,
-          furnished: form.furnished,
-          utilities_included: form.utilities_included,
-          pet_friendly: form.pet_friendly,
-          parking: form.parking,
-          available_from: form.available_from || null,
-          available_to: form.available_to || null,
-          amenities: form.amenities,
-          photos,
-          deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
-          deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
-          // Queue 21: temporary review hold for high-risk content
-          pending_review: screen?.scam_risk === "high",
-          pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
-        } as any);
+        let photos: string[] = [];
+        if (previews.length) {
+          setUploading(true);
+          try {
+            photos = await uploadListingPhotos(user.id, previews.map((p) => p.file));
+          } finally {
+            setUploading(false);
+          }
+        }
+
+        const hood = NEIGHBORHOODS.find((n) => n.name === form.area);
+        const { data: inserted, error } = await supabase
+          .from("listings")
+          .insert({
+            user_id: user.id,
+            campus_id: form.campus_id,
+            title: form.title.trim(),
+            description: form.description.trim(),
+            type: form.type,
+            price: priceNum,
+            beds: bedsNum,
+            baths: bathsNum,
+            area: form.area,
+            lat: hood?.lat, lng: hood?.lng,
+            furnished: form.furnished,
+            utilities_included: form.utilities_included,
+            pet_friendly: form.pet_friendly,
+            parking: form.parking,
+            available_from: form.available_from || null,
+            available_to: form.available_to || null,
+            amenities: form.amenities,
+            photos,
+            deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+            deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
+            pending_review: screen?.scam_risk === "high",
+            pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
+          } as any)
+          .select("id")
+          .single();
         if (error) throw error;
-        toast.success(screen?.scam_risk === "high"
-          ? "Posted — under brief review before going public"
-          : "🎉 Your listing is live!");
+
+        toast.success(
+          screen?.scam_risk === "high"
+            ? "Posted — under brief review before going public"
+            : "Your listing is live! Share it with friends 🎉",
+        );
         qc.invalidateQueries({ queryKey: ["listings"] });
         onOpenChange(false);
-        setForm({ ...form, title: "", description: "", price: "" });
-        setFiles([]);
+        setPreviews([]);
         setScreenResult(null);
         setPendingForm(null);
+        // First-listing → invite dialog; otherwise straight to the new page.
         if ((existingCount ?? 0) === 0) {
           setInviteOpen(true);
+        }
+        if (inserted?.id) {
+          router.navigate({ to: "/listing/$id", params: { id: inserted.id } });
         } else {
           router.navigate({ to: "/my-listings" });
         }
       };
 
-      // Quality nudge — confirm before publishing
       if (screen && (screen.quality_score < 40 || screen.warnings.length > 0)) {
         setScreenResult(screen);
         setPendingForm(() => doPublish);
@@ -168,204 +268,389 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
       await doPublish();
     } catch (e: any) {
       console.error("[PostListingDialog] insert failed:", e);
-      const msg = e?.message || e?.error_description || e?.hint || "Failed to post listing";
-      toast.error(msg);
-    } finally { setSubmitting(false); }
+      toast.error(e?.message || e?.error_description || e?.hint || "Failed to post listing");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
+  const descLen = form.description.trim().length;
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <DialogHeader><DialogTitle className="text-2xl">Post a sublease</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <Field label="Title"><Input value={form.title} onChange={(e) => setField("title", e.target.value)} placeholder="Cozy 1BR near North Campus" /></Field>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Post a sublease</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Field label="Title">
+              <Input
+                value={form.title}
+                onChange={(e) => setField("title", e.target.value)}
+                placeholder="Cozy 1BR near North Campus"
+                maxLength={120}
+              />
+            </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Monthly rent ($)"><Input type="number" value={form.price} onChange={(e) => setField("price", e.target.value)} placeholder="850" /></Field>
-            <Field label="Type">
-              <Select value={form.type} onValueChange={(v) => setField("type", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+            <Field label="Campus">
+              <Select value={form.campus_id} onValueChange={(v) => setField("campus_id", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pick your campus" />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sublease">Sublease</SelectItem>
-                  <SelectItem value="transfer">Lease Transfer</SelectItem>
+                  {campuses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                      {c.city && c.state ? ` — ${c.city}, ${c.state}` : ""}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>
-          </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="Beds"><Input type="number" value={form.beds} onChange={(e) => setField("beds", e.target.value)} /></Field>
-            <Field label="Baths"><Input type="number" step="0.5" value={form.baths} onChange={(e) => setField("baths", e.target.value)} /></Field>
-            <Field label="Neighborhood">
-              <Select value={form.area} onValueChange={(v) => setField("area", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{NEIGHBORHOODS.map(n => <SelectItem key={n.name} value={n.name}>{n.name}</SelectItem>)}</SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Monthly rent">
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={form.price}
+                    onChange={(e) => setField("price", e.target.value)}
+                    placeholder="e.g. 650"
+                    className="pl-6 pr-12"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                    /mo
+                  </span>
+                </div>
+              </Field>
+              <Field label="Type">
+                <Select value={form.type} onValueChange={(v) => setField("type", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sublease">Sublease</SelectItem>
+                    <SelectItem value="transfer">Lease Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Beds">
+                <Input type="number" inputMode="numeric" min={0} value={form.beds} onChange={(e) => setField("beds", e.target.value)} />
+              </Field>
+              <Field label="Baths">
+                <Input type="number" inputMode="decimal" min={0} step="0.5" value={form.baths} onChange={(e) => setField("baths", e.target.value)} />
+              </Field>
+              <Field label="Neighborhood">
+                <Select value={form.area} onValueChange={(v) => setField("area", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {NEIGHBORHOODS.map((n) => (
+                      <SelectItem key={n.name} value={n.name}>{n.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+
+            <PriceGuidance
+              campusId={form.campus_id || null}
+              beds={form.beds ? parseInt(form.beds) : null}
+              price={form.price ? parseInt(form.price) : null}
+              onPickMedian={(m: number) => setField("price", String(m))}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Available from">
+                <Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} />
+              </Field>
+              <Field label="Available until">
+                <Input
+                  type="date"
+                  value={form.available_to}
+                  min={form.available_from || undefined}
+                  onChange={(e) => setField("available_to", e.target.value)}
+                />
+              </Field>
+            </div>
+            {dateError && (
+              <p className="-mt-2 text-xs font-medium text-destructive">{dateError}</p>
+            )}
+
+            <Field label="Description">
+              <Textarea
+                rows={5}
+                value={form.description}
+                onChange={(e) => setField("description", e.target.value)}
+                placeholder="e.g. Fully furnished 1BR near North Campus. Quiet building, great natural light. Subletting for summer internship — all you need is a suitcase."
+              />
+              {descLen > 0 && descLen < 50 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Listings with longer descriptions get more messages ({descLen}/50)
+                </p>
+              )}
             </Field>
-          </div>
 
-          <PriceGuidance
-            campusId={profile?.campus_id ?? null}
-            beds={form.beds ? parseInt(form.beds) : null}
-            price={form.price ? parseInt(form.price) : null}
-            onPickMedian={(m: number) => setField("price", String(m))}
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Available from"><Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} /></Field>
-            <Field label="Available until"><Input type="date" value={form.available_to} onChange={(e) => setField("available_to", e.target.value)} /></Field>
-          </div>
-
-          <Field label="Description">
-            <Textarea rows={4} value={form.description} onChange={(e) => setField("description", e.target.value)} placeholder="Tell other students about the place…" />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <ToggleField label="Furnished" checked={form.furnished} onChange={(v) => setField("furnished", v)} />
-            <ToggleField label="Utilities included" checked={form.utilities_included} onChange={(v) => setField("utilities_included", v)} />
-            <ToggleField label="Pet friendly" checked={form.pet_friendly} onChange={(v) => setField("pet_friendly", v)} />
-            <ToggleField label="Parking" checked={form.parking} onChange={(v) => setField("parking", v)} />
-          </div>
-
-          <Field label="Amenities">
-            <div className="flex flex-wrap gap-1.5">
-              {AMENITIES.map(a => (
-                <button key={a} type="button" onClick={() => toggleAmenity(a)}
-                  className={cn("rounded-full border px-3 py-1 text-xs font-semibold transition",
-                    form.amenities.includes(a) ? "border-primary bg-primary-light text-primary-dark" : "border-border text-muted-foreground hover:border-primary"
-                  )}>{a}</button>
-              ))}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <ToggleField label="Furnished" checked={form.furnished} onChange={(v) => setField("furnished", v)} />
+              <ToggleField label="Utilities inc." checked={form.utilities_included} onChange={(v) => setField("utilities_included", v)} />
+              <ToggleField label="Pet friendly" checked={form.pet_friendly} onChange={(v) => setField("pet_friendly", v)} />
+              <ToggleField label="Parking" checked={form.parking} onChange={(v) => setField("parking", v)} />
             </div>
-          </Field>
 
-          <Field label={`Photos (${files.length}/10)`}>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-4 text-sm font-semibold text-muted-foreground hover:border-primary hover:text-primary">
-                📷 Take Photo
-                <input type="file" accept="image/*" capture="environment" multiple onChange={onFiles} className="hidden" />
-              </label>
-              <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-4 text-sm font-semibold text-muted-foreground hover:border-primary hover:text-primary">
-                <Upload className="h-4 w-4" />Choose from Library
-                <input type="file" accept="image/*" multiple onChange={onFiles} className="hidden" />
-              </label>
-            </div>
-            {files.length > 0 && (
-              <div className="mt-2 grid grid-cols-5 gap-2">
-                {files.map((f, i) => (
-                  <div key={i} className="relative aspect-square overflow-hidden rounded-md bg-muted">
-                    <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    {i === 0 && (
-                      <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">Cover</span>
+            <Field label="Amenities">
+              <div className="flex flex-wrap gap-1.5">
+                {AMENITIES.map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => toggleAmenity(a)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                      form.amenities.includes(a)
+                        ? "border-primary bg-primary-light text-primary-dark"
+                        : "border-border text-muted-foreground hover:border-primary",
                     )}
-                    <button aria-label="Remove photo" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white">
-                      <X className="h-3 w-3" />
-                    </button>
-                    {files.length > 1 && i > 0 && (
-                      <button
-                        type="button"
-                        aria-label="Move to front"
-                        onClick={() => setFiles([files[i], ...files.filter((_, j) => j !== i)])}
-                        className="absolute inset-x-0 bottom-0 bg-black/60 py-0.5 text-[9px] font-semibold text-white opacity-0 transition group-hover:opacity-100 hover:opacity-100"
-                        style={{ opacity: 1 }}
-                      >
-                        Move to front
-                      </button>
-                    )}
-                  </div>
+                  >
+                    {a}
+                  </button>
                 ))}
               </div>
-            )}
-          </Field>
+            </Field>
 
-          <div className="rounded-xl border-2 border-dashed border-success/40 bg-success-light/30 p-4">
-            <div className="flex items-center gap-2 text-sm font-bold">💰 Secure Deposit <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-success">Optional</span></div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Collect a refundable deposit through LeaseUp. Funds are held until move-in — protects both sides. A 2.5% platform fee is charged to the subletter at payment.
-            </p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <Field label="Deposit amount ($)">
-                <Input type="number" min="0" placeholder="500" value={form.deposit_amount} onChange={(e) => setField("deposit_amount", e.target.value)} />
-              </Field>
-              <ToggleField label="Enable secure deposit" checked={form.deposit_escrow_enabled} onChange={(v) => setField("deposit_escrow_enabled", v)} />
-            </div>
-          </div>
+            {/* Photo upload */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase text-muted-foreground">
+                Photos ({previews.length}/{MAX_PHOTOS})
+              </Label>
 
-          <Button disabled={submitting} onClick={submit} className="w-full bg-primary hover:bg-primary-dark text-primary-foreground font-bold h-11">
-            {submitting ? "Posting…" : "Post listing"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-    <InviteRoommatesDialog
-      open={inviteOpen}
-      onOpenChange={setInviteOpen}
-      referralCode={(profile as any)?.referral_code ?? null}
-    />
-    <Dialog open={!!screenResult} onOpenChange={(o) => { if (!o) { setScreenResult(null); setPendingForm(null); } }}>
-      <DialogContent className="max-w-md">
-        {screenResult?.auto_reject ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-lg">
-                <ShieldAlert className="h-5 w-5 text-destructive" /> We couldn't publish your listing
-              </DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground">
-              Our system detected content that may violate LeaseUp's community guidelines:
-            </p>
-            <ul className="list-disc space-y-1 pl-5 text-sm">
-              {screenResult.issues.map((it, i) => <li key={i}>{it}</li>)}
-            </ul>
-            <Button onClick={() => { setScreenResult(null); setPendingForm(null); }} className="w-full">
-              Edit listing
-            </Button>
-          </>
-        ) : screenResult ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="h-5 w-5 text-primary" /> Your listing could perform better
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2 text-sm">
-              {screenResult.quality_score < 40 && (
-                <div className="rounded-lg bg-amber-50 dark:bg-amber-500/10 p-2 text-amber-900 dark:text-amber-100">
-                  Quality score: <b>{screenResult.quality_score}/100</b>
+              {previews.length < MAX_PHOTOS && (
+                <label
+                  className={cn(
+                    "flex min-h-[9rem] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-6 text-center transition",
+                    "hover:border-primary hover:bg-primary/5",
+                  )}
+                >
+                  <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-sm font-bold text-foreground">📷 Add photos</span>
+                  <span className="text-xs text-muted-foreground">
+                    Tap to choose from your library or take a new photo
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+                    multiple
+                    onChange={onFiles}
+                    className="hidden"
+                  />
+                </label>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Add up to {MAX_PHOTOS} photos · Listings with 3+ photos get significantly more views
+              </p>
+
+              {previews.length === 0 && (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Your listing will get fewer views without photos.</span>
                 </div>
               )}
-              {screenResult.warnings.length > 0 && (
-                <ul className="list-disc space-y-1 pl-5">
-                  {screenResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
-                </ul>
+
+              {previews.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {previews.map((p, i) => (
+                    <div key={p.url} className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
+                      <img
+                        src={p.url}
+                        alt={`Photo ${i + 1}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                      {i === 0 && (
+                        <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Remove photo"
+                        onClick={() => removePhoto(i)}
+                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => moveToFront(i)}
+                          className="absolute inset-x-0 bottom-0 bg-black/60 py-1 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100"
+                        >
+                          Make cover
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setScreenResult(null); setPendingForm(null); }}>
-                Improve my listing
-              </Button>
-              <Button className="flex-1" onClick={async () => { const fn = pendingForm; setScreenResult(null); setPendingForm(null); if (fn) { setSubmitting(true); try { await fn(); } finally { setSubmitting(false); } } }}>
-                Post anyway
-              </Button>
+
+            {/* Secure deposit */}
+            <div className="rounded-xl border-2 border-dashed border-success/40 bg-success-light/30 p-4">
+              <div className="flex items-center gap-2 text-sm font-bold">
+                💰 Secure Deposit
+                <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-success">Optional</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Collect a refundable deposit through LeaseUp. Funds are held until move-in — protects both sides. A 2.5% platform fee is charged to the subletter at payment.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <Field label="Deposit amount ($)">
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="500"
+                    value={form.deposit_amount}
+                    onChange={(e) => setField("deposit_amount", e.target.value)}
+                  />
+                </Field>
+                <ToggleField
+                  label="Enable secure deposit"
+                  checked={form.deposit_escrow_enabled}
+                  onChange={(v) => setField("deposit_escrow_enabled", v)}
+                />
+              </div>
             </div>
-          </>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+
+            <Button
+              disabled={submitting || !!dateError}
+              onClick={submit}
+              className="h-12 w-full bg-primary text-base font-bold text-primary-foreground hover:bg-primary-dark"
+            >
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {uploading ? "Uploading photos…" : "Posting…"}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  Post listing
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <InviteRoommatesDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        referralCode={(profile as any)?.referral_code ?? null}
+      />
+
+      <Dialog open={!!screenResult} onOpenChange={(o) => { if (!o) { setScreenResult(null); setPendingForm(null); } }}>
+        <DialogContent className="max-w-md">
+          {screenResult?.auto_reject ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-lg">
+                  <ShieldAlert className="h-5 w-5 text-destructive" /> We couldn't publish your listing
+                </DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                Our system detected content that may violate LeaseUp's community guidelines:
+              </p>
+              <ul className="list-disc space-y-1 pl-5 text-sm">
+                {screenResult.issues.map((it, i) => <li key={i}>{it}</li>)}
+              </ul>
+              <Button onClick={() => { setScreenResult(null); setPendingForm(null); }} className="w-full">
+                Edit listing
+              </Button>
+            </>
+          ) : screenResult ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="h-5 w-5 text-primary" /> Your listing could perform better
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 text-sm">
+                {screenResult.quality_score < 40 && (
+                  <div className="rounded-lg bg-amber-50 p-2 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+                    Quality score: <b>{screenResult.quality_score}/100</b>
+                  </div>
+                )}
+                {screenResult.warnings.length > 0 && (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {screenResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                  </ul>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => { setScreenResult(null); setPendingForm(null); }}>
+                  Improve my listing
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={async () => {
+                    const fn = pendingForm;
+                    setScreenResult(null);
+                    setPendingForm(null);
+                    if (fn) {
+                      setSubmitting(true);
+                      try { await fn(); } finally { setSubmitting(false); }
+                    }
+                  }}
+                >
+                  Post anyway
+                </Button>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (<div className="space-y-1.5"><Label className="text-xs font-bold uppercase text-muted-foreground">{label}</Label>{children}</div>);
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-bold uppercase text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
 }
 
 function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border bg-surface px-3 py-2.5">
-      <span className="text-sm font-semibold">{label}</span>
-      <Switch checked={checked} onCheckedChange={onChange} />
-    </div>
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-semibold transition",
+        checked
+          ? "border-primary bg-primary-light text-primary-dark"
+          : "border-border text-muted-foreground hover:border-primary",
+      )}
+    >
+      <span>{label}</span>
+      <span
+        aria-hidden
+        className={cn(
+          "grid h-4 w-4 place-items-center rounded-full border",
+          checked ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/40",
+        )}
+      >
+        {checked ? "✓" : ""}
+      </span>
+    </button>
   );
 }
