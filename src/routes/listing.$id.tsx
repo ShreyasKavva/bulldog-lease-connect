@@ -29,7 +29,7 @@ import {
 
 export const Route = createFileRoute("/listing/$id")({
   head: ({ loaderData }) => {
-    const l = loaderData?.listing;
+    const l = (loaderData as { listing?: Listing } | undefined)?.listing;
     if (!l) {
       return { meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }] };
     }

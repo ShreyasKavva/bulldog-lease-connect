@@ -36,6 +36,7 @@ import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
+import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -181,6 +182,11 @@ const MessagesListingIdRoute = MessagesListingIdRouteImport.update({
   path: '/$listingId',
   getParentRoute: () => MessagesRoute,
 } as any)
+const ListingIdRoute = ListingIdRouteImport.update({
+  id: '/listing/$id',
+  path: '/listing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
@@ -488,6 +500,7 @@ export interface RootRouteChildren {
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ListingIdRoute: typeof ListingIdRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -689,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesListingIdRouteImport
       parentRoute: typeof MessagesRoute
     }
+    '/listing/$id': {
+      id: '/listing/$id'
+      path: '/listing/$id'
+      fullPath: '/listing/$id'
+      preLoaderRoute: typeof ListingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -827,6 +847,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ListingIdRoute: ListingIdRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
