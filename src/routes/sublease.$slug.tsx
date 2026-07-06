@@ -200,12 +200,30 @@ function CampusPage() {
           <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <MapPin className="h-3.5 w-3.5" /> {campus.city}, {campus.state}
           </div>
-          <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight">
-            {campus.short_name} Subleases
+          <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
+            <span aria-hidden="true" className="text-4xl md:text-5xl">{campusIcon}</span>
+            {campus.name} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Verified student subleases at <span className="font-semibold text-foreground">{campus.name}</span>. Browse listings, post your sublease, and chat directly with other students. No scams. No agents.
+            Find subleases posted by verified {campus.short_name} students.
           </p>
+
+          {/* Live stats bar */}
+          <dl className="mt-5 grid grid-cols-3 gap-3 max-w-2xl">
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Listed this semester</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.active}</dd>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students helped</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.completed}</dd>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students looking</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.looking}</dd>
+            </div>
+          </dl>
+
           <div className="mt-5 flex flex-wrap gap-2">
             <button onClick={handlePost} className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease
@@ -216,6 +234,7 @@ function CampusPage() {
           </div>
         </div>
       </header>
+
 
 
       <main className="mx-auto max-w-7xl px-4 py-6">
