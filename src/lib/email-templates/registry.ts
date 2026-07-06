@@ -20,5 +20,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'new-message': newMessageTemplate,
   'price-drop': priceDropTemplate,
   'match-alert': matchAlertTemplate,
+  'listing-expiry': listingExpiryTemplate,
 }
 
