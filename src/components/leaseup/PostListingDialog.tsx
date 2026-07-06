@@ -215,6 +215,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
     const bathsNum = parseFloat(form.baths);
     if (isNaN(bathsNum) || bathsNum <= 0) { toast.error("How many bathrooms?"); return; }
     if (!form.available_from) { toast.error("Pick a move-in date"); return; }
+    if (isRelist && !form.available_to) { toast.error("Set your new end date for this relist"); return; }
     if (dateError) { toast.error(dateError); return; }
 
     setSubmitting(true);
