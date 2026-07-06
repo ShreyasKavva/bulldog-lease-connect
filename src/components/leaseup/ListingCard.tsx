@@ -114,6 +114,17 @@ export function ListingCard({
         {/* Top-left tags */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {listing.is_featured && <FeaturedBadge />}
+          {(() => {
+            const b = (listing as any).bumped_at as string | null | undefined;
+            if (!b) return null;
+            const ms = new Date(b).getTime();
+            if (Date.now() - ms > 1000 * 60 * 60 * 48) return null;
+            return (
+              <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white shadow backdrop-blur">
+                ↑ Refreshed
+              </span>
+            );
+          })()}
           {justPosted || isNew(listing.created_at) ? (
             <span className="rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">✨ New</span>
           ) : (listing.view_count ?? 0) >= 20 ? (
