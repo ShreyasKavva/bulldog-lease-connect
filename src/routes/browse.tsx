@@ -90,6 +90,17 @@ function Browse() {
   const { user, loading: sessionLoading } = useSession();
   const qc = useQueryClient();
 
+  // Q78: Toast + strip the "?notice=" flag left by the /lease-analysis 301.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("notice") === "lease-analysis-gone") {
+      toast.message("Lease analysis isn't available yet — browse listings instead.");
+      url.searchParams.delete("notice");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []);
+
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
