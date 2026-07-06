@@ -23,6 +23,7 @@ import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
 import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
+import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
@@ -64,6 +65,7 @@ function MyListingsPage() {
   const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
   const [tourFor, setTourFor] = useState<Listing | null>(null);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+  const [feedbackFor, setFeedbackFor] = useState<Listing | null>(null);
   const [tab, setTab] = useState<"active" | "rented" | "expired">("active");
 
   const today = new Date().toISOString().slice(0, 10);
@@ -180,6 +182,8 @@ function MyListingsPage() {
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Listing marked as rented. Nice work! 🎉");
+      setFeedbackFor(l);
+
 
       // Open review dialog targeting the most recent messenger
       const { data: conv } = await supabase
@@ -413,6 +417,15 @@ function MyListingsPage() {
           reviewedName={reviewFor.name}
           listingId={reviewFor.listing.id}
           reviewerRole="poster"
+        />
+      )}
+      {feedbackFor && (
+        <ListerFeedbackModal
+          open={!!feedbackFor}
+          onClose={() => setFeedbackFor(null)}
+          listingId={feedbackFor.id}
+          listingTitle={feedbackFor.title}
+          userId={user.id}
         />
       )}
       {tourFor && (

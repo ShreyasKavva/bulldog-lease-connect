@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
+import { RenterFeedbackPrompt } from "@/components/leaseup/RenterFeedbackPrompt";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
@@ -450,6 +451,7 @@ function Browse() {
 
 
         <main className="mx-auto max-w-7xl px-4 py-5">
+          {user && <RenterFeedbackPrompt userId={user.id} />}
           {view === "grid" && (
             <TrendingCarousel
               listings={trendingListings}

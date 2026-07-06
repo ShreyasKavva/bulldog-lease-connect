@@ -32,6 +32,7 @@ import {
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
+import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import {
   buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
   shareToDiscord, shareToGroupMe, withUtm,
@@ -1237,8 +1238,11 @@ function abbrevCampus(name: string): string {
 }
 
 function MarkAsRentedButton({ listingId }: { listingId: string }) {
+  const { listing } = Route.useLoaderData();
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const navigate = useNavigate();
 
   async function confirm() {
@@ -1246,9 +1250,15 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
     try {
       await markListingFilled(listingId);
       toast.success("Listing marked as rented. Nice work! 🎉");
-      navigate({ to: "/profile" });
+      setOpen(false);
+      if (user) {
+        setFeedbackOpen(true);
+      } else {
+        navigate({ to: "/profile" });
+      }
     } catch (e: any) {
       toast.error(e?.message ?? "Couldn't mark as rented");
+    } finally {
       setBusy(false);
     }
   }
@@ -1283,6 +1293,15 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {user && (
+        <ListerFeedbackModal
+          open={feedbackOpen}
+          onClose={() => { setFeedbackOpen(false); navigate({ to: "/profile" }); }}
+          listingId={listingId}
+          listingTitle={listing.title}
+          userId={user.id}
+        />
+      )}
     </>
   );
 }

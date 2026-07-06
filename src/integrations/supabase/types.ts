@@ -669,6 +669,86 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_feedback: {
+        Row: {
+          additional_comments: string | null
+          created_at: string
+          how_found_renter: string
+          id: string
+          is_testimonial: boolean
+          listing_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          additional_comments?: string | null
+          created_at?: string
+          how_found_renter: string
+          id?: string
+          is_testimonial?: boolean
+          listing_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          additional_comments?: string | null
+          created_at?: string
+          how_found_renter?: string
+          id?: string
+          is_testimonial?: boolean
+          listing_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_feedback_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "suspicious_listings_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_reactions: {
         Row: {
           created_at: string
@@ -1702,6 +1782,52 @@ export type Database = {
             foreignKeyName: "referral_events_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
+            referencedRelation: "user_risk_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      renter_feedback: {
+        Row: {
+          additional_comments: string | null
+          created_at: string
+          how_found: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          additional_comments?: string | null
+          created_at?: string
+          how_found: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          additional_comments?: string | null
+          created_at?: string
+          how_found?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renter_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renter_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renter_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "user_risk_scores"
             referencedColumns: ["id"]
           },
