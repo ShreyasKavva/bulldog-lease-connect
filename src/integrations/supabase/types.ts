@@ -981,6 +981,7 @@ export type Database = {
           available_to: string | null
           baths: number
           beds: number
+          bumped_at: string | null
           campus_id: string
           created_at: string
           deposit_amount: number | null
@@ -1007,6 +1008,7 @@ export type Database = {
           safe_score: number | null
           semester: string | null
           share_count: number
+          sort_at: string | null
           status: string
           title: string
           type: string
@@ -1026,6 +1028,7 @@ export type Database = {
           available_to?: string | null
           baths?: number
           beds?: number
+          bumped_at?: string | null
           campus_id: string
           created_at?: string
           deposit_amount?: number | null
@@ -1052,6 +1055,7 @@ export type Database = {
           safe_score?: number | null
           semester?: string | null
           share_count?: number
+          sort_at?: string | null
           status?: string
           title: string
           type?: string
@@ -1071,6 +1075,7 @@ export type Database = {
           available_to?: string | null
           baths?: number
           beds?: number
+          bumped_at?: string | null
           campus_id?: string
           created_at?: string
           deposit_amount?: number | null
@@ -1097,6 +1102,7 @@ export type Database = {
           safe_score?: number | null
           semester?: string | null
           share_count?: number
+          sort_at?: string | null
           status?: string
           title?: string
           type?: string
@@ -2806,6 +2812,7 @@ export type Database = {
     }
     Functions: {
       auto_approve_pending_listings: { Args: never; Returns: undefined }
+      bump_listing: { Args: { _listing_id: string }; Returns: string }
       compute_listing_safe_score: {
         Args: { _listing_id: string }
         Returns: number
