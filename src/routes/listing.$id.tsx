@@ -266,7 +266,27 @@ function ListingDetailPage() {
         <div className="grid grid-cols-1 gap-10 py-8 lg:grid-cols-3 lg:gap-12 lg:py-12">
           {/* PART B — details */}
           <div className="min-w-0 lg:col-span-2">
-            <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
+              {!isOwner && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  aria-label={isSaved ? "Remove from saved" : "Save listing"}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                >
+                  <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                </button>
+              )}
+            </div>
+            {isSaved && !isOwner && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Saved to your list ·{" "}
+                <button type="button" onClick={handleToggleSave} className="font-semibold text-primary hover:underline">
+                  Remove
+                </button>
+              </p>
+            )}
             <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               {listing.area && (
                 <span className="inline-flex items-center gap-1">
@@ -282,6 +302,7 @@ function ListingDetailPage() {
                 <Bath className="h-3.5 w-3.5" /> {listing.baths} ba
               </span>
             </p>
+
 
             <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2">
               <FactRow
