@@ -607,6 +607,8 @@ function ListingDetailPage() {
                     </span>
                   ) : null;
                 })()}
+              </div>
+
 
               {isOwner && (
                 <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
