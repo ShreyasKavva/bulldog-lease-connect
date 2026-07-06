@@ -208,14 +208,8 @@ function MyListingsPage() {
     } catch (e: any) { toast.error(e.message); }
   }
 
-  async function relist(l: Listing) {
-    try {
-      await relistListing(l.id, user!.id);
-      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
-      qc.invalidateQueries({ queryKey: ["listings"] });
-      toast.success("Relisted — update the dates and details as needed.");
-      setTab("active");
-    } catch (e: any) { toast.error(e.message); }
+  function relist(l: Listing) {
+    navigate({ to: "/post", search: { relist: l.id } as any });
   }
 
 

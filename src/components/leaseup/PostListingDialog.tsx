@@ -53,7 +53,7 @@ function defaultAvailableFrom(): string {
 
 type Preview = { file: File; url: string };
 
-export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
@@ -61,12 +61,16 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<{ path: string; url: string }[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [screenResult, setScreenResult] = useState<ScreenResult | null>(null);
   const [pendingForm, setPendingForm] = useState<null | (() => Promise<void>)>(null);
+  const [relistPrefilled, setRelistPrefilled] = useState(false);
   const runScreen = useServerFn(screenListing);
 
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+
+  const isRelist = !!relistFrom;
 
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
@@ -85,7 +89,55 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     }
   }, [profile?.campus_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup object URLs
+  // Relist prefill: fetch source listing and populate the form.
+  useEffect(() => {
+    if (!relistFrom || !user || relistPrefilled) return;
+    let cancelled = false;
+    (async () => {
+      const { data: src } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", relistFrom)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled || !src) return;
+      const s = src as any;
+      setForm((f) => ({
+        ...f,
+        title: s.title ?? "",
+        description: s.description ?? "",
+        type: s.type ?? "sublease",
+        price: s.price != null ? String(s.price) : "",
+        beds: s.beds != null ? String(s.beds) : "1",
+        baths: s.baths != null ? String(s.baths) : "1",
+        area: s.area ?? NEIGHBORHOODS[0].name,
+        campus_id: s.campus_id ?? f.campus_id,
+        available_from: "",
+        available_to: "",
+        furnished: !!s.furnished,
+        utilities_included: !!s.utilities_included,
+        pet_friendly: !!s.pet_friendly,
+        parking: !!s.parking,
+        amenities: (s.amenities ?? []) as string[],
+        deposit_amount: s.deposit_amount != null ? String(s.deposit_amount) : "",
+        deposit_escrow_enabled: !!s.deposit_escrow_enabled,
+      }));
+      const paths = (s.photos ?? []) as string[];
+      if (paths.length) {
+        const { data: signed } = await supabase.storage
+          .from("listing-photos")
+          .createSignedUrls(paths, 60 * 60 * 24 * 7);
+        if (cancelled) return;
+        const items = paths
+          .map((p) => ({ path: p, url: signed?.find((s) => s.path === p)?.signedUrl ?? "" }))
+          .filter((x) => !!x.url);
+        setExistingPhotos(items);
+      }
+      setRelistPrefilled(true);
+    })();
+    return () => { cancelled = true; };
+  }, [relistFrom, user?.id, relistPrefilled]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
   }, [previews]);
@@ -112,7 +164,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     e.target.value = "";
     const accepted: Preview[] = [];
     for (const file of picked) {
-      if (previews.length + accepted.length >= MAX_PHOTOS) {
+      if (existingPhotos.length + previews.length + accepted.length >= MAX_PHOTOS) {
         toast.error(`You can add up to ${MAX_PHOTOS} photos`);
         break;
       }
@@ -163,6 +215,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
     const bathsNum = parseFloat(form.baths);
     if (isNaN(bathsNum) || bathsNum <= 0) { toast.error("How many bathrooms?"); return; }
     if (!form.available_from) { toast.error("Pick a move-in date"); return; }
+    if (isRelist && !form.available_to) { toast.error("Set your new end date for this relist"); return; }
     if (dateError) { toast.error(dateError); return; }
 
     setSubmitting(true);
@@ -177,7 +230,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
             beds: bedsNum,
             campus: form.campus_id,
             has_contact: !!profile?.phone,
-            photo_count: previews.length,
+            photo_count: existingPhotos.length + previews.length,
           },
         });
       } catch {
@@ -196,15 +249,16 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id);
 
-        let photos: string[] = [];
+        let uploaded: string[] = [];
         if (previews.length) {
           setUploading(true);
           try {
-            photos = await uploadListingPhotos(user.id, previews.map((p) => p.file));
+            uploaded = await uploadListingPhotos(user.id, previews.map((p) => p.file));
           } finally {
             setUploading(false);
           }
         }
+        const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
 
         const hood = NEIGHBORHOODS.find((n) => n.name === form.area);
         const { data: inserted, error } = await supabase
@@ -237,10 +291,15 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
           .single();
         if (error) throw error;
 
+        const campusName = campuses.find((c) => c.id === form.campus_id)?.short_name
+          ?? campuses.find((c) => c.id === form.campus_id)?.name
+          ?? "your campus";
         toast.success(
           screen?.scam_risk === "high"
             ? "Posted — under brief review before going public"
-            : "Your listing is live! Share it with friends 🎉",
+            : isRelist
+              ? `Relisted! Your sublease is live again at ${campusName}.`
+              : "Your listing is live! Share it with friends 🎉",
         );
         qc.invalidateQueries({ queryKey: ["listings"] });
         onOpenChange(false);
@@ -284,6 +343,11 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
             <DialogTitle className="text-2xl">Post a sublease</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {isRelist && (
+              <div className="rounded-lg border border-blue-300/60 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-100">
+                ℹ️ Relisting from a previous listing — we've pre-filled your info. Update the dates and price, then post.
+              </div>
+            )}
             <Field label="Title">
               <Input
                 value={form.title}
@@ -322,7 +386,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
                     value={form.price}
                     onChange={(e) => setField("price", e.target.value)}
                     placeholder="e.g. 650"
-                    className="pl-6 pr-12"
+                    className={cn("pl-6 pr-12", isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     /mo
@@ -368,7 +432,15 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Available from">
-                <Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} />
+                <Input
+                  type="date"
+                  value={form.available_from}
+                  onChange={(e) => setField("available_from", e.target.value)}
+                  className={cn(isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
+                />
+                {isRelist && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Set your new dates for this relist</p>
+                )}
               </Field>
               <Field label="Available until">
                 <Input
@@ -376,7 +448,11 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
                   value={form.available_to}
                   min={form.available_from || undefined}
                   onChange={(e) => setField("available_to", e.target.value)}
+                  className={cn(isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
                 />
+                {isRelist && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Set your new dates for this relist</p>
+                )}
               </Field>
             </div>
             {dateError && (
@@ -427,10 +503,16 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
             {/* Photo upload */}
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase text-muted-foreground">
-                Photos ({previews.length}/{MAX_PHOTOS})
+                Photos ({existingPhotos.length + previews.length}/{MAX_PHOTOS})
               </Label>
 
-              {previews.length < MAX_PHOTOS && (
+              {isRelist && existingPhotos.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Photos from your original listing. Add new ones or remove any that aren't current.
+                </p>
+              )}
+
+              {existingPhotos.length + previews.length < MAX_PHOTOS && (
                 <label
                   className={cn(
                     "flex min-h-[9rem] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-6 text-center transition",
@@ -456,24 +538,42 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
                 Add up to {MAX_PHOTOS} photos · Listings with 3+ photos get significantly more views
               </p>
 
-              {previews.length === 0 && (
+              {existingPhotos.length + previews.length === 0 && (
                 <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>Your listing will get fewer views without photos.</span>
                 </div>
               )}
 
-              {previews.length > 0 && (
+              {(existingPhotos.length + previews.length) > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {existingPhotos.map((p, i) => (
+                    <div key={p.path} className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
+                      <img src={p.url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                      {i === 0 && (
+                        <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Remove photo"
+                        onClick={() => setExistingPhotos((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
                   {previews.map((p, i) => (
                     <div key={p.url} className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
                       <img
                         src={p.url}
-                        alt={`Photo ${i + 1}`}
+                        alt={`Photo ${existingPhotos.length + i + 1}`}
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
-                      {i === 0 && (
+                      {existingPhotos.length === 0 && i === 0 && (
                         <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
                           Cover
                         </span>
@@ -486,7 +586,7 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
-                      {i > 0 && (
+                      {existingPhotos.length === 0 && i > 0 && (
                         <button
                           type="button"
                           onClick={() => moveToFront(i)}

@@ -15,6 +15,9 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/post")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    relist: typeof search.relist === "string" ? search.relist : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Post your sublease — LeaseUp" },
@@ -29,6 +32,7 @@ export const Route = createFileRoute("/post")({
 function PostPage() {
   const { user, loading } = useSession();
   const navigate = useNavigate();
+  const { relist } = Route.useSearch();
 
   if (loading) {
     return <div className="min-h-[60vh]" />;
@@ -69,6 +73,7 @@ function PostPage() {
       </p>
       <PostListingDialog
         open
+        relistFrom={relist ?? null}
         onOpenChange={(o) => {
           if (!o) navigate({ to: "/" });
         }}
