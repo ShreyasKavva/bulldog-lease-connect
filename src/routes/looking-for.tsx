@@ -241,7 +241,7 @@ function LookingForCard({
   const profile = p.profile;
   const dateRange = fmtDateRange(p.move_in_date, p.move_out_date);
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
-  const expiringSoon = ageDays >= 87 && ageDays < 90;
+  const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
 
   return (
