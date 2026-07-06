@@ -257,7 +257,8 @@ function Browse() {
               onPin={togglePin}
             />
           ) : isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="overflow-hidden rounded-xl bg-surface shadow-card">
                   <div className="lu-shimmer aspect-[4/3] w-full" />
@@ -275,7 +276,7 @@ function Browse() {
               <h3 className="mt-3 text-lg font-bold">No listings match your filters</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {filtered.map((l) => (
                 <ListingCard
                   key={l.id}

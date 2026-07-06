@@ -101,7 +101,7 @@ function RoommatesPage() {
   if (loading) return <div className="min-h-[60vh]" />;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-16 pt-4 md:pt-6">
+    <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 md:pb-16 md:pt-6">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold md:text-3xl">Roommate board</h1>
@@ -120,13 +120,14 @@ function RoommatesPage() {
       </div>
 
       {/* Mode tabs */}
-      <div className="mb-4 inline-flex rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5 dark:bg-surface">
+      <div className="mb-4 grid w-full grid-cols-2 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5 sm:inline-flex sm:w-auto dark:bg-surface">
         <ModeTab active={mode === "has_room"} onClick={() => setMode("has_room")} icon={<Home className="h-4 w-4" />}>Has a room</ModeTab>
         <ModeTab active={mode === "looking"} onClick={() => setMode("looking")} icon={<Search className="h-4 w-4" />}>Looking for a room</ModeTab>
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+      <div className="mb-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 text-sm [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+
         <FilterSelect
           label="Budget"
           value={budgetFilter}
@@ -215,9 +216,10 @@ function ModeTab({ active, onClick, icon, children }: { active: boolean; onClick
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition",
+        "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition",
         active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
       )}
+
     >{icon}{children}</button>
   );
 }
