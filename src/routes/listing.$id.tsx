@@ -233,6 +233,9 @@ function ListingDetailPage() {
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [bumpOpen, setBumpOpen] = useState(false);
+  const [bumping, setBumping] = useState(false);
+  const [bumpedAt, setBumpedAt] = useState<string | null>(((listing as any).bumped_at as string | null) ?? null);
 
   const isOwner = user?.id === listing.user_id;
   const photos = listing.photo_urls ?? [];
