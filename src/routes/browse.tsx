@@ -495,7 +495,15 @@ function Browse() {
           ) : filtered.length === 0 ? (
             <div className="rounded-xl bg-surface p-12 text-center shadow-card">
               <div className="text-5xl">🏠</div>
-              <h3 className="mt-3 text-lg font-bold">No listings match your filters</h3>
+              <h3 className="mt-3 text-lg font-bold">No subleases found with those filters.</h3>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+                >
+                  Clear filters → to see all listings
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
