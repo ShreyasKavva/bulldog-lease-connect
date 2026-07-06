@@ -392,7 +392,8 @@ function LookingForFormDialog({
   editing: LookingForPost | null;
   onSaved: () => void;
 }) {
-  const { user, profile } = useSession() as any;
+  const { user } = useSession();
+  const { data: profile } = useMyProfile();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
