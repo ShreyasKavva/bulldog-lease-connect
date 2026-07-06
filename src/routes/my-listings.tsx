@@ -64,6 +64,7 @@ function MyListingsPage() {
   const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
   const [tourFor, setTourFor] = useState<Listing | null>(null);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+  const [feedbackFor, setFeedbackFor] = useState<Listing | null>(null);
   const [tab, setTab] = useState<"active" | "rented" | "expired">("active");
 
   const today = new Date().toISOString().slice(0, 10);
