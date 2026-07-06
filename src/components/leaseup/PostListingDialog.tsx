@@ -89,7 +89,55 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
     }
   }, [profile?.campus_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup object URLs
+  // Relist prefill: fetch source listing and populate the form.
+  useEffect(() => {
+    if (!relistFrom || !user || relistPrefilled) return;
+    let cancelled = false;
+    (async () => {
+      const { data: src } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", relistFrom)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled || !src) return;
+      const s = src as any;
+      setForm((f) => ({
+        ...f,
+        title: s.title ?? "",
+        description: s.description ?? "",
+        type: s.type ?? "sublease",
+        price: s.price != null ? String(s.price) : "",
+        beds: s.beds != null ? String(s.beds) : "1",
+        baths: s.baths != null ? String(s.baths) : "1",
+        area: s.area ?? NEIGHBORHOODS[0].name,
+        campus_id: s.campus_id ?? f.campus_id,
+        available_from: "",
+        available_to: "",
+        furnished: !!s.furnished,
+        utilities_included: !!s.utilities_included,
+        pet_friendly: !!s.pet_friendly,
+        parking: !!s.parking,
+        amenities: (s.amenities ?? []) as string[],
+        deposit_amount: s.deposit_amount != null ? String(s.deposit_amount) : "",
+        deposit_escrow_enabled: !!s.deposit_escrow_enabled,
+      }));
+      const paths = (s.photos ?? []) as string[];
+      if (paths.length) {
+        const { data: signed } = await supabase.storage
+          .from("listing-photos")
+          .createSignedUrls(paths, 60 * 60 * 24 * 7);
+        if (cancelled) return;
+        const items = paths
+          .map((p) => ({ path: p, url: signed?.find((s) => s.path === p)?.signedUrl ?? "" }))
+          .filter((x) => !!x.url);
+        setExistingPhotos(items);
+      }
+      setRelistPrefilled(true);
+    })();
+    return () => { cancelled = true; };
+  }, [relistFrom, user?.id, relistPrefilled]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
   }, [previews]);
