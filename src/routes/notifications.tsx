@@ -68,6 +68,17 @@ function NotificationsPage() {
   const all = (data?.pages.flat() ?? []) as Notification[];
   const unread = all.filter((n) => !n.read).length;
 
+  if (loading) return <div className="min-h-[60vh]" />;
+  if (!user) {
+    return (
+      <SignInGate
+        title="Sign in to see your notifications"
+        body="You need to sign in to view your LeaseUp activity."
+        next="/notifications"
+      />
+    );
+  }
+
   function handleOpen(n: Notification) {
     if (!n.read) markOne.mutate(n.id);
     if (!n.link) return;
