@@ -38,7 +38,7 @@ import { toast } from "sonner";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { fetchGrowthMetrics } from "@/lib/leaseup/analytics.queries";
 import { LineChart as AnalyticsLineChart } from "@/components/leaseup/analytics/Charts";
-import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock, ShieldAlert } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, BadgeCheck, Flag, Sparkles, DollarSign, Lock, ShieldAlert, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.functions";
