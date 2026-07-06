@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-ro
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
-import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, type Campus } from "@/lib/leaseup/campuses";
+import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
@@ -11,9 +11,17 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { MapPin, Sparkles, Plus } from "lucide-react";
+import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const CAMPUS_ICON: Record<string, string> = {
+  "university-of-georgia": "🐾",
+  "auburn-university": "🐅",
+  "university-of-florida": "🐊",
+  "georgia-tech": "🐝",
+  "university-of-alabama": "🐘",
+};
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
@@ -23,7 +31,8 @@ export const Route = createFileRoute("/sublease/$slug")({
       fetchActiveListingCountsByCampus(),
     ]);
     if (!campus) throw notFound();
-    return { campus, allCampuses, listingCounts };
+    const stats = await fetchCampusStats(campus.id);
+    return { campus, allCampuses, listingCounts, stats };
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
