@@ -450,6 +450,7 @@ function Browse() {
 
 
         <main className="mx-auto max-w-7xl px-4 py-5">
+          {user && <RenterFeedbackPrompt userId={user.id} />}
           {view === "grid" && (
             <TrendingCarousel
               listings={trendingListings}
