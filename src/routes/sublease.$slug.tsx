@@ -39,8 +39,12 @@ export const Route = createFileRoute("/sublease/$slug")({
     const name = c?.short_name ?? params.slug;
     const fullName = c?.name ?? name;
     const city = c?.city ? `${c.city}, ${c.state}` : "";
-    const title = `${name} Subleases — Find a Sublease Near ${fullName} | LeaseUp`;
-    const desc = `Verified student subleases at ${fullName}${city ? ` in ${city}` : ""}. Browse listings, post your sublease, and connect with other ${name} students.`;
+    const n = loaderData?.stats?.active ?? 0;
+    const cityStr = c?.city ? `${c.city}, ${c.state}` : "";
+    const title = `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
+    const desc = n > 0
+      ? `Browse ${n} sublease${n === 1 ? "" : "s"} posted by verified ${fullName} students${cityStr ? ` in ${cityStr}` : ""}. Find furnished rooms, apartments, and houses near ${name} campus.`
+      : `Verified student subleases at ${fullName}${cityStr ? ` in ${cityStr}` : ""}. Post your sublease and connect with other ${name} students.`;
     return {
       meta: [
         { title },
