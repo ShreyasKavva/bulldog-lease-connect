@@ -113,6 +113,7 @@ function AdminPage() {
         {tab === "users" && <UsersTab />}
         {tab === "revenue" && <RevenueTab />}
         {tab === "deposits" && <DepositsTab />}
+        {tab === "feedback" && <FeedbackTab />}
       </div>
     </div>
   );
