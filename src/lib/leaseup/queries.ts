@@ -451,6 +451,20 @@ export async function fetchMyLookingForInterests(userId: string): Promise<string
   return (data ?? []).map((r: any) => r.request_id);
 }
 
+/** Count of listings marked "filled" (rented) in the last 30 days, optionally scoped by campus. */
+export async function fetchRecentFilledCount(campusId?: string | null): Promise<number> {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  let q = supabase
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "filled")
+    .gte("filled_at", since);
+  if (campusId) q = q.eq("campus_id", campusId);
+  const { count, error } = await q;
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function toggleLookingForInterest(userId: string, requestId: string, interested: boolean) {
   if (interested) {
     const { error } = await supabase
