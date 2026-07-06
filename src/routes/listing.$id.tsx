@@ -314,9 +314,25 @@ function ListingDetailPage() {
   }
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
+  const shareInput = {
+    title: listing.title,
+    price: listing.price,
+    beds: listing.beds,
+    area: listing.area,
+    campusShortName: listing.campus?.short_name ?? null,
+    availableFrom: listing.available_from,
+    availableTo: listing.available_to,
+  };
+  function baseListingUrl() {
+    if (typeof window === "undefined") return `https://leasup.co/listing/${listing.id}`;
+    const u = new URL(window.location.href);
+    u.search = ""; u.hash = "";
+    return u.toString();
+  }
+
   async function handleShare() {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    const url = withUtm(baseListingUrl(), "native_share");
     const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
     const fmt = (iso: string | null) =>
@@ -328,16 +344,31 @@ function ListingDetailPage() {
     const title = `${listing.title} — LeaseUp`;
     const nav = window.navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
     if (typeof nav.share === "function") {
-      try { await nav.share({ title, text, url }); return; } catch (e: any) {
+      try {
+        await nav.share({ title, text, url });
+        recordShare(listing.id);
+        return;
+      } catch (e: any) {
         if (e?.name === "AbortError") return;
       }
     }
-    try {
-      await navigator.clipboard.writeText(url);
+    const clipUrl = withUtm(baseListingUrl(), "clipboard");
+    const ok = await copyToClipboard(clipUrl);
+    if (ok) {
       toast.success("Link copied!");
-    } catch {
-      window.prompt("Copy this link", url);
+      recordShare(listing.id);
     }
+  }
+
+  async function handleShareGroupMe() {
+    const url = withUtm(baseListingUrl(), "groupme");
+    await shareToGroupMe(buildGroupMeText(shareInput, url));
+    recordShare(listing.id);
+  }
+  async function handleShareDiscord() {
+    const url = withUtm(baseListingUrl(), "discord");
+    await shareToDiscord(buildDiscordText(shareInput, url));
+    recordShare(listing.id);
   }
 
 
