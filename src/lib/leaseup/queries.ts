@@ -270,26 +270,38 @@ export async function sendMessage(conversationId: string, senderId: string, reci
   }).eq("id", conversationId);
 
   // Fire-and-forget email notification to the recipient.
+  // Debounce: bucket by 10-minute windows so rapid back-and-forth in the same
+  // conversation doesn't spam the recipient's inbox — the email queue dedupes
+  // by idempotency key.
+  if (recipientId === senderId) return;
   try {
     const { sendTransactionalEmail } = await import("@/lib/email/send");
     const [{ data: recipient }, { data: sender }, listingRes] = await Promise.all([
       supabase.from("profiles").select("email,name").eq("id", recipientId).maybeSingle(),
       supabase.from("profiles").select("name,email").eq("id", senderId).maybeSingle(),
       listingId
-        ? supabase.from("listings").select("title").eq("id", listingId).maybeSingle()
+        ? supabase.from("listings").select("title,price,area").eq("id", listingId).maybeSingle()
         : Promise.resolve({ data: null } as any),
     ]);
     if (recipient?.email) {
       const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
+      const bucket = Math.floor(Date.now() / (10 * 60 * 1000));
+      const listing = (listingRes as any)?.data ?? null;
+      const replyUrl = listingId
+        ? `${origin}/messages/${listingId}`
+        : `${origin}/messages`;
       void sendTransactionalEmail({
         templateName: "new-message",
         recipientEmail: recipient.email,
-        idempotencyKey: `msg-${conversationId}-${Date.now()}`,
+        // Same (conversation, recipient, 10-min bucket) → same key → deduped
+        idempotencyKey: `msg-${conversationId}-${recipientId}-${bucket}`,
         templateData: {
           senderName: sender?.name || (sender?.email ? sender.email.split("@")[0] : "Someone"),
-          preview: content.slice(0, 240),
-          listingTitle: (listingRes as any)?.data?.title ?? null,
-          conversationUrl: `${origin}/chat?conversation=${conversationId}`,
+          preview: content.slice(0, 150),
+          listingTitle: listing?.title ?? null,
+          listingPrice: listing?.price ?? null,
+          listingArea: listing?.area ?? null,
+          conversationUrl: replyUrl,
         },
       });
     }
