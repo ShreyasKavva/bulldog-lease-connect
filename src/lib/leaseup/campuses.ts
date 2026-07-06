@@ -46,3 +46,26 @@ export async function fetchActiveListingCountsByCampus(): Promise<Record<string,
   }
   return counts;
 }
+
+/** Live counts for the campus hero: active listings, completed (rented),
+ *  and active looking-for posts scoped to a single campus. */
+export async function fetchCampusStats(campusId: string): Promise<{
+  active: number;
+  completed: number;
+  looking: number;
+}> {
+  const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+  const [active, completed, looking] = await Promise.all([
+    supabase.from("listings").select("id", { count: "exact", head: true })
+      .eq("campus_id", campusId).eq("is_active", true).eq("status", "active"),
+    supabase.from("listings").select("id", { count: "exact", head: true })
+      .eq("campus_id", campusId).eq("status", "rented"),
+    supabase.from("looking_for_posts").select("id", { count: "exact", head: true })
+      .eq("campus_id", campusId).eq("is_active", true).gte("created_at", sixtyDaysAgo),
+  ]);
+  return {
+    active: active.count ?? 0,
+    completed: completed.count ?? 0,
+    looking: looking.count ?? 0,
+  };
+}
