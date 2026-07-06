@@ -435,7 +435,22 @@ function CampusPage() {
               })}
           </div>
         </section>
+
+        {/* Bottom lister CTA */}
+        <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
+          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campus.short_name}?</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            Post it free and reach students already searching in {campus.city}.
+          </p>
+          <button
+            onClick={handlePost}
+            className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+          >
+            <Plus className="h-4 w-4" /> Post your sublease →
+          </button>
+        </section>
       </main>
+
 
       <ListingDetailSheet listing={selected} open={!!selected}
         onOpenChange={(o) => !o && setSelected(null)}
