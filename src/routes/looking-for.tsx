@@ -68,8 +68,13 @@ function fmtDateRange(from: string | null, to: string | null) {
 
 function LookingForPage() {
   const { user } = useSession();
+  const { data: myProfile } = useMyProfile();
   const qc = useQueryClient();
-  const { data: posts = [], isLoading } = useQuery({ queryKey: ["looking-for"], queryFn: fetchLookingFor });
+  const campusId = myProfile?.campus_id ?? null;
+  const { data: posts = [], isLoading } = useQuery({
+    queryKey: ["looking-for", campusId],
+    queryFn: () => fetchLookingFor(campusId),
+  });
   const { data: myInterests = [] } = useQuery({
     queryKey: ["looking-for-interests", user?.id],
     queryFn: () => (user ? fetchMyLookingForInterests(user.id) : Promise.resolve([])),
