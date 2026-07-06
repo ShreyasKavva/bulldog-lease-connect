@@ -9,7 +9,6 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, Search, Users, User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
-import { useNotifications } from "@/hooks/use-notifications";
 import { useSession } from "@/lib/leaseup/use-session";
 import type { LucideIcon } from "lucide-react";
 
