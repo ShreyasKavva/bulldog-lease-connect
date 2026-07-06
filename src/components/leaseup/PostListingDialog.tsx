@@ -269,57 +269,77 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
         const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
 
         const hood = NEIGHBORHOODS.find((n) => n.name === form.area);
-        const { data: inserted, error } = await supabase
-          .from("listings")
-          .insert({
-            user_id: user.id,
-            campus_id: form.campus_id,
-            title: form.title.trim(),
-            description: form.description.trim(),
-            type: form.type,
-            price: priceNum,
-            beds: bedsNum,
-            baths: bathsNum,
-            area: form.area,
-            lat: hood?.lat, lng: hood?.lng,
-            furnished: form.furnished,
-            utilities_included: form.utilities_included,
-            pet_friendly: form.pet_friendly,
-            parking: form.parking,
-            available_from: form.available_from || null,
-            available_to: form.available_to || null,
-            amenities: form.amenities,
-            photos,
-            deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
-            deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
-            pending_review: screen?.scam_risk === "high",
-            pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
-          } as any)
-          .select("id")
-          .single();
-        if (error) throw error;
+        const payload = {
+          campus_id: form.campus_id,
+          title: form.title.trim(),
+          description: form.description.trim(),
+          type: form.type,
+          price: priceNum,
+          beds: bedsNum,
+          baths: bathsNum,
+          area: form.area,
+          lat: hood?.lat, lng: hood?.lng,
+          furnished: form.furnished,
+          utilities_included: form.utilities_included,
+          pet_friendly: form.pet_friendly,
+          parking: form.parking,
+          available_from: form.available_from || null,
+          available_to: form.available_to || null,
+          amenities: form.amenities,
+          photos,
+          deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+          deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
+        };
+
+        let resultId: string | null = null;
+
+        if (isEdit && editListingId) {
+          const { error } = await supabase
+            .from("listings")
+            .update({ ...payload, updated_at: new Date().toISOString() } as any)
+            .eq("id", editListingId)
+            .eq("user_id", user.id);
+          if (error) throw error;
+          resultId = editListingId;
+        } else {
+          const { data: inserted, error } = await supabase
+            .from("listings")
+            .insert({
+              ...payload,
+              user_id: user.id,
+              pending_review: screen?.scam_risk === "high",
+              pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
+            } as any)
+            .select("id")
+            .single();
+          if (error) throw error;
+          resultId = inserted?.id ?? null;
+        }
 
         const campusName = campuses.find((c) => c.id === form.campus_id)?.short_name
           ?? campuses.find((c) => c.id === form.campus_id)?.name
           ?? "your campus";
         toast.success(
-          screen?.scam_risk === "high"
-            ? "Posted — under brief review before going public"
-            : isRelist
-              ? `Relisted! Your sublease is live again at ${campusName}.`
-              : "Your listing is live! Share it with friends 🎉",
+          isEdit
+            ? "Listing updated."
+            : screen?.scam_risk === "high"
+              ? "Posted — under brief review before going public"
+              : isRelist
+                ? `Relisted! Your sublease is live again at ${campusName}.`
+                : "Your listing is live! Share it with friends 🎉",
         );
         qc.invalidateQueries({ queryKey: ["listings"] });
+        if (resultId) qc.invalidateQueries({ queryKey: ["listing", resultId] });
         onOpenChange(false);
         setPreviews([]);
         setScreenResult(null);
         setPendingForm(null);
         // First-listing → invite dialog; otherwise straight to the new page.
-        if ((existingCount ?? 0) === 0) {
+        if (!isEdit && (existingCount ?? 0) === 0) {
           setInviteOpen(true);
         }
-        if (inserted?.id) {
-          router.navigate({ to: "/listing/$id", params: { id: inserted.id } });
+        if (resultId) {
+          router.navigate({ to: "/listing/$id", params: { id: resultId } });
         } else {
           router.navigate({ to: "/my-listings" });
         }
