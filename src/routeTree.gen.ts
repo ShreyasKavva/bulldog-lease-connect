@@ -38,6 +38,7 @@ import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -193,6 +194,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
+  id: '/ambassador_/dashboard',
+  path: '/ambassador/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyListingsListingIdAnalyticsRoute =
   MyListingsListingIdAnalyticsRouteImport.update({
     id: '/$listingId/analytics',
@@ -268,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -349,6 +357,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador_/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -512,6 +524,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -730,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ambassador_/dashboard': {
+      id: '/ambassador_/dashboard'
+      path: '/ambassador/dashboard'
+      fullPath: '/ambassador/dashboard'
+      preLoaderRoute: typeof AmbassadorDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-listings/$listingId/analytics': {
       id: '/my-listings/$listingId/analytics'
       path: '/$listingId/analytics'
@@ -867,6 +887,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,

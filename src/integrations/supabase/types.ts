@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ambassador_applications: {
+        Row: {
+          committed_to_post: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string
+          reason: string
+          school: string
+        }
+        Insert: {
+          committed_to_post?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          reason: string
+          school: string
+        }
+        Update: {
+          committed_to_post?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          reason?: string
+          school?: string
+        }
+        Relationships: []
+      }
       boost_purchases: {
         Row: {
           amount_cents: number
