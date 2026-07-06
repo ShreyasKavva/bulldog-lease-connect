@@ -11,6 +11,8 @@ import {
 } from "@/hooks/use-notifications";
 import { useSession } from "@/lib/leaseup/use-session";
 import { notificationMeta } from "@/lib/leaseup/notification-meta";
+import { SignInGate } from "@/components/leaseup/SignInGate";
+
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({
@@ -49,9 +51,8 @@ function NotificationsPage() {
   const del = useDeleteNotification();
   const sentinel = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
+  // Signed-out visitors see a proper prompt instead of being kicked to /auth.
+
 
   // Infinite scroll
   useEffect(() => {
@@ -66,6 +67,17 @@ function NotificationsPage() {
 
   const all = (data?.pages.flat() ?? []) as Notification[];
   const unread = all.filter((n) => !n.read).length;
+
+  if (loading) return <div className="min-h-[60vh]" />;
+  if (!user) {
+    return (
+      <SignInGate
+        title="Sign in to see your notifications"
+        body="You need to sign in to view your LeaseUp activity."
+        next="/notifications"
+      />
+    );
+  }
 
   function handleOpen(n: Notification) {
     if (!n.read) markOne.mutate(n.id);

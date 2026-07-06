@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSession } from "@/lib/leaseup/use-session";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
-import { openSignIn } from "@/components/leaseup/SignInModal";
+import { SignInGate } from "@/components/leaseup/SignInGate";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({
@@ -24,14 +24,16 @@ function MessagesInboxPage() {
   const search = Route.useSearch();
   const [open, setOpen] = useState(true);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      openSignIn("/messages");
-      navigate({ to: "/" });
-    }
-  }, [loading, user, navigate]);
-
-  if (!user) return <div className="min-h-[60vh]" />;
+  if (loading) return <div className="min-h-[60vh]" />;
+  if (!user) {
+    return (
+      <SignInGate
+        title="Sign in to see your messages"
+        body="You need to sign in to view your LeaseUp inbox."
+        next="/messages"
+      />
+    );
+  }
 
   return (
     <div className="min-h-[60vh]">
@@ -46,4 +48,5 @@ function MessagesInboxPage() {
     </div>
   );
 }
+
 
