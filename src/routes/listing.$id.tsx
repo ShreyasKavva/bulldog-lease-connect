@@ -367,9 +367,12 @@ function ListingDetailPage() {
                 <span className="inline-flex items-center gap-1">
                   <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString()} views
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <Bookmark className="h-3.5 w-3.5" /> {savedCount.toLocaleString()} saved
-                </span>
+                {savedCount >= 3 && (
+                  <span className="inline-flex items-center gap-1">
+                    🔖 {savedCount.toLocaleString()} people saved this
+                  </span>
+                )}
+
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> Listed {timeAgo(listing.created_at)}
                 </span>
