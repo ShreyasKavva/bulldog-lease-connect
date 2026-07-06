@@ -51,18 +51,25 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
       <Tab to="/roommates" active={isRoommates} label="Roommates" Icon={Users} />
       <Tab
+        to="/notifications"
+        active={isNotifications}
+        label="Alerts"
+        Icon={Bell}
+        badge={!!user && unread > 0}
+        onClick={(e) => { if (!user) { e.preventDefault(); navigate({ to: "/auth", search: { mode: "in", next: "/notifications" } }); } }}
+      />
+      <Tab
         to="/profile"
         active={isProfile}
         label="Profile"
         Icon={User}
-        badge={!!user && unread > 0}
         onClick={handleProfile}
       />
     </nav>
