@@ -230,7 +230,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
             beds: bedsNum,
             campus: form.campus_id,
             has_contact: !!profile?.phone,
-            photo_count: previews.length,
+            photo_count: existingPhotos.length + previews.length,
           },
         });
       } catch {
