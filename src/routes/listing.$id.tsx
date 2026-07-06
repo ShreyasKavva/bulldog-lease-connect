@@ -34,27 +34,46 @@ import {
 
 
 export const Route = createFileRoute("/listing/$id")({
-  head: ({ loaderData }) => {
-    const l = (loaderData as { listing?: Listing } | undefined)?.listing;
+  head: ({ params, loaderData }) => {
+    const l = (loaderData as { listing?: Listing & { campus?: { name: string; short_name: string } | null } } | undefined)?.listing;
+    const url = `https://leasup.co/listing/${params.id}`;
     if (!l) {
-      return { meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }],
+      };
     }
-    const desc = (l.description ?? "").slice(0, 155);
+    const bedStr = l.beds === 0 ? "Studio" : `${l.beds}BR`;
+    const baStr = `${Number(l.baths)}BA`;
+    const where = [l.area, (l as any).campus?.short_name].filter(Boolean).join(", ");
+    const fmtDate = (iso: string | null) =>
+      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+    const range = l.available_from && l.available_to
+      ? ` · Available ${fmtDate(l.available_from)}–${fmtDate(l.available_to)}`
+      : "";
+    const desc = `${bedStr}/${baStr}${where ? ` in ${where}` : ""} · $${l.price}/mo${range}`;
+    const title = `${l.title} — LeaseUp`;
     const img = l.photo_urls?.[0];
     const meta: Array<Record<string, string>> = [
-      { title: `${l.title} — LeaseUp` },
-      { name: "description", content: desc || `Student sublease on LeaseUp: ${l.title}` },
-      { property: "og:title", content: l.title },
+      { title },
+      { name: "description", content: desc },
+      { property: "og:title", content: title },
       { property: "og:description", content: desc },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: url },
       { name: "twitter:card", content: img ? "summary_large_image" : "summary" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: desc },
     ];
     if (img) {
       meta.push({ property: "og:image", content: img });
       meta.push({ name: "twitter:image", content: img });
     }
-    return { meta };
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+    };
   },
+
   loader: async ({ params }) => {
     const listing = await fetchListingDetail(params.id);
     if (!listing) throw notFound();
