@@ -437,6 +437,47 @@ function CampusPage() {
           </div>
         </section>
 
+        {/* Ambassador share kit */}
+        {(() => {
+          const baseUrl = typeof window !== "undefined"
+            ? `${window.location.origin}/sublease/${campus.slug}`
+            : `https://leasup.co/sublease/${campus.slug}`;
+          const short = campus.short_name;
+          const gmUrl = withUtm(baseUrl, "groupme", "campus_share");
+          const dcUrl = withUtm(baseUrl, "discord", "campus_share");
+          const gmText = `If you're looking for a sublease at ${short} this summer/fall, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo SafeScore BS, just real listings from real students 👇\n${gmUrl}`;
+          const dcText = `**LeaseUp — ${short} subleases**\nFree marketplace just for ${short} students · verified .edu sign-in only.\nReal listings from real students 👇\n\n${dcUrl}`;
+          return (
+            <section className="mt-12 rounded-2xl border border-border bg-surface p-6 md:p-8">
+              <h2 className="text-lg md:text-xl font-black">
+                Know students looking for housing? Share LeaseUp with your {short} GroupMe.
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Pre-written and ready to paste — one tap and you're helping other {short} students find housing.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => shareToGroupMe(gmText)}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
+                >
+                  Copy campus message for GroupMe
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ok = await copyToClipboard(dcText);
+                    if (ok) toast.success("Copied — paste into Discord");
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95"
+                >
+                  Copy for Discord
+                </button>
+              </div>
+            </section>
+          );
+        })()}
+
         {/* Bottom lister CTA */}
         <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
           <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campus.short_name}?</h2>
