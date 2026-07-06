@@ -122,11 +122,17 @@ function CampusPage() {
   const [furnishedOnly, setFurnishedOnly] = useState(false);
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("any");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "price">("recent");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
+
+  const { data: lookingFor = [] } = useQuery({
+    queryKey: ["looking-for", campus.id],
+    queryFn: () => fetchLookingFor(campus.id),
+  });
 
   async function handleSave(l: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
