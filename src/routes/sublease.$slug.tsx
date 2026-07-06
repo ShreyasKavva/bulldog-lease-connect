@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-ro
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
-import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, type Campus } from "@/lib/leaseup/campuses";
+import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
@@ -11,9 +11,17 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
-import { MapPin, Sparkles, Plus } from "lucide-react";
+import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const CAMPUS_ICON: Record<string, string> = {
+  "university-of-georgia": "🐾",
+  "auburn-university": "🐅",
+  "university-of-florida": "🐊",
+  "georgia-tech": "🐝",
+  "university-of-alabama": "🐘",
+};
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
@@ -23,15 +31,20 @@ export const Route = createFileRoute("/sublease/$slug")({
       fetchActiveListingCountsByCampus(),
     ]);
     if (!campus) throw notFound();
-    return { campus, allCampuses, listingCounts };
+    const stats = await fetchCampusStats(campus.id);
+    return { campus, allCampuses, listingCounts, stats };
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
     const name = c?.short_name ?? params.slug;
     const fullName = c?.name ?? name;
     const city = c?.city ? `${c.city}, ${c.state}` : "";
-    const title = `${name} Subleases — Find a Sublease Near ${fullName} | LeaseUp`;
-    const desc = `Verified student subleases at ${fullName}${city ? ` in ${city}` : ""}. Browse listings, post your sublease, and connect with other ${name} students.`;
+    const n = loaderData?.stats?.active ?? 0;
+    const cityStr = c?.city ? `${c.city}, ${c.state}` : "";
+    const title = `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
+    const desc = n > 0
+      ? `Browse ${n} sublease${n === 1 ? "" : "s"} posted by verified ${fullName} students${cityStr ? ` in ${cityStr}` : ""}. Find furnished rooms, apartments, and houses near ${name} campus.`
+      : `Verified student subleases at ${fullName}${cityStr ? ` in ${cityStr}` : ""}. Post your sublease and connect with other ${name} students.`;
     return {
       meta: [
         { title },
@@ -77,7 +90,7 @@ type BedFilter = "any" | "0" | "1" | "2" | "3+";
 type PriceFilter = "any" | "under700" | "under1000";
 
 function CampusPage() {
-  const { campus, allCampuses, listingCounts } = Route.useLoaderData();
+  const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
@@ -109,11 +122,17 @@ function CampusPage() {
   const [furnishedOnly, setFurnishedOnly] = useState(false);
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("any");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "price">("recent");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
+
+  const { data: lookingFor = [] } = useQuery({
+    queryKey: ["looking-for", campus.id],
+    queryFn: () => fetchLookingFor(campus.id),
+  });
 
   async function handleSave(l: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
@@ -137,7 +156,7 @@ function CampusPage() {
   }
 
   const filtered = useMemo(() => {
-    return listings.filter((l) => {
+    const list = listings.filter((l) => {
       if (search) {
         const q = search.toLowerCase();
         if (!l.title.toLowerCase().includes(q) && !(l.area ?? "").toLowerCase().includes(q)) return false;
@@ -151,9 +170,27 @@ function CampusPage() {
       if (priceFilter === "under1000" && (l.price ?? 0) >= 1000) return false;
       return true;
     });
-  }, [listings, search, bedFilter, furnishedOnly, priceFilter]);
+    if (sortBy === "price") {
+      return [...list].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    }
+    return [...list].sort((a, b) => {
+      const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bd - ad;
+    });
+  }, [listings, search, bedFilter, furnishedOnly, priceFilter, sortBy]);
 
   const handlePost = () => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } });
+
+  async function handleMessageUser(userId: string) {
+    if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (userId === user.id) { toast("That's your own post"); return; }
+    const id = await getOrCreateConversation(user.id, userId, null);
+    setActiveConv(id);
+    setMessagesOpen(true);
+  }
+
+  const campusIcon = CAMPUS_ICON[campus.slug] ?? "🏫";
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
@@ -163,12 +200,30 @@ function CampusPage() {
           <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <MapPin className="h-3.5 w-3.5" /> {campus.city}, {campus.state}
           </div>
-          <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight">
-            {campus.short_name} Subleases
+          <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
+            <span aria-hidden="true" className="text-4xl md:text-5xl">{campusIcon}</span>
+            {campus.name} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Verified student subleases at <span className="font-semibold text-foreground">{campus.name}</span>. Browse listings, post your sublease, and chat directly with other students. No scams. No agents.
+            Find subleases posted by verified {campus.short_name} students.
           </p>
+
+          {/* Live stats bar */}
+          <dl className="mt-5 grid grid-cols-3 gap-3 max-w-2xl">
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Listed this semester</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.active}</dd>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students helped</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.completed}</dd>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students looking</dt>
+              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.looking}</dd>
+            </div>
+          </dl>
+
           <div className="mt-5 flex flex-wrap gap-2">
             <button onClick={handlePost} className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease
@@ -179,6 +234,7 @@ function CampusPage() {
           </div>
         </div>
       </header>
+
 
 
       <main className="mx-auto max-w-7xl px-4 py-6">
@@ -234,19 +290,39 @@ function CampusPage() {
           ))}
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-black">{filtered.length} listing{filtered.length === 1 ? "" : "s"} at {campus.short_name}</h2>
+          <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-0.5 text-xs">
+            <button
+              onClick={() => setSortBy("recent")}
+              className={cn(
+                "rounded-full px-3 py-1 font-semibold transition",
+                sortBy === "recent" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Most recent
+            </button>
+            <button
+              onClick={() => setSortBy("price")}
+              className={cn(
+                "rounded-full px-3 py-1 font-semibold transition",
+                sortBy === "price" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Lowest price
+            </button>
+          </div>
         </div>
 
         {filtered.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🏠</div>
-            <h3 className="mt-3 text-lg font-bold">No listings at {campus.short_name} yet</h3>
+            <h3 className="mt-3 text-lg font-bold">No subleases posted yet at {campus.short_name}.</h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
-              Be the first. Post your sublease and we'll spread the word to other {campus.short_name} students.
+              Be the first — post your sublease and help a fellow {campus.short_name} student.
             </p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
-              <Plus className="h-4 w-4" /> Post the first listing
+              <Plus className="h-4 w-4" /> Post a sublease →
             </button>
           </div>
         ) : (
@@ -257,6 +333,77 @@ function CampusPage() {
             ))}
           </div>
         )}
+
+        {/* Students actively looking */}
+        {lookingFor.length > 0 && (
+          <section className="mt-12">
+            <h2 className="mb-4 text-xl font-black">
+              Students actively looking for a sublease at {campus.short_name}
+            </h2>
+            <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:px-0">
+              {lookingFor.slice(0, 4).map((p) => {
+                const budget = p.budget_max != null ? `Up to $${p.budget_max}/mo` : "Budget flexible";
+                const move = p.move_in_date
+                  ? new Date(p.move_in_date).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+                  : "Flexible";
+                const first = (p.profile?.name ?? "Student").split(" ")[0];
+                const snippet = (p.description ?? "").slice(0, 120);
+                return (
+                  <article
+                    key={p.id}
+                    className="min-w-[85%] snap-start rounded-2xl border border-border bg-surface p-4 shadow-sm md:min-w-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
+                        style={{ background: p.profile?.banner_color ?? "#2563EB" }}
+                      >
+                        {p.profile?.avatar_emoji ?? first[0]?.toUpperCase() ?? "🙂"}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-bold">{first}</div>
+                        <div className="truncate text-[11px] text-muted-foreground">
+                          {budget} · Move-in {move}
+                        </div>
+                      </div>
+                    </div>
+                    {snippet && (
+                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{snippet}</p>
+                    )}
+                    <button
+                      onClick={() => handleMessageUser(p.user_id)}
+                      className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" /> Message →
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* How it works */}
+        <section className="mt-12 border-t pt-8">
+          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campus.short_name}</h2>
+          <ol className="grid gap-4 md:grid-cols-3">
+            {[
+              { n: 1, icon: Search, title: "Browse verified listings", body: `Subleases posted by real ${campus.short_name} students. Every poster is .edu verified.` },
+              { n: 2, icon: Handshake, title: "Message directly", body: "No middleman. Message the lister directly and arrange the handoff." },
+              { n: 3, icon: CheckCircle2, title: "Mark as rented", body: "Once a deal is made, the listing is marked complete. No ghost listings." },
+            ].map(({ n, icon: Icon, title, body }) => (
+              <li key={n} className="rounded-2xl border border-border bg-surface p-5">
+                <div className="flex items-center gap-2 text-primary">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/10 text-xs font-black">{n}</span>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <h3 className="mt-3 text-base font-bold">{title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
 
         {/* Other campuses — cards with live listing counts */}
         <section className="mt-12 border-t pt-8">
@@ -288,7 +435,22 @@ function CampusPage() {
               })}
           </div>
         </section>
+
+        {/* Bottom lister CTA */}
+        <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
+          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campus.short_name}?</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            Post it free and reach students already searching in {campus.city}.
+          </p>
+          <button
+            onClick={handlePost}
+            className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+          >
+            <Plus className="h-4 w-4" /> Post your sublease →
+          </button>
+        </section>
       </main>
+
 
       <ListingDetailSheet listing={selected} open={!!selected}
         onOpenChange={(o) => !o && setSelected(null)}
