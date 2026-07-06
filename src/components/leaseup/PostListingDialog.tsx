@@ -249,15 +249,16 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id);
 
-        let photos: string[] = [];
+        let uploaded: string[] = [];
         if (previews.length) {
           setUploading(true);
           try {
-            photos = await uploadListingPhotos(user.id, previews.map((p) => p.file));
+            uploaded = await uploadListingPhotos(user.id, previews.map((p) => p.file));
           } finally {
             setUploading(false);
           }
         }
+        const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
 
         const hood = NEIGHBORHOODS.find((n) => n.name === form.area);
         const { data: inserted, error } = await supabase
