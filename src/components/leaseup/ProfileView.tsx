@@ -130,6 +130,11 @@ export function ProfileView({ userId }: { userId: string }) {
     queryKey: ["reviews", userId],
     queryFn: () => fetchUserReviews(userId),
   });
+  const { data: roommateProfile } = useQuery({
+    queryKey: ["roommate-profile-for-user", userId],
+    queryFn: () => fetchMyRoommateProfile(userId),
+    enabled: !!userId,
+  });
   const stats = computeReviewStats(reviews);
 
   const [editOpen, setEditOpen] = useState(false);
