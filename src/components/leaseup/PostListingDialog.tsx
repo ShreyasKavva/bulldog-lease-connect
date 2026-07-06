@@ -486,10 +486,16 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
             {/* Photo upload */}
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase text-muted-foreground">
-                Photos ({previews.length}/{MAX_PHOTOS})
+                Photos ({existingPhotos.length + previews.length}/{MAX_PHOTOS})
               </Label>
 
-              {previews.length < MAX_PHOTOS && (
+              {isRelist && existingPhotos.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Photos from your original listing. Add new ones or remove any that aren't current.
+                </p>
+              )}
+
+              {existingPhotos.length + previews.length < MAX_PHOTOS && (
                 <label
                   className={cn(
                     "flex min-h-[9rem] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-6 text-center transition",
@@ -515,24 +521,42 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
                 Add up to {MAX_PHOTOS} photos · Listings with 3+ photos get significantly more views
               </p>
 
-              {previews.length === 0 && (
+              {existingPhotos.length + previews.length === 0 && (
                 <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>Your listing will get fewer views without photos.</span>
                 </div>
               )}
 
-              {previews.length > 0 && (
+              {(existingPhotos.length + previews.length) > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {existingPhotos.map((p, i) => (
+                    <div key={p.path} className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
+                      <img src={p.url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                      {i === 0 && (
+                        <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Remove photo"
+                        onClick={() => setExistingPhotos((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
                   {previews.map((p, i) => (
                     <div key={p.url} className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
                       <img
                         src={p.url}
-                        alt={`Photo ${i + 1}`}
+                        alt={`Photo ${existingPhotos.length + i + 1}`}
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
-                      {i === 0 && (
+                      {existingPhotos.length === 0 && i === 0 && (
                         <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
                           Cover
                         </span>
@@ -545,7 +569,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
-                      {i > 0 && (
+                      {existingPhotos.length === 0 && i > 0 && (
                         <button
                           type="button"
                           onClick={() => moveToFront(i)}
