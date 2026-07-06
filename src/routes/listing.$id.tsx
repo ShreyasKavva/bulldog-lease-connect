@@ -28,33 +28,53 @@ import type { Listing, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
 
 
 
+
 export const Route = createFileRoute("/listing/$id")({
-  head: ({ loaderData }) => {
-    const l = (loaderData as { listing?: Listing } | undefined)?.listing;
+  head: ({ params, loaderData }) => {
+    const l = (loaderData as { listing?: Listing & { campus?: { name: string; short_name: string } | null } } | undefined)?.listing;
+    const url = `https://leasup.co/listing/${params.id}`;
     if (!l) {
-      return { meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }],
+      };
     }
-    const desc = (l.description ?? "").slice(0, 155);
+    const bedStr = l.beds === 0 ? "Studio" : `${l.beds}BR`;
+    const baStr = `${Number(l.baths)}BA`;
+    const where = [l.area, (l as any).campus?.short_name].filter(Boolean).join(", ");
+    const fmtDate = (iso: string | null) =>
+      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+    const range = l.available_from && l.available_to
+      ? ` · Available ${fmtDate(l.available_from)}–${fmtDate(l.available_to)}`
+      : "";
+    const desc = `${bedStr}/${baStr}${where ? ` in ${where}` : ""} · $${l.price}/mo${range}`;
+    const title = `${l.title} — LeaseUp`;
     const img = l.photo_urls?.[0];
     const meta: Array<Record<string, string>> = [
-      { title: `${l.title} — LeaseUp` },
-      { name: "description", content: desc || `Student sublease on LeaseUp: ${l.title}` },
-      { property: "og:title", content: l.title },
+      { title },
+      { name: "description", content: desc },
+      { property: "og:title", content: title },
       { property: "og:description", content: desc },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: url },
       { name: "twitter:card", content: img ? "summary_large_image" : "summary" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: desc },
     ];
     if (img) {
       meta.push({ property: "og:image", content: img });
       meta.push({ name: "twitter:image", content: img });
     }
-    return { meta };
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+    };
   },
+
   loader: async ({ params }) => {
     const listing = await fetchListingDetail(params.id);
     if (!listing) throw notFound();
@@ -226,6 +246,33 @@ function ListingDetailPage() {
   });
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
+  async function handleShare() {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
+    const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
+    const fmt = (iso: string | null) =>
+      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+    const range = listing.available_from && listing.available_to
+      ? ` · ${fmt(listing.available_from)}–${fmt(listing.available_to)}`
+      : "";
+    const text = `${bedStr}${where ? ` at ${where}` : ""} · $${listing.price}/mo${range}`;
+    const title = `${listing.title} — LeaseUp`;
+    const nav = window.navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (typeof nav.share === "function") {
+      try { await nav.share({ title, text, url }); return; } catch (e: any) {
+        if (e?.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied!");
+    } catch {
+      window.prompt("Copy this link", url);
+    }
+  }
+
+
   // Bump view count once per session.
   useEffect(() => {
     const key = `viewed:${listing.id}`;
@@ -280,17 +327,28 @@ function ListingDetailPage() {
           <div className="min-w-0 lg:col-span-2">
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
-              {!isOwner && (
+              <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleToggleSave}
-                  aria-label={isSaved ? "Remove from saved" : "Save listing"}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                  onClick={handleShare}
+                  aria-label="Share listing"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-sm font-semibold shadow-sm transition active:scale-95"
                 >
-                  <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                  <Share2 className="h-4 w-4" /> Share
                 </button>
-              )}
+                {!isOwner && (
+                  <button
+                    type="button"
+                    onClick={handleToggleSave}
+                    aria-label={isSaved ? "Remove from saved" : "Save listing"}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                  >
+                    <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                  </button>
+                )}
+              </div>
             </div>
+
             {isSaved && !isOwner && (
               <p className="mt-2 text-xs text-muted-foreground">
                 Saved to your list ·{" "}
@@ -412,7 +470,24 @@ function ListingDetailPage() {
             </div>
           </section>
         )}
+
+        {/* PART E2 — send to a friend */}
+        <section className="border-t border-border py-10">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl border border-border bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-sm font-medium text-foreground">
+              Know someone looking for a place{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}? Share this listing.
+            </p>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
+            >
+              <Share2 className="h-4 w-4" /> Share listing →
+            </button>
+          </div>
+        </section>
       </div>
+
 
       {/* PART F — sticky mobile CTA */}
       <MobileStickyCTA
