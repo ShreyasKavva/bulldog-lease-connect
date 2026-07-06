@@ -65,7 +65,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
         active={isNotifications}
         label="Alerts"
         Icon={Bell}
-        badge={!!user && unread > 0}
+        badge={!!user && unreadNotifs > 0}
         onClick={(e) => { if (!user) { e.preventDefault(); navigate({ to: "/auth", search: { mode: "in", next: "/notifications" } }); } }}
       />
       <Tab
