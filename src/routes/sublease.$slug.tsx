@@ -156,7 +156,7 @@ function CampusPage() {
   }
 
   const filtered = useMemo(() => {
-    return listings.filter((l) => {
+    const list = listings.filter((l) => {
       if (search) {
         const q = search.toLowerCase();
         if (!l.title.toLowerCase().includes(q) && !(l.area ?? "").toLowerCase().includes(q)) return false;
@@ -170,9 +170,27 @@ function CampusPage() {
       if (priceFilter === "under1000" && (l.price ?? 0) >= 1000) return false;
       return true;
     });
-  }, [listings, search, bedFilter, furnishedOnly, priceFilter]);
+    if (sortBy === "price") {
+      return [...list].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    }
+    return [...list].sort((a, b) => {
+      const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bd - ad;
+    });
+  }, [listings, search, bedFilter, furnishedOnly, priceFilter, sortBy]);
 
   const handlePost = () => user ? setPosting(true) : navigate({ to: "/auth", search: { mode: "up" } });
+
+  async function handleMessageUser(userId: string) {
+    if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (userId === user.id) { toast("That's your own post"); return; }
+    const id = await getOrCreateConversation(user.id, userId, null);
+    setActiveConv(id);
+    setMessagesOpen(true);
+  }
+
+  const campusIcon = CAMPUS_ICON[campus.slug] ?? "🏫";
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
