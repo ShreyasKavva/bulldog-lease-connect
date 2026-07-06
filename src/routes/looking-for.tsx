@@ -124,7 +124,7 @@ function LookingForPage() {
     try {
       await renewLookingFor(p.id);
       qc.invalidateQueries({ queryKey: ["looking-for"] });
-      toast.success("Renewed for 90 more days");
+      toast.success("Renewed for 60 more days");
     } catch (e: any) { toast.error(e.message); }
   }
 
