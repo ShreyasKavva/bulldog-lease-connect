@@ -414,7 +414,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
                     value={form.price}
                     onChange={(e) => setField("price", e.target.value)}
                     placeholder="e.g. 650"
-                    className={cn("pl-6 pr-12", isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
+                    className={cn("pl-6 pr-12", (isRelist || isEdit) && "border-2 border-amber-400 focus-visible:ring-amber-500")}
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     /mo
