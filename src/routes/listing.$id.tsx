@@ -21,6 +21,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
