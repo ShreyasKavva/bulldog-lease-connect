@@ -56,8 +56,9 @@ function Onboarding() {
   }, [loading, user, navigate]);
 
   useEffect(() => {
-    if (profile?.onboarding_completed) navigate({ to: "/" });
-  }, [profile?.onboarding_completed, navigate]);
+    // Q67: allow re-entry when campus is missing (fallback from /profile banner).
+    if (profile?.onboarding_completed && profile?.campus_id) navigate({ to: "/" });
+  }, [profile?.onboarding_completed, profile?.campus_id, navigate]);
 
   useEffect(() => {
     if (!profile) return;
