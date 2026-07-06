@@ -30,7 +30,7 @@ function token32() {
 }
 
 async function ensureUnsubToken(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   email: string,
 ): Promise<string | null> {
   const normalized = email.toLowerCase()
