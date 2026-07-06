@@ -96,6 +96,7 @@ function AdminPage() {
             ["users", "Users", Users],
             ["revenue", "Revenue", DollarSign],
             ["deposits", "Deposits", Lock],
+            ["feedback", "Feedback", MessageCircle],
           ] as const).map(([t, label, Icon]) => (
             <button key={t} onClick={() => setTab(t)}
               className={cn("flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-bold whitespace-nowrap",
