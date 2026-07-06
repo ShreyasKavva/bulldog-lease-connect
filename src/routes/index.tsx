@@ -59,6 +59,28 @@ function Home() {
   const { data: listings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
 
+  // "Latest subleases" feed scope: user's campus, else most active campus.
+  const userCampusId = profile?.campus_id ?? null;
+  const topCampusId = (() => {
+    if (userCampusId) return userCampusId;
+    const counts = new Map<string, number>();
+    for (const l of listings) counts.set(l.campus_id, (counts.get(l.campus_id) ?? 0) + 1);
+    let best: string | null = null; let n = -1;
+    for (const [id, c] of counts) if (c > n) { best = id; n = c; }
+    return best;
+  })();
+
+  const { data: lookingFor = [] } = useQuery({
+    queryKey: ["home-looking-for", topCampusId],
+    queryFn: () => fetchLookingFor(topCampusId ?? null),
+    enabled: campuses.length > 0,
+  });
+
+  const { data: filledCount = 0 } = useQuery({
+    queryKey: ["home-filled-count", topCampusId],
+    queryFn: () => fetchRecentFilledCount(topCampusId ?? null),
+  });
+
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
