@@ -181,6 +181,8 @@ function MyListingsPage() {
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Listing marked as rented. Nice work! 🎉");
+      setFeedbackFor(l);
+
 
       // Open review dialog targeting the most recent messenger
       const { data: conv } = await supabase
