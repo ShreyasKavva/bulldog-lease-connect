@@ -82,6 +82,7 @@ function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string,
 
 export function AirbnbHome({
   listings, campuses, savedIds, onSave, onOpen, onPost,
+  userCampusId, feedCampusId, lookingForPosts, recentFilledCount,
 }: {
   listings: Listing[];
   campuses: Campus[];
@@ -90,6 +91,10 @@ export function AirbnbHome({
   onOpen: (l: Listing) => void;
   onMessage: (l: Listing) => void;
   onPost: () => void;
+  userCampusId?: string | null;
+  feedCampusId?: string | null;
+  lookingForPosts?: LookingForPost[];
+  recentFilledCount?: number;
 }) {
   const navigate = useNavigate();
   const railsRef = useRef<HTMLDivElement>(null);
