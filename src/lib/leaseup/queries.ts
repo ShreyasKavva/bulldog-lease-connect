@@ -603,3 +603,11 @@ export async function relistListing(sourceId: string, userId: string): Promise<s
   return (created as any).id as string;
 }
 
+/** Bump listing to the top of the feed (once per 7 days, owner-only, enforced server-side). */
+export async function bumpListing(listingId: string): Promise<string> {
+  const { data, error } = await supabase.rpc("bump_listing", { _listing_id: listingId });
+  if (error) throw error;
+  return data as unknown as string;
+}
+
+
