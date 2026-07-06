@@ -625,6 +625,12 @@ function ListingDetailPage() {
                         </dd>
                       </div>
                     )}
+                    {((listing as any).share_count ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">Shares</dt>
+                        <dd className="font-semibold">{((listing as any).share_count ?? 0).toLocaleString()}</dd>
+                      </div>
+                    )}
                   </dl>
                 </div>
               )}
