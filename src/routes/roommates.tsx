@@ -216,9 +216,10 @@ function ModeTab({ active, onClick, icon, children }: { active: boolean; onClick
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition",
+        "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition",
         active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
       )}
+
     >{icon}{children}</button>
   );
 }
