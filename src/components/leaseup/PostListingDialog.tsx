@@ -227,26 +227,28 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
     setSubmitting(true);
     try {
       let screen: ScreenResult | null = null;
-      try {
-        screen = await runScreen({
-          data: {
-            title: form.title,
-            description: form.description ?? "",
-            price: priceNum,
-            beds: bedsNum,
-            campus: form.campus_id,
-            has_contact: !!profile?.phone,
-            photo_count: existingPhotos.length + previews.length,
-          },
-        });
-      } catch {
-        screen = null;
-      }
+      if (!isEdit) {
+        try {
+          screen = await runScreen({
+            data: {
+              title: form.title,
+              description: form.description ?? "",
+              price: priceNum,
+              beds: bedsNum,
+              campus: form.campus_id,
+              has_contact: !!profile?.phone,
+              photo_count: existingPhotos.length + previews.length,
+            },
+          });
+        } catch {
+          screen = null;
+        }
 
-      if (screen?.auto_reject) {
-        setScreenResult(screen);
-        setSubmitting(false);
-        return;
+        if (screen?.auto_reject) {
+          setScreenResult(screen);
+          setSubmitting(false);
+          return;
+        }
       }
 
       const doPublish = async () => {
