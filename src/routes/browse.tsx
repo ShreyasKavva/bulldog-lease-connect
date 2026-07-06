@@ -111,13 +111,43 @@ function Browse() {
     [trendingIds, listings],
   );
 
-  const [view, setView] = useState<View>("grid");
-  const [sort, setSort] = useState<Sort>("newest");
-  const [search, setSearch] = useState("");
-  const [maxPrice, setMaxPrice] = useState(2500);
-  const [area, setArea] = useState<string>("");
-  const [furnishedOnly, setFurnishedOnly] = useState(false);
+  // URL-driven filters — shareable, back/forward safe, refresh-safe.
+  const s = Route.useSearch();
+  const sort: Sort = s.sort ?? "newest";
+  const maxPrice = s.max_price ?? undefined;
+  const minPrice = s.min_price ?? undefined;
+  const area = s.area ?? "";
+  const furnishedOnly = s.furnished === 1;
+  const bedSet = useMemo(
+    () => new Set<BedKey>(((s.bedrooms ?? "").split(",").filter(Boolean) as BedKey[])),
+    [s.bedrooms],
+  );
+  const fromDate = s.from ? new Date(s.from) : null;
+  const toDate = s.to ? new Date(s.to) : null;
+  const campusSlug = s.campus ?? null;
+  const campusId = campusSlug ? campuses.find(c => c.slug === campusSlug)?.id ?? null : null;
 
+  // Debounced text search — local state, flushes to URL after 300ms.
+  const [searchInput, setSearchInput] = useState(s.q ?? "");
+  useEffect(() => { setSearchInput(s.q ?? ""); }, [s.q]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if ((searchInput || "") === (s.q ?? "")) return;
+      navigate({
+        to: "/browse",
+        search: (prev) => ({ ...prev, q: searchInput.trim() || undefined }),
+        replace: true,
+      });
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  function patchSearch(patch: Partial<BrowseSearch>) {
+    navigate({ to: "/browse", search: (prev) => ({ ...prev, ...patch }) });
+  }
+
+  const [view, setView] = useState<View>("grid");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
@@ -162,21 +192,55 @@ function Browse() {
     return ids;
   }, [listings]);
 
+  function matchesBeds(l: Listing): boolean {
+    if (bedSet.size === 0) return true;
+    const b = l.beds ?? 0;
+    if (bedSet.has("3+") && b >= 3) return true;
+    return bedSet.has(String(b) as BedKey);
+  }
+
   const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    let r = listings.filter((l) =>
-      (!search ||
-        l.title.toLowerCase().includes(q) ||
-        (l.area ?? "").toLowerCase().includes(q) ||
-        (l.description ?? "").toLowerCase().includes(q)) &&
-      l.price <= maxPrice &&
-      (!area || l.area === area) &&
-      (!furnishedOnly || l.furnished)
-    );
+    const qLower = (s.q ?? "").toLowerCase();
+    let r = listings.filter((l) => {
+      if (qLower && !(
+        l.title.toLowerCase().includes(qLower) ||
+        (l.area ?? "").toLowerCase().includes(qLower) ||
+        (l.description ?? "").toLowerCase().includes(qLower)
+      )) return false;
+      if (campusId && l.campus_id !== campusId) return false;
+      if (area && l.area !== area) return false;
+      if (furnishedOnly && !l.furnished) return false;
+      if (minPrice != null && (l.price ?? 0) < minPrice) return false;
+      if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
+      if (!matchesBeds(l)) return false;
+      if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
+      if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
+      return true;
+    });
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
+    else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    else r = [...r].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return r;
-  }, [listings, search, maxPrice, area, furnishedOnly, sort]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort]);
+
+  const activeFilterCount =
+    (s.q ? 1 : 0) +
+    (campusSlug ? 1 : 0) +
+    (area ? 1 : 0) +
+    (minPrice != null ? 1 : 0) +
+    (maxPrice != null ? 1 : 0) +
+    (bedSet.size > 0 ? 1 : 0) +
+    (s.from ? 1 : 0) +
+    (s.to ? 1 : 0) +
+    (furnishedOnly ? 1 : 0);
+
+  function clearFilters() {
+    navigate({ to: "/browse", search: {} });
+    setSearchInput("");
+  }
+
 
   async function handleSave(listing: Listing) {
     if (!user) { toast.error("Sign in to save listings"); navigate({ to: "/auth", search: { mode: "in" } }); return; }
