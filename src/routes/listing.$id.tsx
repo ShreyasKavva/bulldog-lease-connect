@@ -24,7 +24,7 @@ import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesFo
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
-import type { Listing, Profile } from "@/lib/leaseup/types";
+import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
