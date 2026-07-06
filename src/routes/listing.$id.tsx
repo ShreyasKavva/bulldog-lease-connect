@@ -21,6 +21,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
@@ -248,6 +249,23 @@ function ListingDetailPage() {
     enabled: !!user,
   });
   const isSaved = savedIds.has(listing.id);
+
+  // Owner-only activity panel data
+  const { data: dailyStats = [] } = useQuery({
+    queryKey: ["listing-daily-stats", listing.id],
+    queryFn: () => fetchListingDailyStats(listing.id, 14),
+    enabled: isOwner,
+    staleTime: 60_000,
+  });
+  const { data: msgStats } = useQuery({
+    queryKey: ["listing-msg-stats", listing.id, listing.user_id],
+    queryFn: () => fetchListingMessageStats(listing.id, listing.user_id),
+    enabled: isOwner,
+    staleTime: 60_000,
+  });
+  const viewsThisWeek = dailyStats.slice(-7).reduce((s, d) => s + (d.views ?? 0), 0)
+    - dailyStats.slice(-14, -7).reduce((s, d) => s + (d.views ?? 0), 0);
+  const unanswered = msgStats ? Math.max(0, msgStats.inbound - msgStats.replies) : 0;
 
   async function handleToggleSave() {
     if (!user) {
@@ -509,6 +527,44 @@ function ListingDetailPage() {
                   <Clock className="h-3.5 w-3.5" /> Listed {timeAgo(listing.created_at)}
                 </span>
               </div>
+
+              {isOwner && (
+                <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                    Your listing activity
+                  </p>
+                  <dl className="mt-3 space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Views</dt>
+                      <dd className="font-semibold">
+                        {viewCount.toLocaleString()}
+                        {viewsThisWeek > 0 && (
+                          <span className="ml-2 text-xs font-medium text-emerald-600">
+                            ↑ {viewsThisWeek} this week
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Saves</dt>
+                      <dd className="font-semibold">{savedCount.toLocaleString()}</dd>
+                    </div>
+                    {msgStats && (
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">Messages</dt>
+                        <dd className="font-semibold">
+                          {msgStats.inbound.toLocaleString()}
+                          {unanswered > 0 && (
+                            <span className="ml-2 text-xs font-medium text-amber-600">
+                              ({unanswered} unanswered)
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                </div>
+              )}
             </div>
           </aside>
         </div>

@@ -140,9 +140,9 @@ export function ListingCard({
               <Clock className="h-3 w-3" /> Available soon
             </span>
           )}
-          {(listing.view_count ?? 0) >= 5 && (
+          {(listing.view_count ?? 0) >= 10 && (
             <div className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-              <Eye className="h-3 w-3" />{listing.view_count}
+              <Eye className="h-3 w-3" />{listing.view_count} views
             </div>
           )}
         </div>
