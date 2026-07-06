@@ -250,6 +250,23 @@ function ListingDetailPage() {
   });
   const isSaved = savedIds.has(listing.id);
 
+  // Owner-only activity panel data
+  const { data: dailyStats = [] } = useQuery({
+    queryKey: ["listing-daily-stats", listing.id],
+    queryFn: () => fetchListingDailyStats(listing.id, 14),
+    enabled: isOwner,
+    staleTime: 60_000,
+  });
+  const { data: msgStats } = useQuery({
+    queryKey: ["listing-msg-stats", listing.id, listing.user_id],
+    queryFn: () => fetchListingMessageStats(listing.id, listing.user_id),
+    enabled: isOwner,
+    staleTime: 60_000,
+  });
+  const viewsThisWeek = dailyStats.slice(-7).reduce((s, d) => s + (d.views ?? 0), 0)
+    - dailyStats.slice(-14, -7).reduce((s, d) => s + (d.views ?? 0), 0);
+  const unanswered = msgStats ? Math.max(0, msgStats.inbound - msgStats.replies) : 0;
+
   async function handleToggleSave() {
     if (!user) {
       openSignIn(`/listing/${listing.id}?save=1`);
