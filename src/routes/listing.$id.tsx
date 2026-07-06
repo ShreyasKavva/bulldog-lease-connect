@@ -28,8 +28,9 @@ import type { Listing, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
+
 
 
 
