@@ -6,9 +6,9 @@
  * during the nav rebuild; new call sites can just render <BottomNav />.
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Users, User } from "lucide-react";
+import { Home, Search, Users, User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUnreadCount } from "@/hooks/use-unread";
+import { useNotifications } from "@/hooks/use-notifications";
 import { useSession } from "@/lib/leaseup/use-session";
 import type { LucideIcon } from "lucide-react";
 
@@ -22,7 +22,8 @@ type LegacyProps = {
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
-  const unread = useUnreadCount();
+  const { data: notifications = [] } = useNotifications();
+  const unreadNotifs = notifications.filter((n) => !n.read).length;
   const navigate = useNavigate();
 
   const isHome = path === "/";
@@ -33,14 +34,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/looking-for") ||
     path.startsWith("/map");
   const isRoommates = path === "/roommates" || path.startsWith("/roommates/");
+  const isNotifications = path === "/notifications";
   const isProfile =
     path === "/profile" ||
     path.startsWith("/profile/") ||
     path.startsWith("/my-listings") ||
     path.startsWith("/settings") ||
     path.startsWith("/messages") ||
-    path === "/saved" ||
-    path === "/notifications";
+    path === "/saved";
 
   function handleProfile(e: React.MouseEvent) {
     if (!user) {
@@ -51,18 +52,25 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-4 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
       <Tab to="/roommates" active={isRoommates} label="Roommates" Icon={Users} />
       <Tab
+        to="/notifications"
+        active={isNotifications}
+        label="Alerts"
+        Icon={Bell}
+        badge={!!user && unreadNotifs > 0}
+        onClick={(e) => { if (!user) { e.preventDefault(); navigate({ to: "/auth", search: { mode: "in", next: "/notifications" } }); } }}
+      />
+      <Tab
         to="/profile"
         active={isProfile}
         label="Profile"
         Icon={User}
-        badge={!!user && unread > 0}
         onClick={handleProfile}
       />
     </nav>
