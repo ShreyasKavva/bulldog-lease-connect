@@ -296,6 +296,26 @@ export function AirbnbHome({
         )}
       </div>
 
+      {/* LATEST SUBLEASES FEED (Q66) */}
+      <LatestFeedSection
+        listings={listings}
+        campuses={campuses}
+        savedIds={savedIds}
+        onSave={onSave}
+        onOpen={onOpen}
+        onPost={onPost}
+        userCampusId={userCampusId ?? null}
+        feedCampusId={feedCampusId ?? null}
+        recentFilledCount={recentFilledCount ?? 0}
+      />
+
+      {/* LOOKING FOR STRIP (Q66) */}
+      <LookingForStrip posts={lookingForPosts ?? []} />
+
+      {/* HOW IT WORKS (Q66) */}
+      <HowItWorks />
+
+
       {/* CAMPUS SPOTLIGHTS */}
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
         <h2 className="mb-4 text-xl font-extrabold sm:text-2xl">Explore campuses</h2>
