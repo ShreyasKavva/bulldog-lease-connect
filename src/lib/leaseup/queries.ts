@@ -272,6 +272,10 @@ export async function sendMessage(conversationId: string, senderId: string, reci
   await supabase.from("conversations").update({
     last_message: content, last_message_at: new Date().toISOString(),
   }).eq("id", conversationId);
+  // Q77: notify UI so the push-permission prompt can appear after first send.
+  if (typeof window !== "undefined") {
+    try { window.dispatchEvent(new CustomEvent("lu:message-sent", { detail: { conversationId } })); } catch {}
+  }
 
   // Fire-and-forget email notification to the recipient.
   // Debounce: bucket by 10-minute windows so rapid back-and-forth in the same
