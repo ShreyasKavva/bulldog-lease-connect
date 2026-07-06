@@ -237,6 +237,18 @@ function ListingDetailPage() {
     });
   }, [listing.id]);
 
+  // Replay ?save=1 after post-signin redirect.
+  useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("save") !== "1") return;
+    url.searchParams.delete("save");
+    window.history.replaceState({}, "", url.toString());
+    if (!isSaved && listing.user_id !== user.id) handleToggleSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+
   const firstName = (poster?.name ?? "").split(" ")[0] || "the host";
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
