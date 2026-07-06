@@ -239,7 +239,8 @@ function Onboarding() {
             </div>
           </div>
         )}
-        </div>
+
+
 
         <div className="mt-5">
           <Label>Year <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
