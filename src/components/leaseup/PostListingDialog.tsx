@@ -164,7 +164,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
     e.target.value = "";
     const accepted: Preview[] = [];
     for (const file of picked) {
-      if (previews.length + accepted.length >= MAX_PHOTOS) {
+      if (existingPhotos.length + previews.length + accepted.length >= MAX_PHOTOS) {
         toast.error(`You can add up to ${MAX_PHOTOS} photos`);
         break;
       }
