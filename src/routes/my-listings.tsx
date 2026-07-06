@@ -266,35 +266,73 @@ function MyListingsPage() {
           </div>
         )}
 
+        <div className="flex gap-2 border-b border-border">
+          {(["active", "rented", "expired"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={cn(
+                "px-3 py-2 text-sm font-semibold capitalize -mb-px border-b-2",
+                tab === t
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t} ({groups[t].length})
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />)}</div>
-        ) : listings.length === 0 ? (
+        ) : visibleListings.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
-            <div className="text-5xl">🏡</div>
-            <h3 className="mt-3 text-lg font-bold">No listings yet</h3>
-            <Button onClick={() => setPosting(true)} className="mt-4 bg-primary hover:bg-primary-dark text-primary-foreground gap-1"><Plus className="h-4 w-4" />Post your first</Button>
+            <div className="text-5xl">{tab === "rented" ? "🎉" : tab === "expired" ? "⏰" : "🏡"}</div>
+            <h3 className="mt-3 text-lg font-bold">
+              {tab === "active" ? (listings.length === 0 ? "No listings yet" : "No active listings")
+                : tab === "rented" ? "No completed subleases yet"
+                : "No expired listings"}
+            </h3>
+            {tab === "active" && (
+              <Button onClick={() => setPosting(true)} className="mt-4 bg-primary hover:bg-primary-dark text-primary-foreground gap-1"><Plus className="h-4 w-4" />Post {listings.length === 0 ? "your first" : "a listing"}</Button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
-            {listings.map(l => {
-              const filled = l.status === "filled";
+            {visibleListings.map(l => {
+              const filled = isRented(l);
+              const expired = isExpired(l);
               const stats = shareStats[l.id] ?? { count: 0, lastAt: null };
               const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
-              const showNudge = !filled && l.is_active && (l.view_count ?? 0) < 50 && lastShareDays >= 7;
+              const showNudge = !filled && !expired && l.is_active && (l.view_count ?? 0) < 50 && lastShareDays >= 7;
               return (
-              <div key={l.id} className={cn("rounded-xl bg-surface p-3 shadow-card", !l.is_active && !filled && "opacity-60")}>
+              <div key={l.id} className={cn("rounded-xl bg-surface p-3 shadow-card", ((!l.is_active && !filled) || expired) && "opacity-80")}>
+                {expired && (
+                  <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
+                    <span className="font-semibold">
+                      This listing ended {l.available_to ? `on ${new Date(l.available_to).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}.
+                    </span>
+                    <span className="opacity-80">Did you find someone?</span>
+                    <button onClick={() => markFilled(l)} className="ml-auto rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Mark as rented</button>
+                    <button onClick={() => relist(l)} className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary-dark">Relist →</button>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
                     {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
-                    {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Filled</div>}
+                    {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Rented</div>}
+                    {expired && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Expired</div>}
                   </button>
                   <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm truncate">{l.title}</span>
                       {filled
-                        ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Filled</span>
-                        : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                        ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Rented</span>
+                        : expired
+                          ? <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Expired</span>
+                          : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
                     </div>
+
                     <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <SafeScoreBadge score={l.safe_score} />
