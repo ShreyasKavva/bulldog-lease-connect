@@ -315,19 +315,22 @@ export async function sendMessage(conversationId: string, senderId: string, reci
 }
 
 // ---- Looking For board ----
-export async function fetchLookingFor(): Promise<LookingForPost[]> {
-  const { data, error } = await supabase
+export async function fetchLookingFor(campusId?: string | null): Promise<LookingForPost[]> {
+  const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+  let q = supabase
     .from("looking_for_posts")
     .select("*")
     .eq("is_active", true)
+    .gte("created_at", sixtyDaysAgo)
     .order("created_at", { ascending: false });
+  if (campusId) q = q.eq("campus_id", campusId);
+  const { data, error } = await q;
   if (error) throw error;
   const rows = (data ?? []) as LookingForPost[];
   if (rows.length === 0) return rows;
   const ids = Array.from(new Set(rows.map(r => r.user_id)));
   const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
-  // interest counts per request (post owners only see their own via RLS, others see 0)
   const { data: interests } = await supabase
     .from("looking_for_interests")
     .select("request_id")
@@ -335,6 +338,41 @@ export async function fetchLookingFor(): Promise<LookingForPost[]> {
   const counts = new Map<string, number>();
   for (const i of (interests ?? []) as any[]) counts.set(i.request_id, (counts.get(i.request_id) ?? 0) + 1);
   return rows.map(r => ({ ...r, profile: map.get(r.user_id), interest_count: counts.get(r.id) ?? 0 }));
+}
+
+/** Recent looking-for posts that plausibly match a listing (Queue 60 — Part C). */
+export async function fetchLookingForMatchesForListing(
+  listing: Listing,
+  limit = 3
+): Promise<LookingForPost[]> {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  let q = supabase
+    .from("looking_for_posts")
+    .select("*")
+    .eq("is_active", true)
+    .gte("created_at", thirtyDaysAgo)
+    .neq("user_id", listing.user_id)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (listing.campus_id) q = q.eq("campus_id", listing.campus_id);
+  const { data, error } = await q;
+  if (error) throw error;
+  const rows = (data ?? []) as LookingForPost[];
+  const price = Number(listing.price ?? 0);
+  const availTo = listing.available_to ? new Date(listing.available_to).getTime() : null;
+  const availFrom = listing.available_from ? new Date(listing.available_from).getTime() : null;
+  const filtered = rows.filter(r => {
+    if (r.budget_max != null && price > 0 && r.budget_max < price) return false;
+    if (r.move_in_date && availTo != null && new Date(r.move_in_date).getTime() > availTo) return false;
+    const postEnd = r.move_out_date ?? r.move_in_date;
+    if (postEnd && availFrom != null && new Date(postEnd).getTime() < availFrom) return false;
+    return true;
+  }).slice(0, limit);
+  if (filtered.length === 0) return filtered;
+  const ids = Array.from(new Set(filtered.map(r => r.user_id)));
+  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
+  return filtered.map(r => ({ ...r, profile: map.get(r.user_id) }));
 }
 
 export async function createLookingFor(userId: string, payload: Partial<LookingForPost>, campusId: string | null = null) {
