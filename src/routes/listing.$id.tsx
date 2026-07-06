@@ -30,6 +30,7 @@ import {
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
+import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 
 
 
