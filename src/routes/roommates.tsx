@@ -13,7 +13,7 @@
  * browse the board.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import {
@@ -45,6 +45,17 @@ function RoommatesPage() {
   const { user, loading } = useSession();
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
+
+  // Q78: Toast + strip the "?notice=" flag left by the /find-my-match 301.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("notice") === "find-my-match-gone") {
+      toast.message("Find My Match isn't available yet — try the roommate board.");
+      url.searchParams.delete("notice");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []);
 
   const [mode, setMode] = useState<RoommateMode>("has_room");
   const [budgetFilter, setBudgetFilter] = useState<BudgetFilter>("any");
