@@ -77,30 +77,52 @@ export const Route = createFileRoute("/listing/$id")({
   },
 
   loader: async ({ params }) => {
-    const listing = await fetchListingDetail(params.id);
-    if (!listing) throw notFound();
-    return { listing };
+    const result = await fetchListingDetail(params.id);
+    if (!result) throw notFound({ data: { reason: "deleted" } });
+    if (result.reason) throw notFound({ data: { reason: result.reason } });
+    return { listing: result.listing };
   },
-  notFoundComponent: () => (
-    <div className="min-h-screen bg-background">
-      <TopBar />
-      <div className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="mb-3 text-3xl font-black">Listing not found</h1>
-        <p className="mb-8 text-muted-foreground">
-          This listing may have been filled, removed, or never existed.
-        </p>
-        <Link to="/browse" className="text-primary underline underline-offset-4">
-          Browse all subleases →
-        </Link>
+  notFoundComponent: ({ data }) => {
+    const reason = (data as { reason?: "expired" | "rented" | "deleted" } | undefined)?.reason ?? "deleted";
+    const copy =
+      reason === "expired"
+        ? {
+            title: "This sublease has expired.",
+            body: "The listing period has passed. Browse active subleases instead.",
+          }
+        : reason === "rented"
+        ? {
+            title: "This sublease has been rented.",
+            body: "The lister found a renter. Browse other available subleases.",
+          }
+        : {
+            title: "This listing is no longer available.",
+            body: "It may have been removed, or the link is broken.",
+          };
+    return (
+      <div className="min-h-screen bg-background">
+        <TopBar />
+        <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-6 py-16">
+          <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+            <h1 className="text-2xl font-black leading-tight">{copy.title}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{copy.body}</p>
+            <Link
+              to="/browse"
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary-dark"
+            >
+              Browse active subleases →
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
-  ),
+    );
+  },
   errorComponent: ({ error, reset }) => (
     <div className="min-h-screen bg-background">
       <TopBar />
-      <div className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="mb-3 text-3xl font-black">Couldn't load listing</h1>
-        <p className="mb-8 text-muted-foreground">{error.message}</p>
+      <div className="mx-auto max-w-md px-6 py-24 text-center">
+        <h1 className="mb-2 text-2xl font-black">Couldn't load this listing</h1>
+        <p className="mb-6 text-sm text-muted-foreground">{error.message}</p>
         <Button onClick={reset}>Try again</Button>
       </div>
     </div>
