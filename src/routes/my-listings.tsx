@@ -418,6 +418,15 @@ function MyListingsPage() {
           reviewerRole="poster"
         />
       )}
+      {feedbackFor && (
+        <ListerFeedbackModal
+          open={!!feedbackFor}
+          onClose={() => setFeedbackFor(null)}
+          listingId={feedbackFor.id}
+          listingTitle={feedbackFor.title}
+          userId={user.id}
+        />
+      )}
       {tourFor && (
         <TourAvailabilityDialog
           listingId={tourFor.id}
