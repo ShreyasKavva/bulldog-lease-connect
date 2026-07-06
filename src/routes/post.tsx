@@ -60,7 +60,7 @@ function PostPage() {
   }
 
   return (
-    <main className="mx-auto min-h-[60vh] max-w-2xl px-4 py-8">
+    <main className="mx-auto min-h-[60vh] max-w-2xl px-4 pb-28 pt-8 md:pb-8">
       <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-gray-900">
         Post your sublease
       </h1>
