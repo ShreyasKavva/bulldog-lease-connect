@@ -9,7 +9,7 @@
  * deposit, tour booking, report) stay in the slide-in sheet.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled } from "@/lib/leaseup/queries";
+import { markListingFilled, toggleSaved, fetchSavedIds } from "@/lib/leaseup/queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
@@ -28,8 +28,9 @@ import type { Listing, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/listing/$id")({
