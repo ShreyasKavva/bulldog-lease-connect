@@ -11,6 +11,8 @@ import {
 } from "@/hooks/use-notifications";
 import { useSession } from "@/lib/leaseup/use-session";
 import { notificationMeta } from "@/lib/leaseup/notification-meta";
+import { SignInGate } from "@/components/leaseup/SignInGate";
+
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({
