@@ -181,6 +181,10 @@ function Home() {
         onOpen={setSelected}
         onMessage={handleMessage}
         onPost={handlePost}
+        userCampusId={userCampusId}
+        feedCampusId={topCampusId}
+        lookingForPosts={lookingFor}
+        recentFilledCount={filledCount}
       />
 
 
