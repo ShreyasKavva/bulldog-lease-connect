@@ -470,7 +470,24 @@ function ListingDetailPage() {
             </div>
           </section>
         )}
+
+        {/* PART E2 — send to a friend */}
+        <section className="border-t border-border py-10">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl border border-border bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-sm font-medium text-foreground">
+              Know someone looking for a place{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}? Share this listing.
+            </p>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
+            >
+              <Share2 className="h-4 w-4" /> Share listing →
+            </button>
+          </div>
+        </section>
       </div>
+
 
       {/* PART F — sticky mobile CTA */}
       <MobileStickyCTA
