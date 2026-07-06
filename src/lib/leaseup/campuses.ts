@@ -59,7 +59,7 @@ export async function fetchCampusStats(campusId: string): Promise<{
     supabase.from("listings").select("id", { count: "exact", head: true })
       .eq("campus_id", campusId).eq("is_active", true).eq("status", "active"),
     supabase.from("listings").select("id", { count: "exact", head: true })
-      .eq("campus_id", campusId).eq("status", "rented"),
+      .eq("campus_id", campusId).eq("status", "filled"),
     supabase.from("looking_for_posts").select("id", { count: "exact", head: true })
       .eq("campus_id", campusId).eq("is_active", true).gte("created_at", sixtyDaysAgo),
   ]);
