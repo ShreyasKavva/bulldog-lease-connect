@@ -1,0 +1,68 @@
+/**
+ * CampusPills — horizontal row of clickable campus chips shown on the
+ * homepage below the main feed (Q79). Sorted by active listing count.
+ */
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/campuses";
+import { ArrowRight } from "lucide-react";
+
+export function CampusPills() {
+  const { data: campuses = [] } = useQuery({
+    queryKey: ["campuses"],
+    queryFn: fetchCampuses,
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: counts = {} } = useQuery({
+    queryKey: ["active-listing-counts-by-campus"],
+    queryFn: fetchActiveListingCountsByCampus,
+    staleTime: 60 * 1000,
+  });
+
+  if (campuses.length === 0) return null;
+
+  const ordered = [...campuses].sort((a, b) => {
+    const ca = counts[a.id] ?? 0;
+    const cb = counts[b.id] ?? 0;
+    if (cb !== ca) return cb - ca;
+    return a.name.localeCompare(b.name);
+  });
+  const visible = ordered.slice(0, 8);
+
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h2 className="text-lg font-black sm:text-xl">
+          LeaseUp is live at {campuses.length} schools
+        </h2>
+        <Link
+          to="/campuses"
+          className="text-sm font-semibold text-primary hover:underline"
+        >
+          View all campuses →
+        </Link>
+      </div>
+      <div className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {visible.map((c) => {
+          const n = counts[c.id] ?? 0;
+          return (
+            <Link
+              key={c.id}
+              to="/sublease/$slug"
+              params={{ slug: c.slug }}
+              className="group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+            >
+              <span>{c.short_name || c.name}</span>
+              <span
+                className={`text-xs font-medium ${n > 0 ? "text-emerald-600" : "text-muted-foreground"}`}
+              >
+                {n > 0 ? `${n} live` : "New"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}

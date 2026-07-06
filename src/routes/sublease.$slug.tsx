@@ -408,7 +408,12 @@ function CampusPage() {
 
         {/* Other campuses — cards with live listing counts */}
         <section className="mt-12 border-t pt-8">
-          <h2 className="mb-4 text-xl font-black">Browse other campuses</h2>
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <h2 className="text-xl font-black">Browse other campuses</h2>
+            <Link to="/campuses" className="text-sm font-semibold text-primary hover:underline">
+              See all campuses →
+            </Link>
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {campuses
               .filter((c: Campus) => c.slug !== campus.slug)
