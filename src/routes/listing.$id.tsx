@@ -327,17 +327,28 @@ function ListingDetailPage() {
           <div className="min-w-0 lg:col-span-2">
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
-              {!isOwner && (
+              <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleToggleSave}
-                  aria-label={isSaved ? "Remove from saved" : "Save listing"}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                  onClick={handleShare}
+                  aria-label="Share listing"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-sm font-semibold shadow-sm transition active:scale-95"
                 >
-                  <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                  <Share2 className="h-4 w-4" /> Share
                 </button>
-              )}
+                {!isOwner && (
+                  <button
+                    type="button"
+                    onClick={handleToggleSave}
+                    aria-label={isSaved ? "Remove from saved" : "Save listing"}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                  >
+                    <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                  </button>
+                )}
+              </div>
             </div>
+
             {isSaved && !isOwner && (
               <p className="mt-2 text-xs text-muted-foreground">
                 Saved to your list ·{" "}
