@@ -555,6 +555,8 @@ function ListingDetailPage() {
           onClose={() => setLightboxIndex(null)}
         />
       )}
+
+      <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
     </div>
   );
 }
