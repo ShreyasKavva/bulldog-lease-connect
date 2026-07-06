@@ -433,6 +433,22 @@ function ListingDetailPage() {
                 <MarkAsRentedButton listingId={listing.id} />
               </div>
             )}
+
+            {!isOwner && (
+              <p className="mt-8 text-xs text-muted-foreground">
+                Something wrong with this listing?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!user) { openSignIn(`/listing/${listing.id}`); return; }
+                    setReportOpen(true);
+                  }}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  Report it →
+                </button>
+              </p>
+            )}
           </div>
 
 
