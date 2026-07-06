@@ -771,3 +771,115 @@ function SuspiciousTab() {
     </div>
   );
 }
+
+// Queue 76 — Feedback tab: lister + renter feedback tables
+function FeedbackTab() {
+  const qc = useQueryClient();
+  const { data: listerRows = [] } = useQuery({
+    queryKey: ["admin", "lister-feedback"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("listing_feedback" as any)
+        .select("id,listing_id,how_found_renter,additional_comments,is_testimonial,created_at,listings(title)")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const { data: renterRows = [] } = useQuery({
+    queryKey: ["admin", "renter-feedback"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("renter_feedback" as any)
+        .select("id,user_id,how_found,additional_comments,created_at,profiles(name,email)")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+
+  async function toggleTestimonial(id: string, next: boolean) {
+    const { error } = await supabase
+      .from("listing_feedback" as any)
+      .update({ is_testimonial: next } as any)
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["admin", "lister-feedback"] });
+  }
+
+  return (
+    <div className="space-y-8">
+      <section>
+        <h2 className="mb-3 text-lg font-black">Lister feedback ({listerRows.length})</h2>
+        {listerRows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No lister feedback yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="p-2">Listing</th>
+                  <th className="p-2">How found</th>
+                  <th className="p-2">Comments</th>
+                  <th className="p-2">Date</th>
+                  <th className="p-2">Testimonial</th>
+                </tr>
+              </thead>
+              <tbody>
+                {listerRows.map((r) => (
+                  <tr key={r.id} className="border-t border-border align-top">
+                    <td className="p-2 font-semibold">{r.listings?.title ?? "—"}</td>
+                    <td className="p-2 text-xs">{r.how_found_renter}</td>
+                    <td className="p-2 max-w-md whitespace-pre-wrap">{r.additional_comments ?? <span className="text-muted-foreground">—</span>}</td>
+                    <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</td>
+                    <td className="p-2">
+                      <label className="inline-flex cursor-pointer items-center gap-1 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={!!r.is_testimonial}
+                          onChange={(e) => toggleTestimonial(r.id, e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        Use as quote
+                      </label>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-black">Renter feedback ({renterRows.length})</h2>
+        {renterRows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No renter feedback yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="p-2">User</th>
+                  <th className="p-2">How found</th>
+                  <th className="p-2">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {renterRows.map((r) => (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="p-2 font-semibold">{r.profiles?.name ?? r.profiles?.email?.split("@")[0] ?? "—"}</td>
+                    <td className="p-2 text-xs">{r.how_found}</td>
+                    <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
