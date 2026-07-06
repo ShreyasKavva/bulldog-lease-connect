@@ -291,10 +291,15 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
           .single();
         if (error) throw error;
 
+        const campusName = campuses.find((c) => c.id === form.campus_id)?.short_name
+          ?? campuses.find((c) => c.id === form.campus_id)?.name
+          ?? "your campus";
         toast.success(
           screen?.scam_risk === "high"
             ? "Posted — under brief review before going public"
-            : "Your listing is live! Share it with friends 🎉",
+            : isRelist
+              ? `Relisted! Your sublease is live again at ${campusName}.`
+              : "Your listing is live! Share it with friends 🎉",
         );
         qc.invalidateQueries({ queryKey: ["listings"] });
         onOpenChange(false);
