@@ -36,6 +36,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { OfflineIndicator } from "@/components/leaseup/OfflineIndicator";
 import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
+import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
