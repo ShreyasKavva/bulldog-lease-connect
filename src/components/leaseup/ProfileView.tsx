@@ -9,12 +9,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchUserReviews, computeReviewStats } from "@/lib/leaseup/reviews.queries";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchMyRoommateProfile } from "@/lib/leaseup/roommates";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+function maskLastName(name: string | null | undefined): string {
+  if (!name) return "Student";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0] ?? "Student";
+  const last = parts[1];
+  return last ? `${first} ${last[0].toUpperCase()}.` : first;
+}
 
 type PublicProfile = {
   id: string;
@@ -121,6 +130,11 @@ export function ProfileView({ userId }: { userId: string }) {
     queryKey: ["reviews", userId],
     queryFn: () => fetchUserReviews(userId),
   });
+  const { data: roommateProfile } = useQuery({
+    queryKey: ["roommate-profile-for-user", userId],
+    queryFn: () => fetchMyRoommateProfile(userId),
+    enabled: !!userId,
+  });
   const stats = computeReviewStats(reviews);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -224,7 +238,7 @@ export function ProfileView({ userId }: { userId: string }) {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-extrabold">{profile.name || "Unnamed"}</h1>
+              <h1 className="text-2xl font-extrabold">{isOwn ? (profile.name || "Unnamed") : maskLastName(profile.name)}</h1>
               {subtitleParts.length > 0 && (
                 <p className="text-sm text-muted-foreground">{subtitleParts.join(" · ")}</p>
               )}
@@ -353,6 +367,61 @@ export function ProfileView({ userId }: { userId: string }) {
             </Link>
           )}
         </section>
+
+        {/* Roommate profile (public only, if they have one) */}
+        {!isOwn && roommateProfile && roommateProfile.is_active && (
+          <section className="mt-6">
+            <h2 className="mb-3 text-lg font-extrabold">
+              {roommateProfile.mode === "has_room" ? "Has a room available" : "Looking for a roommate"}
+            </h2>
+            <div className="rounded-2xl bg-surface p-5 shadow-card-md">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={cn(
+                  "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                  roommateProfile.mode === "has_room"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
+                )}>
+                  {roommateProfile.mode === "has_room" ? "Has a room" : "Looking"}
+                </span>
+                {(roommateProfile.vibe_tags ?? []).slice(0, 4).map((t) => (
+                  <span key={t} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/80 dark:bg-background">
+                    {t}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Budget</div>
+                  <div className="font-semibold">
+                    {roommateProfile.budget_min != null && roommateProfile.budget_max != null
+                      ? `$${roommateProfile.budget_min}–$${roommateProfile.budget_max}/mo`
+                      : roommateProfile.budget_max != null
+                      ? `Up to $${roommateProfile.budget_max}/mo`
+                      : roommateProfile.budget_min != null
+                      ? `From $${roommateProfile.budget_min}/mo`
+                      : "Flexible"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {roommateProfile.mode === "has_room" ? "Move-in" : "Available from"}
+                  </div>
+                  <div className="font-semibold">
+                    {roommateProfile.move_in_date
+                      ? new Date(roommateProfile.move_in_date).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+                      : "Flexible"}
+                  </div>
+                </div>
+              </div>
+              {roommateProfile.about_me && (
+                <p className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  {roommateProfile.about_me}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Roommate connect (public only) */}
         {!isOwn && (
