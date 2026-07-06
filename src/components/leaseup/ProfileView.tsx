@@ -9,12 +9,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchUserReviews, computeReviewStats } from "@/lib/leaseup/reviews.queries";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchMyRoommateProfile } from "@/lib/leaseup/roommates";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
+import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+function maskLastName(name: string | null | undefined): string {
+  if (!name) return "Student";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0] ?? "Student";
+  const last = parts[1];
+  return last ? `${first} ${last[0].toUpperCase()}.` : first;
+}
 
 type PublicProfile = {
   id: string;
