@@ -25,6 +25,7 @@ import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as FindMyMatchRouteImport } from './routes/find-my-match'
+import { Route as CampusesRouteImport } from './routes/campuses'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmbassadorRouteImport } from './routes/ambassador'
@@ -129,6 +130,11 @@ const JoinRoute = JoinRouteImport.update({
 const FindMyMatchRoute = FindMyMatchRouteImport.update({
   id: '/find-my-match',
   path: '/find-my-match',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampusesRoute = CampusesRouteImport.update({
+  id: '/campuses',
+  path: '/campuses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowseRoute = BrowseRouteImport.update({
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/campuses': typeof CampusesRoute
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
@@ -314,6 +321,7 @@ export interface FileRoutesByTo {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/campuses': typeof CampusesRoute
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/campuses': typeof CampusesRoute
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
@@ -403,6 +412,7 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/campuses'
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/campuses'
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/ambassador'
     | '/auth'
     | '/browse'
+    | '/campuses'
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
@@ -533,6 +545,7 @@ export interface RootRouteChildren {
   AmbassadorRoute: typeof AmbassadorRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  CampusesRoute: typeof CampusesRoute
   FindMyMatchRoute: typeof FindMyMatchRoute
   JoinRoute: typeof JoinRoute
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
@@ -675,6 +688,13 @@ declare module '@tanstack/react-router' {
       path: '/find-my-match'
       fullPath: '/find-my-match'
       preLoaderRoute: typeof FindMyMatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campuses': {
+      id: '/campuses'
+      path: '/campuses'
+      fullPath: '/campuses'
+      preLoaderRoute: typeof CampusesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browse': {
@@ -921,6 +941,7 @@ const rootRouteChildren: RootRouteChildren = {
   AmbassadorRoute: AmbassadorRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  CampusesRoute: CampusesRoute,
   FindMyMatchRoute: FindMyMatchRoute,
   JoinRoute: JoinRoute,
   LeaseAnalysisRoute: LeaseAnalysisRoute,
