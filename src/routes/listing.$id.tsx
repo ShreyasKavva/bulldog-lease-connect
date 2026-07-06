@@ -386,6 +386,34 @@ function ListingDetailPage() {
       <Gallery photos={photos} title={listing.title} onOpen={(i) => setLightboxIndex(i)} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {isOwner && (() => {
+          const today = new Date().toISOString().slice(0, 10);
+          const isFilled = (listing as any).status === "filled";
+          const isExpired = !isFilled && !!listing.available_to && listing.available_to < today;
+          if (!isFilled && !isExpired) return null;
+          return (
+            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm">
+                <p className="font-bold">This listing is no longer active.</p>
+                <p className="text-muted-foreground">
+                  {isFilled ? "Marked as rented." : "The listing window has ended."} Relist it for next semester.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {!isFilled && (listing as any).status !== "filled" && (
+                  <MarkAsRentedButton listingId={listing.id} />
+                )}
+                <button
+                  type="button"
+                  onClick={() => navigate({ to: "/post", search: { relist: listing.id } as any })}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+                >
+                  Relist <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
         <div className="grid grid-cols-1 gap-10 py-8 lg:grid-cols-3 lg:gap-12 lg:py-12">
           {/* PART B — details */}
           <div className="min-w-0 lg:col-span-2">
