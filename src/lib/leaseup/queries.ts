@@ -488,7 +488,7 @@ export async function fetchMatchingListingsForPost(post: LookingForPost): Promis
   if (post.beds_min) q = q.gte("beds", post.beds_min);
   if (post.move_in_date) q = q.or(`available_to.is.null,available_to.gte.${post.move_in_date}`);
   if (post.move_out_date) q = q.or(`available_from.is.null,available_from.lte.${post.move_out_date}`);
-  const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
+  const { data, error } = await q.order("sort_at", { ascending: false }).limit(50);
   if (error) throw error;
   return await attachProfiles(data ?? []);
 }
