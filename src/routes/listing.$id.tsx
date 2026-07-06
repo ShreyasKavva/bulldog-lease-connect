@@ -539,9 +539,18 @@ function ListingDetailPage() {
               )}
             </p>
 
-            {isOwner && (listing as any).status !== "filled" && (
-              <div className="mt-6">
-                <MarkAsRentedButton listingId={listing.id} />
+            {isOwner && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {(listing as any).status !== "filled" && (
+                  <MarkAsRentedButton listingId={listing.id} />
+                )}
+                <Link
+                  to="/post/edit/$id"
+                  params={{ id: listing.id }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-primary hover:text-primary"
+                >
+                  <Pencil className="h-4 w-4" /> Edit listing →
+                </Link>
               </div>
             )}
 
@@ -589,7 +598,17 @@ function ListingDetailPage() {
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> Listed {timeAgo(listing.created_at)}
                 </span>
+                {(() => {
+                  const created = new Date(listing.created_at as any).getTime();
+                  const updated = (listing as any).updated_at ? new Date((listing as any).updated_at).getTime() : 0;
+                  return updated && updated - created > 60 * 60 * 1000 ? (
+                    <span className="inline-flex items-center gap-1">
+                      · Updated {timeAgo((listing as any).updated_at)}
+                    </span>
+                  ) : null;
+                })()}
               </div>
+
 
               {isOwner && (
                 <div className="mt-4 rounded-2xl border border-border bg-surface p-4">

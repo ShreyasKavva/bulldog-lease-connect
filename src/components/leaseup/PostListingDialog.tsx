@@ -53,7 +53,7 @@ function defaultAvailableFrom(): string {
 
 type Preview = { file: File; url: string };
 
-export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null }) {
+export function PostListingDialog({ open, onOpenChange, relistFrom, editListingId }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null; editListingId?: string | null }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
@@ -70,7 +70,9 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
 
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
 
-  const isRelist = !!relistFrom;
+  const isEdit = !!editListingId;
+  const isRelist = !!relistFrom && !isEdit;
+  const sourceId = editListingId ?? relistFrom ?? null;
 
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
@@ -89,18 +91,22 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
     }
   }, [profile?.campus_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Relist prefill: fetch source listing and populate the form.
+  // Relist / Edit prefill: fetch source listing and populate the form.
   useEffect(() => {
-    if (!relistFrom || !user || relistPrefilled) return;
+    if (!sourceId || !user || relistPrefilled) return;
     let cancelled = false;
     (async () => {
-      const { data: src } = await supabase
+      const { data: src, error } = await supabase
         .from("listings")
         .select("*")
-        .eq("id", relistFrom)
+        .eq("id", sourceId)
         .eq("user_id", user.id)
         .maybeSingle();
-      if (cancelled || !src) return;
+      if (cancelled) return;
+      if (error || !src) {
+        if (isEdit) toast.error("You don't have permission to edit this listing");
+        return;
+      }
       const s = src as any;
       setForm((f) => ({
         ...f,
@@ -112,8 +118,8 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
         baths: s.baths != null ? String(s.baths) : "1",
         area: s.area ?? NEIGHBORHOODS[0].name,
         campus_id: s.campus_id ?? f.campus_id,
-        available_from: "",
-        available_to: "",
+        available_from: isEdit ? (s.available_from ?? "") : "",
+        available_to: isEdit ? (s.available_to ?? "") : "",
         furnished: !!s.furnished,
         utilities_included: !!s.utilities_included,
         pet_friendly: !!s.pet_friendly,
@@ -136,7 +142,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
       setRelistPrefilled(true);
     })();
     return () => { cancelled = true; };
-  }, [relistFrom, user?.id, relistPrefilled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sourceId, user?.id, relistPrefilled, isEdit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
@@ -221,26 +227,28 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
     setSubmitting(true);
     try {
       let screen: ScreenResult | null = null;
-      try {
-        screen = await runScreen({
-          data: {
-            title: form.title,
-            description: form.description ?? "",
-            price: priceNum,
-            beds: bedsNum,
-            campus: form.campus_id,
-            has_contact: !!profile?.phone,
-            photo_count: existingPhotos.length + previews.length,
-          },
-        });
-      } catch {
-        screen = null;
-      }
+      if (!isEdit) {
+        try {
+          screen = await runScreen({
+            data: {
+              title: form.title,
+              description: form.description ?? "",
+              price: priceNum,
+              beds: bedsNum,
+              campus: form.campus_id,
+              has_contact: !!profile?.phone,
+              photo_count: existingPhotos.length + previews.length,
+            },
+          });
+        } catch {
+          screen = null;
+        }
 
-      if (screen?.auto_reject) {
-        setScreenResult(screen);
-        setSubmitting(false);
-        return;
+        if (screen?.auto_reject) {
+          setScreenResult(screen);
+          setSubmitting(false);
+          return;
+        }
       }
 
       const doPublish = async () => {
@@ -261,57 +269,77 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
         const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
 
         const hood = NEIGHBORHOODS.find((n) => n.name === form.area);
-        const { data: inserted, error } = await supabase
-          .from("listings")
-          .insert({
-            user_id: user.id,
-            campus_id: form.campus_id,
-            title: form.title.trim(),
-            description: form.description.trim(),
-            type: form.type,
-            price: priceNum,
-            beds: bedsNum,
-            baths: bathsNum,
-            area: form.area,
-            lat: hood?.lat, lng: hood?.lng,
-            furnished: form.furnished,
-            utilities_included: form.utilities_included,
-            pet_friendly: form.pet_friendly,
-            parking: form.parking,
-            available_from: form.available_from || null,
-            available_to: form.available_to || null,
-            amenities: form.amenities,
-            photos,
-            deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
-            deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
-            pending_review: screen?.scam_risk === "high",
-            pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
-          } as any)
-          .select("id")
-          .single();
-        if (error) throw error;
+        const payload = {
+          campus_id: form.campus_id,
+          title: form.title.trim(),
+          description: form.description.trim(),
+          type: form.type,
+          price: priceNum,
+          beds: bedsNum,
+          baths: bathsNum,
+          area: form.area,
+          lat: hood?.lat, lng: hood?.lng,
+          furnished: form.furnished,
+          utilities_included: form.utilities_included,
+          pet_friendly: form.pet_friendly,
+          parking: form.parking,
+          available_from: form.available_from || null,
+          available_to: form.available_to || null,
+          amenities: form.amenities,
+          photos,
+          deposit_amount: form.deposit_escrow_enabled && form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+          deposit_escrow_enabled: form.deposit_escrow_enabled && !!form.deposit_amount,
+        };
+
+        let resultId: string | null = null;
+
+        if (isEdit && editListingId) {
+          const { error } = await supabase
+            .from("listings")
+            .update({ ...payload, updated_at: new Date().toISOString() } as any)
+            .eq("id", editListingId)
+            .eq("user_id", user.id);
+          if (error) throw error;
+          resultId = editListingId;
+        } else {
+          const { data: inserted, error } = await supabase
+            .from("listings")
+            .insert({
+              ...payload,
+              user_id: user.id,
+              pending_review: screen?.scam_risk === "high",
+              pending_review_since: screen?.scam_risk === "high" ? new Date().toISOString() : null,
+            } as any)
+            .select("id")
+            .single();
+          if (error) throw error;
+          resultId = inserted?.id ?? null;
+        }
 
         const campusName = campuses.find((c) => c.id === form.campus_id)?.short_name
           ?? campuses.find((c) => c.id === form.campus_id)?.name
           ?? "your campus";
         toast.success(
-          screen?.scam_risk === "high"
-            ? "Posted — under brief review before going public"
-            : isRelist
-              ? `Relisted! Your sublease is live again at ${campusName}.`
-              : "Your listing is live! Share it with friends 🎉",
+          isEdit
+            ? "Listing updated."
+            : screen?.scam_risk === "high"
+              ? "Posted — under brief review before going public"
+              : isRelist
+                ? `Relisted! Your sublease is live again at ${campusName}.`
+                : "Your listing is live! Share it with friends 🎉",
         );
         qc.invalidateQueries({ queryKey: ["listings"] });
+        if (resultId) qc.invalidateQueries({ queryKey: ["listing", resultId] });
         onOpenChange(false);
         setPreviews([]);
         setScreenResult(null);
         setPendingForm(null);
         // First-listing → invite dialog; otherwise straight to the new page.
-        if ((existingCount ?? 0) === 0) {
+        if (!isEdit && (existingCount ?? 0) === 0) {
           setInviteOpen(true);
         }
-        if (inserted?.id) {
-          router.navigate({ to: "/listing/$id", params: { id: inserted.id } });
+        if (resultId) {
+          router.navigate({ to: "/listing/$id", params: { id: resultId } });
         } else {
           router.navigate({ to: "/my-listings" });
         }
@@ -340,7 +368,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Post a sublease</DialogTitle>
+            <DialogTitle className="text-2xl">{isEdit ? "Edit your listing" : "Post a sublease"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {isRelist && (
@@ -386,7 +414,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
                     value={form.price}
                     onChange={(e) => setField("price", e.target.value)}
                     placeholder="e.g. 650"
-                    className={cn("pl-6 pr-12", isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
+                    className={cn("pl-6 pr-12", (isRelist || isEdit) && "border-2 border-amber-400 focus-visible:ring-amber-500")}
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     /mo
@@ -636,11 +664,11 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
               {submitting ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {uploading ? "Uploading photos…" : "Posting…"}
+                  {uploading ? "Uploading photos…" : isEdit ? "Saving…" : "Posting…"}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2">
-                  Post listing
+                  {isEdit ? "Save changes" : "Post listing"}
                   <ArrowRight className="h-4 w-4" />
                 </span>
               )}
