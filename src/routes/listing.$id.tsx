@@ -9,7 +9,7 @@
  * deposit, tour booking, report) stay in the slide-in sheet.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled } from "@/lib/leaseup/queries";
+import { markListingFilled, toggleSaved, fetchSavedIds } from "@/lib/leaseup/queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
@@ -28,8 +28,9 @@ import type { Listing, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/listing/$id")({
@@ -184,10 +185,40 @@ function ListingDetailPage() {
     queryFn: () => fetchPoster(listing.user_id),
     staleTime: 60_000,
   });
+  const qc = useQueryClient();
   const { data: savedCount = 0 } = useQuery({
     queryKey: ["listing-saved-count", listing.id],
     queryFn: () => fetchSavedCount(listing.id),
   });
+  const { data: savedIds = new Set<string>() } = useQuery({
+    queryKey: ["saved", user?.id],
+    queryFn: () => fetchSavedIds(user!.id),
+    enabled: !!user,
+  });
+  const isSaved = savedIds.has(listing.id);
+
+  async function handleToggleSave() {
+    if (!user) {
+      openSignIn(`/listing/${listing.id}?save=1`);
+      return;
+    }
+    const wasSaved = isSaved;
+    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
+      const s = new Set(prev ?? []);
+      if (wasSaved) s.delete(listing.id); else s.add(listing.id);
+      return s;
+    });
+    qc.setQueryData(["listing-saved-count", listing.id], (prev: number | undefined) =>
+      Math.max(0, (prev ?? 0) + (wasSaved ? -1 : 1))
+    );
+    try {
+      await toggleSaved(user.id, listing.id, wasSaved);
+    } catch {
+      qc.invalidateQueries({ queryKey: ["saved", user.id] });
+      qc.invalidateQueries({ queryKey: ["listing-saved-count", listing.id] });
+    }
+  }
+
   const { data: similar = [] } = useQuery({
     queryKey: ["listing-similar", listing.id],
     queryFn: () => fetchSimilar(listing),
@@ -205,6 +236,18 @@ function ListingDetailPage() {
       if (typeof data === "number") setViewCount(data);
     });
   }, [listing.id]);
+
+  // Replay ?save=1 after post-signin redirect.
+  useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("save") !== "1") return;
+    url.searchParams.delete("save");
+    window.history.replaceState({}, "", url.toString());
+    if (!isSaved && listing.user_id !== user.id) handleToggleSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
   const firstName = (poster?.name ?? "").split(" ")[0] || "the host";
   const isEdu = !!poster?.verified_email;
@@ -235,7 +278,27 @@ function ListingDetailPage() {
         <div className="grid grid-cols-1 gap-10 py-8 lg:grid-cols-3 lg:gap-12 lg:py-12">
           {/* PART B — details */}
           <div className="min-w-0 lg:col-span-2">
-            <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
+              {!isOwner && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  aria-label={isSaved ? "Remove from saved" : "Save listing"}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                >
+                  <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                </button>
+              )}
+            </div>
+            {isSaved && !isOwner && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Saved to your list ·{" "}
+                <button type="button" onClick={handleToggleSave} className="font-semibold text-primary hover:underline">
+                  Remove
+                </button>
+              </p>
+            )}
             <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               {listing.area && (
                 <span className="inline-flex items-center gap-1">
@@ -251,6 +314,7 @@ function ListingDetailPage() {
                 <Bath className="h-3.5 w-3.5" /> {listing.baths} ba
               </span>
             </p>
+
 
             <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2">
               <FactRow
@@ -315,9 +379,12 @@ function ListingDetailPage() {
                 <span className="inline-flex items-center gap-1">
                   <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString()} views
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <Bookmark className="h-3.5 w-3.5" /> {savedCount.toLocaleString()} saved
-                </span>
+                {savedCount >= 3 && (
+                  <span className="inline-flex items-center gap-1">
+                    🔖 {savedCount.toLocaleString()} people saved this
+                  </span>
+                )}
+
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> Listed {timeAgo(listing.created_at)}
                 </span>

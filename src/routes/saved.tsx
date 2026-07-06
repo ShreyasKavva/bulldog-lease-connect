@@ -92,10 +92,27 @@ function SavedPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {listings.map(l => (
-              <ListingCard key={l.id} listing={l} saved={savedIds.has(l.id)} onSave={() => unsave(l)} onOpen={() => setSelected(l)} />
-            ))}
+            {listings.map(l => {
+              const today = new Date().toISOString().slice(0, 10);
+              const unavailable =
+                (l as any).status === "filled" ||
+                (l.available_to && l.available_to < today) ||
+                (l as any).is_active === false;
+              return (
+                <div key={l.id} className="relative">
+                  <ListingCard listing={l} saved={savedIds.has(l.id)} onSave={() => unsave(l)} onOpen={() => !unavailable && setSelected(l)} />
+                  {unavailable && (
+                    <div className="pointer-events-none absolute inset-0 flex items-start justify-center rounded-xl bg-background/60 backdrop-blur-[1px]">
+                      <div className="pointer-events-auto mt-3 rounded-full bg-foreground/90 px-3 py-1 text-xs font-bold text-background shadow">
+                        No longer available
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+
         )}
       </main>
       <ListingDetailSheet
