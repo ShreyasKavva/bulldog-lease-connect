@@ -598,7 +598,15 @@ function ListingDetailPage() {
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> Listed {timeAgo(listing.created_at)}
                 </span>
-              </div>
+                {(() => {
+                  const created = new Date(listing.created_at as any).getTime();
+                  const updated = (listing as any).updated_at ? new Date((listing as any).updated_at).getTime() : 0;
+                  return updated && updated - created > 60 * 60 * 1000 ? (
+                    <span className="inline-flex items-center gap-1">
+                      · Updated {timeAgo((listing as any).updated_at)}
+                    </span>
+                  ) : null;
+                })()}
 
               {isOwner && (
                 <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
