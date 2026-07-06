@@ -39,6 +39,8 @@ function Onboarding() {
 
   const [campusId, setCampusId] = useState<string | null>(null);
   const [campusOpen, setCampusOpen] = useState(false);
+  const [detectedCampusId, setDetectedCampusId] = useState<string | null>(null);
+  const [overrideCampus, setOverrideCampus] = useState(false);
   const [year, setYear] = useState("");
   const [major, setMajor] = useState("");
   const [saving, setSaving] = useState(false);
