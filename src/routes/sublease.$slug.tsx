@@ -90,7 +90,7 @@ type BedFilter = "any" | "0" | "1" | "2" | "3+";
 type PriceFilter = "any" | "under700" | "under1000";
 
 function CampusPage() {
-  const { campus, allCampuses, listingCounts } = Route.useLoaderData();
+  const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
