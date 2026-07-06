@@ -32,6 +32,7 @@ export const Route = createFileRoute("/post")({
 function PostPage() {
   const { user, loading } = useSession();
   const navigate = useNavigate();
+  const { relist } = Route.useSearch();
 
   if (loading) {
     return <div className="min-h-[60vh]" />;
