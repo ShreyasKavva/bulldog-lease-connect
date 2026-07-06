@@ -216,6 +216,7 @@ function RootComponent() {
       <NotificationToastListener />
       <AppShell />
       <InstallPrompt />
+      <PushPermissionPrompt />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
