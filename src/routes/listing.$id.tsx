@@ -29,7 +29,7 @@ import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import {
