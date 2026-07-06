@@ -73,6 +73,7 @@ function PostPage() {
       </p>
       <PostListingDialog
         open
+        relistFrom={relist ?? null}
         onOpenChange={(o) => {
           if (!o) navigate({ to: "/" });
         }}
