@@ -465,6 +465,23 @@ function ListingDetailPage() {
           </aside>
         </div>
 
+        {/* Queue 60 — Part C: Looking-for matches (owner only) */}
+        {isOwner && lfMatches.length > 0 && (
+          <section className="border-t border-border py-10">
+            <h2 className="text-xl font-black sm:text-2xl">
+              Students looking for something like this{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              These students might be interested in your listing. Reach out directly.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {lfMatches.map((p: LookingForPost) => (
+                <LookingForMatchCard key={p.id} p={p} onMessage={() => messageLfPoster(p.user_id)} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* PART E — similar */}
         {similar.length > 0 && (
           <section className="border-t border-border py-10">
