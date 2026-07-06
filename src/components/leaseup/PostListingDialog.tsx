@@ -664,11 +664,11 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
               {submitting ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {uploading ? "Uploading photos…" : "Posting…"}
+                  {uploading ? "Uploading photos…" : isEdit ? "Saving…" : "Posting…"}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2">
-                  Post listing
+                  {isEdit ? "Save changes" : "Post listing"}
                   <ArrowRight className="h-4 w-4" />
                 </span>
               )}
