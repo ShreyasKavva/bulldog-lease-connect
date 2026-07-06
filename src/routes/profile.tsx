@@ -2,11 +2,12 @@
  * /profile — the current user's first-class profile page.
  * Public view lives at /profile/$userId. Both routes render ProfileView.
  */
-import { createFileRoute } from "@tanstack/react-router";
-import { useSession } from "@/lib/leaseup/use-session";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { ProfileView } from "@/components/leaseup/ProfileView";
 import { Button } from "@/components/ui/button";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
