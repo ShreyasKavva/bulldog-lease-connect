@@ -91,18 +91,22 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
     }
   }, [profile?.campus_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Relist prefill: fetch source listing and populate the form.
+  // Relist / Edit prefill: fetch source listing and populate the form.
   useEffect(() => {
-    if (!relistFrom || !user || relistPrefilled) return;
+    if (!sourceId || !user || relistPrefilled) return;
     let cancelled = false;
     (async () => {
-      const { data: src } = await supabase
+      const { data: src, error } = await supabase
         .from("listings")
         .select("*")
-        .eq("id", relistFrom)
+        .eq("id", sourceId)
         .eq("user_id", user.id)
         .maybeSingle();
-      if (cancelled || !src) return;
+      if (cancelled) return;
+      if (error || !src) {
+        if (isEdit) toast.error("You don't have permission to edit this listing");
+        return;
+      }
       const s = src as any;
       setForm((f) => ({
         ...f,
@@ -114,8 +118,8 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
         baths: s.baths != null ? String(s.baths) : "1",
         area: s.area ?? NEIGHBORHOODS[0].name,
         campus_id: s.campus_id ?? f.campus_id,
-        available_from: "",
-        available_to: "",
+        available_from: isEdit ? (s.available_from ?? "") : "",
+        available_to: isEdit ? (s.available_to ?? "") : "",
         furnished: !!s.furnished,
         utilities_included: !!s.utilities_included,
         pet_friendly: !!s.pet_friendly,
@@ -138,7 +142,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
       setRelistPrefilled(true);
     })();
     return () => { cancelled = true; };
-  }, [relistFrom, user?.id, relistPrefilled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sourceId, user?.id, relistPrefilled, isEdit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
