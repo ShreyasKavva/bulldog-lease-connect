@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusIdByEmailDomain } from "@/lib/leaseup/campuses";
 import { YEARS } from "@/lib/leaseup/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
