@@ -32,6 +32,10 @@ import {
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
+import {
+  buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
+  shareToDiscord, shareToGroupMe, withUtm,
+} from "@/lib/leaseup/share";
 
 
 
@@ -310,9 +314,25 @@ function ListingDetailPage() {
   }
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
+  const shareInput = {
+    title: listing.title,
+    price: listing.price,
+    beds: listing.beds,
+    area: listing.area,
+    campusShortName: listing.campus?.short_name ?? null,
+    availableFrom: listing.available_from,
+    availableTo: listing.available_to,
+  };
+  function baseListingUrl() {
+    if (typeof window === "undefined") return `https://leasup.co/listing/${listing.id}`;
+    const u = new URL(window.location.href);
+    u.search = ""; u.hash = "";
+    return u.toString();
+  }
+
   async function handleShare() {
     if (typeof window === "undefined") return;
-    const url = window.location.href;
+    const url = withUtm(baseListingUrl(), "native_share");
     const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
     const fmt = (iso: string | null) =>
@@ -324,16 +344,31 @@ function ListingDetailPage() {
     const title = `${listing.title} — LeaseUp`;
     const nav = window.navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
     if (typeof nav.share === "function") {
-      try { await nav.share({ title, text, url }); return; } catch (e: any) {
+      try {
+        await nav.share({ title, text, url });
+        recordShare(listing.id);
+        return;
+      } catch (e: any) {
         if (e?.name === "AbortError") return;
       }
     }
-    try {
-      await navigator.clipboard.writeText(url);
+    const clipUrl = withUtm(baseListingUrl(), "clipboard");
+    const ok = await copyToClipboard(clipUrl);
+    if (ok) {
       toast.success("Link copied!");
-    } catch {
-      window.prompt("Copy this link", url);
+      recordShare(listing.id);
     }
+  }
+
+  async function handleShareGroupMe() {
+    const url = withUtm(baseListingUrl(), "groupme");
+    await shareToGroupMe(buildGroupMeText(shareInput, url));
+    recordShare(listing.id);
+  }
+  async function handleShareDiscord() {
+    const url = withUtm(baseListingUrl(), "discord");
+    await shareToDiscord(buildDiscordText(shareInput, url));
+    recordShare(listing.id);
   }
 
 
@@ -590,6 +625,12 @@ function ListingDetailPage() {
                         </dd>
                       </div>
                     )}
+                    {((listing as any).share_count ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">Shares</dt>
+                        <dd className="font-semibold">{((listing as any).share_count ?? 0).toLocaleString()}</dd>
+                      </div>
+                    )}
                   </dl>
                 </div>
               )}
@@ -636,17 +677,33 @@ function ListingDetailPage() {
 
         {/* PART E2 — send to a friend */}
         <section className="border-t border-border py-10">
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl border border-border bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="mx-auto flex max-w-2xl flex-col gap-4 rounded-2xl border border-border bg-surface p-6 text-center">
             <p className="text-sm font-medium text-foreground">
               Know someone looking for a place{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}? Share this listing.
             </p>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
-            >
-              <Share2 className="h-4 w-4" /> Share listing →
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
+              >
+                <Share2 className="h-4 w-4" /> Share listing
+              </button>
+              <button
+                type="button"
+                onClick={handleShareGroupMe}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95"
+              >
+                Share to GroupMe
+              </button>
+              <button
+                type="button"
+                onClick={handleShareDiscord}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95"
+              >
+                Copy for Discord
+              </button>
+            </div>
           </div>
         </section>
       </div>
