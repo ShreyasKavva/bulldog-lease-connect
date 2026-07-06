@@ -24,6 +24,8 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
   const unread = useUnreadCount();
+  const { data: notifications = [] } = useNotifications();
+  const unreadNotifs = notifications.filter((n) => !n.read).length;
   const navigate = useNavigate();
 
   const isHome = path === "/";
