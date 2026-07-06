@@ -135,7 +135,7 @@ function Browse() {
       if ((searchInput || "") === (s.q ?? "")) return;
       navigate({
         to: "/browse",
-        search: (prev) => ({ ...prev, q: searchInput.trim() || undefined }),
+        search: (prev: BrowseSearch) => ({ ...prev, q: searchInput.trim() || undefined }),
         replace: true,
       });
     }, 300);
@@ -144,7 +144,7 @@ function Browse() {
   }, [searchInput]);
 
   function patchSearch(patch: Partial<BrowseSearch>) {
-    navigate({ to: "/browse", search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ to: "/browse", search: (prev: BrowseSearch) => ({ ...prev, ...patch }) });
   }
 
   const [view, setView] = useState<View>("grid");
