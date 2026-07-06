@@ -394,3 +394,182 @@ function ActivityStrip({ listings }: { listings: Listing[] }) {
     </div>
   );
 }
+
+/* ---------------- Q66 sections ---------------- */
+
+function LatestFeedSection({
+  listings, campuses, savedIds, onSave, onOpen, onPost,
+  userCampusId, feedCampusId, recentFilledCount,
+}: {
+  listings: Listing[];
+  campuses: Campus[];
+  savedIds: Set<string>;
+  onSave: (l: Listing) => void;
+  onOpen: (l: Listing) => void;
+  onPost: () => void;
+  userCampusId: string | null;
+  feedCampusId: string | null;
+  recentFilledCount: number;
+}) {
+  const navigate = useNavigate();
+  const scopedId = feedCampusId;
+  const campus = scopedId ? campuses.find((c) => c.id === scopedId) : null;
+  const campusLabel = campus?.short_name ?? campus?.name;
+
+  const heading = userCampusId && campus
+    ? `Latest subleases at ${campusLabel}`
+    : userCampusId
+      ? "Latest subleases near you"
+      : "Latest subleases";
+
+  const feed = useMemo(() => {
+    const src = scopedId ? listings.filter((l) => l.campus_id === scopedId) : listings;
+    return [...src]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 6);
+  }, [listings, scopedId]);
+
+  const empty = feed.length === 0;
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h2 className="text-xl font-extrabold sm:text-2xl">{heading}</h2>
+        {!empty && (
+          <button
+            onClick={() =>
+              navigate({ to: "/browse", search: (campus ? { campus: campus.slug } : {}) as any })
+            }
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            View all →
+          </button>
+        )}
+      </div>
+
+      {recentFilledCount > 0 && (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          🎉 {recentFilledCount} sublease{recentFilledCount === 1 ? "" : "s"} found their renter this month
+          {campusLabel ? ` at ${campusLabel}` : ""}
+        </div>
+      )}
+
+      {empty ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+          <div className="text-5xl">🏠</div>
+          <h3 className="mt-3 text-lg font-bold">
+            No subleases posted{campusLabel ? ` at ${campusLabel}` : ""} yet.
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Be the first — post yours and help a fellow student find housing.
+          </p>
+          <button
+            onClick={onPost}
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+          >
+            Post the first sublease{campusLabel ? ` at ${campusLabel}` : ""} →
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {feed.map((l) => (
+            <ListingCard
+              key={l.id}
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onSave={() => onSave(l)}
+              onOpen={() => onOpen(l)}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
+  if (!posts || posts.length === 0) return null;
+  const top = posts.slice(0, 4);
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h2 className="text-xl font-extrabold sm:text-2xl">
+          Students actively looking — reach out to them
+        </h2>
+        <Link to="/looking-for" className="text-sm font-semibold text-primary hover:underline">
+          See all →
+        </Link>
+      </div>
+      <div className="mt-4 -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {top.map((p) => (
+          <Link
+            key={p.id}
+            to="/looking-for"
+            className="min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl bg-surface p-4 shadow-card hover:shadow-card-md"
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className="grid h-9 w-9 place-items-center rounded-full text-base"
+                style={{ background: p.profile?.banner_color ?? "#2563EB" }}
+              >
+                {p.profile?.avatar_emoji ?? "🙂"}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold">
+                  {p.profile?.name ?? "A student"}
+                </div>
+                <div className="truncate text-[11px] text-muted-foreground">
+                  {p.budget_max ? `Up to $${p.budget_max}/mo` : "Budget flexible"}
+                  {p.move_in_date ? ` · ${new Date(p.move_in_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+                </div>
+              </div>
+            </div>
+            <p className="mt-2 line-clamp-2 text-xs text-foreground/80">{p.description}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const renter = [
+    "Browse real listings from verified .edu students",
+    "Message directly — no middleman",
+    "No application fee, ever",
+  ];
+  const lister = [
+    "Post your sublease free in under 2 minutes",
+    "Get reached by students already searching",
+    "Mark as rented when done",
+  ];
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="text-xl font-extrabold sm:text-2xl">How it works</h2>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl bg-surface p-5 shadow-card">
+          <div className="text-xs font-bold uppercase tracking-wide text-primary">For renters</div>
+          <ul className="mt-3 space-y-2 text-sm">
+            {renter.map((t, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="font-black text-primary">{i + 1}.</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-2xl bg-surface p-5 shadow-card">
+          <div className="text-xs font-bold uppercase tracking-wide text-primary">For listers</div>
+          <ul className="mt-3 space-y-2 text-sm">
+            {lister.map((t, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="font-black text-primary">{i + 1}.</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
