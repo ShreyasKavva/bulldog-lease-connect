@@ -83,7 +83,6 @@ export const Route = createFileRoute("/browse")({
 });
 
 type View = "grid" | "scroll";
-type Sort = "newest" | "price_asc" | "price_desc";
 
 function Browse() {
   const navigate = useNavigate();
