@@ -13,7 +13,7 @@ import {
   fetchMatchingListingsForPost,
   getOrCreateConversation,
 } from "@/lib/leaseup/queries";
-import { useSession } from "@/lib/leaseup/use-session";
+import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -68,8 +68,13 @@ function fmtDateRange(from: string | null, to: string | null) {
 
 function LookingForPage() {
   const { user } = useSession();
+  const { data: myProfile } = useMyProfile();
   const qc = useQueryClient();
-  const { data: posts = [], isLoading } = useQuery({ queryKey: ["looking-for"], queryFn: fetchLookingFor });
+  const campusId = myProfile?.campus_id ?? null;
+  const { data: posts = [], isLoading } = useQuery({
+    queryKey: ["looking-for", campusId],
+    queryFn: () => fetchLookingFor(campusId),
+  });
   const { data: myInterests = [] } = useQuery({
     queryKey: ["looking-for-interests", user?.id],
     queryFn: () => (user ? fetchMyLookingForInterests(user.id) : Promise.resolve([])),
@@ -119,7 +124,7 @@ function LookingForPage() {
     try {
       await renewLookingFor(p.id);
       qc.invalidateQueries({ queryKey: ["looking-for"] });
-      toast.success("Renewed for 90 more days");
+      toast.success("Renewed for 60 more days");
     } catch (e: any) { toast.error(e.message); }
   }
 
@@ -143,6 +148,15 @@ function LookingForPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary-light/50 px-4 py-3 text-sm">
+          <p className="font-medium text-primary-dark">
+            Have a sublease to fill? Browse the board and message students directly.
+          </p>
+          <Link to="/browse" className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+            Browse listings →
+          </Link>
+        </div>
+
         {isLoading ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />)}
@@ -236,7 +250,7 @@ function LookingForCard({
   const profile = p.profile;
   const dateRange = fmtDateRange(p.move_in_date, p.move_out_date);
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
-  const expiringSoon = ageDays >= 87 && ageDays < 90;
+  const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
 
   return (
@@ -387,7 +401,8 @@ function LookingForFormDialog({
   editing: LookingForPost | null;
   onSaved: () => void;
 }) {
-  const { user, profile } = useSession() as any;
+  const { user } = useSession();
+  const { data: profile } = useMyProfile();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
@@ -452,7 +467,17 @@ function LookingForFormDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="2BR near campus for spring" /></div>
-          <div><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell us about you, your roommates, lifestyle, must-haves…" rows={4} /></div>
+          <div>
+            <Label>Description</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value.slice(0, 300))}
+              placeholder="e.g. Quiet grad student looking for a furnished 1BR or private room near North Campus for fall semester. Flexible on exact location."
+              rows={4}
+              maxLength={300}
+            />
+            <div className="mt-1 text-right text-[11px] text-muted-foreground">{description.length}/300</div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Max budget</Label><Input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="900" /></div>
             <div><Label>Min beds</Label><Input type="number" value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="2" /></div>

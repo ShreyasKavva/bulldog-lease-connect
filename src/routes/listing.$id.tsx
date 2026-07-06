@@ -20,11 +20,11 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled, toggleSaved, fetchSavedIds } from "@/lib/leaseup/queries";
+import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
-import type { Listing, Profile } from "@/lib/leaseup/types";
+import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
@@ -244,6 +244,20 @@ function ListingDetailPage() {
     queryFn: () => fetchSimilar(listing),
     staleTime: 60_000,
   });
+  const { data: lfMatches = [] } = useQuery({
+    queryKey: ["listing-lf-matches", listing.id],
+    queryFn: () => fetchLookingForMatchesForListing(listing, 3),
+    enabled: isOwner,
+    staleTime: 60_000,
+  });
+  async function messageLfPoster(otherId: string) {
+    if (!user) { openSignIn(`/listing/${listing.id}`); return; }
+    if (otherId === user.id) return;
+    try {
+      const convId = await getOrCreateConversation(user.id, otherId, listing.id);
+      navigate({ to: "/messages" as any, search: { c: convId } as any });
+    } catch (e: any) { toast.error(e.message ?? "Could not open conversation"); }
+  }
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
   async function handleShare() {
@@ -450,6 +464,23 @@ function ListingDetailPage() {
             </div>
           </aside>
         </div>
+
+        {/* Queue 60 — Part C: Looking-for matches (owner only) */}
+        {isOwner && lfMatches.length > 0 && (
+          <section className="border-t border-border py-10">
+            <h2 className="text-xl font-black sm:text-2xl">
+              Students looking for something like this{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              These students might be interested in your listing. Reach out directly.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {lfMatches.map((p: LookingForPost) => (
+                <LookingForMatchCard key={p.id} p={p} onMessage={() => messageLfPoster(p.user_id)} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* PART E — similar */}
         {similar.length > 0 && (
@@ -961,5 +992,40 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// Queue 60 — Part C: compact card for a looking-for post
+function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: () => void }) {
+  const profile = (p as any).profile as { name?: string; avatar_emoji?: string; banner_color?: string; verified_email?: boolean } | undefined;
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const range = p.move_in_date || p.move_out_date
+    ? `${fmt(p.move_in_date)}${p.move_out_date ? `–${fmt(p.move_out_date)}` : ""}`
+    : null;
+  return (
+    <article className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ring-2 ring-white"
+          style={{ background: profile?.banner_color ?? "#2563EB" }}
+        >
+          {profile?.avatar_emoji ?? "🙂"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-sm font-bold">{profile?.name ?? "Student"}</p>
+            {profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
+          </div>
+          {p.budget_max != null && (
+            <p className="text-xs text-muted-foreground">Up to ${p.budget_max}/mo{range ? ` · ${range}` : ""}</p>
+          )}
+        </div>
+      </div>
+      <p className="line-clamp-3 text-sm text-foreground">{p.description}</p>
+      <Button size="sm" onClick={onMessage} className="mt-auto gap-1 bg-primary hover:bg-primary-dark text-primary-foreground">
+        Message →
+      </Button>
+    </article>
   );
 }
