@@ -368,7 +368,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Post a sublease</DialogTitle>
+            <DialogTitle className="text-2xl">{isEdit ? "Edit your listing" : "Post a sublease"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {isRelist && (
