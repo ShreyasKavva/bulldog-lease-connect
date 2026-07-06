@@ -40,6 +40,7 @@ import { Route as MessagesListingIdRouteImport } from './routes/messages.$listin
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
+import { Route as PostEditIdRouteImport } from './routes/post.edit.$id'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -205,6 +206,11 @@ const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
   path: '/ambassador/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostEditIdRoute = PostEditIdRouteImport.update({
+  id: '/edit/$id',
+  path: '/edit/$id',
+  getParentRoute: () => PostRoute,
+} as any)
 const MyListingsListingIdAnalyticsRoute =
   MyListingsListingIdAnalyticsRouteImport.update({
     id: '/$listingId/analytics',
@@ -274,7 +280,7 @@ export interface FileRoutesByFullPath {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/post': typeof PostRoute
+  '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/post/edit/$id': typeof PostEditIdRoute
   '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -316,7 +323,7 @@ export interface FileRoutesByTo {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/post': typeof PostRoute
+  '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -333,6 +340,7 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/post/edit/$id': typeof PostEditIdRoute
   '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -359,7 +367,7 @@ export interface FileRoutesById {
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/post': typeof PostRoute
+  '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved': typeof SavedRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/post/edit/$id': typeof PostEditIdRoute
   '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -420,6 +429,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/post/edit/$id'
     | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/post/edit/$id'
     | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -504,6 +515,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/post/edit/$id'
     | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -530,7 +542,7 @@ export interface RootRouteChildren {
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
-  PostRoute: typeof PostRoute
+  PostRoute: typeof PostRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedRoute: typeof SavedRoute
@@ -770,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AmbassadorDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/post/edit/$id': {
+      id: '/post/edit/$id'
+      path: '/edit/$id'
+      fullPath: '/post/edit/$id'
+      preLoaderRoute: typeof PostEditIdRouteImport
+      parentRoute: typeof PostRoute
+    }
     '/my-listings/$listingId/analytics': {
       id: '/my-listings/$listingId/analytics'
       path: '/$listingId/analytics'
@@ -860,6 +879,16 @@ const MyListingsRouteWithChildren = MyListingsRoute._addFileChildren(
   MyListingsRouteChildren,
 )
 
+interface PostRouteChildren {
+  PostEditIdRoute: typeof PostEditIdRoute
+}
+
+const PostRouteChildren: PostRouteChildren = {
+  PostEditIdRoute: PostEditIdRoute,
+}
+
+const PostRouteWithChildren = PostRoute._addFileChildren(PostRouteChildren)
+
 interface ProfileRouteChildren {
   ProfileUserIdRoute: typeof ProfileUserIdRoute
 }
@@ -901,7 +930,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
-  PostRoute: PostRoute,
+  PostRoute: PostRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedRoute: SavedRoute,
