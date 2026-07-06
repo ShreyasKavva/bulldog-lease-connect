@@ -188,6 +188,10 @@ function Home() {
         recentFilledCount={filledCount}
       />
 
+      <CampusPills />
+
+
+
 
       <ListingDetailSheet
         listing={selected}
