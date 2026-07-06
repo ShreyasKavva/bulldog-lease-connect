@@ -30,6 +30,7 @@ import {
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
+import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 
 
 
@@ -196,6 +197,7 @@ function ListingDetailPage() {
   const { user } = useSession();
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const isOwner = user?.id === listing.user_id;
   const photos = listing.photo_urls ?? [];
@@ -431,6 +433,22 @@ function ListingDetailPage() {
                 <MarkAsRentedButton listingId={listing.id} />
               </div>
             )}
+
+            {!isOwner && (
+              <p className="mt-8 text-xs text-muted-foreground">
+                Something wrong with this listing?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!user) { openSignIn(`/listing/${listing.id}`); return; }
+                    setReportOpen(true);
+                  }}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  Report it →
+                </button>
+              </p>
+            )}
           </div>
 
 
@@ -537,6 +555,8 @@ function ListingDetailPage() {
           onClose={() => setLightboxIndex(null)}
         />
       )}
+
+      <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
     </div>
   );
 }
