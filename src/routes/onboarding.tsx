@@ -116,7 +116,7 @@ function Onboarding() {
       try {
         const { sendTransactionalEmail } = await import("@/lib/email/send");
         const chosen = campuses.find((c) => c.id === campusId);
-        const firstName = (profile.name || user.email?.split("@")[0] || "").split(" ")[0] || "";
+        const firstName = ((profile?.name || user.email?.split("@")[0] || "") as string).split(" ")[0] || "";
         const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
         void sendTransactionalEmail({
           templateName: "welcome",
