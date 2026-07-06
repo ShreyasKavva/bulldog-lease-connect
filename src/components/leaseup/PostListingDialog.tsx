@@ -53,7 +53,7 @@ function defaultAvailableFrom(): string {
 
 type Preview = { file: File; url: string };
 
-export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
@@ -61,12 +61,16 @@ export function PostListingDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<{ path: string; url: string }[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [screenResult, setScreenResult] = useState<ScreenResult | null>(null);
   const [pendingForm, setPendingForm] = useState<null | (() => Promise<void>)>(null);
+  const [relistPrefilled, setRelistPrefilled] = useState(false);
   const runScreen = useServerFn(screenListing);
 
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+
+  const isRelist = !!relistFrom;
 
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
