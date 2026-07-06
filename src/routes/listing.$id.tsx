@@ -185,10 +185,40 @@ function ListingDetailPage() {
     queryFn: () => fetchPoster(listing.user_id),
     staleTime: 60_000,
   });
+  const qc = useQueryClient();
   const { data: savedCount = 0 } = useQuery({
     queryKey: ["listing-saved-count", listing.id],
     queryFn: () => fetchSavedCount(listing.id),
   });
+  const { data: savedIds = new Set<string>() } = useQuery({
+    queryKey: ["saved", user?.id],
+    queryFn: () => fetchSavedIds(user!.id),
+    enabled: !!user,
+  });
+  const isSaved = savedIds.has(listing.id);
+
+  async function handleToggleSave() {
+    if (!user) {
+      openSignIn(`/listing/${listing.id}?save=1`);
+      return;
+    }
+    const wasSaved = isSaved;
+    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
+      const s = new Set(prev ?? []);
+      if (wasSaved) s.delete(listing.id); else s.add(listing.id);
+      return s;
+    });
+    qc.setQueryData(["listing-saved-count", listing.id], (prev: number | undefined) =>
+      Math.max(0, (prev ?? 0) + (wasSaved ? -1 : 1))
+    );
+    try {
+      await toggleSaved(user.id, listing.id, wasSaved);
+    } catch {
+      qc.invalidateQueries({ queryKey: ["saved", user.id] });
+      qc.invalidateQueries({ queryKey: ["listing-saved-count", listing.id] });
+    }
+  }
+
   const { data: similar = [] } = useQuery({
     queryKey: ["listing-similar", listing.id],
     queryFn: () => fetchSimilar(listing),
