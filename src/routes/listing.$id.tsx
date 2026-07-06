@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing } from "@/lib/leaseup/queries";
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import {
@@ -233,6 +233,9 @@ function ListingDetailPage() {
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [bumpOpen, setBumpOpen] = useState(false);
+  const [bumping, setBumping] = useState(false);
+  const [bumpedAt, setBumpedAt] = useState<string | null>(((listing as any).bumped_at as string | null) ?? null);
 
   const isOwner = user?.id === listing.user_id;
   const photos = listing.photo_urls ?? [];
@@ -539,20 +542,72 @@ function ListingDetailPage() {
               )}
             </p>
 
-            {isOwner && (
-              <div className="mt-6 flex flex-wrap gap-2">
-                {(listing as any).status !== "filled" && (
-                  <MarkAsRentedButton listingId={listing.id} />
-                )}
-                <Link
-                  to="/post/edit/$id"
-                  params={{ id: listing.id }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-primary hover:text-primary"
-                >
-                  <Pencil className="h-4 w-4" /> Edit listing →
-                </Link>
-              </div>
-            )}
+            {isOwner && (() => {
+              const bumpedMs = bumpedAt ? new Date(bumpedAt).getTime() : 0;
+              const daysSince = bumpedMs ? Math.floor((Date.now() - bumpedMs) / 86400000) : Infinity;
+              const canBump = !bumpedAt || daysSince >= 7;
+              const daysLeft = Math.max(0, 7 - daysSince);
+              return (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {(listing as any).status !== "filled" && (
+                    <MarkAsRentedButton listingId={listing.id} />
+                  )}
+                  <Link
+                    to="/post/edit/$id"
+                    params={{ id: listing.id }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-primary hover:text-primary"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit listing →
+                  </Link>
+                  {canBump ? (
+                    <button
+                      type="button"
+                      onClick={() => setBumpOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <ArrowUp className="h-4 w-4" /> Bump to top ↑
+                    </button>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
+                      Bumped {daysSince === 0 ? "today" : `${daysSince}d ago`} — bump again in {daysLeft}d
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
+
+            <Dialog open={bumpOpen} onOpenChange={setBumpOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Bump to top of the feed?</DialogTitle>
+                  <DialogDescription>
+                    Bring this listing back to the top of the UGA feed. Free — you can bump again in 7 days.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setBumpOpen(false)} disabled={bumping}>Cancel</Button>
+                  <Button
+                    onClick={async () => {
+                      setBumping(true);
+                      try {
+                        const newTs = await bumpListing(listing.id);
+                        setBumpedAt(newTs);
+                        toast.success("Bumped! Your listing is back at the top of the feed.");
+                        setBumpOpen(false);
+                        qc.invalidateQueries({ queryKey: ["listings"] });
+                      } catch (e: any) {
+                        toast.error(e?.message ?? "Could not bump listing");
+                      } finally {
+                        setBumping(false);
+                      }
+                    }}
+                    disabled={bumping}
+                  >
+                    <ArrowUp className="mr-1 h-4 w-4" /> Bump ↑
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {!isOwner && (
               <p className="mt-8 text-xs text-muted-foreground">
@@ -650,6 +705,33 @@ function ListingDetailPage() {
                         <dd className="font-semibold">{((listing as any).share_count ?? 0).toLocaleString()}</dd>
                       </div>
                     )}
+                    {(() => {
+                      const bumpedMs = bumpedAt ? new Date(bumpedAt).getTime() : 0;
+                      const daysSince = bumpedMs ? Math.floor((Date.now() - bumpedMs) / 86400000) : Infinity;
+                      const canBump = !bumpedAt || daysSince >= 7;
+                      const daysLeft = Math.max(0, 7 - daysSince);
+                      return (
+                        <div className="flex items-center justify-between">
+                          <dt className="text-muted-foreground">{bumpedAt ? "Bumped" : "Bump"}</dt>
+                          <dd className="font-semibold">
+                            {canBump ? (
+                              <button
+                                type="button"
+                                onClick={() => setBumpOpen(true)}
+                                className="text-primary underline underline-offset-2 hover:text-primary/80"
+                              >
+                                Bring to top — free ↑
+                              </button>
+                            ) : (
+                              <span>
+                                {daysSince === 0 ? "today" : `${daysSince}d ago`}
+                                <span className="ml-1 text-xs font-normal text-muted-foreground">(bump again in {daysLeft}d)</span>
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      );
+                    })()}
                   </dl>
                 </div>
               )}

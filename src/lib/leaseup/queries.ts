@@ -55,7 +55,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .eq("status", "active")
     .or(`available_to.is.null,available_to.gte.${today}`)
     .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("sort_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
   return attachSignedUrls(withProfiles);
@@ -488,7 +488,7 @@ export async function fetchMatchingListingsForPost(post: LookingForPost): Promis
   if (post.beds_min) q = q.gte("beds", post.beds_min);
   if (post.move_in_date) q = q.or(`available_to.is.null,available_to.gte.${post.move_in_date}`);
   if (post.move_out_date) q = q.or(`available_from.is.null,available_from.lte.${post.move_out_date}`);
-  const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
+  const { data, error } = await q.order("sort_at", { ascending: false }).limit(50);
   if (error) throw error;
   return await attachProfiles(data ?? []);
 }
@@ -602,4 +602,12 @@ export async function relistListing(sourceId: string, userId: string): Promise<s
   if (e2) throw e2;
   return (created as any).id as string;
 }
+
+/** Bump listing to the top of the feed (once per 7 days, owner-only, enforced server-side). */
+export async function bumpListing(listingId: string): Promise<string> {
+  const { data, error } = await supabase.rpc("bump_listing", { _listing_id: listingId });
+  if (error) throw error;
+  return data as unknown as string;
+}
+
 
