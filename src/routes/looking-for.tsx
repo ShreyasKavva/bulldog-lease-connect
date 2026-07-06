@@ -13,7 +13,7 @@ import {
   fetchMatchingListingsForPost,
   getOrCreateConversation,
 } from "@/lib/leaseup/queries";
-import { useSession } from "@/lib/leaseup/use-session";
+import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
 import { Button } from "@/components/ui/button";
 import {
