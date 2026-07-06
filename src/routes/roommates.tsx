@@ -101,7 +101,7 @@ function RoommatesPage() {
   if (loading) return <div className="min-h-[60vh]" />;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-16 pt-4 md:pt-6">
+    <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 md:pb-16 md:pt-6">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold md:text-3xl">Roommate board</h1>
