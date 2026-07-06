@@ -246,6 +246,33 @@ function ListingDetailPage() {
   });
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
+  async function handleShare() {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
+    const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
+    const fmt = (iso: string | null) =>
+      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+    const range = listing.available_from && listing.available_to
+      ? ` · ${fmt(listing.available_from)}–${fmt(listing.available_to)}`
+      : "";
+    const text = `${bedStr}${where ? ` at ${where}` : ""} · $${listing.price}/mo${range}`;
+    const title = `${listing.title} — LeaseUp`;
+    const nav = window.navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (typeof nav.share === "function") {
+      try { await nav.share({ title, text, url }); return; } catch (e: any) {
+        if (e?.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied!");
+    } catch {
+      window.prompt("Copy this link", url);
+    }
+  }
+
+
   // Bump view count once per session.
   useEffect(() => {
     const key = `viewed:${listing.id}`;
