@@ -47,16 +47,20 @@ async function attachProfiles(listings: any[]): Promise<Listing[]> {
 }
 
 export async function fetchListings(): Promise<Listing[]> {
+  const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("listings")
     .select("*")
     .eq("is_active", true)
+    .eq("status", "active")
+    .or(`available_to.is.null,available_to.gte.${today}`)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
   return attachSignedUrls(withProfiles);
 }
+
 
 export async function fetchListing(id: string): Promise<Listing | null> {
   const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
@@ -489,3 +493,61 @@ export async function reopenListing(id: string) {
     .eq("id", id);
   if (error) throw error;
 }
+
+/**
+ * Duplicate an expired/filled listing into a fresh active one. Copies the
+ * user-visible fields but resets lifecycle (status/is_active/filled_at) and
+ * shifts the availability window forward one year so the poster only needs
+ * to nudge the dates before reposting.
+ */
+export async function relistListing(sourceId: string, userId: string): Promise<string> {
+  const { data: src, error: e1 } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", sourceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (e1) throw e1;
+  if (!src) throw new Error("Listing not found");
+  const s = src as any;
+  const shift = (d: string | null) => {
+    if (!d) return null;
+    const dt = new Date(d);
+    dt.setFullYear(dt.getFullYear() + 1);
+    return dt.toISOString().slice(0, 10);
+  };
+  const payload: any = {
+    user_id: userId,
+    campus_id: s.campus_id,
+    title: s.title,
+    description: s.description,
+    type: s.type,
+    price: s.price,
+    beds: s.beds,
+    baths: s.baths,
+    area: s.area,
+    address: s.address,
+    lat: s.lat,
+    lng: s.lng,
+    photos: s.photos ?? [],
+    furnished: s.furnished,
+    utilities_included: s.utilities_included,
+    pet_friendly: s.pet_friendly,
+    parking: s.parking,
+    semester: s.semester,
+    amenities: s.amenities ?? [],
+    available_from: shift(s.available_from),
+    available_to: shift(s.available_to),
+    status: "active",
+    is_active: true,
+  };
+
+  const { data: created, error: e2 } = await supabase
+    .from("listings")
+    .insert(payload)
+    .select("id")
+    .single();
+  if (e2) throw e2;
+  return (created as any).id as string;
+}
+

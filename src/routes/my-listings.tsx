@@ -15,7 +15,7 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
+import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing, relistListing } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
@@ -64,11 +64,26 @@ function MyListingsPage() {
   const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
   const [tourFor, setTourFor] = useState<Listing | null>(null);
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
+  const [tab, setTab] = useState<"active" | "rented" | "expired">("active");
+
+  const today = new Date().toISOString().slice(0, 10);
+  const isRented = (l: Listing) => l.status === "filled";
+  const isExpired = (l: Listing) =>
+    !isRented(l) && !!l.available_to && l.available_to < today;
+  const isActiveTab = (l: Listing) => !isRented(l) && !isExpired(l);
+
+  const groups = {
+    active: listings.filter(isActiveTab),
+    rented: listings.filter(isRented),
+    expired: listings.filter(isExpired),
+  };
+  const visibleListings = groups[tab];
 
   const totals = {
     views: listings.reduce((s, l) => s + (l.view_count ?? 0), 0),
-    active: listings.filter((l) => l.is_active && l.status !== "filled").length,
+    active: groups.active.length,
   };
+
   const { data: aggCounts = { saves: 0, messages: 0 } } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
@@ -191,6 +206,18 @@ function MyListingsPage() {
       toast.success("Listing reopened");
     } catch (e: any) { toast.error(e.message); }
   }
+
+  async function relist(l: Listing) {
+    try {
+      await relistListing(l.id, user!.id);
+      qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
+      toast.success("Relisted — update the dates and details as needed.");
+      setTab("active");
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+
 
 
   return (
