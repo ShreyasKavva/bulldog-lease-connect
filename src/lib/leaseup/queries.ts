@@ -55,7 +55,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .eq("status", "active")
     .or(`available_to.is.null,available_to.gte.${today}`)
     .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("sort_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
   return attachSignedUrls(withProfiles);
