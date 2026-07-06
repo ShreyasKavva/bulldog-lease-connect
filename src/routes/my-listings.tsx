@@ -174,12 +174,13 @@ function MyListingsPage() {
   }
 
   async function markFilled(l: Listing) {
-    if (!confirm(`Mark "${l.title}" as filled? It will be hidden from the feed.`)) return;
+    if (!confirm(`Mark "${l.title}" as rented? It will be removed from browse and your profile will show +1 completed sublease.`)) return;
     try {
       await markListingFilled(l.id);
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
-      toast.success("Marked as filled 🎉 — your subletter has been prompted to review you.");
+      toast.success("Listing marked as rented. Nice work! 🎉");
+
       // Open review dialog targeting the most recent messenger
       const { data: conv } = await supabase
         .from("conversations")
