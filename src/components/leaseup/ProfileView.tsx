@@ -238,7 +238,7 @@ export function ProfileView({ userId }: { userId: string }) {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-extrabold">{profile.name || "Unnamed"}</h1>
+              <h1 className="text-2xl font-extrabold">{isOwn ? (profile.name || "Unnamed") : maskLastName(profile.name)}</h1>
               {subtitleParts.length > 0 && (
                 <p className="text-sm text-muted-foreground">{subtitleParts.join(" · ")}</p>
               )}
