@@ -12,12 +12,16 @@ export const Route = createFileRoute("/messages")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    conversation: typeof s.conversation === "string" ? s.conversation : undefined,
+  }),
   component: MessagesInboxPage,
 });
 
 function MessagesInboxPage() {
   const { user, loading } = useSession();
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
@@ -37,8 +41,9 @@ function MessagesInboxPage() {
           setOpen(o);
           if (!o) navigate({ to: "/" });
         }}
-        initialConversationId={null}
+        initialConversationId={search.conversation ?? null}
       />
     </div>
   );
 }
+
