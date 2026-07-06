@@ -343,6 +343,11 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
             <DialogTitle className="text-2xl">Post a sublease</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {isRelist && (
+              <div className="rounded-lg border border-blue-300/60 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-100">
+                ℹ️ Relisting from a previous listing — we've pre-filled your info. Update the dates and price, then post.
+              </div>
+            )}
             <Field label="Title">
               <Input
                 value={form.title}
