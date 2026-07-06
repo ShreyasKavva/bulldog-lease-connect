@@ -467,7 +467,17 @@ function LookingForFormDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="2BR near campus for spring" /></div>
-          <div><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell us about you, your roommates, lifestyle, must-haves…" rows={4} /></div>
+          <div>
+            <Label>Description</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value.slice(0, 300))}
+              placeholder="e.g. Quiet grad student looking for a furnished 1BR or private room near North Campus for fall semester. Flexible on exact location."
+              rows={4}
+              maxLength={300}
+            />
+            <div className="mt-1 text-right text-[11px] text-muted-foreground">{description.length}/300</div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Max budget</Label><Input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="900" /></div>
             <div><Label>Min beds</Label><Input type="number" value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="2" /></div>
