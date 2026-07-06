@@ -27,6 +27,7 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as FindMyMatchRouteImport } from './routes/find-my-match'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AmbassadorRouteImport } from './routes/ambassador'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
@@ -138,6 +139,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AmbassadorRoute = AmbassadorRouteImport.update({
+  id: '/ambassador',
+  path: '/ambassador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -189,9 +195,9 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
-  id: '/ambassador/dashboard',
-  path: '/ambassador/dashboard',
-  getParentRoute: () => rootRouteImport,
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AmbassadorRoute,
 } as any)
 const MyListingsListingIdAnalyticsRoute =
   MyListingsListingIdAnalyticsRouteImport.update({
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRouteWithChildren
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRouteWithChildren
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
+  '/ambassador': typeof AmbassadorRouteWithChildren
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
+    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -493,6 +505,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
+  AmbassadorRoute: typeof AmbassadorRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   FindMyMatchRoute: typeof FindMyMatchRoute
@@ -511,7 +524,6 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
-  AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -653,6 +665,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ambassador': {
+      id: '/ambassador'
+      path: '/ambassador'
+      fullPath: '/ambassador'
+      preLoaderRoute: typeof AmbassadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alerts': {
       id: '/alerts'
       path: '/alerts'
@@ -725,10 +744,10 @@ declare module '@tanstack/react-router' {
     }
     '/ambassador/dashboard': {
       id: '/ambassador/dashboard'
-      path: '/ambassador/dashboard'
+      path: '/dashboard'
       fullPath: '/ambassador/dashboard'
       preLoaderRoute: typeof AmbassadorDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AmbassadorRoute
     }
     '/my-listings/$listingId/analytics': {
       id: '/my-listings/$listingId/analytics'
@@ -796,6 +815,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AmbassadorRouteChildren {
+  AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
+}
+
+const AmbassadorRouteChildren: AmbassadorRouteChildren = {
+  AmbassadorDashboardRoute: AmbassadorDashboardRoute,
+}
+
+const AmbassadorRouteWithChildren = AmbassadorRoute._addFileChildren(
+  AmbassadorRouteChildren,
+)
+
 interface MessagesRouteChildren {
   MessagesListingIdRoute: typeof MessagesListingIdRoute
 }
@@ -848,6 +879,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
+  AmbassadorRoute: AmbassadorRouteWithChildren,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   FindMyMatchRoute: FindMyMatchRoute,
@@ -866,7 +898,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
-  AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
