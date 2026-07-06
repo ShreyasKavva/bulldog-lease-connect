@@ -197,6 +197,7 @@ function ListingDetailPage() {
   const { user } = useSession();
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const isOwner = user?.id === listing.user_id;
   const photos = listing.photo_urls ?? [];
