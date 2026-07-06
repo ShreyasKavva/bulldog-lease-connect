@@ -27,7 +27,6 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as FindMyMatchRouteImport } from './routes/find-my-match'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AmbassadorRouteImport } from './routes/ambassador'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
@@ -38,6 +37,7 @@ import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador.dashboard'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -138,11 +138,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AmbassadorRoute = AmbassadorRouteImport.update({
-  id: '/ambassador',
-  path: '/ambassador',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -191,6 +186,11 @@ const ListingIdRoute = ListingIdRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
+  id: '/ambassador/dashboard',
+  path: '/ambassador/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyListingsListingIdAnalyticsRoute =
@@ -249,7 +249,6 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -268,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -289,7 +289,6 @@ export interface FileRoutesByTo {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -308,6 +307,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -330,7 +330,6 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/ambassador': typeof AmbassadorRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/find-my-match': typeof FindMyMatchRoute
@@ -349,6 +348,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
@@ -372,7 +372,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
-    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -391,6 +390,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -412,7 +412,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
-    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -431,6 +430,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -452,7 +452,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/alerts'
-    | '/ambassador'
     | '/auth'
     | '/browse'
     | '/find-my-match'
@@ -471,6 +470,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
+    | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$listingId'
@@ -493,7 +493,6 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
-  AmbassadorRoute: typeof AmbassadorRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   FindMyMatchRoute: typeof FindMyMatchRoute
@@ -512,6 +511,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -653,13 +653,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ambassador': {
-      id: '/ambassador'
-      path: '/ambassador'
-      fullPath: '/ambassador'
-      preLoaderRoute: typeof AmbassadorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/alerts': {
       id: '/alerts'
       path: '/alerts'
@@ -728,6 +721,13 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ambassador/dashboard': {
+      id: '/ambassador/dashboard'
+      path: '/ambassador/dashboard'
+      fullPath: '/ambassador/dashboard'
+      preLoaderRoute: typeof AmbassadorDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-listings/$listingId/analytics': {
@@ -848,7 +848,6 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
-  AmbassadorRoute: AmbassadorRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   FindMyMatchRoute: FindMyMatchRoute,
@@ -867,6 +866,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
