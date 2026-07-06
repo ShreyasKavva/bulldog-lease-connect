@@ -1006,6 +1006,7 @@ export type Database = {
           price: number
           safe_score: number | null
           semester: string | null
+          share_count: number
           status: string
           title: string
           type: string
@@ -1050,6 +1051,7 @@ export type Database = {
           price: number
           safe_score?: number | null
           semester?: string | null
+          share_count?: number
           status?: string
           title: string
           type?: string
@@ -1094,6 +1096,7 @@ export type Database = {
           price?: number
           safe_score?: number | null
           semester?: string | null
+          share_count?: number
           status?: string
           title?: string
           type?: string
@@ -2855,6 +2858,10 @@ export type Database = {
           price: number
           title: string
         }[]
+      }
+      increment_listing_share: {
+        Args: { _listing_id: string }
+        Returns: number
       }
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
