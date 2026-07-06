@@ -432,7 +432,15 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Available from">
-                <Input type="date" value={form.available_from} onChange={(e) => setField("available_from", e.target.value)} />
+                <Input
+                  type="date"
+                  value={form.available_from}
+                  onChange={(e) => setField("available_from", e.target.value)}
+                  className={cn(isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
+                />
+                {isRelist && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Set your new dates for this relist</p>
+                )}
               </Field>
               <Field label="Available until">
                 <Input
@@ -440,7 +448,11 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
                   value={form.available_to}
                   min={form.available_from || undefined}
                   onChange={(e) => setField("available_to", e.target.value)}
+                  className={cn(isRelist && "border-2 border-amber-400 focus-visible:ring-amber-500")}
                 />
+                {isRelist && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Set your new dates for this relist</p>
+                )}
               </Field>
             </div>
             {dateError && (
