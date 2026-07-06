@@ -112,6 +112,28 @@ function Onboarding() {
 
       qc.invalidateQueries({ queryKey: ["profile", user.id] });
 
+      // Fire welcome email once (idempotency key ensures single send per user).
+      try {
+        const { sendTransactionalEmail } = await import("@/lib/email/send");
+        const chosen = campuses.find((c) => c.id === campusId);
+        const firstName = ((profile?.name || user.email?.split("@")[0] || "") as string).split(" ")[0] || "";
+        const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
+        void sendTransactionalEmail({
+          templateName: "welcome",
+          recipientEmail: user.email ?? "",
+          idempotencyKey: `welcome-${user.id}`,
+          templateData: {
+            firstName,
+            campusName: chosen?.name ?? "your campus",
+            campusUrl: chosen?.slug ? `${origin}/sublease/${chosen.slug}` : origin,
+            postUrl: `${origin}/post`,
+            roommatesUrl: `${origin}/roommates`,
+          },
+        });
+      } catch (e) {
+        console.warn("[email] welcome send failed", e);
+      }
+
       let storedNext: string | null = null;
       try { storedNext = sessionStorage.getItem("lu_post_onboarding_next"); } catch {}
       try { sessionStorage.removeItem("lu_post_onboarding_next"); } catch {}

@@ -3,6 +3,7 @@ import { template as welcomeTemplate } from './welcome'
 import { template as newMessageTemplate } from './new-message'
 import { template as priceDropTemplate } from './price-drop'
 import { template as matchAlertTemplate } from './match-alert'
+import { template as listingExpiryTemplate } from './listing-expiry'
 
 
 export interface TemplateEntry {
@@ -19,5 +20,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'new-message': newMessageTemplate,
   'price-drop': priceDropTemplate,
   'match-alert': matchAlertTemplate,
+  'listing-expiry': listingExpiryTemplate,
 }
 

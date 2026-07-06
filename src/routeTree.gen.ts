@@ -46,6 +46,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksListingExpiryRemindersRouteImport } from './routes/api/public/hooks/listing-expiry-reminders'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -236,6 +237,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksListingExpiryRemindersRoute =
+  ApiPublicHooksListingExpiryRemindersRouteImport.update({
+    id: '/api/public/hooks/listing-expiry-reminders',
+    path: '/api/public/hooks/listing-expiry-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -309,6 +317,7 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -349,6 +358,7 @@ export interface FileRoutesById {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
+  '/api/public/hooks/listing-expiry-reminders': typeof ApiPublicHooksListingExpiryRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
+    | '/api/public/hooks/listing-expiry-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -504,6 +517,7 @@ export interface RootRouteChildren {
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksListingExpiryRemindersRoute: typeof ApiPublicHooksListingExpiryRemindersRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -772,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/listing-expiry-reminders': {
+      id: '/api/public/hooks/listing-expiry-reminders'
+      path: '/api/public/hooks/listing-expiry-reminders'
+      fullPath: '/api/public/hooks/listing-expiry-reminders'
+      preLoaderRoute: typeof ApiPublicHooksListingExpiryRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -851,6 +872,8 @@ const rootRouteChildren: RootRouteChildren = {
   SubleaseSlugRoute: SubleaseSlugRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksListingExpiryRemindersRoute:
+    ApiPublicHooksListingExpiryRemindersRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
@@ -860,13 +883,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
