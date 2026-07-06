@@ -163,6 +163,27 @@ function RootComponent() {
   useEffect(() => {
     import("@/lib/leaseup/theme").then((m) => m.applyTheme(m.getStoredTheme())).catch(() => {});
   }, []);
+  useEffect(() => {
+    // Q67: welcome toast after onboarding (fires once on next page load).
+    try {
+      const raw = sessionStorage.getItem("lu_welcome");
+      if (!raw) return;
+      sessionStorage.removeItem("lu_welcome");
+      const w = JSON.parse(raw) as { firstName?: string; campusShort?: string; campusUrl?: string };
+      import("sonner").then(({ toast }) => {
+        toast.success(
+          `Welcome to LeaseUp${w.firstName ? `, ${w.firstName}` : ""}!`,
+          w.campusUrl
+            ? {
+                description: `Browse subleases at ${w.campusShort ?? "your campus"} →`,
+                action: { label: "Open", onClick: () => { window.location.assign(w.campusUrl!); } },
+                duration: 8000,
+              }
+            : { duration: 6000 },
+        );
+      }).catch(() => {});
+    } catch {}
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <OfflineIndicator />

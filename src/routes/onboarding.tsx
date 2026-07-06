@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusIdByEmailDomain } from "@/lib/leaseup/campuses";
 import { YEARS } from "@/lib/leaseup/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,8 @@ function Onboarding() {
 
   const [campusId, setCampusId] = useState<string | null>(null);
   const [campusOpen, setCampusOpen] = useState(false);
+  const [detectedCampusId, setDetectedCampusId] = useState<string | null>(null);
+  const [overrideCampus, setOverrideCampus] = useState(false);
   const [year, setYear] = useState("");
   const [major, setMajor] = useState("");
   const [saving, setSaving] = useState(false);
@@ -54,8 +56,9 @@ function Onboarding() {
   }, [loading, user, navigate]);
 
   useEffect(() => {
-    if (profile?.onboarding_completed) navigate({ to: "/" });
-  }, [profile?.onboarding_completed, navigate]);
+    // Q67: allow re-entry when campus is missing (fallback from /profile banner).
+    if (profile?.onboarding_completed && profile?.campus_id) navigate({ to: "/" });
+  }, [profile?.onboarding_completed, profile?.campus_id, navigate]);
 
   useEffect(() => {
     if (!profile) return;
@@ -72,6 +75,16 @@ function Onboarding() {
     const match = campuses.find((c) => c.slug === hint);
     if (match) setCampusId(match.id);
   }, [campuses, campusId]);
+
+  // Q67: auto-detect campus from the user's .edu email domain.
+  useEffect(() => {
+    if (!user?.email || detectedCampusId) return;
+    fetchCampusIdByEmailDomain(user.email).then((id) => {
+      if (!id) return;
+      setDetectedCampusId(id);
+      setCampusId((prev) => prev ?? id);
+    }).catch(() => {});
+  }, [user?.email, detectedCampusId]);
 
   const activeCampus = useMemo(
     () => campuses.find((c) => c.id === campusId) ?? null,
@@ -134,10 +147,25 @@ function Onboarding() {
         console.warn("[email] welcome send failed", e);
       }
 
+      // Q67: stash a welcome payload for the toast on next page load.
+      try {
+        const chosen = campuses.find((c) => c.id === campusId);
+        const firstName = ((profile?.name || user.email?.split("@")[0] || "") as string).split(" ")[0] || "";
+        sessionStorage.setItem("lu_welcome", JSON.stringify({
+          firstName,
+          campusShort: chosen?.short_name ?? chosen?.name ?? null,
+          campusUrl: chosen?.slug ? `/sublease/${chosen.slug}` : null,
+        }));
+      } catch {}
+
       let storedNext: string | null = null;
       try { storedNext = sessionStorage.getItem("lu_post_onboarding_next"); } catch {}
       try { sessionStorage.removeItem("lu_post_onboarding_next"); } catch {}
-      const nextPath = storedNext && storedNext !== "/" && storedNext.startsWith("/") ? storedNext : "/";
+      const detectedChosen = detectedCampusId && campusId === detectedCampusId
+        ? campuses.find((c) => c.id === campusId)
+        : null;
+      const defaultPath = detectedChosen?.slug ? `/sublease/${detectedChosen.slug}` : "/";
+      const nextPath = storedNext && storedNext !== "/" && storedNext.startsWith("/") ? storedNext : defaultPath;
       window.location.assign(nextPath);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not finish setup");
@@ -156,42 +184,64 @@ function Onboarding() {
         <h1 className="text-3xl font-black">Almost there.</h1>
         <p className="mt-1 text-sm text-muted-foreground">Tell us where you go to school.</p>
 
-        <div className="mt-6">
-          <Label>Campus</Label>
-          <div className="relative mt-1.5">
+        {detectedCampusId && !overrideCampus && activeCampus?.id === detectedCampusId ? (
+          <div className="mt-6 rounded-xl border border-primary/30 bg-primary-light/60 p-4">
+            <div className="text-xs font-bold uppercase tracking-wide text-primary-dark">Campus</div>
+            <div className="mt-1 flex items-center gap-2">
+              <Check className="h-4 w-4 text-primary" />
+              <div className="text-sm font-bold">{activeCampus.name}</div>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Detected from your <span className="font-semibold">@{user.email?.split("@")[1]}</span> email.
+            </p>
             <button
               type="button"
-              onClick={() => setCampusOpen((o) => !o)}
-              className="flex w-full items-center justify-between rounded-xl border border-border bg-surface px-3 py-3 text-left text-sm hover:border-primary/40"
+              onClick={() => { setOverrideCampus(true); setCampusId(null); }}
+              className="mt-2 text-xs font-semibold text-primary hover:underline"
             >
-              <span className={cn("truncate", !activeCampus && "text-muted-foreground")}>
-                {activeCampus ? `${activeCampus.name} — ${activeCampus.city}, ${activeCampus.state}` : "Pick your campus…"}
-              </span>
-              <ChevronDown className="h-4 w-4 opacity-60" />
+              (change)
             </button>
-            {campusOpen && (
-              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-card-md">
-                {campuses.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => { setCampusId(c.id); setCampusOpen(false); }}
-                    className={cn(
-                      "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-background",
-                      campusId === c.id && "bg-primary-light",
-                    )}
-                  >
-                    <div>
-                      <div className="font-semibold text-foreground">{c.name}</div>
-                      <div className="text-xs text-muted-foreground">{c.city}, {c.state}</div>
-                    </div>
-                    {campusId === c.id && <Check className="h-4 w-4 text-primary" />}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-        </div>
+        ) : (
+          <div className="mt-6">
+            <Label>Campus</Label>
+            <div className="relative mt-1.5">
+              <button
+                type="button"
+                onClick={() => setCampusOpen((o) => !o)}
+                className="flex w-full items-center justify-between rounded-xl border border-border bg-surface px-3 py-3 text-left text-sm hover:border-primary/40"
+              >
+                <span className={cn("truncate", !activeCampus && "text-muted-foreground")}>
+                  {activeCampus ? `${activeCampus.name} — ${activeCampus.city}, ${activeCampus.state}` : "Pick your campus…"}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-60" />
+              </button>
+              {campusOpen && (
+                <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-card-md">
+                  {campuses.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => { setCampusId(c.id); setCampusOpen(false); }}
+                      className={cn(
+                        "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-background",
+                        campusId === c.id && "bg-primary-light",
+                      )}
+                    >
+                      <div>
+                        <div className="font-semibold text-foreground">{c.name}</div>
+                        <div className="text-xs text-muted-foreground">{c.city}, {c.state}</div>
+                      </div>
+                      {campusId === c.id && <Check className="h-4 w-4 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+
 
         <div className="mt-5">
           <Label>Year <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
