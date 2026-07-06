@@ -1,9 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type RoommateMode = "has_room" | "looking";
+
 export type RoommateProfile = {
   id: string;
   user_id: string;
   campus_id: string | null;
+  mode: RoommateMode;
   budget_min: number | null;
   budget_max: number | null;
   move_in_date: string | null;
@@ -28,6 +31,19 @@ export type RoommateProfile = {
   created_at: string;
   updated_at: string;
 };
+
+export const LIFESTYLE_TAG_GROUPS: { group: string; tags: string[] }[] = [
+  { group: "Schedule", tags: ["Early riser", "Night owl", "Flexible schedule"] },
+  { group: "Noise", tags: ["Quiet / studious", "Social / lively", "Moderate"] },
+  { group: "Cleanliness", tags: ["Very clean", "Reasonably clean", "Relaxed about mess"] },
+  { group: "Guests", tags: ["Guests often", "Guests occasionally", "Guests rarely"] },
+  { group: "Pets", tags: ["Have a pet", "Pet-friendly", "No pets please"] },
+  { group: "Smoking", tags: ["Non-smoker", "Smoke-free space", "Smoker-friendly"] },
+  { group: "Study", tags: ["Study at home", "Study at library", "Study mix"] },
+];
+
+export const LIFESTYLE_TAGS_FLAT: string[] = LIFESTYLE_TAG_GROUPS.flatMap(g => g.tags);
+
 
 export type RoommateProfileWithUser = RoommateProfile & {
   profile: {

@@ -2,33 +2,40 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchMyRoommateProfile, upsertRoommateProfile } from "@/lib/leaseup/roommates";
-import { NEIGHBORHOODS, VIBE_TAGS } from "@/lib/leaseup/constants";
+import {
+  fetchMyRoommateProfile,
+  upsertRoommateProfile,
+  LIFESTYLE_TAG_GROUPS,
+  type RoommateMode,
+} from "@/lib/leaseup/roommates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, Home, Search, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/roommates/create")({
   head: () => ({
     meta: [
       { title: "Create your roommate profile — LeaseUp" },
-      { name: "description", content: "Tell potential roommates about yourself and find compatible roommates at your campus." },
+      { name: "description", content: "Post your roommate profile so other students at your campus can reach out." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: CreateRoommatePage,
 });
 
-const LEASE_LENGTHS: { id: "semester" | "academic_year" | "full_year" | "flexible"; label: string }[] = [
-  { id: "semester", label: "Semester" },
-  { id: "academic_year", label: "Academic Year" },
-  { id: "full_year", label: "Full Year" },
+const DURATIONS: { id: "semester" | "academic_year" | "full_year" | "flexible"; label: string }[] = [
+  { id: "semester", label: "Summer only (May–Aug)" },
+  { id: "academic_year", label: "Fall semester" },
+  { id: "full_year", label: "Full year" },
   { id: "flexible", label: "Flexible" },
 ];
+
+const MAX_TAGS = 5;
+const MAX_BIO = 200;
 
 function CreateRoommatePage() {
   const navigate = useNavigate();
@@ -42,99 +49,85 @@ function CreateRoommatePage() {
     enabled: !!user?.id,
   });
 
-  const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
-
-  // Form state
+  const [mode, setMode] = useState<RoommateMode>("looking");
+  const [budgetMin, setBudgetMin] = useState<string>("500");
+  const [budgetMax, setBudgetMax] = useState<string>("800");
   const [moveIn, setMoveIn] = useState<string>("");
-  const [leaseLen, setLeaseLen] = useState<typeof LEASE_LENGTHS[number]["id"]>("academic_year");
-  const [budget, setBudget] = useState<[number, number]>([500, 900]);
-  const [bedsWanted, setBedsWanted] = useState<number>(2);
-
-  const [earlyBird, setEarlyBird] = useState(3); // 1=night owl, 5=early bird
-  const [social, setSocial] = useState(3);       // 1=studious, 5=social
-  const [clean, setClean] = useState(4);          // cleanliness 1-5
-  const [hasPets, setHasPets] = useState(false);
-  const [petFriendly, setPetFriendly] = useState(true);
-  const [smokes, setSmokes] = useState(false);
-  const [smokerOk, setSmokerOk] = useState(false);
-  const [genderPref, setGenderPref] = useState<"no_preference" | "same_gender">("no_preference");
-
+  const [duration, setDuration] = useState<typeof DURATIONS[number]["id"]>("full_year");
+  const [neighborhood, setNeighborhood] = useState("");
   const [aboutMe, setAboutMe] = useState("");
-  const [vibes, setVibes] = useState<string[]>([]);
-  const [areas, setAreas] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
 
-  // Hydrate from existing profile
   useEffect(() => {
     if (!existing) return;
+    if (existing.mode) setMode(existing.mode);
+    if (existing.budget_min != null) setBudgetMin(String(existing.budget_min));
+    if (existing.budget_max != null) setBudgetMax(String(existing.budget_max));
     if (existing.move_in_date) setMoveIn(existing.move_in_date);
-    if (existing.lease_length) setLeaseLen(existing.lease_length);
-    if (existing.budget_min != null && existing.budget_max != null) setBudget([existing.budget_min, existing.budget_max]);
-    if (existing.beds_wanted) setBedsWanted(existing.beds_wanted);
-    setEarlyBird(existing.lifestyle_early_bird ? 5 : existing.lifestyle_night_owl ? 1 : 3);
-    setSocial(existing.lifestyle_social ? 5 : existing.lifestyle_studious ? 1 : 3);
-    if (existing.lifestyle_clean) setClean(existing.lifestyle_clean);
-    setHasPets(existing.has_pets);
-    setPetFriendly(existing.pet_friendly);
-    setSmokes(existing.smokes);
-    setSmokerOk(existing.smoker_ok);
-    setGenderPref(existing.gender_preference === "same_gender" ? "same_gender" : "no_preference");
-    setAboutMe(existing.about_me ?? "");
-    setVibes(existing.vibe_tags ?? []);
-    setAreas(existing.areas_preferred ?? []);
+    if (existing.lease_length) setDuration(existing.lease_length);
+    if (existing.areas_preferred?.length) setNeighborhood(existing.areas_preferred.join(", "));
+    if (existing.about_me) setAboutMe(existing.about_me);
+    if (existing.vibe_tags?.length) setTags(existing.vibe_tags.slice(0, MAX_TAGS));
   }, [existing]);
 
-  // Pre-populate vibes from main profile on first mount
-  useEffect(() => {
-    if (existing) return;
-    if (profile?.vibe_tags && vibes.length === 0) setVibes(profile.vibe_tags);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, existing]);
+  function toggleTag(t: string) {
+    setTags(prev => {
+      if (prev.includes(t)) return prev.filter(x => x !== t);
+      if (prev.length >= MAX_TAGS) {
+        toast(`Pick up to ${MAX_TAGS} tags`);
+        return prev;
+      }
+      return [...prev, t];
+    });
+  }
 
   async function save() {
     if (!user || !profile) { toast.error("Sign in first"); return; }
+    const min = parseInt(budgetMin, 10);
+    const max = parseInt(budgetMax, 10);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min) {
+      toast.error("Enter a valid budget range");
+      return;
+    }
     setSaving(true);
     try {
+      const areas = neighborhood.split(",").map(s => s.trim()).filter(Boolean);
+      // Derive legacy lifestyle booleans from tag selections so existing filters still work.
       await upsertRoommateProfile({
         user_id: user.id,
         campus_id: profile.campus_id ?? null,
-        budget_min: budget[0],
-        budget_max: budget[1],
+        mode,
+        budget_min: min,
+        budget_max: max,
         move_in_date: moveIn || null,
-        lease_length: leaseLen,
-        beds_wanted: bedsWanted,
+        lease_length: duration,
+        beds_wanted: null,
         areas_preferred: areas,
-        lifestyle_early_bird: earlyBird >= 4,
-        lifestyle_night_owl: earlyBird <= 2,
-        lifestyle_studious: social <= 2,
-        lifestyle_social: social >= 4,
-        lifestyle_clean: clean,
+        lifestyle_early_bird: tags.includes("Early riser"),
+        lifestyle_night_owl: tags.includes("Night owl"),
+        lifestyle_studious: tags.includes("Quiet / studious"),
+        lifestyle_social: tags.includes("Social / lively"),
+        lifestyle_clean: tags.includes("Very clean") ? 5 : tags.includes("Reasonably clean") ? 4 : tags.includes("Relaxed about mess") ? 2 : 3,
         lifestyle_quiet: 3,
-        has_pets: hasPets,
-        pet_friendly: petFriendly,
-        smokes: smokes,
-        smoker_ok: smokerOk,
-        gender_preference: genderPref,
-        about_me: aboutMe || null,
-        vibe_tags: vibes,
+        has_pets: tags.includes("Have a pet"),
+        pet_friendly: tags.includes("Pet-friendly") || tags.includes("Have a pet"),
+        smokes: tags.includes("Smoker-friendly"),
+        smoker_ok: tags.includes("Smoker-friendly"),
+        gender_preference: "no_preference",
+        about_me: aboutMe.trim() || null,
+        vibe_tags: tags,
         is_active: true,
-      });
+      } as any);
       qc.invalidateQueries({ queryKey: ["my-roommate-profile"] });
       qc.invalidateQueries({ queryKey: ["roommate-profiles"] });
-      toast.success("🎉 Roommate profile saved!");
+      toast.success("Roommate profile saved!");
       navigate({ to: "/roommates" });
     } catch (e: any) {
-      toast.error(e.message ?? "Couldn't save");
+      toast.error(e?.message ?? "Couldn't save");
     } finally {
       setSaving(false);
     }
-  }
-
-  function toggleArea(a: string) {
-    setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
-  }
-  function toggleVibe(v: string) {
-    setVibes(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
   }
 
   return (
@@ -145,197 +138,125 @@ function CreateRoommatePage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-base font-extrabold leading-tight">
-            {existing ? "Edit roommate profile" : "Find a roommate"}
+            {existing ? "Edit roommate profile" : "Create roommate profile"}
           </h1>
-          <p className="text-xs text-muted-foreground">Step {step} of 4</p>
+          <p className="text-xs text-muted-foreground">Free · always</p>
         </div>
       </header>
 
-      {/* Progress bar */}
-      <div className="h-1 w-full bg-border">
-        <div className="h-full bg-primary transition-all" style={{ width: `${(step / 4) * 100}%` }} />
-      </div>
+      <main className="mx-auto max-w-xl space-y-8 px-4 py-6">
+        {/* Mode */}
+        <section>
+          <Label className="text-sm font-bold">I'm posting because…</Label>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <ModeCard active={mode === "has_room"} onClick={() => setMode("has_room")} icon={<Home className="h-5 w-5" />} title="I have a room to fill" desc="Post your open room and let roommates come to you." />
+            <ModeCard active={mode === "looking"} onClick={() => setMode("looking")} icon={<Search className="h-5 w-5" />} title="I'm looking for a place" desc="Find a room and roommates that fit your budget." />
+          </div>
+        </section>
 
-      <main className="mx-auto max-w-xl px-4 py-6 space-y-6">
-        {step === 1 && (
-          <section className="space-y-5 lu-spring">
-            <h2 className="text-xl font-extrabold">The basics</h2>
-
-            <div>
-              <Label className="text-sm font-bold">Move-in date</Label>
-              <Input type="month" value={moveIn ? moveIn.slice(0, 7) : ""}
-                onChange={(e) => setMoveIn(e.target.value ? `${e.target.value}-01` : "")}
-                className="mt-1.5" />
-            </div>
-
-            <div>
-              <Label className="text-sm font-bold">Lease length</Label>
-              <div className="mt-1.5 flex flex-wrap gap-2">
-                {LEASE_LENGTHS.map(l => (
-                  <PillButton key={l.id} active={leaseLen === l.id} onClick={() => setLeaseLen(l.id)}>{l.label}</PillButton>
-                ))}
+        {/* Budget */}
+        <section>
+          <Label className="text-sm font-bold">Budget (monthly)</Label>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex-1">
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                <Input type="number" inputMode="numeric" min={0} value={budgetMin} onChange={e => setBudgetMin(e.target.value)} className="pl-6" placeholder="Min" />
               </div>
             </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-bold">Budget per month</Label>
-                <span className="text-sm font-bold text-primary">${budget[0]}–${budget[1]}</span>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Min</Label>
-                  <Slider value={[budget[0]]} min={300} max={1500} step={50}
-                    onValueChange={([v]) => setBudget([Math.min(v, budget[1] - 50), budget[1]])} className="mt-2" />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Max</Label>
-                  <Slider value={[budget[1]]} min={300} max={1500} step={50}
-                    onValueChange={([v]) => setBudget([budget[0], Math.max(v, budget[0] + 50)])} className="mt-2" />
-                </div>
+            <span className="text-muted-foreground">–</span>
+            <div className="flex-1">
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                <Input type="number" inputMode="numeric" min={0} value={budgetMax} onChange={e => setBudgetMax(e.target.value)} className="pl-6" placeholder="Max" />
               </div>
             </div>
+          </div>
+        </section>
 
-            <div>
-              <Label className="text-sm font-bold">Beds wanted</Label>
-              <div className="mt-1.5 flex flex-wrap gap-2">
-                {[1, 2, 3, 4].map(b => (
-                  <PillButton key={b} active={bedsWanted === b} onClick={() => setBedsWanted(b)}>
-                    {b}{b === 4 ? "+" : ""}
-                  </PillButton>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* Move-in date */}
+        <section>
+          <Label className="text-sm font-bold">Move-in date</Label>
+          <Input
+            type="date"
+            value={moveIn}
+            onChange={e => setMoveIn(e.target.value)}
+            className="mt-2"
+          />
+        </section>
 
-        {step === 2 && (
-          <section className="space-y-6 lu-spring">
-            <div>
-              <h2 className="text-xl font-extrabold">What kind of roommate are you?</h2>
-              <p className="text-sm text-muted-foreground">Be honest — it helps you find compatible roommates.</p>
-            </div>
+        {/* Duration */}
+        <section>
+          <Label className="text-sm font-bold">Duration</Label>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {DURATIONS.map(d => (
+              <Chip key={d.id} active={duration === d.id} onClick={() => setDuration(d.id)}>{d.label}</Chip>
+            ))}
+          </div>
+        </section>
 
-            <SliderRow label="Sleep schedule" left="🌙 Night Owl" right="☀️ Early Bird" value={earlyBird} onChange={setEarlyBird} />
-            <SliderRow label="Energy" left="📚 Studious" right="🎉 Social" value={social} onChange={setSocial} />
-            <SliderRow label="Tidiness" left="🌿 Relaxed" right="🧹 Very Clean" value={clean} onChange={setClean} />
+        {/* Neighborhood */}
+        <section>
+          <Label className="text-sm font-bold">Neighborhood preference</Label>
+          <Input
+            className="mt-2"
+            value={neighborhood}
+            onChange={e => setNeighborhood(e.target.value)}
+            placeholder="Near North Campus, Five Points"
+          />
+        </section>
 
-            <div>
-              <Label className="text-sm font-bold">Pets</Label>
-              <div className="mt-1.5 flex flex-wrap gap-2">
-                <PillButton active={hasPets} onClick={() => setHasPets(v => !v)}>🐾 I have pets</PillButton>
-                <PillButton active={petFriendly} onClick={() => setPetFriendly(v => !v)}>🐾 Pet friendly</PillButton>
-              </div>
-            </div>
+        {/* About me */}
+        <section>
+          <Label className="text-sm font-bold">About me</Label>
+          <Textarea
+            value={aboutMe}
+            onChange={e => setAboutMe(e.target.value.slice(0, MAX_BIO))}
+            rows={3}
+            placeholder="Grad student, quiet, clean. Looking for similar."
+            className="mt-2"
+          />
+          <div className="mt-1 text-right text-xs text-muted-foreground">{aboutMe.length}/{MAX_BIO}</div>
+        </section>
 
-            <div>
-              <Label className="text-sm font-bold">Smoking</Label>
-              <div className="mt-1.5 flex flex-wrap gap-2">
-                <PillButton active={smokes} onClick={() => setSmokes(v => !v)}>🚬 I smoke</PillButton>
-                <PillButton active={smokerOk} onClick={() => setSmokerOk(v => !v)}>🚬 Smoker OK</PillButton>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-bold">Gender preference</Label>
-              <div className="mt-1.5 flex flex-wrap gap-2">
-                <PillButton active={genderPref === "no_preference"} onClick={() => setGenderPref("no_preference")}>No preference</PillButton>
-                <PillButton active={genderPref === "same_gender"} onClick={() => setGenderPref("same_gender")}>Same gender preferred</PillButton>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {step === 3 && (
-          <section className="space-y-5 lu-spring">
-            <h2 className="text-xl font-extrabold">Tell potential roommates about yourself</h2>
-
-            <div>
-              <Textarea
-                value={aboutMe}
-                onChange={(e) => setAboutMe(e.target.value.slice(0, 280))}
-                rows={5}
-                placeholder="Junior studying Finance. I'm usually studying during the week and social on weekends. Looking for someone chill who keeps common areas clean."
-              />
-              <div className="mt-1 text-right text-xs text-muted-foreground">{aboutMe.length}/280</div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-bold">Your vibe</Label>
-              <p className="text-xs text-muted-foreground mb-2">Tap to add or remove tags.</p>
-              <div className="flex flex-wrap gap-2">
-                {VIBE_TAGS.map(t => (
-                  <PillButton key={t} active={vibes.includes(t)} onClick={() => toggleVibe(t)}>{t}</PillButton>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {step === 4 && (
-          <section className="space-y-5 lu-spring">
-            <h2 className="text-xl font-extrabold">Neighborhood & confirm</h2>
-
-            <div>
-              <Label className="text-sm font-bold">Preferred areas</Label>
-              <p className="text-xs text-muted-foreground mb-2">Pick any that work for you.</p>
-              <div className="flex flex-wrap gap-2">
-                {NEIGHBORHOODS.map(n => (
-                  <PillButton key={n.name} active={areas.includes(n.name)} onClick={() => toggleArea(n.name)}>{n.name}</PillButton>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview card */}
-            <div className="rounded-2xl border border-border bg-surface p-4 shadow-card-md">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Preview</div>
-              <div className="flex items-start gap-3">
-                <div className="grid h-14 w-14 place-items-center rounded-full text-2xl"
-                  style={{ background: profile?.banner_color ?? "#2563EB", color: "white" }}>
-                  {profile?.avatar_emoji ?? "🙂"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-extrabold leading-tight">{profile?.name ?? "You"}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {[profile?.year, profile?.major].filter(Boolean).join(" · ") || "Set up your profile"}
-                  </div>
-                  <div className="mt-1.5 text-xs text-foreground/80">
-                    📅 {moveIn ? new Date(moveIn).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "Flexible"}
-                    {" · "}🛏 {bedsWanted}BR
-                    {" · "}💰 ${budget[0]}–${budget[1]}/mo
-                  </div>
-                  {aboutMe && <p className="mt-2 text-sm text-foreground/80 line-clamp-2">"{aboutMe}"</p>}
+        {/* Lifestyle tags */}
+        <section>
+          <div className="flex items-baseline justify-between">
+            <Label className="text-sm font-bold">Lifestyle tags</Label>
+            <span className="text-xs text-muted-foreground">{tags.length}/{MAX_TAGS} selected</span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Pick up to {MAX_TAGS} — the most relevant ones show on your card.</p>
+          <div className="mt-3 space-y-3">
+            {LIFESTYLE_TAG_GROUPS.map(g => (
+              <div key={g.group}>
+                <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{g.group}</div>
+                <div className="flex flex-wrap gap-2">
+                  {g.tags.map(t => (
+                    <Chip key={t} active={tags.includes(t)} onClick={() => toggleTag(t)}>{t}</Chip>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
-        )}
+            ))}
+          </div>
+        </section>
       </main>
 
-      {/* Sticky footer nav */}
-      <div className="fixed bottom-0 inset-x-0 z-20 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-md"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}>
-        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
-          <Button variant="ghost" disabled={step === 1} onClick={() => setStep(s => Math.max(1, s - 1))}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+      <div
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-md"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+      >
+        <div className="mx-auto max-w-xl">
+          <Button onClick={save} disabled={saving} className="w-full font-bold">
+            <Sparkles className="mr-1 h-4 w-4" />
+            {saving ? "Saving…" : "Save my roommate profile →"}
           </Button>
-          {step < 4 ? (
-            <Button onClick={() => setStep(s => Math.min(4, s + 1))} className="font-bold">
-              Next <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          ) : (
-            <Button onClick={save} disabled={saving} className="font-bold">
-              <Sparkles className="h-4 w-4 mr-1" />
-              {saving ? "Saving…" : existing ? "Save changes" : "Create Roommate Profile"}
-            </Button>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-function PillButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -346,22 +267,30 @@ function PillButton({ active, onClick, children }: { active: boolean; onClick: (
           ? "border-primary bg-primary text-primary-foreground shadow-sm"
           : "border-border bg-surface text-foreground hover:bg-background",
       )}
-    >
-      {children}
-    </button>
+    >{children}</button>
   );
 }
 
-function SliderRow({ label, left, right, value, onChange }: {
-  label: string; left: string; right: string; value: number; onChange: (v: number) => void;
+function ModeCard({ active, onClick, icon, title, desc }: {
+  active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string;
 }) {
   return (
-    <div>
-      <Label className="text-sm font-bold">{label}</Label>
-      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{left}</span><span>{right}</span>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-start gap-3 rounded-2xl border p-4 text-left transition",
+        active ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-surface hover:bg-background",
+      )}
+    >
+      <div className={cn(
+        "grid h-9 w-9 shrink-0 place-items-center rounded-full",
+        active ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground",
+      )}>{icon}</div>
+      <div className="min-w-0">
+        <div className="font-bold">{title}</div>
+        <div className="mt-0.5 text-xs text-muted-foreground">{desc}</div>
       </div>
-      <Slider value={[value]} min={1} max={5} step={1} onValueChange={([v]) => onChange(v)} className="mt-2" />
-    </div>
+    </button>
   );
 }
