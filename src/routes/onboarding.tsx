@@ -146,10 +146,25 @@ function Onboarding() {
         console.warn("[email] welcome send failed", e);
       }
 
+      // Q67: stash a welcome payload for the toast on next page load.
+      try {
+        const chosen = campuses.find((c) => c.id === campusId);
+        const firstName = ((profile?.name || user.email?.split("@")[0] || "") as string).split(" ")[0] || "";
+        sessionStorage.setItem("lu_welcome", JSON.stringify({
+          firstName,
+          campusShort: chosen?.short_name ?? chosen?.name ?? null,
+          campusUrl: chosen?.slug ? `/sublease/${chosen.slug}` : null,
+        }));
+      } catch {}
+
       let storedNext: string | null = null;
       try { storedNext = sessionStorage.getItem("lu_post_onboarding_next"); } catch {}
       try { sessionStorage.removeItem("lu_post_onboarding_next"); } catch {}
-      const nextPath = storedNext && storedNext !== "/" && storedNext.startsWith("/") ? storedNext : "/";
+      const detectedChosen = detectedCampusId && campusId === detectedCampusId
+        ? campuses.find((c) => c.id === campusId)
+        : null;
+      const defaultPath = detectedChosen?.slug ? `/sublease/${detectedChosen.slug}` : "/";
+      const nextPath = storedNext && storedNext !== "/" && storedNext.startsWith("/") ? storedNext : defaultPath;
       window.location.assign(nextPath);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not finish setup");
