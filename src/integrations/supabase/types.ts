@@ -133,6 +133,35 @@ export type Database = {
           },
         ]
       }
+      campus_email_domains: {
+        Row: {
+          campus_id: string
+          created_at: string
+          domain: string
+          id: string
+        }
+        Insert: {
+          campus_id: string
+          created_at?: string
+          domain: string
+          id?: string
+        }
+        Update: {
+          campus_id?: string
+          created_at?: string
+          domain?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_email_domains_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campuses: {
         Row: {
           city: string
