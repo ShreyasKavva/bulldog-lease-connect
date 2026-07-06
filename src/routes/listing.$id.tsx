@@ -32,6 +32,10 @@ import {
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
+import {
+  buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
+  shareToDiscord, shareToGroupMe, withUtm,
+} from "@/lib/leaseup/share";
 
 
 
