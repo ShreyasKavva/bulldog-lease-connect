@@ -49,9 +49,8 @@ function NotificationsPage() {
   const del = useDeleteNotification();
   const sentinel = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
+  // Signed-out visitors see a proper prompt instead of being kicked to /auth.
+
 
   // Infinite scroll
   useEffect(() => {
