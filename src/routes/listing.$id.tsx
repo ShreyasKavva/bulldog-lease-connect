@@ -382,6 +382,12 @@ function ListingDetailPage() {
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
+    // Track listing-detail views for install-prompt gating (Q77).
+    try {
+      const n = Number(localStorage.getItem("lu_listing_views") || "0") + 1;
+      localStorage.setItem("lu_listing_views", String(n));
+      window.dispatchEvent(new CustomEvent("lu:listing-viewed", { detail: { count: n } }));
+    } catch {}
     supabase.rpc("increment_listing_view" as any, { _listing_id: listing.id }).then(({ data }) => {
       if (typeof data === "number") setViewCount(data);
     });
