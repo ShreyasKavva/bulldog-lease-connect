@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -15,7 +15,7 @@ import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell } from "lucide-react";
+import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
@@ -25,7 +25,54 @@ import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 
+type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+
+const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular"];
+const BED_VALUES = ["0", "1", "2", "3+"] as const;
+type BedKey = (typeof BED_VALUES)[number];
+
+type BrowseSearch = {
+  q?: string;
+  campus?: string;
+  area?: string;
+  min_price?: number;
+  max_price?: number;
+  bedrooms?: string; // csv "1,2"
+  from?: string; // ISO date yyyy-mm-dd
+  to?: string;
+  furnished?: 1;
+  sort?: Sort;
+};
+
+function parseInt2(v: unknown): number | undefined {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+}
+function parseStr(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+function parseBeds(v: unknown): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
+  return parts.length ? parts.join(",") : undefined;
+}
+function parseSort(v: unknown): Sort | undefined {
+  return typeof v === "string" && (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+}
+
 export const Route = createFileRoute("/browse")({
+  validateSearch: (raw: Record<string, unknown>): BrowseSearch => ({
+    q: parseStr(raw.q),
+    campus: parseStr(raw.campus),
+    area: parseStr(raw.area),
+    min_price: parseInt2(raw.min_price),
+    max_price: parseInt2(raw.max_price),
+    bedrooms: parseBeds(raw.bedrooms),
+    from: parseStr(raw.from),
+    to: parseStr(raw.to),
+    furnished: raw.furnished === 1 || raw.furnished === "1" ? 1 : undefined,
+    sort: parseSort(raw.sort),
+  }),
   head: () => ({
     meta: [
       { title: "Browse subleases — LeaseUp" },
