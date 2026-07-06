@@ -10,7 +10,7 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Sparkles, Copy, Check, Trophy } from "lucide-react";
 
-export const Route = createFileRoute("/ambassador/dashboard")({
+export const Route = createFileRoute("/ambassador_/dashboard")({
   head: () => ({
     meta: [
       { title: "Ambassador dashboard — LeaseUp" },
