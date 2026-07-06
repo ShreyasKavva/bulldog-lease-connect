@@ -20,10 +20,11 @@ import {
   Home, MapPin, Flame, Sparkles, Sofa, CalendarCheck2,
   DoorOpen, Building2, ArrowRight,
 } from "lucide-react";
-import type { Listing } from "@/lib/leaseup/types";
+import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { ListingRail } from "./ListingRail";
+import { ListingCard } from "./ListingCard";
 import { cn } from "@/lib/utils";
 
 type Cat =
