@@ -31,6 +31,20 @@ export async function fetchCampusBySlug(slug: string): Promise<Campus | null> {
   return (data as Campus | null) ?? null;
 }
 
+/** Q67: look up a campus id from a signed-in user's email domain (e.g. "uga.edu"). */
+export async function fetchCampusIdByEmailDomain(email: string | null | undefined): Promise<string | null> {
+  if (!email) return null;
+  const domain = email.split("@")[1]?.toLowerCase().trim();
+  if (!domain) return null;
+  const { data, error } = await supabase
+    .from("campus_email_domains")
+    .select("campus_id")
+    .eq("domain", domain)
+    .maybeSingle();
+  if (error) return null;
+  return (data?.campus_id as string | undefined) ?? null;
+}
+
 /** Map of campus_id → active listing count. Used on campus pages to show
  *  "18 live" badges under the "Browse other campuses" cards. */
 export async function fetchActiveListingCountsByCampus(): Promise<Record<string, number>> {
