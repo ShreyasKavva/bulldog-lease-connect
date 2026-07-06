@@ -53,7 +53,7 @@ function defaultAvailableFrom(): string {
 
 type Preview = { file: File; url: string };
 
-export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null }) {
+export function PostListingDialog({ open, onOpenChange, relistFrom, editListingId }: { open: boolean; onOpenChange: (o: boolean) => void; relistFrom?: string | null; editListingId?: string | null }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
   const qc = useQueryClient();
@@ -70,7 +70,9 @@ export function PostListingDialog({ open, onOpenChange, relistFrom }: { open: bo
 
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
 
-  const isRelist = !!relistFrom;
+  const isEdit = !!editListingId;
+  const isRelist = !!relistFrom && !isEdit;
+  const sourceId = editListingId ?? relistFrom ?? null;
 
   const [form, setForm] = useState({
     title: "", description: "", type: "sublease", price: "",
