@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -15,7 +15,7 @@ import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell } from "lucide-react";
+import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
@@ -25,7 +25,54 @@ import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 
+type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+
+const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular"];
+const BED_VALUES = ["0", "1", "2", "3+"] as const;
+type BedKey = (typeof BED_VALUES)[number];
+
+type BrowseSearch = {
+  q?: string;
+  campus?: string;
+  area?: string;
+  min_price?: number;
+  max_price?: number;
+  bedrooms?: string; // csv "1,2"
+  from?: string; // ISO date yyyy-mm-dd
+  to?: string;
+  furnished?: 1;
+  sort?: Sort;
+};
+
+function parseInt2(v: unknown): number | undefined {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+}
+function parseStr(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+function parseBeds(v: unknown): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
+  return parts.length ? parts.join(",") : undefined;
+}
+function parseSort(v: unknown): Sort | undefined {
+  return typeof v === "string" && (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+}
+
 export const Route = createFileRoute("/browse")({
+  validateSearch: (raw: Record<string, unknown>): BrowseSearch => ({
+    q: parseStr(raw.q),
+    campus: parseStr(raw.campus),
+    area: parseStr(raw.area),
+    min_price: parseInt2(raw.min_price),
+    max_price: parseInt2(raw.max_price),
+    bedrooms: parseBeds(raw.bedrooms),
+    from: parseStr(raw.from),
+    to: parseStr(raw.to),
+    furnished: raw.furnished === 1 || raw.furnished === "1" ? 1 : undefined,
+    sort: parseSort(raw.sort),
+  }),
   head: () => ({
     meta: [
       { title: "Browse subleases — LeaseUp" },
@@ -36,7 +83,6 @@ export const Route = createFileRoute("/browse")({
 });
 
 type View = "grid" | "scroll";
-type Sort = "newest" | "price_asc" | "price_desc";
 
 function Browse() {
   const navigate = useNavigate();
@@ -65,13 +111,43 @@ function Browse() {
     [trendingIds, listings],
   );
 
-  const [view, setView] = useState<View>("grid");
-  const [sort, setSort] = useState<Sort>("newest");
-  const [search, setSearch] = useState("");
-  const [maxPrice, setMaxPrice] = useState(2500);
-  const [area, setArea] = useState<string>("");
-  const [furnishedOnly, setFurnishedOnly] = useState(false);
+  // URL-driven filters — shareable, back/forward safe, refresh-safe.
+  const s = Route.useSearch();
+  const sort: Sort = s.sort ?? "newest";
+  const maxPrice = s.max_price ?? undefined;
+  const minPrice = s.min_price ?? undefined;
+  const area = s.area ?? "";
+  const furnishedOnly = s.furnished === 1;
+  const bedSet = useMemo(
+    () => new Set<BedKey>(((s.bedrooms ?? "").split(",").filter(Boolean) as BedKey[])),
+    [s.bedrooms],
+  );
+  const fromDate = s.from ? new Date(s.from) : null;
+  const toDate = s.to ? new Date(s.to) : null;
+  const campusSlug = s.campus ?? null;
+  const campusId = campusSlug ? campuses.find(c => c.slug === campusSlug)?.id ?? null : null;
 
+  // Debounced text search — local state, flushes to URL after 300ms.
+  const [searchInput, setSearchInput] = useState(s.q ?? "");
+  useEffect(() => { setSearchInput(s.q ?? ""); }, [s.q]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if ((searchInput || "") === (s.q ?? "")) return;
+      navigate({
+        to: "/browse",
+        search: (prev: BrowseSearch) => ({ ...prev, q: searchInput.trim() || undefined }),
+        replace: true,
+      });
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  function patchSearch(patch: Partial<BrowseSearch>) {
+    navigate({ to: "/browse", search: (prev: BrowseSearch) => ({ ...prev, ...patch }) });
+  }
+
+  const [view, setView] = useState<View>("grid");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
@@ -116,21 +192,55 @@ function Browse() {
     return ids;
   }, [listings]);
 
+  function matchesBeds(l: Listing): boolean {
+    if (bedSet.size === 0) return true;
+    const b = l.beds ?? 0;
+    if (bedSet.has("3+") && b >= 3) return true;
+    return bedSet.has(String(b) as BedKey);
+  }
+
   const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    let r = listings.filter((l) =>
-      (!search ||
-        l.title.toLowerCase().includes(q) ||
-        (l.area ?? "").toLowerCase().includes(q) ||
-        (l.description ?? "").toLowerCase().includes(q)) &&
-      l.price <= maxPrice &&
-      (!area || l.area === area) &&
-      (!furnishedOnly || l.furnished)
-    );
+    const qLower = (s.q ?? "").toLowerCase();
+    let r = listings.filter((l) => {
+      if (qLower && !(
+        l.title.toLowerCase().includes(qLower) ||
+        (l.area ?? "").toLowerCase().includes(qLower) ||
+        (l.description ?? "").toLowerCase().includes(qLower)
+      )) return false;
+      if (campusId && l.campus_id !== campusId) return false;
+      if (area && l.area !== area) return false;
+      if (furnishedOnly && !l.furnished) return false;
+      if (minPrice != null && (l.price ?? 0) < minPrice) return false;
+      if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
+      if (!matchesBeds(l)) return false;
+      if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
+      if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
+      return true;
+    });
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
+    else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    else r = [...r].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return r;
-  }, [listings, search, maxPrice, area, furnishedOnly, sort]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort]);
+
+  const activeFilterCount =
+    (s.q ? 1 : 0) +
+    (campusSlug ? 1 : 0) +
+    (area ? 1 : 0) +
+    (minPrice != null ? 1 : 0) +
+    (maxPrice != null ? 1 : 0) +
+    (bedSet.size > 0 ? 1 : 0) +
+    (s.from ? 1 : 0) +
+    (s.to ? 1 : 0) +
+    (furnishedOnly ? 1 : 0);
+
+  function clearFilters() {
+    navigate({ to: "/browse", search: {} });
+    setSearchInput("");
+  }
+
 
   async function handleSave(listing: Listing) {
     if (!user) { toast.error("Sign in to save listings"); navigate({ to: "/auth", search: { mode: "in" } }); return; }
@@ -192,12 +302,48 @@ function Browse() {
             <div className="flex items-center gap-2 rounded-full bg-background px-4 h-10">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search subleases, neighborhoods…"
                 className="flex-1 bg-transparent text-sm outline-none"
               />
+              {searchInput && (
+                <button onClick={() => setSearchInput("")} aria-label="Clear search">
+                  <XIcon className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
             </div>
+
+            {/* Bedrooms pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground mr-1">Beds</span>
+              <button
+                onClick={() => patchSearch({ bedrooms: undefined })}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-semibold",
+                  bedSet.size === 0 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface text-muted-foreground hover:border-primary",
+                )}
+              >Any</button>
+              {(["0", "1", "2", "3+"] as BedKey[]).map((b) => {
+                const on = bedSet.has(b);
+                const label = b === "0" ? "Studio" : b === "3+" ? "3+ BR" : `${b} BR`;
+                return (
+                  <button
+                    key={b}
+                    onClick={() => {
+                      const next = new Set(bedSet);
+                      if (on) next.delete(b); else next.add(b);
+                      patchSearch({ bedrooms: next.size ? Array.from(next).join(",") : undefined });
+                    }}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-semibold",
+                      on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface text-muted-foreground hover:border-primary",
+                    )}
+                  >{label}</button>
+                );
+              })}
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex rounded-lg bg-background p-1">
                 <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
@@ -207,23 +353,87 @@ function Browse() {
                   <Flame className="h-3.5 w-3.5" />Scroll
                 </button>
               </div>
-              <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold">
-                <option value="newest">Newest</option>
-                <option value="price_asc">Price ↑</option>
-                <option value="price_desc">Price ↓</option>
+              <select
+                value={sort}
+                onChange={(e) => patchSearch({ sort: e.target.value as Sort })}
+                className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold"
+              >
+                <option value="newest">Newest first</option>
+                <option value="price_asc">Lowest price</option>
+                <option value="price_desc">Highest price</option>
+                <option value="popular">Most popular</option>
               </select>
-              <select value={area} onChange={(e) => setArea(e.target.value)} className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold">
-                <option value="">All areas</option>
+              <select
+                value={area}
+                onChange={(e) => patchSearch({ area: e.target.value || undefined })}
+                className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold"
+              >
+                <option value="">All neighborhoods</option>
                 {NEIGHBORHOODS.map((n) => <option key={n.name}>{n.name}</option>)}
               </select>
-              <label className="flex items-center gap-1.5 text-xs font-semibold">
-                Max ${maxPrice}
-                <input type="range" min={300} max={3000} step={50} value={maxPrice} onChange={(e) => setMaxPrice(parseInt(e.target.value))} />
+              <label className="flex items-center gap-1 text-xs font-semibold">
+                Min $
+                <input
+                  type="number"
+                  min={0}
+                  step={50}
+                  value={minPrice ?? ""}
+                  onChange={(e) => patchSearch({ min_price: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className="h-8 w-20 rounded-md border bg-surface px-2 text-xs"
+                  placeholder="—"
+                />
+              </label>
+              <label className="flex items-center gap-1 text-xs font-semibold">
+                Max $
+                <input
+                  type="number"
+                  min={0}
+                  step={50}
+                  value={maxPrice ?? ""}
+                  onChange={(e) => patchSearch({ max_price: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className="h-8 w-20 rounded-md border bg-surface px-2 text-xs"
+                  placeholder="—"
+                />
+              </label>
+              <label className="flex items-center gap-1 text-xs font-semibold">
+                Available by
+                <input
+                  type="date"
+                  value={s.from ?? ""}
+                  onChange={(e) => patchSearch({ from: e.target.value || undefined })}
+                  className="h-8 rounded-md border bg-surface px-2 text-xs"
+                />
+              </label>
+              <label className="flex items-center gap-1 text-xs font-semibold">
+                Until
+                <input
+                  type="date"
+                  value={s.to ?? ""}
+                  onChange={(e) => patchSearch({ to: e.target.value || undefined })}
+                  className="h-8 rounded-md border bg-surface px-2 text-xs"
+                />
               </label>
               <label className="flex items-center gap-1.5 text-xs font-semibold">
-                <input type="checkbox" checked={furnishedOnly} onChange={(e) => setFurnishedOnly(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={furnishedOnly}
+                  onChange={(e) => patchSearch({ furnished: e.target.checked ? 1 : undefined })}
+                />
                 Furnished
               </label>
+              {activeFilterCount > 0 && (
+                <>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                    {activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}
+                  </span>
+                  <button
+                    onClick={clearFilters}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                  >
+                    <XIcon className="h-3 w-3" /> Clear filters
+                  </button>
+                </>
+              )}
               <button onClick={() => setMatchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
                 <Sparkles className="h-3.5 w-3.5" />Find My Match
               </button>
@@ -237,6 +447,7 @@ function Browse() {
             </div>
           </div>
         </div>
+
 
         <main className="mx-auto max-w-7xl px-4 py-5">
           {view === "grid" && (
@@ -284,7 +495,15 @@ function Browse() {
           ) : filtered.length === 0 ? (
             <div className="rounded-xl bg-surface p-12 text-center shadow-card">
               <div className="text-5xl">🏠</div>
-              <h3 className="mt-3 text-lg font-bold">No listings match your filters</h3>
+              <h3 className="mt-3 text-lg font-bold">No subleases found with those filters.</h3>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+                >
+                  Clear filters → to see all listings
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -334,7 +553,7 @@ function Browse() {
       <SaveSearchDialog
         open={saveSearchOpen}
         onOpenChange={setSaveSearchOpen}
-        filters={{ area, maxPrice, furnishedOnly, keyword: search }}
+        filters={{ area, maxPrice: maxPrice ?? 2500, furnishedOnly, keyword: s.q ?? "" }}
       />
 
       <CompareBar
