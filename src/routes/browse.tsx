@@ -545,7 +545,7 @@ function Browse() {
       <SaveSearchDialog
         open={saveSearchOpen}
         onOpenChange={setSaveSearchOpen}
-        filters={{ area, maxPrice, furnishedOnly, keyword: search }}
+        filters={{ area, maxPrice: maxPrice ?? 2500, furnishedOnly, keyword: s.q ?? "" }}
       />
 
       <CompareBar
