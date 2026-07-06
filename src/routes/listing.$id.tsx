@@ -145,13 +145,21 @@ type PublicPoster = {
   created_at: string | null;
 };
 
-async function fetchListingDetail(id: string): Promise<(Listing & { campus?: { name: string; short_name: string; slug: string } | null }) | null> {
+type ListingWithCampus = Listing & { campus?: { name: string; short_name: string; slug: string } | null };
+type ListingLoadResult =
+  | { listing: ListingWithCampus; reason?: undefined }
+  | { listing?: undefined; reason: "expired" | "rented" };
+
+async function fetchListingDetail(id: string): Promise<ListingLoadResult | null> {
   const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  // Only surface active listings on the public page (filled/inactive → not found)
-  if ((data as any).is_active === false && (data as any).status !== "filled") return null;
-  const paths: string[] = (data as any).photos ?? [];
+  const row = data as any;
+  if (row.status === "filled") return { reason: "rented" };
+  const today = new Date().toISOString().slice(0, 10);
+  if (row.available_to && row.available_to < today) return { reason: "expired" };
+  if (row.is_active === false) return null;
+  const paths: string[] = row.photos ?? [];
   let photo_urls: string[] = [];
   if (paths.length) {
     const { data: signed } = await supabase.storage
@@ -162,9 +170,9 @@ async function fetchListingDetail(id: string): Promise<(Listing & { campus?: { n
   const { data: campus } = await supabase
     .from("campuses")
     .select("name, short_name, slug")
-    .eq("id", (data as any).campus_id)
+    .eq("id", row.campus_id)
     .maybeSingle();
-  return { ...(data as any), photo_urls, campus: campus ?? null };
+  return { listing: { ...row, photo_urls, campus: campus ?? null } };
 }
 
 async function fetchPoster(userId: string): Promise<PublicPoster | null> {
