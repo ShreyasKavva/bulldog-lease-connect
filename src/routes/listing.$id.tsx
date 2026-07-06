@@ -705,6 +705,33 @@ function ListingDetailPage() {
                         <dd className="font-semibold">{((listing as any).share_count ?? 0).toLocaleString()}</dd>
                       </div>
                     )}
+                    {(() => {
+                      const bumpedMs = bumpedAt ? new Date(bumpedAt).getTime() : 0;
+                      const daysSince = bumpedMs ? Math.floor((Date.now() - bumpedMs) / 86400000) : Infinity;
+                      const canBump = !bumpedAt || daysSince >= 7;
+                      const daysLeft = Math.max(0, 7 - daysSince);
+                      return (
+                        <div className="flex items-center justify-between">
+                          <dt className="text-muted-foreground">{bumpedAt ? "Bumped" : "Bump"}</dt>
+                          <dd className="font-semibold">
+                            {canBump ? (
+                              <button
+                                type="button"
+                                onClick={() => setBumpOpen(true)}
+                                className="text-primary underline underline-offset-2 hover:text-primary/80"
+                              >
+                                Bring to top — free ↑
+                              </button>
+                            ) : (
+                              <span>
+                                {daysSince === 0 ? "today" : `${daysSince}d ago`}
+                                <span className="ml-1 text-xs font-normal text-muted-foreground">(bump again in {daysLeft}d)</span>
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      );
+                    })()}
                   </dl>
                 </div>
               )}
