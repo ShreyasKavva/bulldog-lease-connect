@@ -33,14 +33,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/looking-for") ||
     path.startsWith("/map");
   const isRoommates = path === "/roommates" || path.startsWith("/roommates/");
+  const isNotifications = path === "/notifications";
   const isProfile =
     path === "/profile" ||
     path.startsWith("/profile/") ||
     path.startsWith("/my-listings") ||
     path.startsWith("/settings") ||
     path.startsWith("/messages") ||
-    path === "/saved" ||
-    path === "/notifications";
+    path === "/saved";
 
   function handleProfile(e: React.MouseEvent) {
     if (!user) {
