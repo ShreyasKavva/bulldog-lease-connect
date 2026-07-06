@@ -994,3 +994,38 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
     </>
   );
 }
+
+// Queue 60 — Part C: compact card for a looking-for post
+function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: () => void }) {
+  const profile = (p as any).profile as { name?: string; avatar_emoji?: string; banner_color?: string; verified_email?: boolean } | undefined;
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const range = p.move_in_date || p.move_out_date
+    ? `${fmt(p.move_in_date)}${p.move_out_date ? `–${fmt(p.move_out_date)}` : ""}`
+    : null;
+  return (
+    <article className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ring-2 ring-white"
+          style={{ background: profile?.banner_color ?? "#2563EB" }}
+        >
+          {profile?.avatar_emoji ?? "🙂"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-sm font-bold">{profile?.name ?? "Student"}</p>
+            {profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
+          </div>
+          {p.budget_max != null && (
+            <p className="text-xs text-muted-foreground">Up to ${p.budget_max}/mo{range ? ` · ${range}` : ""}</p>
+          )}
+        </div>
+      </div>
+      <p className="line-clamp-3 text-sm text-foreground">{p.description}</p>
+      <Button size="sm" onClick={onMessage} className="mt-auto gap-1 bg-primary hover:bg-primary-dark text-primary-foreground">
+        Message →
+      </Button>
+    </article>
+  );
+}
