@@ -1836,6 +1836,7 @@ export type Database = {
           lifestyle_quiet: number | null
           lifestyle_social: boolean
           lifestyle_studious: boolean
+          mode: string
           move_in_date: string | null
           pet_friendly: boolean
           smoker_ok: boolean
@@ -1864,6 +1865,7 @@ export type Database = {
           lifestyle_quiet?: number | null
           lifestyle_social?: boolean
           lifestyle_studious?: boolean
+          mode?: string
           move_in_date?: string | null
           pet_friendly?: boolean
           smoker_ok?: boolean
@@ -1892,6 +1894,7 @@ export type Database = {
           lifestyle_quiet?: number | null
           lifestyle_social?: boolean
           lifestyle_studious?: boolean
+          mode?: string
           move_in_date?: string | null
           pet_friendly?: boolean
           smoker_ok?: boolean
