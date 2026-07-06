@@ -179,7 +179,16 @@ export function AirbnbHome({
 
 
   function runSearch() {
-    railsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const params: Record<string, string> = {};
+    if (search.campusId) {
+      const c = campuses.find((c) => c.id === search.campusId);
+      if (c?.slug) params.campus = c.slug;
+    } else if (search.where.trim()) {
+      params.q = search.where.trim();
+    }
+    if (search.from) params.from = search.from.toISOString().slice(0, 10);
+    if (search.to) params.to = search.to.toISOString().slice(0, 10);
+    navigate({ to: "/browse", search: params as any });
   }
 
   return (
