@@ -120,13 +120,14 @@ function RoommatesPage() {
       </div>
 
       {/* Mode tabs */}
-      <div className="mb-4 inline-flex rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5 dark:bg-surface">
+      <div className="mb-4 grid w-full grid-cols-2 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5 sm:inline-flex sm:w-auto dark:bg-surface">
         <ModeTab active={mode === "has_room"} onClick={() => setMode("has_room")} icon={<Home className="h-4 w-4" />}>Has a room</ModeTab>
         <ModeTab active={mode === "looking"} onClick={() => setMode("looking")} icon={<Search className="h-4 w-4" />}>Looking for a room</ModeTab>
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+      <div className="mb-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 text-sm [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+
         <FilterSelect
           label="Budget"
           value={budgetFilter}
