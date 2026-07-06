@@ -6,7 +6,7 @@
  * during the nav rebuild; new call sites can just render <BottomNav />.
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Users, User } from "lucide-react";
+import { Home, Search, Users, User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { useSession } from "@/lib/leaseup/use-session";
