@@ -46,6 +46,17 @@ function RoommatesPage() {
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
 
+  // Q78: Toast + strip the "?notice=" flag left by the /find-my-match 301.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("notice") === "find-my-match-gone") {
+      toast.message("Find My Match isn't available yet — try the roommate board.");
+      url.searchParams.delete("notice");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []);
+
   const [mode, setMode] = useState<RoommateMode>("has_room");
   const [budgetFilter, setBudgetFilter] = useState<BudgetFilter>("any");
   const [moveInFilter, setMoveInFilter] = useState<MoveInFilter>("any");
