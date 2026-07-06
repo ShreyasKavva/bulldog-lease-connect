@@ -17,6 +17,10 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { markListingFilled } from "@/lib/leaseup/queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/leaseup/constants";
@@ -24,8 +28,9 @@ import type { Listing, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil,
+  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/listing/$id")({
   head: ({ loaderData }) => {
@@ -284,7 +289,14 @@ function ListingDetailPage() {
                 </>
               )}
             </p>
+
+            {isOwner && (listing as any).status !== "filled" && (
+              <div className="mt-6">
+                <MarkAsRentedButton listingId={listing.id} />
+              </div>
+            )}
           </div>
+
 
           {/* PART C — poster card */}
           <aside className="lg:col-span-1">
@@ -757,4 +769,55 @@ const CAMPUS_ABBREV: Record<string, string> = {
 function abbrevCampus(name: string): string {
   if (CAMPUS_ABBREV[name]) return CAMPUS_ABBREV[name];
   return name.split(/\s+/)[0];
+}
+
+function MarkAsRentedButton({ listingId }: { listingId: string }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
+
+  async function confirm() {
+    setBusy(true);
+    try {
+      await markListingFilled(listingId);
+      toast.success("Listing marked as rented. Nice work! 🎉");
+      navigate({ to: "/profile" });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't mark as rented");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+      >
+        <CheckCircle2 className="mr-1.5 h-4 w-4" /> Mark as rented
+      </Button>
+      <Dialog open={open} onOpenChange={(o) => !busy && setOpen(o)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark this listing as rented?</DialogTitle>
+            <DialogDescription>
+              It will be removed from browse and your profile will show +1 completed sublease.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
+            <Button
+              onClick={confirm}
+              disabled={busy}
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              {busy ? "Saving…" : "Yes, mark as rented"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

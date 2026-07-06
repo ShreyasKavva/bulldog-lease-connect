@@ -35,8 +35,10 @@ type PublicProfile = {
   review_count: number;
   listing_count: number;
   active_listing_count: number;
+  completed_count: number;
   created_at: string | null;
 };
+
 
 const CAMPUS_ABBREV: Record<string, string> = {
   "University of Georgia": "UGA",
@@ -308,11 +310,13 @@ export function ProfileView({ userId }: { userId: string }) {
         )}
 
         {/* Trust signals strip */}
-        <section className="mt-4 grid grid-cols-3 gap-2">
-          <TrustCard icon="✓" label={isEdu ? "✓" : "—"} sub="Verified" />
+        <section className="mt-4 grid grid-cols-4 gap-2">
           <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`Post${profile.listing_count === 1 ? "" : "s"}`} />
+          <TrustCard icon="✓" label={profile.completed_count > 0 ? `${profile.completed_count}` : "—"} sub="Completed" />
+          <TrustCard icon="✓" label={isEdu ? "✓" : "—"} sub="Verified" />
           <TrustCard icon="📅" label={joinedLabel} sub="Joined" />
         </section>
+
 
 
         {/* Listings */}
