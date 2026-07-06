@@ -75,6 +75,16 @@ function Onboarding() {
     if (match) setCampusId(match.id);
   }, [campuses, campusId]);
 
+  // Q67: auto-detect campus from the user's .edu email domain.
+  useEffect(() => {
+    if (!user?.email || detectedCampusId) return;
+    fetchCampusIdByEmailDomain(user.email).then((id) => {
+      if (!id) return;
+      setDetectedCampusId(id);
+      setCampusId((prev) => prev ?? id);
+    }).catch(() => {});
+  }, [user?.email, detectedCampusId]);
+
   const activeCampus = useMemo(
     () => campuses.find((c) => c.id === campusId) ?? null,
     [campuses, campusId],
