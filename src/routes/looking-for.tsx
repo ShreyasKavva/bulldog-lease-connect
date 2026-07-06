@@ -148,6 +148,15 @@ function LookingForPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary-light/50 px-4 py-3 text-sm">
+          <p className="font-medium text-primary-dark">
+            Have a sublease to fill? Browse the board and message students directly.
+          </p>
+          <Link to="/browse" className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+            Browse listings →
+          </Link>
+        </div>
+
         {isLoading ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />)}
