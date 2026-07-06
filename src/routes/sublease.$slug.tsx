@@ -14,6 +14,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { copyToClipboard, shareToGroupMe, withUtm } from "@/lib/leaseup/share";
 
 const CAMPUS_ICON: Record<string, string> = {
   "university-of-georgia": "🐾",
