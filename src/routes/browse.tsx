@@ -14,7 +14,8 @@ import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Bell, X as XIcon } from "lucide-react";
+import { LayoutGrid, Flame, Search, Bell, X as XIcon, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
