@@ -335,11 +335,16 @@ export function ProfileView({ userId }: { userId: string }) {
 
         {/* Listings */}
         <section className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-lg font-extrabold">
               {isOwn ? "My Listings" : `${(profile.name || "").split(" ")[0]}'s Listings`}
               {" "}<span className="text-sm font-semibold text-muted-foreground">({isOwn ? listings.length : profile.active_listing_count} active)</span>
             </h2>
+            {isOwn && listings.length > 0 && (
+              <Link to="/my-listings" className="text-xs font-bold text-primary hover:underline">
+                Manage all →
+              </Link>
+            )}
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {listings.map((l: any) => (
@@ -354,7 +359,7 @@ export function ProfileView({ userId }: { userId: string }) {
             {listings.length === 0 && (
               <div className="col-span-full rounded-2xl bg-surface p-8 text-center text-sm text-muted-foreground shadow-card-md">
                 {isOwn ? (
-                  <Link to="/" search={{ post: 1 } as any} className="font-semibold text-primary hover:underline">+ Post your first listing →</Link>
+                  <Link to="/post" className="font-semibold text-primary hover:underline">+ Post your first sublease →</Link>
                 ) : (
                   "No active listings right now."
                 )}
@@ -362,8 +367,8 @@ export function ProfileView({ userId }: { userId: string }) {
             )}
           </div>
           {isOwn && listings.length > 0 && (
-            <Link to="/" search={{ post: 1 } as any} className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-              <Plus className="h-4 w-4" /> Post a new listing →
+            <Link to="/post" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+              <Plus className="h-4 w-4" /> Post a new sublease →
             </Link>
           )}
         </section>
