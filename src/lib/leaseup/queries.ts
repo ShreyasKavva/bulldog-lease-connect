@@ -77,16 +77,25 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
-export async function uploadListingPhotos(userId: string, files: File[]): Promise<string[]> {
+export async function uploadListingPhotos(
+  userId: string,
+  files: File[],
+  onProgress?: (done: number, total: number, filename: string) => void,
+): Promise<string[]> {
   const paths: string[] = [];
+  let i = 0;
   for (const file of files) {
+    i += 1;
+    onProgress?.(i, files.length, file.name);
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("listing-photos").upload(path, file, {
       contentType: file.type,
       upsert: false,
     });
-    if (error) throw error;
+    if (error) {
+      throw new Error(`Photo ${i} of ${files.length} (${file.name}) failed to upload: ${error.message}`);
+    }
     paths.push(path);
   }
   return paths;

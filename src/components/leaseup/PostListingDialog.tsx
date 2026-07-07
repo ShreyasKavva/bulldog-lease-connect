@@ -60,6 +60,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [existingPhotos, setExistingPhotos] = useState<{ path: string; url: string }[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -260,10 +261,16 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
         let uploaded: string[] = [];
         if (previews.length) {
           setUploading(true);
+          setUploadStatus(`Uploading photo 1 of ${previews.length}…`);
           try {
-            uploaded = await uploadListingPhotos(user.id, previews.map((p) => p.file));
+            uploaded = await uploadListingPhotos(
+              user.id,
+              previews.map((p) => p.file),
+              (done, total) => setUploadStatus(`Uploading photo ${done} of ${total}…`),
+            );
           } finally {
             setUploading(false);
+            setUploadStatus(null);
           }
         }
         const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
@@ -371,6 +378,41 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
             <DialogTitle className="text-2xl">{isEdit ? "Edit your listing" : "Post a sublease"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {!isEdit && (() => {
+              const basicsDone = !!(form.title.trim() && form.campus_id && form.price && form.available_from);
+              const photosDone = (existingPhotos.length + previews.length) > 0;
+              const detailsDone = form.description.trim().length >= 30;
+              const steps: Array<{ label: string; done: boolean }> = [
+                { label: "Basics", done: basicsDone },
+                { label: "Photos", done: photosDone },
+                { label: "Details", done: detailsDone },
+              ];
+              const currentIdx = steps.findIndex((s) => !s.done);
+              const activeIdx = currentIdx === -1 ? steps.length - 1 : currentIdx;
+              return (
+                <div className="flex items-center gap-2 text-xs font-semibold" aria-label="Post progress">
+                  {steps.map((s, i) => (
+                    <div key={s.label} className="flex flex-1 items-center gap-2">
+                      <div className={cn(
+                        "flex items-center gap-1.5 rounded-full px-3 py-1",
+                        s.done ? "bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200"
+                          : i === activeIdx ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground",
+                      )}>
+                        <span>{s.done ? "✓" : i + 1}</span>
+                        <span>{s.label}</span>
+                      </div>
+                      {i < steps.length - 1 && <div className="h-px flex-1 bg-border" />}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            {uploadStatus && (
+              <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary-light/60 px-3 py-2 text-sm font-semibold text-primary-dark">
+                <Loader2 className="h-4 w-4 animate-spin" /> {uploadStatus}
+              </div>
+            )}
             {isRelist && (
               <div className="rounded-lg border border-blue-300/60 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-100">
                 ℹ️ Relisting from a previous listing — we've pre-filled your info. Update the dates and price, then post.
