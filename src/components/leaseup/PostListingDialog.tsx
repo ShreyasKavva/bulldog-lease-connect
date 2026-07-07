@@ -597,6 +597,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+                    capture="environment"
                     multiple
                     onChange={onFiles}
                     className="hidden"

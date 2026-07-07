@@ -7,6 +7,7 @@
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, Search, Users, User, Bell } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -25,6 +26,18 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   const { data: notifications = [] } = useNotifications();
   const unreadNotifs = notifications.filter((n) => !n.read).length;
   const navigate = useNavigate();
+
+  // Q81: hide nav when the soft keyboard is open so it doesn't cover inputs.
+  // visualViewport shrinks by >=150px when the keyboard shows on iOS/Android.
+  const [kbdOpen, setKbdOpen] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const baseline = window.innerHeight;
+    const onResize = () => setKbdOpen(baseline - vv.height > 150);
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, []);
 
   const isHome = path === "/";
   const isBrowse =
@@ -52,7 +65,8 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-gray-200 bg-white md:hidden dark:border-border dark:bg-surface"
+      data-kbd={kbdOpen ? "1" : undefined}
+      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-gray-200 bg-white touch-manipulation md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
@@ -94,7 +108,7 @@ function Tab({
       aria-label={label}
       title={label}
       className={cn(
-        "flex items-center justify-center transition",
+        "flex min-h-[44px] items-center justify-center transition-transform active:scale-90",
         active ? "text-primary" : "text-gray-400 hover:text-foreground",
       )}
     >

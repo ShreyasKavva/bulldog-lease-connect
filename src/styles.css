@@ -287,3 +287,22 @@ html, body { -webkit-tap-highlight-color: transparent; }
   }
 }
 
+/* Mobile touch polish (Q81):
+ * - remove iOS 300ms click delay on all interactive controls
+ * - suppress the grey tap flash so active:scale animations read cleanly */
+button, a, label, [role="button"], input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tap feedback utility — add className="lu-tap" for native-app press feel. */
+@utility lu-tap {
+  transition: transform 120ms ease-out;
+  &:active { transform: scale(0.96); }
+}
+
+/* Hide the bottom nav when the on-screen keyboard is open on mobile.
+ * BottomNav toggles data-kbd="1" via visualViewport. */
+nav[data-kbd="1"] { display: none !important; }
+
+

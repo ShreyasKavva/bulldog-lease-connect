@@ -14,7 +14,8 @@ import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Bell, X as XIcon } from "lucide-react";
+import { LayoutGrid, Flame, Search, Bell, X as XIcon, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
@@ -167,6 +168,7 @@ function Browse() {
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const pinnedListings = useMemo(
@@ -352,101 +354,173 @@ function Browse() {
               })}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-lg bg-background p-1">
-                <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
-                  <LayoutGrid className="h-3.5 w-3.5" />Grid
-                </button>
-                <button onClick={() => setView("scroll")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "scroll" && "bg-surface shadow")}>
-                  <Flame className="h-3.5 w-3.5" />Scroll
-                </button>
-              </div>
-              <select
-                value={sort}
-                onChange={(e) => patchSearch({ sort: e.target.value as Sort })}
-                className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold"
-              >
-                <option value="newest">Newest first</option>
-                <option value="price_asc">Lowest price</option>
-                <option value="price_desc">Highest price</option>
-                <option value="popular">Most popular</option>
-              </select>
-              <select
-                value={area}
-                onChange={(e) => patchSearch({ area: e.target.value || undefined })}
-                className="h-8 rounded-md border bg-surface px-2 text-xs font-semibold"
-              >
-                <option value="">All neighborhoods</option>
-                {NEIGHBORHOODS.map((n) => <option key={n.name}>{n.name}</option>)}
-              </select>
-              <label className="flex items-center gap-1 text-xs font-semibold">
-                Min $
-                <input
-                  type="number"
-                  min={0}
-                  step={50}
-                  value={minPrice ?? ""}
-                  onChange={(e) => patchSearch({ min_price: e.target.value ? parseInt(e.target.value) : undefined })}
-                  className="h-8 w-20 rounded-md border bg-surface px-2 text-xs"
-                  placeholder="—"
-                />
-              </label>
-              <label className="flex items-center gap-1 text-xs font-semibold">
-                Max $
-                <input
-                  type="number"
-                  min={0}
-                  step={50}
-                  value={maxPrice ?? ""}
-                  onChange={(e) => patchSearch({ max_price: e.target.value ? parseInt(e.target.value) : undefined })}
-                  className="h-8 w-20 rounded-md border bg-surface px-2 text-xs"
-                  placeholder="—"
-                />
-              </label>
-              <label className="flex items-center gap-1 text-xs font-semibold">
-                Available by
-                <input
-                  type="date"
-                  value={s.from ?? ""}
-                  onChange={(e) => patchSearch({ from: e.target.value || undefined })}
-                  className="h-8 rounded-md border bg-surface px-2 text-xs"
-                />
-              </label>
-              <label className="flex items-center gap-1 text-xs font-semibold">
-                Until
-                <input
-                  type="date"
-                  value={s.to ?? ""}
-                  onChange={(e) => patchSearch({ to: e.target.value || undefined })}
-                  className="h-8 rounded-md border bg-surface px-2 text-xs"
-                />
-              </label>
-              <label className="flex items-center gap-1.5 text-xs font-semibold">
-                <input
-                  type="checkbox"
-                  checked={furnishedOnly}
-                  onChange={(e) => patchSearch({ furnished: e.target.checked ? 1 : undefined })}
-                />
-                Furnished
-              </label>
-              {activeFilterCount > 0 && (
+            {/* Q81: on mobile these filters collapse into a bottom sheet.
+             *  filterControlsJSX is rendered inline on ≥sm, and inside the
+             *  Sheet body on <sm. Bedroom pills above stay visible. */}
+            {(() => {
+              const filterControlsJSX = (
                 <>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-                    {activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}
-                  </span>
-                  <button
-                    onClick={clearFilters}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                  <div className="flex rounded-lg bg-background p-1">
+                    <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
+                      <LayoutGrid className="h-3.5 w-3.5" />Grid
+                    </button>
+                    <button onClick={() => setView("scroll")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "scroll" && "bg-surface shadow")}>
+                      <Flame className="h-3.5 w-3.5" />Scroll
+                    </button>
+                  </div>
+                  <select
+                    value={sort}
+                    onChange={(e) => patchSearch({ sort: e.target.value as Sort })}
+                    className="h-10 rounded-md border bg-surface px-2 text-xs font-semibold sm:h-8"
                   >
-                    <XIcon className="h-3 w-3" /> Clear filters
-                  </button>
+                    <option value="newest">Newest first</option>
+                    <option value="price_asc">Lowest price</option>
+                    <option value="price_desc">Highest price</option>
+                    <option value="popular">Most popular</option>
+                  </select>
+                  <select
+                    value={area}
+                    onChange={(e) => patchSearch({ area: e.target.value || undefined })}
+                    className="h-10 rounded-md border bg-surface px-2 text-xs font-semibold sm:h-8"
+                  >
+                    <option value="">All neighborhoods</option>
+                    {NEIGHBORHOODS.map((n) => <option key={n.name}>{n.name}</option>)}
+                  </select>
+                  <label className="flex items-center gap-1 text-xs font-semibold">
+                    Min $
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step={50}
+                      value={minPrice ?? ""}
+                      onChange={(e) => patchSearch({ min_price: e.target.value ? parseInt(e.target.value) : undefined })}
+                      className="h-10 w-20 rounded-md border bg-surface px-2 text-xs sm:h-8"
+                      placeholder="—"
+                    />
+                  </label>
+                  <label className="flex items-center gap-1 text-xs font-semibold">
+                    Max $
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step={50}
+                      value={maxPrice ?? ""}
+                      onChange={(e) => patchSearch({ max_price: e.target.value ? parseInt(e.target.value) : undefined })}
+                      className="h-10 w-20 rounded-md border bg-surface px-2 text-xs sm:h-8"
+                      placeholder="—"
+                    />
+                  </label>
+                  <label className="flex items-center gap-1 text-xs font-semibold">
+                    Available by
+                    <input
+                      type="date"
+                      value={s.from ?? ""}
+                      onChange={(e) => patchSearch({ from: e.target.value || undefined })}
+                      className="h-10 rounded-md border bg-surface px-2 text-xs sm:h-8"
+                    />
+                  </label>
+                  <label className="flex items-center gap-1 text-xs font-semibold">
+                    Until
+                    <input
+                      type="date"
+                      value={s.to ?? ""}
+                      onChange={(e) => patchSearch({ to: e.target.value || undefined })}
+                      className="h-10 rounded-md border bg-surface px-2 text-xs sm:h-8"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={furnishedOnly}
+                      onChange={(e) => patchSearch({ furnished: e.target.checked ? 1 : undefined })}
+                    />
+                    Furnished
+                  </label>
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                    >
+                      <XIcon className="h-3 w-3" /> Clear filters
+                    </button>
+                  )}
                 </>
-              )}
-              <button onClick={() => setSaveSearchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
-                <Bell className="h-3.5 w-3.5" />Save search
-              </button>
-              <div className="text-xs text-muted-foreground">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</div>
-            </div>
+              );
+
+              return (
+                <>
+                  {/* Mobile: compact bar with Filters trigger + Save */}
+                  <div className="flex items-center gap-2 sm:hidden">
+                    <button
+                      onClick={() => setMobileFiltersOpen(true)}
+                      className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 text-sm font-bold transition-transform active:scale-95"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Filters
+                      {activeFilterCount > 0 && (
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setSaveSearchOpen(true)}
+                      className="inline-flex min-h-[44px] items-center gap-1 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+                    >
+                      <Bell className="h-4 w-4" />Save
+                    </button>
+                  </div>
+                  <div className="text-xs text-muted-foreground sm:hidden">
+                    {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+                  </div>
+
+                  {/* Desktop: full inline row */}
+                  <div className="hidden flex-wrap items-center gap-2 sm:flex">
+                    {filterControlsJSX}
+                    {activeFilterCount > 0 && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                        {activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}
+                      </span>
+                    )}
+                    <button onClick={() => setSaveSearchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+                      <Bell className="h-3.5 w-3.5" />Save search
+                    </button>
+                    <div className="text-xs text-muted-foreground">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</div>
+                  </div>
+
+                  <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+                    <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+                      <SheetHeader>
+                        <SheetTitle>Filters</SheetTitle>
+                      </SheetHeader>
+                      <div className="mt-4 flex flex-col gap-3 pb-4">
+                        {filterControlsJSX}
+                      </div>
+                      <div
+                        className="sticky bottom-0 -mx-6 flex gap-2 border-t bg-surface px-6 py-3"
+                        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)" }}
+                      >
+                        <button
+                          onClick={() => { clearFilters(); }}
+                          className="min-h-[44px] flex-1 rounded-full border border-border bg-surface text-sm font-bold transition-transform active:scale-95"
+                        >
+                          Clear all
+                        </button>
+                        <button
+                          onClick={() => setMobileFiltersOpen(false)}
+                          className="min-h-[44px] flex-1 rounded-full bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+                        >
+                          Show {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+                        </button>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </>
+              );
+            })()}
+
           </div>
         </div>
 
