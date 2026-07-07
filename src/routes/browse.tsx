@@ -442,13 +442,7 @@ function Browse() {
                   </button>
                 </>
               )}
-              <button onClick={() => setMatchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
-                <Sparkles className="h-3.5 w-3.5" />Find My Match
-              </button>
-              <button onClick={() => setLeaseOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
-                <ShieldCheck className="h-3.5 w-3.5" />Lease Bot
-              </button>
-              <button onClick={() => setSaveSearchOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+              <button onClick={() => setSaveSearchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
                 <Bell className="h-3.5 w-3.5" />Save search
               </button>
               <div className="text-xs text-muted-foreground">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</div>
