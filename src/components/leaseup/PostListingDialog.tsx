@@ -60,6 +60,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [existingPhotos, setExistingPhotos] = useState<{ path: string; url: string }[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
