@@ -46,7 +46,7 @@ export function ListingCard({
   onPin?: () => void;
   isHotDeal?: boolean;
 }) {
-  const photo = listing.photo_urls?.[0];
+  const photo = listing.photo_urls?.[0] ?? listing.photos?.[0];
   const justPosted = isJustPosted(listing.created_at);
   const soon = isAvailableSoon(listing.available_from);
   const [pop, setPop] = useState(false);
