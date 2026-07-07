@@ -164,8 +164,6 @@ function Browse() {
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [msgDraft, setMsgDraft] = useState<string | null>(null);
-  const [matchOpen, setMatchOpen] = useState(false);
-  const [leaseOpen, setLeaseOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
