@@ -10,13 +10,11 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ScrollView } from "@/components/leaseup/ScrollView";
-import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
-import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell, X as XIcon } from "lucide-react";
+import { LayoutGrid, Flame, Search, Bell, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
