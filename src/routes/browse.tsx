@@ -168,6 +168,7 @@ function Browse() {
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const pinnedListings = useMemo(
