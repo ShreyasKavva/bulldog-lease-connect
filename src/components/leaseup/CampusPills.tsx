@@ -1,6 +1,10 @@
 /**
  * CampusPills — horizontal row of clickable campus chips shown on the
  * homepage below the main feed (Q79). Sorted by active listing count.
+ *
+ * Fails gracefully: any fetch error or unexpected data shape returns null
+ * rather than throwing — the homepage must never crash because of this
+ * secondary discovery section.
  */
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -8,26 +12,37 @@ import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/c
 import { ArrowRight } from "lucide-react";
 
 export function CampusPills() {
-  const { data: campuses = [] } = useQuery({
+  const campusesQ = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
     staleTime: 5 * 60 * 1000,
   });
-  const { data: counts = {} } = useQuery({
+  const countsQ = useQuery({
     queryKey: ["active-listing-counts-by-campus"],
     queryFn: fetchActiveListingCountsByCampus,
     staleTime: 60 * 1000,
   });
 
+  // Defensive: never throw from render. If either query errored or returned
+  // an unexpected shape, just render nothing.
+  if (campusesQ.isError || countsQ.isError) return null;
+
+  const campuses = Array.isArray(campusesQ.data) ? campusesQ.data : [];
+  const counts: Record<string, number> =
+    countsQ.data && typeof countsQ.data === "object" ? countsQ.data : {};
+
   if (campuses.length === 0) return null;
 
-  const ordered = [...campuses].sort((a, b) => {
-    const ca = counts[a.id] ?? 0;
-    const cb = counts[b.id] ?? 0;
-    if (cb !== ca) return cb - ca;
-    return a.name.localeCompare(b.name);
-  });
+  const ordered = [...campuses]
+    .filter((c) => c && typeof c.id === "string" && typeof c.slug === "string")
+    .sort((a, b) => {
+      const ca = counts[a.id] ?? 0;
+      const cb = counts[b.id] ?? 0;
+      if (cb !== ca) return cb - ca;
+      return (a.name ?? "").localeCompare(b.name ?? "");
+    });
   const visible = ordered.slice(0, 8);
+  if (visible.length === 0) return null;
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
@@ -45,6 +60,7 @@ export function CampusPills() {
       <div className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {visible.map((c) => {
           const n = counts[c.id] ?? 0;
+          const label = c.short_name || c.name || "Campus";
           return (
             <Link
               key={c.id}
@@ -52,7 +68,7 @@ export function CampusPills() {
               params={{ slug: c.slug }}
               className="group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
             >
-              <span>{c.short_name || c.name}</span>
+              <span>{label}</span>
               <span
                 className={`text-xs font-medium ${n > 0 ? "text-emerald-600" : "text-muted-foreground"}`}
               >
