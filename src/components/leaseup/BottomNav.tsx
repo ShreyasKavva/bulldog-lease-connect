@@ -108,7 +108,7 @@ function Tab({
       aria-label={label}
       title={label}
       className={cn(
-        "flex items-center justify-center transition",
+        "flex min-h-[44px] items-center justify-center transition-transform active:scale-90",
         active ? "text-primary" : "text-gray-400 hover:text-foreground",
       )}
     >
