@@ -369,8 +369,6 @@ export function AirbnbHome({
           <div>© {new Date().getFullYear()} LeaseUp — student subleases</div>
           <div className="flex flex-wrap gap-4">
             <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
-            <Link to="/market" className="hover:text-foreground">Market data</Link>
-            <Link to="/lease-analysis" className="hover:text-foreground">Lease bot</Link>
             <Link to="/ambassador" className="hover:text-foreground">Ambassadors</Link>
           </div>
         </div>

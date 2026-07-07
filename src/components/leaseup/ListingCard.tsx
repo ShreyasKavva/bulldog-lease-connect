@@ -50,6 +50,7 @@ export function ListingCard({
   const justPosted = isJustPosted(listing.created_at);
   const soon = isAvailableSoon(listing.available_from);
   const [pop, setPop] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const picker = useReactionPicker(listing.id);
 
   function handleSave(e: React.MouseEvent) {
@@ -80,8 +81,14 @@ export function ListingCard({
         onClick={handlePhotoClick}
         {...picker.bind}
       >
-        {photo ? (
-          <img src={photo} alt={listing.title} className="lu-card-img h-full w-full object-cover" loading="lazy" />
+        {photo && !imgError ? (
+          <img
+            src={photo}
+            alt={listing.title}
+            className="lu-card-img h-full w-full object-cover"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
         )}
@@ -179,7 +186,8 @@ export function ListingCard({
             <PriceLabelBadge price={listing.price} campusId={(listing as any).campus_id} beds={listing.beds} size="xs" />
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Bed className="h-3 w-3" />{listing.beds} bd · {Number(listing.baths)} ba
+            <Bed className="h-3 w-3" />
+            {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {Number(listing.baths)} ba
           </div>
         </div>
         <h3 className="mt-1 line-clamp-1 text-sm font-bold">{listing.title}</h3>
