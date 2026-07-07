@@ -261,10 +261,16 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
         let uploaded: string[] = [];
         if (previews.length) {
           setUploading(true);
+          setUploadStatus(`Uploading photo 1 of ${previews.length}…`);
           try {
-            uploaded = await uploadListingPhotos(user.id, previews.map((p) => p.file));
+            uploaded = await uploadListingPhotos(
+              user.id,
+              previews.map((p) => p.file),
+              (done, total) => setUploadStatus(`Uploading photo ${done} of ${total}…`),
+            );
           } finally {
             setUploading(false);
+            setUploadStatus(null);
           }
         }
         const photos: string[] = [...existingPhotos.map((p) => p.path), ...uploaded];
