@@ -10,13 +10,11 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ScrollView } from "@/components/leaseup/ScrollView";
-import { LeaseAnalysisDialog } from "@/components/leaseup/LeaseAnalysisDialog";
-import { FindMyMatchDialog } from "@/components/leaseup/FindMyMatchDialog";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Sparkles, ShieldCheck, Bell, X as XIcon } from "lucide-react";
+import { LayoutGrid, Flame, Search, Bell, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
@@ -166,8 +164,6 @@ function Browse() {
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [msgDraft, setMsgDraft] = useState<string | null>(null);
-  const [matchOpen, setMatchOpen] = useState(false);
-  const [leaseOpen, setLeaseOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
@@ -446,13 +442,7 @@ function Browse() {
                   </button>
                 </>
               )}
-              <button onClick={() => setMatchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
-                <Sparkles className="h-3.5 w-3.5" />Find My Match
-              </button>
-              <button onClick={() => setLeaseOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold text-primary-dark hover:bg-primary/20">
-                <ShieldCheck className="h-3.5 w-3.5" />Lease Bot
-              </button>
-              <button onClick={() => setSaveSearchOpen(true)} className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
+              <button onClick={() => setSaveSearchOpen(true)} className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
                 <Bell className="h-3.5 w-3.5" />Save search
               </button>
               <div className="text-xs text-muted-foreground">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</div>
@@ -560,8 +550,6 @@ function Browse() {
         initialConversationId={activeConv}
         initialDraft={msgDraft}
       />
-      <LeaseAnalysisDialog open={leaseOpen} onOpenChange={setLeaseOpen} />
-      <FindMyMatchDialog open={matchOpen} onOpenChange={setMatchOpen} onOpenListing={(l) => setSelected(l)} />
 
       <SaveSearchDialog
         open={saveSearchOpen}
