@@ -27,6 +27,18 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   const unreadNotifs = notifications.filter((n) => !n.read).length;
   const navigate = useNavigate();
 
+  // Q81: hide nav when the soft keyboard is open so it doesn't cover inputs.
+  // visualViewport shrinks by >=150px when the keyboard shows on iOS/Android.
+  const [kbdOpen, setKbdOpen] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const baseline = window.innerHeight;
+    const onResize = () => setKbdOpen(baseline - vv.height > 150);
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, []);
+
   const isHome = path === "/";
   const isBrowse =
     path.startsWith("/browse") ||
