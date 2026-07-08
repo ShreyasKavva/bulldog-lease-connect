@@ -21,8 +21,7 @@ export function NotificationToastListener() {
     if (!user?.id) return;
     const ch = supabase.channel(`notif-toasts:${user.id}`);
     ch.on(
-      // @ts-expect-error - realtime typings are strict about the string literal
-      "postgres_changes",
+      "postgres_changes" as never,
       {
         event: "INSERT",
         schema: "public",
