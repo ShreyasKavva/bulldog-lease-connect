@@ -19,7 +19,9 @@ export function NotificationToastListener() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const ch = supabase.channel(`notif-toasts:${user.id}`);
+    const topic = `notif-toasts:${user.id}:${Math.random().toString(36).slice(2, 10)}`;
+    const ch = supabase.channel(topic);
+
     ch.on(
       "postgres_changes" as never,
       {
