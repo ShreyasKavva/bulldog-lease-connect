@@ -44,8 +44,9 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!user?.id) return;
+    const topic = `notifications:${user.id}:${Math.random().toString(36).slice(2, 10)}`;
     const ch = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(topic)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
@@ -56,9 +57,10 @@ export function useNotifications() {
       )
       .subscribe();
     return () => {
-      supabase.removeChannel(ch);
+      void supabase.removeChannel(ch);
     };
   }, [user?.id, qc]);
+
 
   return q;
 }
