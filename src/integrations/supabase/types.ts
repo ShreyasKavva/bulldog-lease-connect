@@ -1078,6 +1078,7 @@ export type Database = {
           is_active: boolean
           is_featured: boolean
           lat: number | null
+          laundry: string | null
           lng: number | null
           parking: boolean
           pending_review: boolean
@@ -1098,6 +1099,7 @@ export type Database = {
           verification_tier: string
           view_count: number
           views: number
+          wifi_included: boolean | null
         }
         Insert: {
           address?: string | null
@@ -1125,6 +1127,7 @@ export type Database = {
           is_active?: boolean
           is_featured?: boolean
           lat?: number | null
+          laundry?: string | null
           lng?: number | null
           parking?: boolean
           pending_review?: boolean
@@ -1145,6 +1148,7 @@ export type Database = {
           verification_tier?: string
           view_count?: number
           views?: number
+          wifi_included?: boolean | null
         }
         Update: {
           address?: string | null
@@ -1172,6 +1176,7 @@ export type Database = {
           is_active?: boolean
           is_featured?: boolean
           lat?: number | null
+          laundry?: string | null
           lng?: number | null
           parking?: boolean
           pending_review?: boolean
@@ -1192,6 +1197,7 @@ export type Database = {
           verification_tier?: string
           view_count?: number
           views?: number
+          wifi_included?: boolean | null
         }
         Relationships: [
           {
