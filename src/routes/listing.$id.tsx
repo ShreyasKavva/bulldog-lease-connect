@@ -149,6 +149,7 @@ type PublicPoster = {
   campus_name: string | null;
   active_listing_count: number;
   created_at: string | null;
+  last_seen?: string | null;
 };
 
 type ListingWithCampus = Listing & { campus?: { name: string; short_name: string; slug: string } | null };
