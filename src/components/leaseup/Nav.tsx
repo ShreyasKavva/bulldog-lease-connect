@@ -32,9 +32,9 @@ export function Nav({
   }
 
   return (
-    <nav className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-surface px-4 shadow-sm">
+    <nav className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-gray-100 bg-white px-6 shadow-sm sm:px-10 dark:border-border dark:bg-surface">
       <Link to="/" className="text-xl font-black tracking-tight">
-        <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
+        <span className="text-gray-900 dark:text-foreground">LeaseUp</span>
       </Link>
       <CampusPicker activeSlug={activeCampusSlug} />
       <div className="hidden flex-1 max-w-lg items-center gap-2 rounded-full bg-background px-4 h-10 sm:flex">
@@ -76,7 +76,7 @@ export function Nav({
         )}
         {user ? (
           <>
-            <Button onClick={onPost} className="hidden sm:inline-flex bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
+            <Button onClick={onPost} className="hidden sm:inline-flex rounded-full bg-gray-900 hover:bg-black text-white font-medium gap-1 dark:bg-white dark:text-gray-900">
               <Plus className="h-4 w-4" />Post
             </Button>
             <NotificationsBell onOpenMessages={onOpenMessages} />
@@ -101,8 +101,8 @@ export function Nav({
           </>
         ) : (
           <>
-            <button onClick={() => openSignIn()} className="rounded-md border px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">Sign in</button>
-            <button onClick={() => openSignIn()} className="rounded-md bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark">Sign up</button>
+            <button onClick={() => openSignIn()} className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:border-border dark:text-foreground/80">Sign in</button>
+            <button onClick={() => openSignIn()} className="rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-black dark:bg-white dark:text-gray-900">Sign up</button>
           </>
         )}
       </div>
