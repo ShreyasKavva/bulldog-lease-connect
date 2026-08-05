@@ -1,0 +1,445 @@
+/**
+ * Q87 — Airbnb-style browse filter UI.
+ *
+ * Purely presentational: it renders the sticky pill search bar, the sort
+ * dropdown, the bottom-sheet filter modal, the active filter pills and the
+ * desktop bedroom quick-filter row. All state lives in the URL — this
+ * component only calls `onPatch` / `onClearAll`.
+ */
+import { useEffect, useState } from "react";
+import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+
+export type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+
+export type BrowseFilterValues = {
+  q?: string;
+  area?: string;
+  min_price?: number;
+  max_price?: number;
+  bedrooms?: string;
+  baths?: number;
+  from?: string;
+  to?: string;
+  furnished?: 1;
+  utilities?: 1;
+  parking?: 1;
+  pets?: 1;
+  wifi?: 1;
+  laundry?: 1;
+  sort?: Sort;
+};
+
+const SORT_LABELS: Record<Sort, string> = {
+  newest: "Newest",
+  price_asc: "Lowest price",
+  price_desc: "Highest price",
+  popular: "Most viewed",
+};
+
+const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: string }> = [
+  { key: "furnished", icon: "🛋", label: "Furnished" },
+  { key: "utilities", icon: "⚡", label: "Utilities" },
+  { key: "parking", icon: "🅿️", label: "Parking" },
+  { key: "pets", icon: "🐾", label: "Pets OK" },
+  { key: "wifi", icon: "🌐", label: "WiFi" },
+  { key: "laundry", icon: "🏢", label: "Laundry" },
+];
+
+const BEDS = ["0", "1", "2", "3+"] as const;
+const PRICE_MAX = 3000;
+
+function bedLabel(b: string) {
+  return b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`;
+}
+
+function shortDate(iso?: string) {
+  if (!iso) return null;
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { month: "short" });
+}
+
+export function BrowseFilterBar({
+  values,
+  onPatch,
+  onClearAll,
+  searchInput,
+  onSearchInput,
+  resultCount,
+  placeLabel,
+}: {
+  values: BrowseFilterValues;
+  onPatch: (patch: Partial<BrowseFilterValues>) => void;
+  onClearAll: () => void;
+  searchInput: string;
+  onSearchInput: (v: string) => void;
+  resultCount: number;
+  placeLabel: string;
+}) {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const sort: Sort = values.sort ?? "newest";
+  const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
+
+  const activeCount =
+    (values.q ? 1 : 0) +
+    (values.area ? 1 : 0) +
+    (values.min_price != null || values.max_price != null ? 1 : 0) +
+    (bedSet.size ? 1 : 0) +
+    (values.baths != null ? 1 : 0) +
+    (values.from || values.to ? 1 : 0) +
+    AMENITIES.filter((a) => values[a.key] === 1).length;
+
+  // Local price range while dragging, synced from URL.
+  const [range, setRange] = useState<[number, number]>([
+    values.min_price ?? 0,
+    values.max_price ?? PRICE_MAX,
+  ]);
+  useEffect(() => {
+    setRange([values.min_price ?? 0, values.max_price ?? PRICE_MAX]);
+  }, [values.min_price, values.max_price]);
+
+  const sizeLabel = bedSet.size
+    ? Array.from(bedSet).map(bedLabel).join(", ")
+    : "Any size";
+  const dateLabel =
+    values.from || values.to
+      ? `${shortDate(values.from) ?? "…"}–${shortDate(values.to) ?? "…"}`
+      : "Any dates";
+
+  function toggleBed(b: string) {
+    const next = new Set(bedSet);
+    if (next.has(b)) next.delete(b);
+    else next.add(b);
+    onPatch({ bedrooms: next.size ? Array.from(next).join(",") : undefined });
+  }
+
+  const pills: Array<{ label: string; clear: Partial<BrowseFilterValues> }> = [];
+  if (values.q) pills.push({ label: `"${values.q}"`, clear: { q: undefined } });
+  if (values.min_price != null || values.max_price != null)
+    pills.push({
+      label: `$${values.min_price ?? 0}–${values.max_price ?? PRICE_MAX}`,
+      clear: { min_price: undefined, max_price: undefined },
+    });
+  for (const b of bedSet) pills.push({ label: bedLabel(b), clear: {} as never });
+  if (values.baths != null)
+    pills.push({ label: `${values.baths}+ bath`, clear: { baths: undefined } });
+  if (values.from || values.to)
+    pills.push({ label: dateLabel, clear: { from: undefined, to: undefined } });
+  for (const a of AMENITIES)
+    if (values[a.key] === 1) pills.push({ label: a.label, clear: { [a.key]: undefined } });
+
+  return (
+    <div className="sticky top-[6.5rem] z-30 border-b border-border bg-surface py-3">
+      <div className="mx-auto max-w-7xl px-4">
+        {/* PART A — compact pill search bar */}
+        <div className="flex items-center gap-2">
+          <div className="flex h-12 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-4 pr-1.5 shadow-sm">
+            <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+
+            {searchOpen ? (
+              <input
+                autoFocus
+                value={searchInput}
+                onChange={(e) => onSearchInput(e.target.value)}
+                onBlur={() => setSearchOpen(false)}
+                placeholder="Search subleases, neighborhoods…"
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              />
+            ) : (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="min-w-0 flex-1 truncate text-left text-sm font-semibold"
+              >
+                {values.q || placeLabel}
+              </button>
+            )}
+
+            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
+            >
+              {dateLabel}
+            </button>
+            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
+            >
+              {sizeLabel}
+            </button>
+
+            {/* PART E — sort dropdown */}
+            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+            <div className="relative hidden shrink-0 sm:block">
+              <button
+                onClick={() => setSortOpen((o) => !o)}
+                className="flex items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Sort: <span className="font-semibold text-foreground">{SORT_LABELS[sort]}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              {sortOpen && (
+                <>
+                  <button
+                    className="fixed inset-0 z-40 cursor-default"
+                    aria-label="Close sort menu"
+                    onClick={() => setSortOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
+                    {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
+                      <button
+                        key={k}
+                        onClick={() => {
+                          onPatch({ sort: k === "newest" ? undefined : k });
+                          setSortOpen(false);
+                        }}
+                        className={cn(
+                          "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-background",
+                          sort === k && "bg-primary-light text-primary-dark",
+                        )}
+                      >
+                        {SORT_LABELS[k]}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="ml-2 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-sm font-bold transition-transform active:scale-95"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden xs:inline sm:inline">Filters</span>
+              {activeCount > 0 && <span className="text-primary">· {activeCount}</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* PART C — active filter pills */}
+        {pills.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {pills.map((p, i) => (
+              <button
+                key={`${p.label}-${i}`}
+                onClick={() => {
+                  const bedMatch = Array.from(bedSet).find((b) => bedLabel(b) === p.label);
+                  if (bedMatch) toggleBed(bedMatch);
+                  else onPatch(p.clear);
+                }}
+                className="inline-flex items-center gap-1 rounded-full bg-background px-3 py-1 text-sm font-medium hover:bg-border"
+              >
+                <XIcon className="h-3 w-3" />
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={onClearAll}
+              className="text-sm font-bold text-primary underline-offset-2 hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
+        {/* PART D — desktop bedroom quick filter */}
+        <div className="mt-2 hidden items-center gap-2 sm:flex">
+          <button
+            onClick={() => onPatch({ bedrooms: undefined })}
+            className={cn(
+              "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
+              bedSet.size === 0
+                ? "border-foreground bg-foreground text-background"
+                : "hover:border-foreground",
+            )}
+          >
+            Any
+          </button>
+          {BEDS.map((b) => (
+            <button
+              key={b}
+              onClick={() => toggleBed(b)}
+              className={cn(
+                "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
+                bedSet.has(b)
+                  ? "border-foreground bg-foreground text-background"
+                  : "hover:border-foreground",
+              )}
+            >
+              {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* PART B — bottom-sheet filter modal */}
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent
+          side="bottom"
+          className="flex max-h-[85vh] flex-col gap-0 rounded-t-2xl p-0"
+        >
+          <div className="border-b border-border px-6 py-4">
+            <SheetTitle className="text-base font-bold">Filters</SheetTitle>
+          </div>
+
+          <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
+            {/* Price */}
+            <section>
+              <h3 className="text-sm font-bold">Price range</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Min ${range[0]} – Max ${range[1]}
+                {range[1] >= PRICE_MAX ? "+" : ""}
+              </p>
+              <Slider
+                className="mt-5"
+                value={range}
+                min={0}
+                max={PRICE_MAX}
+                step={50}
+                onValueChange={(v) => setRange([v[0]!, v[1]!] as [number, number])}
+                onValueCommit={(v) =>
+                  onPatch({
+                    min_price: v[0]! > 0 ? v[0]! : undefined,
+                    max_price: v[1]! < PRICE_MAX ? v[1]! : undefined,
+                  })
+                }
+              />
+            </section>
+
+            {/* Bedrooms + bathrooms */}
+            <section className="space-y-4">
+              <Stepper
+                label="Bedrooms"
+                value={bedSet.size === 1 ? Number(Array.from(bedSet)[0]!.replace("+", "")) : null}
+                display={bedSet.size ? Array.from(bedSet).map(bedLabel).join(", ") : "Any"}
+                onChange={(n) =>
+                  onPatch({ bedrooms: n == null ? undefined : n >= 3 ? "3+" : String(n) })
+                }
+                max={3}
+              />
+              <Stepper
+                label="Bathrooms"
+                value={values.baths ?? null}
+                display={values.baths ? `${values.baths}+` : "Any"}
+                onChange={(n) => onPatch({ baths: n ?? undefined })}
+                max={4}
+              />
+            </section>
+
+            {/* Amenities */}
+            <section>
+              <h3 className="text-sm font-bold">Amenities</h3>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {AMENITIES.map((a) => {
+                  const on = values[a.key] === 1;
+                  return (
+                    <button
+                      key={a.key as string}
+                      onClick={() => onPatch({ [a.key]: on ? undefined : 1 })}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl border p-4 text-left text-sm font-semibold transition-colors",
+                        on ? "border-foreground bg-background" : "border-border hover:border-foreground",
+                      )}
+                    >
+                      <span className="text-base">{a.icon}</span>
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Availability */}
+            <section>
+              <h3 className="text-sm font-bold">Availability</h3>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
+                  Move-in
+                  <input
+                    type="date"
+                    value={values.from ?? ""}
+                    onChange={(e) => onPatch({ from: e.target.value || undefined })}
+                    className="h-11 rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
+                  Move-out
+                  <input
+                    type="date"
+                    value={values.to ?? ""}
+                    onChange={(e) => onPatch({ to: e.target.value || undefined })}
+                    className="h-11 rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+                  />
+                </label>
+              </div>
+            </section>
+          </div>
+
+          <div
+            className="flex items-center justify-between gap-3 border-t border-border px-6 py-3"
+            style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)" }}
+          >
+            <button
+              onClick={onClearAll}
+              className="text-sm font-bold underline underline-offset-2"
+            >
+              Clear all
+            </button>
+            <button
+              onClick={() => setFiltersOpen(false)}
+              className="min-h-[44px] rounded-full bg-foreground px-6 text-sm font-bold text-background transition-transform active:scale-95"
+            >
+              Show {resultCount} listing{resultCount === 1 ? "" : "s"} →
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function Stepper({
+  label,
+  value,
+  display,
+  onChange,
+  max,
+}: {
+  label: string;
+  value: number | null;
+  display: string;
+  onChange: (n: number | null) => void;
+  max: number;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-bold">{label}</span>
+      <div className="flex items-center gap-3">
+        <button
+          aria-label={`Decrease ${label}`}
+          disabled={value == null}
+          onClick={() => onChange(value == null || value <= 0 ? null : value - 1)}
+          className="grid h-9 w-9 place-items-center rounded-full border border-border disabled:opacity-40"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <span className="min-w-[4.5rem] text-center text-sm font-semibold">{display}</span>
+        <button
+          aria-label={`Increase ${label}`}
+          onClick={() => onChange(Math.min(max, (value ?? -1) + 1))}
+          className="grid h-9 w-9 place-items-center rounded-full border border-border"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
