@@ -16,10 +16,7 @@
  */
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  Home, MapPin, Flame, Sparkles, Sofa, CalendarCheck2,
-  DoorOpen, Building2, ArrowRight,
-} from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -28,18 +25,18 @@ import { ListingCard } from "./ListingCard";
 import { cn } from "@/lib/utils";
 
 type Cat =
-  | "all" | "near-campus" | "best-deals" | "new-today"
-  | "furnished" | "available-now" | "private-room" | "full-apt";
+  | "all" | "near-campus" | "furnished" | "studio"
+  | "private-room" | "short-term" | "best-deals" | "new-today";
 
-const CATEGORIES: { k: Cat; label: string; Icon: typeof Home }[] = [
-  { k: "all", label: "All", Icon: Home },
-  { k: "near-campus", label: "Near Campus", Icon: MapPin },
-  { k: "best-deals", label: "Best Deals", Icon: Flame },
-  { k: "new-today", label: "New Today", Icon: Sparkles },
-  { k: "furnished", label: "Furnished", Icon: Sofa },
-  { k: "available-now", label: "Available Now", Icon: CalendarCheck2 },
-  { k: "private-room", label: "Private Room", Icon: DoorOpen },
-  { k: "full-apt", label: "Full Apartment", Icon: Building2 },
+const CATEGORIES: { k: Cat; label: string; emoji: string }[] = [
+  { k: "all", label: "All", emoji: "🏠" },
+  { k: "near-campus", label: "Near Campus", emoji: "📍" },
+  { k: "furnished", label: "Furnished", emoji: "🛋️" },
+  { k: "studio", label: "Studio", emoji: "🏢" },
+  { k: "private-room", label: "Private Room", emoji: "🛏" },
+  { k: "short-term", label: "Short-term", emoji: "🌿" },
+  { k: "best-deals", label: "Best Deal", emoji: "💰" },
+  { k: "new-today", label: "New Today", emoji: "🆕" },
 ];
 
 // Emoji mascots for campus spotlights (falls back to 🎓)
@@ -69,16 +66,18 @@ function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string,
       return ageMs < 1000 * 60 * 60 * 24;
     case "furnished":
       return !!l.furnished;
-    case "available-now": {
-      if (!l.available_from) return true;
-      return new Date(l.available_from).getTime() <= now + 1000 * 60 * 60 * 24 * 30;
+    case "studio":
+      return l.beds === 0;
+    case "short-term": {
+      if (!l.available_from || !l.available_to) return false;
+      const span = new Date(l.available_to).getTime() - new Date(l.available_from).getTime();
+      return span > 0 && span <= 1000 * 60 * 60 * 24 * 120;
     }
     case "private-room":
-      return l.beds <= 1;
-    case "full-apt":
-      return l.beds >= 2;
+      return l.beds === 1;
   }
 }
+
 
 export function AirbnbHome({
   listings, campuses, savedIds, onSave, onOpen, onPost,
@@ -101,6 +100,8 @@ export function AirbnbHome({
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
 
   // Median price per (campus, beds) for the Best Deals filter/badge.
   const priceMedian = useMemo(() => {
@@ -197,56 +198,86 @@ export function AirbnbHome({
     navigate({ to: "/browse", search: params as any });
   }
 
+  const chipLabel = [
+    search.where.trim() || "Anywhere",
+    search.from
+      ? `${search.from.toLocaleDateString(undefined, { month: "short", day: "numeric" })}${search.to ? ` – ${search.to.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}`
+      : "Any dates",
+    search.guests <= 1 ? "1 student" : `${search.guests} students`,
+  ].join(" · ");
+
   return (
     <div className="min-h-screen bg-white dark:bg-background">
-      {/* HERO */}
-      <section className="relative pb-6 pt-8 sm:pt-12">
+      {/* HERO — search first */}
+      <section className="bg-white py-12 dark:bg-background">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <Link to="/" className="inline-block text-4xl font-black tracking-tight sm:text-5xl">
-            <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
+          <Link to="/" className="inline-block text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
+            LeaseUp
           </Link>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Find a sublease. Find a roommate. Find your people.
+          <p className="mt-1 text-base text-gray-500 dark:text-muted-foreground">
+            Find a sublease. Move in easy.
           </p>
         </div>
 
-        <div className="mx-auto mt-6 max-w-3xl px-4 sm:px-6">
+        {/* Desktop / tablet: full Where · When · Who bar */}
+        <div className="mx-auto mt-8 hidden max-w-3xl px-4 sm:block sm:px-6">
           <SearchPill value={search} onChange={setSearch} onSearch={runSearch} />
         </div>
 
-        {/* Activity strip — social proof */}
-        <ActivityStrip listings={listings} />
-
-        <p className="mx-auto mt-4 max-w-md px-4 text-center text-xs text-muted-foreground">
-          Browse verified student subleases — no sign-up required
-        </p>
+        {/* Mobile: compact chip that expands into the search panel */}
+        <div className="mx-auto mt-6 max-w-3xl px-4 sm:hidden">
+          {mobileSearchOpen ? (
+            <div className="rounded-3xl border border-gray-100 bg-white p-3 shadow-xl dark:border-border dark:bg-surface">
+              <SearchPill
+                value={search}
+                onChange={setSearch}
+                onSearch={() => { setMobileSearchOpen(false); runSearch(); }}
+              />
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="mt-2 w-full py-2 text-xs font-semibold text-muted-foreground"
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="flex w-full items-center gap-2 rounded-full border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-xl dark:border-border dark:bg-surface dark:text-foreground"
+            >
+              <Search className="h-4 w-4 shrink-0 text-gray-500" />
+              <span className="truncate">{chipLabel}</span>
+            </button>
+          )}
+        </div>
       </section>
 
-      {/* CATEGORY STRIP */}
+      {/* CATEGORY PILLS */}
       <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
-          {CATEGORIES.map(({ k, label, Icon }) => {
+          {CATEGORIES.map(({ k, label, emoji }) => {
             const active = cat === k;
             return (
               <button
                 key={k}
                 onClick={() => setCat(k)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
                   active
-                    ? "border-gray-900 bg-gray-900 text-white shadow-sm"
-                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                    ? "border-gray-900 bg-gray-50 font-semibold text-gray-900 dark:border-foreground dark:bg-background dark:text-foreground"
+                    : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <span aria-hidden>{emoji}</span>
                 {label}
               </button>
             );
           })}
         </div>
       </div>
+
 
       {/* RAILS */}
       <div ref={railsRef} className="scroll-mt-20">
@@ -364,34 +395,25 @@ export function AirbnbHome({
       </section>
 
       {/* Footer */}
-      <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 text-xs text-muted-foreground sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>© {new Date().getFullYear()} LeaseUp — student subleases</div>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
-            <Link to="/ambassador" className="hover:text-foreground">Ambassadors</Link>
-          </div>
+      <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 sm:px-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-muted-foreground">
+          <span>© {new Date().getFullYear()} LeaseUp</span>
+          <span aria-hidden>·</span>
+          <Link to="/about" className="hover:text-foreground">About</Link>
+          <span aria-hidden>·</span>
+          <Link to="/about" hash="how-it-works" className="hover:text-foreground">How it works</Link>
+          <span aria-hidden>·</span>
+          <Link to="/ambassador" className="hover:text-foreground">Ambassador</Link>
+          <span aria-hidden>·</span>
+          <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
+          <span aria-hidden>·</span>
+          <a href="mailto:hello@leasup.co" className="hover:text-foreground">Contact</a>
         </div>
       </footer>
     </div>
   );
 }
 
-function ActivityStrip({ listings }: { listings: Listing[] }) {
-  const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recent = listings.filter((l) => new Date(l.created_at).getTime() >= week).length;
-  const active = new Set(listings.map((l) => l.campus_id)).size;
-  if (!recent && !active) return null;
-  return (
-    <div className="mx-auto mt-4 max-w-3xl px-4 sm:px-6">
-      <div className="mx-auto inline-flex w-full items-center justify-center gap-3 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-primary/10 dark:text-primary">
-        {recent > 0 && <span>🔥 {recent} sublease{recent === 1 ? "" : "s"} listed this week</span>}
-        {recent > 0 && active > 0 && <span className="opacity-40">·</span>}
-        {active > 0 && <span>🏫 {active} campus{active === 1 ? "" : "es"} active</span>}
-      </div>
-    </div>
-  );
-}
 
 /* ---------------- Q66 sections ---------------- */
 
@@ -414,11 +436,10 @@ function LatestFeedSection({
   const campus = scopedId ? campuses.find((c) => c.id === scopedId) : null;
   const campusLabel = campus?.short_name ?? campus?.name;
 
-  const heading = userCampusId && campus
-    ? `Latest subleases at ${campusLabel}`
-    : userCampusId
-      ? "Latest subleases near you"
-      : "Latest subleases";
+  const heading = campusLabel
+    ? `Subleases near ${campusLabel}`
+    : "Subleases near Athens, GA";
+
 
   const feed = useMemo(() => {
     const src = scopedId ? listings.filter((l) => l.campus_id === scopedId) : listings;
@@ -432,7 +453,7 @@ function LatestFeedSection({
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-xl font-extrabold sm:text-2xl">{heading}</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">{heading}</h2>
         {!empty && (
           <button
             onClick={() =>
