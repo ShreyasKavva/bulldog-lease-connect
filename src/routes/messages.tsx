@@ -12,8 +12,8 @@ export const Route = createFileRoute("/messages")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    conversation: typeof s.conversation === "string" ? s.conversation : undefined,
+  validateSearch: (s?: Record<string, unknown>) => ({
+    conversation: typeof s?.conversation === "string" ? s.conversation : undefined,
   }),
   component: MessagesInboxPage,
 });

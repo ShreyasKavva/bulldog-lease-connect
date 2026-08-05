@@ -15,8 +15,8 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/post")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    relist: typeof search.relist === "string" ? search.relist : undefined,
+  validateSearch: (search?: Record<string, unknown>) => ({
+    relist: typeof search?.relist === "string" ? search.relist : undefined,
   }),
   head: () => ({
     meta: [

@@ -80,7 +80,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
     beds: "1", baths: "1", area: NEIGHBORHOODS[0].name,
     campus_id: "",
     available_from: defaultAvailableFrom(), available_to: "",
-    furnished: false, utilities_included: false, pet_friendly: false, parking: false,
+    furnished: false, utilities_included: false, pet_friendly: false, parking: false, wifi_included: false,
     amenities: [] as string[],
     deposit_amount: "", deposit_escrow_enabled: false,
   });
@@ -125,6 +125,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
         utilities_included: !!s.utilities_included,
         pet_friendly: !!s.pet_friendly,
         parking: !!s.parking,
+        wifi_included: !!(s as any).wifi_included,
         amenities: (s.amenities ?? []) as string[],
         deposit_amount: s.deposit_amount != null ? String(s.deposit_amount) : "",
         deposit_escrow_enabled: !!s.deposit_escrow_enabled,
@@ -290,6 +291,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
           utilities_included: form.utilities_included,
           pet_friendly: form.pet_friendly,
           parking: form.parking,
+          wifi_included: form.wifi_included,
           available_from: form.available_from || null,
           available_to: form.available_to || null,
           amenities: form.amenities,
@@ -548,6 +550,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
               <ToggleField label="Utilities inc." checked={form.utilities_included} onChange={(v) => setField("utilities_included", v)} />
               <ToggleField label="Pet friendly" checked={form.pet_friendly} onChange={(v) => setField("pet_friendly", v)} />
               <ToggleField label="Parking" checked={form.parking} onChange={(v) => setField("parking", v)} />
+              <ToggleField label="WiFi inc." checked={form.wifi_included} onChange={(v) => setField("wifi_included", v)} />
             </div>
 
             <Field label="Amenities">
