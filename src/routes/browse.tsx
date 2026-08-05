@@ -220,11 +220,18 @@ function Browse() {
       if (campusId && l.campus_id !== campusId) return false;
       if (area && l.area !== area) return false;
       if (furnishedOnly && !l.furnished) return false;
+      if (s.utilities === 1 && !l.utilities_included) return false;
+      if (s.parking === 1 && !l.parking) return false;
+      if (s.pets === 1 && !l.pet_friendly) return false;
+      if (s.wifi === 1 && !(l as any).wifi_included) return false;
+      if (s.laundry === 1 && !(l as any).laundry) return false;
+      if (s.baths != null && (l.baths ?? 0) < s.baths) return false;
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
       if (!matchesBeds(l)) return false;
       if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
       if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
+
       return true;
     });
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
