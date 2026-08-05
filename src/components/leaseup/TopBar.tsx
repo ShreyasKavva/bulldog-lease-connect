@@ -91,7 +91,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
             : "border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-sm dark:border-border dark:bg-surface/95")
         }
       >
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-6 sm:px-10 lg:px-20">
           <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
 
           {/* Center: compact search pill on non-home routes (desktop only) */}
