@@ -635,16 +635,13 @@ function ListingDetailPage() {
           </div>
 
 
-          {/* PART C — poster card */}
+          {/* PART E — sticky price sidebar */}
           <aside className="lg:col-span-1">
             <div className="lg:sticky lg:top-24">
-              <PosterCard
-                poster={poster}
+              <PriceSidebar
                 listing={listing}
                 isOwner={isOwner}
                 firstName={firstName}
-                isEdu={isEdu}
-                memberSince={memberSince}
                 onMessage={handleMessage}
               />
               {/* PART D — activity signals */}
