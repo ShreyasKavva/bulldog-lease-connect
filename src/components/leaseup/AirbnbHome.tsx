@@ -445,11 +445,10 @@ function LatestFeedSection({
   const campus = scopedId ? campuses.find((c) => c.id === scopedId) : null;
   const campusLabel = campus?.short_name ?? campus?.name;
 
-  const heading = userCampusId && campus
-    ? `Latest subleases at ${campusLabel}`
-    : userCampusId
-      ? "Latest subleases near you"
-      : "Latest subleases";
+  const heading = campusLabel
+    ? `Subleases near ${campusLabel}`
+    : "Subleases near Athens, GA";
+
 
   const feed = useMemo(() => {
     const src = scopedId ? listings.filter((l) => l.campus_id === scopedId) : listings;
