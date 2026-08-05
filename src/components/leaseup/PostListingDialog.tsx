@@ -548,6 +548,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
               <ToggleField label="Utilities inc." checked={form.utilities_included} onChange={(v) => setField("utilities_included", v)} />
               <ToggleField label="Pet friendly" checked={form.pet_friendly} onChange={(v) => setField("pet_friendly", v)} />
               <ToggleField label="Parking" checked={form.parking} onChange={(v) => setField("parking", v)} />
+              <ToggleField label="WiFi inc." checked={form.wifi_included} onChange={(v) => setField("wifi_included", v)} />
             </div>
 
             <Field label="Amenities">
