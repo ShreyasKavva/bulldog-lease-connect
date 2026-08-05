@@ -395,34 +395,25 @@ export function AirbnbHome({
       </section>
 
       {/* Footer */}
-      <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 text-xs text-muted-foreground sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>© {new Date().getFullYear()} LeaseUp — student subleases</div>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
-            <Link to="/ambassador" className="hover:text-foreground">Ambassadors</Link>
-          </div>
+      <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 sm:px-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-muted-foreground">
+          <span>© {new Date().getFullYear()} LeaseUp</span>
+          <span aria-hidden>·</span>
+          <Link to="/about" className="hover:text-foreground">About</Link>
+          <span aria-hidden>·</span>
+          <Link to="/about" hash="how-it-works" className="hover:text-foreground">How it works</Link>
+          <span aria-hidden>·</span>
+          <Link to="/ambassador" className="hover:text-foreground">Ambassador</Link>
+          <span aria-hidden>·</span>
+          <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
+          <span aria-hidden>·</span>
+          <a href="mailto:hello@leasup.co" className="hover:text-foreground">Contact</a>
         </div>
       </footer>
     </div>
   );
 }
 
-function ActivityStrip({ listings }: { listings: Listing[] }) {
-  const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recent = listings.filter((l) => new Date(l.created_at).getTime() >= week).length;
-  const active = new Set(listings.map((l) => l.campus_id)).size;
-  if (!recent && !active) return null;
-  return (
-    <div className="mx-auto mt-4 max-w-3xl px-4 sm:px-6">
-      <div className="mx-auto inline-flex w-full items-center justify-center gap-3 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-primary/10 dark:text-primary">
-        {recent > 0 && <span>🔥 {recent} sublease{recent === 1 ? "" : "s"} listed this week</span>}
-        {recent > 0 && active > 0 && <span className="opacity-40">·</span>}
-        {active > 0 && <span>🏫 {active} campus{active === 1 ? "" : "es"} active</span>}
-      </div>
-    </div>
-  );
-}
 
 /* ---------------- Q66 sections ---------------- */
 
