@@ -1039,81 +1039,136 @@ function Description({ text }: { text: string }) {
 
 // ---------------- poster card ----------------
 
-function PosterCard({
-  poster, listing, isOwner, firstName, isEdu, memberSince, onMessage,
+function HostCard({
+  poster, listing, isEdu, memberSince,
 }: {
   poster: PublicPoster | null | undefined;
   listing: Listing;
-  isOwner: boolean;
-  firstName: string;
   isEdu: boolean;
   memberSince: string | null;
-  onMessage: () => void;
 }) {
   const initial = (poster?.name ?? "?").trim().charAt(0).toUpperCase();
   const bannerColor = poster?.banner_color ?? "hsl(var(--primary))";
   const subtitle = [poster?.campus_name && abbrevCampus(poster.campus_name), poster?.year].filter(Boolean).join(" · ");
+  const lastSeen = poster?.last_seen ? new Date(poster.last_seen).getTime() : 0;
+  const activeLabel = lastSeen
+    ? (() => {
+        const days = Math.floor((Date.now() - lastSeen) / 86400000);
+        if (days <= 0) return "Active today";
+        if (days === 1) return "Active yesterday";
+        return `Active ${days} days ago`;
+      })()
+    : memberSince
+      ? `Member since ${memberSince}`
+      : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <div className="flex items-center gap-3">
-        <Link to="/profile/$userId" params={{ userId: listing.user_id }} className="shrink-0">
-          {poster?.avatar_url ? (
-            <img
-              src={poster.avatar_url}
-              alt=""
-              className="h-14 w-14 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="grid h-14 w-14 place-items-center rounded-full text-2xl font-black text-white"
-              style={{ background: bannerColor }}
-            >
-              {poster?.avatar_emoji || initial}
-            </div>
-          )}
-        </Link>
-        <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-4">
+      <Link to="/profile/$userId" params={{ userId: listing.user_id }} className="shrink-0">
+        {poster?.avatar_url ? (
+          <img src={poster.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover" />
+        ) : (
+          <div
+            className="grid h-14 w-14 place-items-center rounded-full text-2xl font-black text-white"
+            style={{ background: bannerColor }}
+          >
+            {poster?.avatar_emoji || initial}
+          </div>
+        )}
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-1.5">
           <Link
             to="/profile/$userId"
             params={{ userId: listing.user_id }}
-            className="block truncate text-base font-bold hover:underline"
+            className="truncate text-base font-bold hover:underline"
           >
-            {poster?.name ?? "Student"}
+            Hosted by {poster?.name ?? "Student"}
           </Link>
-          {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
-          {isEdu && (
-            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-              <BadgeCheck className="h-3 w-3" /> .edu verified
-            </span>
-          )}
+          {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
         </div>
-      </div>
-
-      <div className="mt-4 space-y-1.5 text-xs text-muted-foreground">
-        {memberSince && <div>Member since {memberSince}</div>}
-        {poster && (
-          <div>
-            {poster.active_listing_count} active listing{poster.active_listing_count === 1 ? "" : "s"}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-5">
-        {isOwner ? (
-          <Button onClick={onMessage} className="w-full" size="lg" variant="secondary">
-            <Pencil className="mr-2 h-4 w-4" /> Edit listing
-          </Button>
-        ) : (
-          <Button onClick={onMessage} className="w-full" size="lg">
-            Message {firstName}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
+        {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
+        {activeLabel && <p className="mt-0.5 text-xs text-muted-foreground">{activeLabel}</p>}
       </div>
     </div>
   );
 }
+
+// ---------------- sticky price sidebar ----------------
+
+function PriceSidebar({
+  listing, isOwner, firstName, onMessage,
+}: {
+  listing: Listing;
+  isOwner: boolean;
+  firstName: string;
+  onMessage: () => void;
+}) {
+  const months = (() => {
+    if (!listing.available_from || !listing.available_to) return 0;
+    const from = new Date(listing.available_from).getTime();
+    const to = new Date(listing.available_to).getTime();
+    if (!from || !to || to <= from) return 0;
+    return Math.max(1, Math.round((to - from) / (30 * 86400000)));
+  })();
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-2xl font-black">${listing.price.toLocaleString()}</span>
+        <span className="text-sm text-muted-foreground">/ month</span>
+      </div>
+
+      <div className="mt-4 space-y-2 rounded-xl border border-border p-3 text-sm">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Calendar className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 truncate text-foreground">
+            {formatRange(listing.available_from, listing.available_to)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Bed className="h-4 w-4 shrink-0" />
+          <span className="text-foreground">
+            {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {listing.baths} ba
+          </span>
+        </div>
+      </div>
+
+      <Button
+        onClick={onMessage}
+        size="lg"
+        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#E14E52]"
+      >
+        {isOwner ? (
+          <>
+            <Pencil className="mr-2 h-4 w-4" /> Edit listing
+          </>
+        ) : (
+          <>
+            Message {firstName} <ArrowRight className="ml-2 h-4 w-4" />
+          </>
+        )}
+      </Button>
+
+      {months > 0 && (
+        <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span>
+              ${listing.price.toLocaleString()} × {months} month{months === 1 ? "" : "s"}
+            </span>
+            <span>${(listing.price * months).toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between font-bold">
+            <span>Estimated total</span>
+            <span>${(listing.price * months).toLocaleString()}</span>
+          </div>
+          <p className="text-xs text-muted-foreground">Estimate only — confirm terms with the host.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 // ---------------- mobile sticky CTA ----------------
 
