@@ -240,13 +240,15 @@ function Browse() {
     else r = [...r].sort((a, b) => new Date((b as any).bumped_at ?? b.created_at).getTime() - new Date((a as any).bumped_at ?? a.created_at).getTime());
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort]);
+  }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
+      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
     (campusSlug ? 1 : 0) +
     (area ? 1 : 0) +
     (minPrice != null ? 1 : 0) +
+
     (maxPrice != null ? 1 : 0) +
     (bedSet.size > 0 ? 1 : 0) +
     (s.from ? 1 : 0) +
