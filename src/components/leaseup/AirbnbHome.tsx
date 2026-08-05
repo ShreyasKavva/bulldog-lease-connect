@@ -196,56 +196,86 @@ export function AirbnbHome({
     navigate({ to: "/browse", search: params as any });
   }
 
+  const chipLabel = [
+    search.where.trim() || "Anywhere",
+    search.from
+      ? `${search.from.toLocaleDateString(undefined, { month: "short", day: "numeric" })}${search.to ? ` – ${search.to.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}`
+      : "Any dates",
+    search.guests <= 1 ? "1 student" : `${search.guests} students`,
+  ].join(" · ");
+
   return (
     <div className="min-h-screen bg-white dark:bg-background">
-      {/* HERO */}
-      <section className="relative pb-6 pt-8 sm:pt-12">
+      {/* HERO — search first */}
+      <section className="bg-white py-12 dark:bg-background">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <Link to="/" className="inline-block text-4xl font-black tracking-tight sm:text-5xl">
-            <span className="text-primary">Lease</span><span className="text-foreground">Up</span>
+          <Link to="/" className="inline-block text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
+            LeaseUp
           </Link>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Find a sublease. Find a roommate. Find your people.
+          <p className="mt-1 text-base text-gray-500 dark:text-muted-foreground">
+            Find a sublease. Move in easy.
           </p>
         </div>
 
-        <div className="mx-auto mt-6 max-w-3xl px-4 sm:px-6">
+        {/* Desktop / tablet: full Where · When · Who bar */}
+        <div className="mx-auto mt-8 hidden max-w-3xl px-4 sm:block sm:px-6">
           <SearchPill value={search} onChange={setSearch} onSearch={runSearch} />
         </div>
 
-        {/* Activity strip — social proof */}
-        <ActivityStrip listings={listings} />
-
-        <p className="mx-auto mt-4 max-w-md px-4 text-center text-xs text-muted-foreground">
-          Browse verified student subleases — no sign-up required
-        </p>
+        {/* Mobile: compact chip that expands into the search panel */}
+        <div className="mx-auto mt-6 max-w-3xl px-4 sm:hidden">
+          {mobileSearchOpen ? (
+            <div className="rounded-3xl border border-gray-100 bg-white p-3 shadow-xl dark:border-border dark:bg-surface">
+              <SearchPill
+                value={search}
+                onChange={setSearch}
+                onSearch={() => { setMobileSearchOpen(false); runSearch(); }}
+              />
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="mt-2 w-full py-2 text-xs font-semibold text-muted-foreground"
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="flex w-full items-center gap-2 rounded-full border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-xl dark:border-border dark:bg-surface dark:text-foreground"
+            >
+              <Search className="h-4 w-4 shrink-0 text-gray-500" />
+              <span className="truncate">{chipLabel}</span>
+            </button>
+          )}
+        </div>
       </section>
 
-      {/* CATEGORY STRIP */}
+      {/* CATEGORY PILLS */}
       <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
-          {CATEGORIES.map(({ k, label, Icon }) => {
+          {CATEGORIES.map(({ k, label, emoji }) => {
             const active = cat === k;
             return (
               <button
                 key={k}
                 onClick={() => setCat(k)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
                   active
-                    ? "border-gray-900 bg-gray-900 text-white shadow-sm"
-                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                    ? "border-gray-900 bg-gray-50 font-semibold text-gray-900 dark:border-foreground dark:bg-background dark:text-foreground"
+                    : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <span aria-hidden>{emoji}</span>
                 {label}
               </button>
             );
           })}
         </div>
       </div>
+
 
       {/* RAILS */}
       <div ref={railsRef} className="scroll-mt-20">
