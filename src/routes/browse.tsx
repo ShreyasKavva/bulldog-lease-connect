@@ -75,10 +75,17 @@ export const Route = createFileRoute("/browse")({
     min_price: parseInt2(raw.min_price),
     max_price: parseInt2(raw.max_price),
     bedrooms: parseBeds(raw.bedrooms),
+    baths: parseInt2(raw.baths),
     from: parseStr(raw.from),
     to: parseStr(raw.to),
     furnished: raw.furnished === 1 || raw.furnished === "1" ? 1 : undefined,
+    utilities: raw.utilities === 1 || raw.utilities === "1" ? 1 : undefined,
+    parking: raw.parking === 1 || raw.parking === "1" ? 1 : undefined,
+    pets: raw.pets === 1 || raw.pets === "1" ? 1 : undefined,
+    wifi: raw.wifi === 1 || raw.wifi === "1" ? 1 : undefined,
+    laundry: raw.laundry === 1 || raw.laundry === "1" ? 1 : undefined,
     sort: parseSort(raw.sort),
+
   }),
   head: () => ({
     meta: [
