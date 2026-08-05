@@ -462,7 +462,7 @@ function LatestFeedSection({
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-xl font-extrabold sm:text-2xl">{heading}</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">{heading}</h2>
         {!empty && (
           <button
             onClick={() =>
