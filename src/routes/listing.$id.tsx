@@ -511,6 +511,10 @@ function ListingDetailPage() {
               </span>
             </p>
 
+            {/* PART C — host card */}
+            <div className="mt-6 border-y border-border py-5">
+              <HostCard poster={poster} listing={listing} isEdu={isEdu} memberSince={memberSince} />
+            </div>
 
             <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2">
               <FactRow
