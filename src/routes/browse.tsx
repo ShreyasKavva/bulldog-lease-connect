@@ -38,11 +38,18 @@ type BrowseSearch = {
   min_price?: number;
   max_price?: number;
   bedrooms?: string; // csv "1,2"
+  baths?: number;
   from?: string; // ISO date yyyy-mm-dd
   to?: string;
   furnished?: 1;
+  utilities?: 1;
+  parking?: 1;
+  pets?: 1;
+  wifi?: 1;
+  laundry?: 1;
   sort?: Sort;
 };
+
 
 function parseInt2(v: unknown): number | undefined {
   const n = Number(v);
