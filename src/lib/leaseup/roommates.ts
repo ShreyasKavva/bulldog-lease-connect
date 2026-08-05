@@ -246,6 +246,6 @@ export function computeCompatibility(
 
 export function compatColor(score: number): string {
   if (score >= 80) return "text-emerald-600 bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300";
-  if (score >= 60) return "text-blue-600 bg-blue-100 dark:bg-blue-500/15 dark:text-blue-300";
+  if (score >= 60) return "text-gray-900 bg-gray-100 dark:bg-white/10 dark:text-gray-100";
   return "text-muted-foreground bg-muted";
 }

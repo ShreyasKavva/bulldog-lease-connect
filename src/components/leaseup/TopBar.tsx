@@ -25,6 +25,16 @@ export function TopBar(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isHome = path === "/";
 
+  // Homepage: transparent over the hero, solid white after ~80px of scroll.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (!isHome) { setScrolled(true); return; }
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInNext, setSignInNext] = useState<string | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,9 +83,16 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-sm dark:border-border dark:bg-surface/95">
+      <header
+        className={
+          "sticky top-0 z-40 transition-all duration-200 " +
+          (isHome && !scrolled
+            ? "bg-transparent"
+            : "border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-sm dark:border-border dark:bg-surface/95")
+        }
+      >
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-          <Link to="/" className="text-xl font-bold text-primary shrink-0">LeaseUp</Link>
+          <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
 
           {/* Center: compact search pill on non-home routes (desktop only) */}
           {!isHome && (
@@ -91,7 +108,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
               <span className="text-gray-300">|</span>
               <Users className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">Who</span>
-              <span className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+              <span className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900">
                 <Search className="h-3.5 w-3.5" />
               </span>
             </Link>
@@ -111,13 +128,13 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
             <button
               onClick={handlePost}
-              className="hidden items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-dark md:inline-flex"
+              className="hidden items-center gap-1 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-black md:inline-flex dark:bg-white dark:text-gray-900"
             >Post a sublease →</button>
 
             {/* Mobile Post pill (kept from previous minimal header) */}
             <button
               onClick={handlePost}
-              className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground md:hidden"
+              className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white md:hidden dark:bg-white dark:text-gray-900"
             >Post</button>
 
             {user ? (

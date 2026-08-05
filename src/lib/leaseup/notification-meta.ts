@@ -48,8 +48,8 @@ const FALLBACK: Meta = {
 };
 
 const TABLE: Record<string, Meta> = {
-  new_message: { icon: MessageSquare, emoji: "💬", tone: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300", priority: "high" },
-  message: { icon: MessageSquare, emoji: "💬", tone: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300", priority: "high" },
+  new_message: { icon: MessageSquare, emoji: "💬", tone: "bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-100", priority: "high" },
+  message: { icon: MessageSquare, emoji: "💬", tone: "bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-100", priority: "high" },
   listing_match: { icon: Target, emoji: "🎯", tone: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300", priority: "high" },
   looking_for_match: { icon: Target, emoji: "🎯", tone: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300", priority: "high" },
   saved_search_match: { icon: Target, emoji: "🎯", tone: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300", priority: "high" },
@@ -58,11 +58,11 @@ const TABLE: Record<string, Meta> = {
   review_prompt: { icon: Star, emoji: "⭐", tone: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300", priority: "normal" },
   listing_saved: { icon: Heart, emoji: "❤️", tone: "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300", priority: "normal" },
   listing_viewed_milestone: { icon: Eye, emoji: "👀", tone: "bg-purple-100 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300", priority: "normal" },
-  looking_for_interest: { icon: Handshake, emoji: "🤝", tone: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300", priority: "normal" },
-  interest_match: { icon: Handshake, emoji: "🤝", tone: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300", priority: "normal" },
+  looking_for_interest: { icon: Handshake, emoji: "🤝", tone: "bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-100", priority: "normal" },
+  interest_match: { icon: Handshake, emoji: "🤝", tone: "bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-100", priority: "normal" },
   lease_expiring: { icon: Clock, emoji: "⏰", tone: "bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300", priority: "normal" },
   looking_for_expiring: { icon: Clock, emoji: "⏰", tone: "bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300", priority: "normal" },
-  roommate_interest: { icon: Handshake, emoji: "👥", tone: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300", priority: "normal" },
+  roommate_interest: { icon: Handshake, emoji: "👥", tone: "bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-100", priority: "normal" },
   roommate_match: { icon: Handshake, emoji: "🎉", tone: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300", priority: "high" },
   profile_incomplete: { icon: UserCircle2, emoji: "👤", tone: "bg-muted text-muted-foreground", priority: "normal" },
 };

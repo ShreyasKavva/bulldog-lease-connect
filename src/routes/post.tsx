@@ -51,7 +51,7 @@ function PostPage() {
         <button
           type="button"
           onClick={() => openSignIn("/post")}
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-black"
         >
           Sign in to post
           <ArrowRight className="h-4 w-4" />
