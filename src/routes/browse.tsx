@@ -16,11 +16,9 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Search, Bell, X as XIcon, SlidersHorizontal } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LayoutGrid, Flame, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { NEIGHBORHOODS } from "@/lib/leaseup/constants";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
 import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
@@ -184,7 +182,6 @@ function Browse() {
   const [pinned, setPinned] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const pinnedListings = useMemo(
