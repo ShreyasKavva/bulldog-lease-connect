@@ -12,6 +12,8 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ScrollView } from "@/components/leaseup/ScrollView";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
+import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/BrowseFilterBar";
+
 
 import type { Listing } from "@/lib/leaseup/types";
 import { LayoutGrid, Flame, Search, Bell, X as XIcon, SlidersHorizontal } from "lucide-react";
