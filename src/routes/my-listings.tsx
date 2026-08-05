@@ -40,9 +40,9 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/my-listings")({
   head: () => ({ meta: [{ title: "My listings — LeaseUp" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    boosted: typeof s.boosted === "string" ? s.boosted : undefined,
-    deposit: typeof s.deposit === "string" ? s.deposit : undefined,
+  validateSearch: (s?: Record<string, unknown>) => ({
+    boosted: typeof s?.boosted === "string" ? s.boosted : undefined,
+    deposit: typeof s?.deposit === "string" ? s.deposit : undefined,
   }),
   component: MyListingsPage,
 });
