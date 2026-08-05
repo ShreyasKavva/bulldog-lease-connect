@@ -964,6 +964,7 @@ const AMENITY_ICONS = [
   { key: "utilities_included", label: "Utilities included", Icon: Zap },
   { key: "parking", label: "Parking", Icon: Car },
   { key: "pet_friendly", label: "Pet friendly", Icon: PawPrint },
+  { key: "wifi_included", label: "WiFi included", Icon: WifiIcon },
 ] as const;
 
 const EXTRA_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -979,6 +980,8 @@ function AmenityChips({ listing }: { listing: Listing }) {
   for (const { key, label, Icon } of AMENITY_ICONS) {
     if ((listing as any)[key]) chips.push({ label, Icon });
   }
+  const laundry = (listing as any).laundry as string | null | undefined;
+  if (laundry) chips.push({ label: `Laundry — ${laundry}`, Icon: WashingMachine });
   for (const raw of listing.amenities ?? []) {
     const k = raw.trim();
     if (!k) continue;
@@ -988,21 +991,22 @@ function AmenityChips({ listing }: { listing: Listing }) {
   if (chips.length === 0) return null;
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-lg font-bold">Amenities</h2>
-      <div className="flex flex-wrap gap-2">
+      <h2 className="mb-4 text-lg font-bold">What this place offers</h2>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {chips.map(({ label, Icon }, i) => (
-          <span
+          <div
             key={i}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm"
+            className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm font-medium"
           >
-            <Icon className="h-4 w-4 text-muted-foreground" />
-            {label}
-          </span>
+            <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate">{label}</span>
+          </div>
         ))}
       </div>
     </section>
   );
 }
+
 
 // ---------------- description ----------------
 
