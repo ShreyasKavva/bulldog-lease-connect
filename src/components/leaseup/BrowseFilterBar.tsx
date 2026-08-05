@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from "react";
 import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
@@ -287,7 +287,7 @@ export function BrowseFilterBar({
           className="flex max-h-[85vh] flex-col gap-0 rounded-t-2xl p-0"
         >
           <div className="border-b border-border px-6 py-4">
-            <h2 className="text-base font-bold">Filters</h2>
+            <SheetTitle className="text-base font-bold">Filters</SheetTitle>
           </div>
 
           <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
