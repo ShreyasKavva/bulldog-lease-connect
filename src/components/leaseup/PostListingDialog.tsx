@@ -416,7 +416,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
               </div>
             )}
             {isRelist && (
-              <div className="rounded-lg border border-blue-300/60 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-100">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-900 dark:border-border dark:bg-white/5 dark:text-gray-100">
                 ℹ️ Relisting from a previous listing — we've pre-filled your info. Update the dates and price, then post.
               </div>
             )}

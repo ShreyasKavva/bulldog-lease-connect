@@ -51,16 +51,18 @@
   --card-foreground: oklch(0.205 0.03 264);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.205 0.03 264);
-  --primary: oklch(0.557 0.235 261);              /* #2563EB */
+  --primary: oklch(0.205 0.03 264);               /* #111827 gray-900 */
   --primary-foreground: oklch(1 0 0);
-  --primary-dark: oklch(0.49 0.22 263);           /* #1D4ED8 */
-  --primary-light: oklch(0.97 0.025 261);         /* #EFF6FF */
+  --primary-dark: oklch(0.145 0.02 264);          /* near-black hover */
+  --primary-light: oklch(0.967 0.003 264);        /* #F3F4F6 gray-100 */
+
   --secondary: oklch(0.975 0.002 264);            /* #F7F7F7 */
   --secondary-foreground: oklch(0.205 0.03 264);
   --muted: oklch(0.975 0.002 264);                /* #F7F7F7 */
   --muted-foreground: oklch(0.556 0.02 264);      /* #6B7280 gray-500 */
-  --accent: oklch(0.97 0.025 261);
-  --accent-foreground: oklch(0.49 0.22 263);
+  --accent: oklch(0.967 0.003 264);               /* gray-100 */
+  --accent-foreground: oklch(0.205 0.03 264);
+
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.62 0.19 145);                /* #16A34A */
@@ -68,7 +70,7 @@
   --success-light: oklch(0.97 0.04 145);          /* #F0FDF4 */
   --border: oklch(0.922 0.005 264);               /* #E5E7EB gray-200 */
   --input: oklch(0.922 0.005 264);
-  --ring: oklch(0.557 0.235 261);
+  --ring: oklch(0.205 0.03 264);                  /* gray-900 focus */
 }
 
 .dark {
@@ -81,16 +83,17 @@
   --card-foreground: oklch(0.93 0.01 270);
   --popover: oklch(0.235 0.012 270);
   --popover-foreground: oklch(0.93 0.01 270);
-  --primary: oklch(0.62 0.22 261);                /* #3B82F6 */
-  --primary-foreground: oklch(1 0 0);
-  --primary-dark: oklch(0.55 0.22 263);
-  --primary-light: oklch(0.32 0.09 263);          /* #1E2D4A */
+  --primary: oklch(0.96 0.005 270);               /* near-white pill on dark */
+  --primary-foreground: oklch(0.18 0.01 270);
+  --primary-dark: oklch(0.88 0.005 270);
+  --primary-light: oklch(0.30 0.012 270);
+
   --secondary: oklch(0.28 0.012 270);
   --secondary-foreground: oklch(0.93 0.01 270);
   --muted: oklch(0.28 0.012 270);
   --muted-foreground: oklch(0.65 0.02 270);       /* #8B8FA8 */
-  --accent: oklch(0.32 0.09 263);
-  --accent-foreground: oklch(0.85 0.05 261);
+  --accent: oklch(0.30 0.012 270);
+  --accent-foreground: oklch(0.93 0.01 270);
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.7 0.19 145);                 /* #22C55E */
@@ -98,7 +101,7 @@
   --success-light: oklch(0.25 0.06 145);          /* #0D2518 */
   --border: oklch(0.34 0.015 270);                /* #2E3040 */
   --input: oklch(0.34 0.015 270);
-  --ring: oklch(0.62 0.22 261);
+  --ring: oklch(0.85 0.01 270);
 }
 
 @layer base {
@@ -114,7 +117,30 @@
   }
   /* Leaflet attribution z-index fix */
   .leaflet-container { font-family: inherit; }
+
+  /* Q88 — Airbnb-style form controls: gray borders, no blue focus ring. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    border-radius: 0.75rem;
+  }
+  input:focus, input:focus-visible,
+  textarea:focus, textarea:focus-visible,
+  select:focus, select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--color-foreground);
+    --tw-ring-color: transparent;
+  }
 }
+
+/* Q88 typography helpers */
+@utility lu-h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; letter-spacing: -0.025em; color: var(--color-foreground); }
+@utility lu-h2 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: var(--color-foreground); }
+@utility lu-body { font-size: 1rem; line-height: 1.75; color: color-mix(in oklab, var(--color-foreground) 82%, var(--color-background)); }
+@utility lu-caption { font-size: 0.875rem; color: var(--color-muted-foreground); }
+@utility lu-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: color-mix(in oklab, var(--color-foreground) 90%, var(--color-background)); }
+
 
 
 /* Custom price-pin marker for map */
