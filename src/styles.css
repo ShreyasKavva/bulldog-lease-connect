@@ -83,10 +83,11 @@
   --card-foreground: oklch(0.93 0.01 270);
   --popover: oklch(0.235 0.012 270);
   --popover-foreground: oklch(0.93 0.01 270);
-  --primary: oklch(0.62 0.22 261);                /* #3B82F6 */
-  --primary-foreground: oklch(1 0 0);
-  --primary-dark: oklch(0.55 0.22 263);
-  --primary-light: oklch(0.32 0.09 263);          /* #1E2D4A */
+  --primary: oklch(0.96 0.005 270);               /* near-white pill on dark */
+  --primary-foreground: oklch(0.18 0.01 270);
+  --primary-dark: oklch(0.88 0.005 270);
+  --primary-light: oklch(0.30 0.012 270);
+
   --secondary: oklch(0.28 0.012 270);
   --secondary-foreground: oklch(0.93 0.01 270);
   --muted: oklch(0.28 0.012 270);
