@@ -878,11 +878,11 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
 
       {/* Desktop split */}
       <div className="mx-auto hidden max-w-[1400px] px-4 lg:block">
-        <div className="grid h-[55vh] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
+        <div className="grid h-[58vh] grid-cols-5 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
           <button
             type="button"
             onClick={() => onOpen(0)}
-            className="col-span-2 row-span-2 overflow-hidden"
+            className="col-span-3 row-span-2 overflow-hidden"
           >
             <img
               src={photos[0]}
@@ -910,14 +910,14 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
               <div key={`blank-${i}`} className="bg-muted" />
             ))}
         </div>
-        {photos.length >= 5 && (
+        {photos.length > 1 && (
           <div className="relative -mt-14 flex justify-end pr-4">
             <button
               type="button"
               onClick={() => onOpen(0)}
               className="rounded-lg border border-border bg-background/95 px-4 py-2 text-sm font-semibold shadow-md backdrop-blur transition hover:bg-background"
             >
-              Show all {photos.length} photos
+              Show all {photos.length} photos →
             </button>
           </div>
         )}
