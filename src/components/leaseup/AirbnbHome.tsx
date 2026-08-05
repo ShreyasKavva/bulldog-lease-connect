@@ -16,10 +16,7 @@
  */
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  Home, MapPin, Flame, Sparkles, Sofa, CalendarCheck2,
-  DoorOpen, Building2, ArrowRight,
-} from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -28,18 +25,18 @@ import { ListingCard } from "./ListingCard";
 import { cn } from "@/lib/utils";
 
 type Cat =
-  | "all" | "near-campus" | "best-deals" | "new-today"
-  | "furnished" | "available-now" | "private-room" | "full-apt";
+  | "all" | "near-campus" | "furnished" | "studio"
+  | "private-room" | "short-term" | "best-deals" | "new-today";
 
-const CATEGORIES: { k: Cat; label: string; Icon: typeof Home }[] = [
-  { k: "all", label: "All", Icon: Home },
-  { k: "near-campus", label: "Near Campus", Icon: MapPin },
-  { k: "best-deals", label: "Best Deals", Icon: Flame },
-  { k: "new-today", label: "New Today", Icon: Sparkles },
-  { k: "furnished", label: "Furnished", Icon: Sofa },
-  { k: "available-now", label: "Available Now", Icon: CalendarCheck2 },
-  { k: "private-room", label: "Private Room", Icon: DoorOpen },
-  { k: "full-apt", label: "Full Apartment", Icon: Building2 },
+const CATEGORIES: { k: Cat; label: string; emoji: string }[] = [
+  { k: "all", label: "All", emoji: "🏠" },
+  { k: "near-campus", label: "Near Campus", emoji: "📍" },
+  { k: "furnished", label: "Furnished", emoji: "🛋️" },
+  { k: "studio", label: "Studio", emoji: "🏢" },
+  { k: "private-room", label: "Private Room", emoji: "🛏" },
+  { k: "short-term", label: "Short-term", emoji: "🌿" },
+  { k: "best-deals", label: "Best Deal", emoji: "💰" },
+  { k: "new-today", label: "New Today", emoji: "🆕" },
 ];
 
 // Emoji mascots for campus spotlights (falls back to 🎓)
@@ -69,16 +66,18 @@ function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string,
       return ageMs < 1000 * 60 * 60 * 24;
     case "furnished":
       return !!l.furnished;
-    case "available-now": {
-      if (!l.available_from) return true;
-      return new Date(l.available_from).getTime() <= now + 1000 * 60 * 60 * 24 * 30;
+    case "studio":
+      return l.beds === 0;
+    case "short-term": {
+      if (!l.available_from || !l.available_to) return false;
+      const span = new Date(l.available_to).getTime() - new Date(l.available_from).getTime();
+      return span > 0 && span <= 1000 * 60 * 60 * 24 * 120;
     }
     case "private-room":
-      return l.beds <= 1;
-    case "full-apt":
-      return l.beds >= 2;
+      return l.beds === 1;
   }
 }
+
 
 export function AirbnbHome({
   listings, campuses, savedIds, onSave, onOpen, onPost,
