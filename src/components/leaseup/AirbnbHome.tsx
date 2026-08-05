@@ -100,6 +100,8 @@ export function AirbnbHome({
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
 
   // Median price per (campus, beds) for the Best Deals filter/badge.
   const priceMedian = useMemo(() => {
