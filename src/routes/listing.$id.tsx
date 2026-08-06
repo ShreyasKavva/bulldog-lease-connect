@@ -691,7 +691,7 @@ function ListingDetailPage() {
                 onMessage={handleMessage}
               />
               {/* Q103 Part B — host profile card */}
-              <HostProfileCard hostId={listing.user_id} poster={poster} memberSince={memberSince} />
+              <HostProfileCard hostId={listing.user_id} poster={poster} />
               {/* PART D — activity signals */}
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
