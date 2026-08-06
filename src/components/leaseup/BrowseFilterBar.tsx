@@ -70,6 +70,7 @@ export function BrowseFilterBar({
   onSearchInput,
   resultCount,
   placeLabel,
+  initialFiltersOpen,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -78,8 +79,10 @@ export function BrowseFilterBar({
   onSearchInput: (v: string) => void;
   resultCount: number;
   placeLabel: string;
+  /** Q96 — nav search on mobile deep-links here with the sheet open. */
+  initialFiltersOpen?: boolean;
 }) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 

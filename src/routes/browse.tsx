@@ -57,6 +57,7 @@ type BrowseSearch = {
   availableSoon?: 1;
   postedToday?: 1;
   nearCampus?: 1;
+  openFilters?: 1;
 };
 
 
@@ -112,6 +113,7 @@ export const Route = createFileRoute("/browse")({
     availableSoon: parseFlag(raw.availableSoon),
     postedToday: parseFlag(raw.postedToday),
     nearCampus: parseFlag(raw.nearCampus),
+    openFilters: parseFlag(raw.openFilters),
   }),
   head: () => ({
     meta: [
@@ -386,6 +388,7 @@ function Browse() {
           onSearchInput={setSearchInput}
           resultCount={filtered.length}
           placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
+          initialFiltersOpen={s.openFilters === 1}
         />
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
