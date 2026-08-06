@@ -1,34 +1,30 @@
 /**
- * Three-pillar bottom tab bar — Listings · Roommates · Profile.
+ * Q97 — mobile bottom tab bar: Home · Browse · Post (center hero) · Saved · Account.
  *
- * The primary navigation on every screen size. Legacy props (onPost, onChat,
- * onProfile) are accepted-but-ignored so existing call sites keep compiling
- * during the nav rebuild; new call sites can just render <BottomNav />.
+ * Mobile only (md:hidden). Hidden entirely on full-screen flows (/post wizard,
+ * a single message thread) and while the soft keyboard is open.
+ * Legacy props (onPost, onChat, onProfile) are accepted-but-ignored so older
+ * call sites keep compiling.
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Users, User, Bell } from "lucide-react";
+import { Home, Search, Plus, Heart, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useNotifications } from "@/hooks/use-notifications";
-import { useSession } from "@/lib/leaseup/use-session";
+import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
+import { supabase } from "@/integrations/supabase/client";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { LucideIcon } from "lucide-react";
 
-// Legacy props kept for backward compatibility — they are ignored.
-type LegacyProps = {
-  onPost?: () => void;
-  onChat?: () => void;
-  onProfile?: () => void;
-};
+type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () => void };
 
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
-  const { data: notifications = [] } = useNotifications();
-  const unreadNotifs = notifications.filter((n) => !n.read).length;
+  const { data: profile } = useMyProfile();
   const navigate = useNavigate();
 
-  // Q81: hide nav when the soft keyboard is open so it doesn't cover inputs.
-  // visualViewport shrinks by >=150px when the keyboard shows on iOS/Android.
+  // Hide when the soft keyboard is open so it doesn't cover inputs.
   const [kbdOpen, setKbdOpen] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined" || !window.visualViewport) return;
@@ -39,6 +35,25 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     return () => vv.removeEventListener("resize", onResize);
   }, []);
 
+  const { data: savedCount = 0 } = useQuery({
+    queryKey: ["saved-count", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("saved_listings")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id);
+      return count ?? 0;
+    },
+  });
+
+  // Full-screen routes own the whole viewport on mobile.
+  const hidden =
+    path === "/post" ||
+    path.startsWith("/post/") ||
+    (path.startsWith("/messages/") && path !== "/messages");
+  if (hidden) return null;
+
   const isHome = path === "/";
   const isBrowse =
     path.startsWith("/browse") ||
@@ -46,60 +61,90 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/listing") ||
     path.startsWith("/looking-for") ||
     path.startsWith("/map");
-  const isRoommates = path === "/roommates" || path.startsWith("/roommates/");
-  const isNotifications = path === "/notifications";
-  const isProfile =
+  const isSaved = path.startsWith("/saved");
+  const isAccount =
     path === "/profile" ||
     path.startsWith("/profile/") ||
     path.startsWith("/my-listings") ||
     path.startsWith("/settings") ||
-    path.startsWith("/messages") ||
-    path === "/saved";
+    path.startsWith("/messages");
 
-  function handleProfile(e: React.MouseEvent) {
-    if (!user) {
-      e.preventDefault();
-      navigate({ to: "/auth", search: { mode: "in", next: "/profile" } });
-    }
+  function gate(next: string) {
+    return (e: React.MouseEvent) => {
+      if (!user) {
+        e.preventDefault();
+        openSignIn(next);
+      }
+    };
   }
+
+  const hasSaves = !!user && savedCount > 0;
 
   return (
     <nav
       data-kbd={kbdOpen ? "1" : undefined}
-      className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-gray-200 bg-white touch-manipulation md:hidden dark:border-border dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-50 flex h-16 w-full items-center border-t border-gray-100 bg-white shadow-lg touch-manipulation md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
-      <Tab to="/roommates" active={isRoommates} label="Roommates" Icon={Users} />
+
+      {/* Center hero: post a sublease */}
+      <div className="flex flex-1 items-center justify-center">
+        <Link
+          to="/post"
+          onClick={gate("/post")}
+          aria-label="Post a sublease"
+          className="-mt-5 grid h-[52px] w-[52px] place-items-center rounded-full bg-gray-900 text-white shadow-md transition-transform active:scale-90 dark:bg-foreground dark:text-background"
+        >
+          <Plus className="h-6 w-6" strokeWidth={2.5} />
+        </Link>
+      </div>
+
       <Tab
-        to="/notifications"
-        active={isNotifications}
-        label="Alerts"
-        Icon={Bell}
-        badge={!!user && unreadNotifs > 0}
-        onClick={(e) => { if (!user) { e.preventDefault(); navigate({ to: "/auth", search: { mode: "in", next: "/notifications" } }); } }}
+        to="/saved"
+        active={isSaved}
+        label="Saved"
+        Icon={Heart}
+        onClick={gate("/saved")}
+        filled={hasSaves}
+        accent={hasSaves}
       />
-      <Tab
-        to="/profile"
-        active={isProfile}
-        label="Profile"
-        Icon={User}
-        onClick={handleProfile}
-      />
+
+      {user ? (
+        <Tab
+          to="/profile"
+          active={isAccount}
+          label="Account"
+          Icon={User}
+          avatarUrl={profile?.avatar_url ?? undefined}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => openSignIn("/profile")}
+          aria-label="Sign in"
+          className="flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 text-gray-400 transition-transform active:scale-90"
+        >
+          <User size={22} strokeWidth={2} />
+          <span className="text-xs">Sign in</span>
+        </button>
+      )}
     </nav>
   );
 }
 
 function Tab({
-  to, active, label, Icon, badge, onClick,
+  to, active, label, Icon, onClick, filled, accent, avatarUrl,
 }: {
   to: string;
   active: boolean;
   label: string;
   Icon: LucideIcon;
-  badge?: boolean;
   onClick?: (e: React.MouseEvent) => void;
+  filled?: boolean;
+  accent?: boolean;
+  avatarUrl?: string;
 }) {
   return (
     <Link
@@ -108,22 +153,24 @@ function Tab({
       aria-label={label}
       title={label}
       className={cn(
-        "flex min-h-[44px] items-center justify-center transition-transform active:scale-90",
-        active ? "text-primary" : "text-gray-400 hover:text-foreground",
+        "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 transition-transform active:scale-90",
+        accent
+          ? "text-[#FF385C]"
+          : active
+            ? "font-semibold text-gray-900 dark:text-foreground"
+            : "text-gray-400",
       )}
     >
-      <span className="relative flex flex-col items-center">
-        {active && <span className="absolute -top-2 h-1 w-1 rounded-full bg-primary" />}
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+      ) : (
         <Icon
-          className={cn("transition-transform", active && "scale-105")}
-          size={26}
+          size={22}
           strokeWidth={active ? 2.5 : 2}
-          fill={active ? "currentColor" : "none"}
+          fill={filled ? "currentColor" : "none"}
         />
-        {badge && (
-          <span className="absolute -right-1.5 -top-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface" />
-        )}
-      </span>
+      )}
+      <span className={cn("text-xs", active && "font-semibold")}>{label}</span>
     </Link>
   );
 }
