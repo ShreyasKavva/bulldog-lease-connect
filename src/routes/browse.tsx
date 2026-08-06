@@ -384,7 +384,7 @@ function Browse() {
           <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 text-sm font-bold">
             <span className="rounded-full bg-primary px-3 py-1.5 text-primary-foreground">🏠 Available</span>
             <Link to="/looking" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">🔍 Looking For</Link>
-            <Link to="/roommates" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">👥 Roommates</Link>
+            <Link to="/roommates" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">👥 Rooms &amp; Roommates</Link>
           </div>
         </div>
 
