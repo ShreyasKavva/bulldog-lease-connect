@@ -20,6 +20,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as LookingForRouteImport } from './routes/looking-for'
+import { Route as LookingRouteImport } from './routes/looking'
 import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as FindMyMatchRouteImport } from './routes/find-my-match'
@@ -109,6 +110,11 @@ const MarketRoute = MarketRouteImport.update({
 const LookingForRoute = LookingForRouteImport.update({
   id: '/looking-for',
   path: '/looking-for',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LookingRoute = LookingRouteImport.update({
+  id: '/looking',
+  path: '/looking',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaseAnalysisRoute = LeaseAnalysisRouteImport.update({
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
+  '/looking': typeof LookingRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
@@ -353,6 +360,7 @@ export interface FileRoutesByTo {
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
+  '/looking': typeof LookingRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
@@ -402,6 +410,7 @@ export interface FileRoutesById {
   '/find-my-match': typeof FindMyMatchRoute
   '/join': typeof JoinRoute
   '/lease-analysis': typeof LeaseAnalysisRoute
+  '/looking': typeof LookingRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
   '/my-listings': typeof MyListingsRouteWithChildren
@@ -452,6 +461,7 @@ export interface FileRouteTypes {
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
+    | '/looking'
     | '/looking-for'
     | '/market'
     | '/my-listings'
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
+    | '/looking'
     | '/looking-for'
     | '/market'
     | '/my-listings'
@@ -548,6 +559,7 @@ export interface FileRouteTypes {
     | '/find-my-match'
     | '/join'
     | '/lease-analysis'
+    | '/looking'
     | '/looking-for'
     | '/market'
     | '/my-listings'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   FindMyMatchRoute: typeof FindMyMatchRoute
   JoinRoute: typeof JoinRoute
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
+  LookingRoute: typeof LookingRoute
   LookingForRoute: typeof LookingForRoute
   MarketRoute: typeof MarketRoute
   MyListingsRoute: typeof MyListingsRouteWithChildren
@@ -705,6 +718,13 @@ declare module '@tanstack/react-router' {
       path: '/looking-for'
       fullPath: '/looking-for'
       preLoaderRoute: typeof LookingForRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/looking': {
+      id: '/looking'
+      path: '/looking'
+      fullPath: '/looking'
+      preLoaderRoute: typeof LookingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lease-analysis': {
@@ -1015,6 +1035,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindMyMatchRoute: FindMyMatchRoute,
   JoinRoute: JoinRoute,
   LeaseAnalysisRoute: LeaseAnalysisRoute,
+  LookingRoute: LookingRoute,
   LookingForRoute: LookingForRoute,
   MarketRoute: MarketRoute,
   MyListingsRoute: MyListingsRouteWithChildren,
@@ -1049,13 +1070,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

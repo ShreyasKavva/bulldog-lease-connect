@@ -46,7 +46,7 @@ export function Nav({
         />
       </div>
       <div className="ml-auto flex items-center gap-1.5">
-        <Link to="/looking-for" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border">
+        <Link to="/looking" className="hidden md:inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold hover:bg-border">
           <Users className="h-3.5 w-3.5" />Looking For
         </Link>
         {user && (

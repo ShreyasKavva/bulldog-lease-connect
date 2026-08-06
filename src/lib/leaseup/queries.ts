@@ -405,6 +405,7 @@ export async function createLookingFor(userId: string, payload: Partial<LookingF
     area: payload.area ?? null,
     furnished: payload.furnished ?? null,
     pets_ok: payload.pets_ok ?? null,
+    num_people: payload.num_people ?? 1,
   });
   if (error) throw error;
 }
@@ -420,6 +421,7 @@ export async function updateLookingFor(id: string, payload: Partial<LookingForPo
     area: payload.area ?? null,
     furnished: payload.furnished ?? null,
     pets_ok: payload.pets_ok ?? null,
+    num_people: payload.num_people ?? 1,
   }).eq("id", id);
   if (error) throw error;
 }

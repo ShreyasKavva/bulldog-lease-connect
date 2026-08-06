@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils";
 import { ShareSheet } from "@/components/leaseup/ShareSheet";
 import { ScrollRow } from "@/components/leaseup/SmartSections";
 import { ListingRatingSummary, ListingReviewsSection } from "@/components/leaseup/ListingReviews";
+import { AvailabilityCalendar } from "@/components/leaseup/AvailabilityCalendar";
+import { HostProfileCard } from "@/components/leaseup/HostProfileCard";
 import { timeAgo } from "@/lib/leaseup/constants";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
@@ -566,6 +568,8 @@ function ListingDetailPage() {
 
             <AmenityChips listing={listing} />
 
+            <AvailabilityCalendar from={listing.available_from} to={listing.available_to} />
+
             {listing.description && (
               <section className="mt-8">
                 <h2 className="mb-3 text-lg font-bold">About this sublease</h2>
@@ -686,6 +690,8 @@ function ListingDetailPage() {
                 firstName={firstName}
                 onMessage={handleMessage}
               />
+              {/* Q103 Part B — host profile card */}
+              <HostProfileCard hostId={listing.user_id} poster={poster} />
               {/* PART D — activity signals */}
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">

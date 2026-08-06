@@ -229,7 +229,7 @@ function CampusPage() {
             <button onClick={handlePost} className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease
             </button>
-            <Link to="/looking-for" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
+            <Link to="/looking" className="inline-flex items-center gap-1 rounded-md border bg-surface px-4 py-2 text-sm font-bold hover:bg-background">
               <Sparkles className="h-4 w-4" /> I'm looking
             </Link>
           </div>

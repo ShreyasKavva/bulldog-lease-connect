@@ -392,7 +392,7 @@ export function AirbnbHome({
           <span aria-hidden>·</span>
           <Link to="/ambassador" className="hover:text-foreground">Ambassador</Link>
           <span aria-hidden>·</span>
-          <Link to="/looking-for" className="hover:text-foreground">Looking For board</Link>
+          <Link to="/looking" className="hover:text-foreground">Looking For board</Link>
           <span aria-hidden>·</span>
           <a href="mailto:hello@leasup.co" className="hover:text-foreground">Contact</a>
         </div>
@@ -502,7 +502,7 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
         <h2 className="text-xl font-extrabold sm:text-2xl">
           Students actively looking — reach out to them
         </h2>
-        <Link to="/looking-for" className="text-sm font-semibold text-primary hover:underline">
+        <Link to="/looking" className="text-sm font-semibold text-primary hover:underline">
           See all →
         </Link>
       </div>
@@ -510,7 +510,7 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
         {top.map((p) => (
           <Link
             key={p.id}
-            to="/looking-for"
+            to="/looking"
             className="min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl bg-surface p-4 shadow-card hover:shadow-card-md"
           >
             <div className="flex items-center gap-2">
