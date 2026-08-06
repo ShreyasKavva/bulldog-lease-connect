@@ -102,7 +102,7 @@ export function ListingReviewsSection({
   listingTitle: string;
   ownerId: string;
 }) {
-  const { list, avg, count } = useListingReviews(listingId);
+  const { list, avg, count, isLoading } = useListingReviews(listingId);
   const { user } = useSession();
   const [showAll, setShowAll] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
