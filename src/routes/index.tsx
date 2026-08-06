@@ -13,6 +13,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 import { fetchListings, getOrCreateConversation, fetchSavedIds, toggleSaved, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
