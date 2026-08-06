@@ -499,6 +499,42 @@ function LatestFeedSection({
   );
 }
 
+/**
+ * Q104 — live supply counter under the hero search.
+ * Fire-and-forget: renders nothing while loading or on any failure.
+ */
+function LiveCounter() {
+  const [stats, setStats] = useState<{ listings: number; campuses: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("campus_id")
+          .eq("is_active", true)
+          .eq("status", "active");
+        if (error || !data || cancelled) return;
+        setStats({
+          listings: data.length,
+          campuses: new Set(data.map((r) => r.campus_id)).size,
+        });
+      } catch { /* noop */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!stats || stats.listings === 0) return null;
+  return (
+    <p className="mt-4 text-center text-sm text-gray-400 dark:text-muted-foreground">
+      {stats.listings.toLocaleString()} active sublease{stats.listings === 1 ? "" : "s"} across{" "}
+      {stats.campuses} campus{stats.campuses === 1 ? "" : "es"}
+    </p>
+  );
+}
+
+
 function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   if (!posts || posts.length === 0) return null;
   const top = posts.slice(0, 4);
