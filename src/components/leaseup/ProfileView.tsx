@@ -637,6 +637,9 @@ function OwnListingRow({ listing }: { listing: any }) {
         className="min-w-0 flex-1"
       >
         <div className="truncate text-sm font-semibold">{listing.title}</div>
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {(listing.view_count ?? 0).toLocaleString()} views · {savedCount} saved
+        </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           <span>${listing.price}/mo</span>
           <span
@@ -648,6 +651,7 @@ function OwnListingRow({ listing }: { listing: any }) {
             {rented ? "Rented" : "Active"}
           </span>
         </div>
+
       </Link>
       {rented && (
         <button
