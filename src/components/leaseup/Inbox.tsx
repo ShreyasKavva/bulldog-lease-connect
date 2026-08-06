@@ -190,6 +190,18 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
   const bottomRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  // Q104 — a page can hand off a suggested opener (e.g. "ask about roommates").
+  // Consumed once, then cleared so it never reappears on a later thread.
+  useEffect(() => {
+    try {
+      const draft = sessionStorage.getItem("leaseup-msg-draft");
+      if (draft) {
+        sessionStorage.removeItem("leaseup-msg-draft");
+        setText((t) => (t ? t : draft));
+      }
+    } catch { /* noop */ }
+  }, [conversationId]);
+
   const { data: messages = [] } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: () => fetchMessages(conversationId),
