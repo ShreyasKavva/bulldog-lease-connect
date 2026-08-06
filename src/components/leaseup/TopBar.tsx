@@ -121,6 +121,18 @@ export function TopBar(_legacy: LegacyProps = {}) {
               to="/browse"
               className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
             >Subleases</Link>
+            {user && (
+              <Link
+                to="/saved"
+                className="relative hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+              >
+                Saved
+                {savedIds.size > 0 && (
+                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#FF5A5F]" />
+                )}
+              </Link>
+            )}
+
             <Link
               to="/roommates"
               className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"

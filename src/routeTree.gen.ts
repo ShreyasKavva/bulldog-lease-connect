@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ToursRouteImport } from './routes/tours'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SavedRouteImport } from './routes/saved'
 import { Route as RoommatesRouteImport } from './routes/roommates'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PostRouteImport } from './routes/post'
@@ -67,11 +66,6 @@ const ToursRoute = ToursRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SavedRoute = SavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoommatesRoute = RoommatesRouteImport.update({
@@ -180,9 +174,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedIndexRoute = SavedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SavedRoute,
+  id: '/saved/',
+  path: '/saved/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   id: '/sublease/$slug',
@@ -190,9 +184,9 @@ const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedCollectionRoute = SavedCollectionRouteImport.update({
-  id: '/$collection',
-  path: '/$collection',
-  getParentRoute: () => SavedRoute,
+  id: '/saved/$collection',
+  path: '/saved/$collection',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   id: '/create',
@@ -302,7 +296,6 @@ export interface FileRoutesByFullPath {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
-  '/saved': typeof SavedRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -394,7 +387,6 @@ export interface FileRoutesById {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
-  '/saved': typeof SavedRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -442,7 +434,6 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
-    | '/saved'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -533,7 +524,6 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
-    | '/saved'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -580,14 +570,15 @@ export interface RootRouteChildren {
   PostRoute: typeof PostRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
-  SavedRoute: typeof SavedRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
+  SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
+  SavedIndexRoute: typeof SavedIndexRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksListingExpiryRemindersRoute: typeof ApiPublicHooksListingExpiryRemindersRoute
@@ -619,13 +610,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/saved': {
-      id: '/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roommates': {
@@ -777,10 +761,10 @@ declare module '@tanstack/react-router' {
     }
     '/saved/': {
       id: '/saved/'
-      path: '/'
+      path: '/saved'
       fullPath: '/saved/'
       preLoaderRoute: typeof SavedIndexRouteImport
-      parentRoute: typeof SavedRoute
+      parentRoute: typeof rootRouteImport
     }
     '/sublease/$slug': {
       id: '/sublease/$slug'
@@ -791,10 +775,10 @@ declare module '@tanstack/react-router' {
     }
     '/saved/$collection': {
       id: '/saved/$collection'
-      path: '/$collection'
+      path: '/saved/$collection'
       fullPath: '/saved/$collection'
       preLoaderRoute: typeof SavedCollectionRouteImport
-      parentRoute: typeof SavedRoute
+      parentRoute: typeof rootRouteImport
     }
     '/roommates/create': {
       id: '/roommates/create'
@@ -968,18 +952,6 @@ const RoommatesRouteWithChildren = RoommatesRoute._addFileChildren(
   RoommatesRouteChildren,
 )
 
-interface SavedRouteChildren {
-  SavedCollectionRoute: typeof SavedCollectionRoute
-  SavedIndexRoute: typeof SavedIndexRoute
-}
-
-const SavedRouteChildren: SavedRouteChildren = {
-  SavedCollectionRoute: SavedCollectionRoute,
-  SavedIndexRoute: SavedIndexRoute,
-}
-
-const SavedRouteWithChildren = SavedRoute._addFileChildren(SavedRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -1002,14 +974,15 @@ const rootRouteChildren: RootRouteChildren = {
   PostRoute: PostRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
-  SavedRoute: SavedRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
+  SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
+  SavedIndexRoute: SavedIndexRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksListingExpiryRemindersRoute:
