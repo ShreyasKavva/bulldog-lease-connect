@@ -11,6 +11,7 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
@@ -1295,7 +1296,11 @@ function Lightbox({
     if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
   }
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex flex-col bg-black/95"
       onTouchStart={onTouchStart}
