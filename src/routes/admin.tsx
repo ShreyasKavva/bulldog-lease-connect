@@ -425,7 +425,7 @@ function UsersTab() {
                 <td className="p-2 text-xs">{listingCount.get(u.id) ?? 0}</td>
                 <td className="p-2 text-xs text-muted-foreground">{timeAgo(u.created_at)}</td>
                 <td className="p-2 text-xs">
-                  <RiskBadge userId={u.id} banned={!!u.banned} verified={!!u.verified_email} safeScore={(u as any).safe_score ?? null} />
+                  <RiskBadge userId={u.id} banned={!!u.banned} verified={!!u.verified_email} trustSignal={(u as any).safe_score ?? null} />
                   {u.verified_email && <span className="rounded bg-success-light text-success px-1.5 py-0.5 text-[10px] font-bold mr-1 ml-1">VERIFIED</span>}
                   {u.is_admin && <span className="rounded bg-primary-light text-primary-dark px-1.5 py-0.5 text-[10px] font-bold mr-1">ADMIN</span>}
                   {(u as any).is_ambassador && <span className="rounded bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold mr-1">AMBASSADOR</span>}
@@ -680,11 +680,11 @@ function useRiskScores() {
   return useQuery({ queryKey: ["admin", "risk-scores"], queryFn: fetchUserRiskScores, staleTime: 60_000 });
 }
 
-function RiskBadge({ userId, banned, verified, safeScore }: { userId: string; banned: boolean; verified: boolean; safeScore: number | null }) {
+function RiskBadge({ userId, banned, verified, trustSignal }: { userId: string; banned: boolean; verified: boolean; trustSignal: number | null }) {
   const { data: rows } = useRiskScores();
   const row = rows?.find(r => r.id === userId);
   const level = row?.risk_level
-    ?? (banned ? "banned" : !verified ? "unverified" : (safeScore != null && safeScore < 3) ? "low_trust" : "good_standing");
+    ?? (banned ? "banned" : !verified ? "unverified" : (trustSignal != null && trustSignal < 3) ? "low_trust" : "good_standing");
   const map: Record<string, { label: string; cls: string }> = {
     banned: { label: "BANNED", cls: "bg-red-600 text-white" },
     high_risk: { label: "HIGH RISK", cls: "bg-red-100 text-red-700" },

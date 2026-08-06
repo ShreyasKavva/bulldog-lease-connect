@@ -46,6 +46,7 @@ import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.da
 import { Route as PostEditIdRouteImport } from './routes/post.edit.$id'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ListingIdEditRouteImport } from './routes/listing.$id.edit'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -240,6 +241,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ListingIdEditRoute = ListingIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ListingIdRoute,
+} as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -306,7 +312,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/listing/$id': typeof ListingIdRoute
+  '/listing/$id': typeof ListingIdRouteWithChildren
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -316,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/listing/$id/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/post/edit/$id': typeof PostEditIdRoute
@@ -352,7 +359,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/listing/$id': typeof ListingIdRoute
+  '/listing/$id': typeof ListingIdRouteWithChildren
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesIndexRoute
   '/saved': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/listing/$id/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/post/edit/$id': typeof PostEditIdRoute
@@ -399,7 +407,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/listing/$id': typeof ListingIdRoute
+  '/listing/$id': typeof ListingIdRouteWithChildren
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/listing/$id/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
   '/post/edit/$id': typeof PostEditIdRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
+    | '/listing/$id/edit'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
     | '/post/edit/$id'
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/saved'
     | '/api/public/stripe-webhook'
+    | '/listing/$id/edit'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
     | '/post/edit/$id'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
+    | '/listing/$id/edit'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
     | '/post/edit/$id'
@@ -586,7 +598,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
-  ListingIdRoute: typeof ListingIdRoute
+  ListingIdRoute: typeof ListingIdRouteWithChildren
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
@@ -863,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/listing/$id/edit': {
+      id: '/listing/$id/edit'
+      path: '/edit'
+      fullPath: '/listing/$id/edit'
+      preLoaderRoute: typeof ListingIdEditRouteImport
+      parentRoute: typeof ListingIdRoute
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -962,6 +981,18 @@ const RoommatesRouteWithChildren = RoommatesRoute._addFileChildren(
   RoommatesRouteChildren,
 )
 
+interface ListingIdRouteChildren {
+  ListingIdEditRoute: typeof ListingIdEditRoute
+}
+
+const ListingIdRouteChildren: ListingIdRouteChildren = {
+  ListingIdEditRoute: ListingIdEditRoute,
+}
+
+const ListingIdRouteWithChildren = ListingIdRoute._addFileChildren(
+  ListingIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -988,7 +1019,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  ListingIdRoute: ListingIdRoute,
+  ListingIdRoute: ListingIdRouteWithChildren,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,

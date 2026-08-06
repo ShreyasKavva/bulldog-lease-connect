@@ -37,7 +37,7 @@ export function LandingPage() {
               Student subleases <span className="text-primary">without the sketch.</span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Verified <span className="font-semibold text-foreground">.edu</span> profiles, a SafeScore on every listing, and an AI that reads your lease before you sign. LeaseUp is the trust layer on top of every "anyone need a sublease?" group chat — at every campus.
+              Verified <span className="font-semibold text-foreground">.edu</span> profiles, real student listings, and an AI that reads your lease before you sign. LeaseUp is the trust layer on top of every "anyone need a sublease?" group chat — at every campus.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link to="/auth" search={{ mode: "up" }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-dark">
@@ -49,7 +49,7 @@ export function LandingPage() {
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-5 text-xs font-semibold text-muted-foreground">
               <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-success" /> Verified .edu emails</span>
-              <span className="flex items-center gap-1.5"><Shield className="h-4 w-4 text-primary" /> SafeScore on every listing</span>
+              <span className="flex items-center gap-1.5"><Shield className="h-4 w-4 text-primary" /> Verified student listings</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> Every major US campus</span>
             </div>
           </div>
@@ -71,7 +71,6 @@ export function LandingPage() {
                       <div key={i} className="rounded-xl bg-surface p-3 shadow-card">
                         <div className="flex items-baseline justify-between">
                           <div className="text-base font-extrabold">${l.p}<span className="text-[10px] font-medium text-muted-foreground">/mo</span></div>
-                          <span className="rounded-full bg-success-light px-2 py-0.5 text-[10px] font-bold text-success">SafeScore {l.sc}</span>
                         </div>
                         <div className="mt-1 line-clamp-1 text-sm font-bold">{l.t}</div>
                         <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -113,7 +112,7 @@ export function LandingPage() {
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {[
             { i: BadgeCheck, t: ".edu verified profiles", d: "Sign up with your campus email. No randos, no bots, no off-campus landlords pretending to be students." },
-            { i: Shield, t: "SafeScore on every listing", d: "Photos, lease terms, verified email, profile completeness — graded automatically so you know what you're walking into." },
+            { i: Shield, t: "Trust signals on every listing", d: "Photos, lease terms, verified email, complete profiles — so you know what you're walking into." },
             { i: FileText, t: "AI lease analysis", d: "Upload the lease, get plain-English flags on the sketchy clauses before you sign. Built into your account." },
             { i: MessageSquare, t: "Built-in messaging", d: "Talk to the lister inside LeaseUp. No more giving your number to a stranger from a Reddit post." },
             { i: MapPin, t: "Map + scroll view", d: "Browse a Five Points walkup on a map or thumb through listings like TikTok. Whatever your vibe." },
@@ -139,7 +138,7 @@ export function LandingPage() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               ["01", "Verify your .edu", "Sign up with your campus email. We auto-detect your school and mark you verified."],
-              ["02", "Browse with SafeScore", "Every listing shows trust signals. Sort by price, area, dates, furnished — find your fit."],
+              ["02", "Browse real listings", "Every listing shows trust signals. Sort by price, area, dates, furnished — find your fit."],
               ["03", "Run it through AI", "Before signing, drop the lease into the analyzer. Get flags on early termination, deposit, and fee clauses."],
             ].map(([n, t, d]) => (
               <div key={n} className="rounded-2xl bg-background p-6 shadow-card">
@@ -177,8 +176,7 @@ export function LandingPage() {
             </ul>
           </div>
           <div className="rounded-3xl border bg-gradient-to-br from-primary/10 via-surface to-surface p-8 shadow-card">
-            <div className="text-xs font-bold uppercase tracking-wider text-primary">SafeScore breakdown</div>
-            <div className="mt-3 text-5xl font-extrabold">87 <span className="text-base font-bold text-muted-foreground">/ 100</span></div>
+            <div className="text-xs font-bold uppercase tracking-wider text-primary">What a complete listing looks like</div>
             <div className="mt-5 space-y-3 text-sm">
               {[
                 ["Verified .edu email", 15],
@@ -190,7 +188,7 @@ export function LandingPage() {
               ].map(([label, val]) => (
                 <div key={label as string}>
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span>{label}</span><span className="text-muted-foreground">+{val}</span>
+                    <span>{label}</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-background">
                     <div className="h-full rounded-full bg-primary" style={{ width: `${(val as number) * 4}%` }} />

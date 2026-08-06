@@ -51,7 +51,7 @@ export function VerificationBadge({
   }
   return (
     <span
-      title="Trusted — verified, highly rated, and SafeScore 80+"
+      title="Trusted — verified email, highly rated, complete listing"
       className={cn(
         "inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300",
         className,

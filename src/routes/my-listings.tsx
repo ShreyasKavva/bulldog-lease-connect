@@ -21,13 +21,12 @@ import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
-import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
 import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -345,7 +344,6 @@ function MyListingsPage() {
                       </div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                      <SafeScoreBadge score={l.safe_score} />
                       <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} views</span>
                       <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
                     </div>
@@ -359,6 +357,14 @@ function MyListingsPage() {
                   >
                     <BarChart3 className="h-4 w-4" />
                   </button>
+                  <Link
+                    to="/listing/$id/edit"
+                    params={{ id: l.id }}
+                    title="Edit listing"
+                    className="rounded-md p-2 hover:bg-background"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
                   {!filled && (
                     <button
                       onClick={() => setTourFor(l)}

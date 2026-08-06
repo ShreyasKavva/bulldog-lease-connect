@@ -118,7 +118,11 @@ export const Route = createFileRoute("/browse")({
   head: () => ({
     meta: [
       { title: "Browse subleases — LeaseUp" },
-      { name: "description", content: "Browse every active student sublease as a grid or full-screen scroll." },
+      { name: "description", content: "Browse student subleases at any campus. Verified .edu emails, real listings, no fees." },
+      { property: "og:title", content: "Browse subleases — LeaseUp" },
+      { property: "og:description", content: "Browse student subleases at any campus. Verified .edu emails, real listings, no fees." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Browse,

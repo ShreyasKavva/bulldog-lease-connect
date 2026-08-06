@@ -108,7 +108,7 @@ function AnalyticsPage() {
     recs.push("💰 Your save rate is below average. Consider reducing price by $25–50.");
   }
   if ((msgStats?.inbound ?? 0) > 0 && responseRate < 60) {
-    recs.push("💬 You've replied to " + responseRate + "% of messages. Faster responses improve your SafeScore.");
+    recs.push("💬 You've replied to " + responseRate + "% of messages. Faster responses help you fill your sublease.");
   }
   if (!listing.is_featured) {
     recs.push("⚡ Boosted listings get 3× more views for 7 days — $9.99.");

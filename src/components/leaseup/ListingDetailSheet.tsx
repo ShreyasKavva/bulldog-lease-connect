@@ -5,8 +5,6 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
-import { SafeScoreBadge } from "./SafeScoreBadge";
-import { SafeScoreGauge } from "./SafeScoreGauge";
 import { CountUp } from "./CountUp";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
@@ -227,7 +225,6 @@ export function ListingDetailSheet({
               <h2 className="mt-1 text-2xl font-extrabold">{listing.title}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />{listing.area ?? "Near campus"}
-                <SafeScoreBadge score={listing.safe_score} />
                 {views !== null && views > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground">
                     <Eye className="h-3 w-3" />{views} {views === 1 ? "view" : "views"}
@@ -254,9 +251,7 @@ export function ListingDetailSheet({
 
 
 
-          {/* SafeScore animated gauge */}
           <div className="flex items-center gap-4 rounded-xl border bg-background p-3">
-            <SafeScoreGauge score={listing.safe_score} />
             <ul className="flex-1 space-y-1 text-xs text-muted-foreground">
               {(listing.photo_urls?.length ?? 0) >= 3 && <li>✓ {listing.photo_urls!.length} photos</li>}
               {listing.profile?.verified_email && <li>✓ .edu verified poster</li>}

@@ -20,7 +20,6 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER, isNew } from "@/lib/leaseup/constants";
-import { SafeScoreBadge } from "./SafeScoreBadge";
 import { Eye, X, MessageCircle, ArrowRight, Bed, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -217,7 +216,6 @@ export function MapHome({
                   )}
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                  <SafeScoreBadge score={preview.safe_score} />
                   {(preview.view_count ?? 0) > 0 && (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
                       <Eye className="h-3 w-3" />{preview.view_count} views

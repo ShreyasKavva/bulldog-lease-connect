@@ -40,7 +40,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — LeaseUp" },
       { name: "description", content: "Sign in to LeaseUp with Google or your .edu email to browse and post student subleases." },
       { property: "og:title", content: "Sign in — LeaseUp" },
-      { property: "og:description", content: "Verified .edu profiles, SafeScore on every listing, zero scams." },
+      { property: "og:description", content: "Verified .edu profiles, real student listings, zero scams." },
       { property: "og:url", content: "https://leasup.co/auth" },
       { property: "og:type", content: "website" },
     ],

@@ -1,6 +1,5 @@
 import type { Listing } from "@/lib/leaseup/types";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { SafeScoreBadge } from "./SafeScoreBadge";
 import { Check, X, BedDouble, Bath, MapPin, Calendar, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +32,6 @@ export function CompareSheet({
   const minPerBed = Math.min(
     ...listings.map(l => (l.beds > 0 ? l.price / l.beds : Infinity)),
   );
-  const maxScore = Math.max(...listings.map(l => l.safe_score ?? 0));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -81,7 +79,6 @@ export function CompareSheet({
                         <div className={cn("text-xl font-extrabold", l.price === minPrice && "text-success")}>
                           ${l.price.toLocaleString()}<span className="text-[10px] font-medium text-muted-foreground">/mo</span>
                         </div>
-                        <SafeScoreBadge score={l.safe_score ?? 0} />
                       </div>
                       <h3 className="line-clamp-2 text-sm font-bold leading-snug">{l.title}</h3>
 
@@ -93,7 +90,6 @@ export function CompareSheet({
                       <Row label={<><MapPin className="h-3.5 w-3.5" /> Area</>}>{l.area ?? "—"}</Row>
                       <Row label={<><Calendar className="h-3.5 w-3.5" /> From</>}>{fmtDate(l.available_from)}</Row>
                       <Row label={<><Calendar className="h-3.5 w-3.5" /> Until</>}>{fmtDate(l.available_to)}</Row>
-                      <Row label="SafeScore" highlight={(l.safe_score ?? 0) === maxScore}>{l.safe_score ?? 0}</Row>
                       <Row label="Furnished"><YesNo v={l.furnished} /></Row>
                       <Row label="Utilities incl."><YesNo v={l.utilities_included} /></Row>
                       <Row label="Pet friendly"><YesNo v={l.pet_friendly} /></Row>

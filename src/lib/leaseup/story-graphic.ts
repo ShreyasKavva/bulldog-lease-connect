@@ -62,12 +62,6 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   return lines.length;
 }
 
-function safeScoreColor(score: number | null | undefined): string {
-  const s = score ?? 0;
-  if (s >= 7.5) return "#10B981";
-  if (s >= 5) return "#F59E0B";
-  return "#EF4444";
-}
 
 function formatRange(from?: string | null, to?: string | null): string | null {
   if (!from && !to) return null;
@@ -168,15 +162,6 @@ export async function renderStoryGraphic(listing: Listing): Promise<Blob | null>
   ctx.fillStyle = "#E4E6EB";
   ctx.fillRect(padX, 1300, W - padX * 2, 2);
 
-  // SafeScore
-  const score = (listing as any).safe_score ?? null;
-  ctx.fillStyle = safeScoreColor(score);
-  ctx.beginPath();
-  ctx.arc(padX + 18, 1360, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#1C1E21";
-  ctx.font = `600 32px ${font}`;
-  ctx.fillText(`SafeScore: ${score != null ? Number(score).toFixed(1) : "—"}`, padX + 50, 1372);
 
   // Poster info
   const profile = (listing as any).profile ?? (listing as any).profiles ?? null;
