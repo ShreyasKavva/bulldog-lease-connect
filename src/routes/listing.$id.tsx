@@ -445,6 +445,8 @@ function ListingDetailPage() {
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
       <TopBar />
 
+      <DeepLinkBackLink />
+
       {/* PART A — Gallery */}
       <Gallery photos={photos} title={listing.title} onOpen={(i) => setLightboxIndex(i)} />
 
@@ -1363,6 +1365,27 @@ function formatDuration(from: string | null | undefined, to: string | null | und
   if (nights < 45) return `${nights} night${nights === 1 ? "" : "s"}`;
   const months = Math.round(nights / 30);
   return `~${months} month${months === 1 ? "" : "s"}`;
+}
+
+/**
+ * Q101 C5 — only shown when the visitor deep-linked in (share link, search
+ * result) and therefore has no in-app history to go back to.
+ */
+function DeepLinkBackLink() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const ref = document.referrer || "";
+    const sameSite = ref && new URL(ref).host === window.location.host;
+    setShow(window.history.length <= 1 || !sameSite);
+  }, []);
+  if (!show) return null;
+  return (
+    <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 lg:px-8">
+      <Link to="/browse" className="text-sm text-muted-foreground hover:text-foreground">
+        ← Back to browse
+      </Link>
+    </div>
+  );
 }
 
 /** Q101 Part B — ⋯ menu with a single "Report this listing" action. */
