@@ -14,7 +14,7 @@ import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
+import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function maskLastName(name: string | null | undefined): string {
@@ -84,7 +84,7 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   const { data, error } = await q;
   if (error) throw error;
   const rows = data ?? [];
-  const paths = rows.flatMap((l: any) => l.photos ?? []);
+  const paths = rows.flatMap((l: any) => (l.photos ?? []).filter((p: string) => !/^https?:\/\//.test(p)));
   let urlMap = new Map<string, string>();
   if (paths.length) {
     const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7);
@@ -92,8 +92,11 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   }
   return rows.map((l: any) => ({
     ...l,
-    photo_urls: (l.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+    photo_urls: (l.photos ?? [])
+      .map((p: string) => (/^https?:\/\//.test(p) ? p : urlMap.get(p) ?? ""))
+      .filter(Boolean),
   }));
+
 }
 
 function useAvatarSignedUrl(path: string | null | undefined) {
@@ -336,8 +339,8 @@ export function ProfileView({ userId }: { userId: string }) {
         {/* Listings */}
         <section className="mt-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-lg font-extrabold">
-              {isOwn ? "My Listings" : `${(profile.name || "").split(" ")[0]}'s Listings`}
+            <h2 className="text-lg font-semibold">
+              {isOwn ? "Your subleases" : `${(profile.name || "").split(" ")[0]}'s Listings`}
               {" "}<span className="text-sm font-semibold text-muted-foreground">({isOwn ? listings.length : profile.active_listing_count} active)</span>
             </h2>
             {isOwn && listings.length > 0 && (
@@ -346,32 +349,50 @@ export function ProfileView({ userId }: { userId: string }) {
               </Link>
             )}
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {listings.map((l: any) => (
-              <ListingCard
-                key={l.id}
-                listing={l}
-                saved={false}
-                onSave={() => {}}
-                onOpen={() => navigate({ to: "/", search: { listing: l.id } as any })}
-              />
-            ))}
-            {listings.length === 0 && (
-              <div className="col-span-full rounded-2xl bg-surface p-8 text-center text-sm text-muted-foreground shadow-card-md">
-                {isOwn ? (
-                  <Link to="/post" className="font-semibold text-primary hover:underline">+ Post your first sublease →</Link>
-                ) : (
-                  "No active listings right now."
-                )}
-              </div>
-            )}
-          </div>
+
+          {isOwn ? (
+            <div className="space-y-2">
+              {listings.map((l: any) => (
+                <OwnListingRow key={l.id} listing={l} />
+              ))}
+              {listings.length === 0 && (
+                <div className="rounded-2xl bg-surface p-8 text-center shadow-card-md">
+                  <p className="text-sm text-muted-foreground">You haven't posted a sublease yet.</p>
+                  <Link
+                    to="/post"
+                    className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+                  >
+                    Post a sublease →
+                  </Link>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {listings.map((l: any) => (
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  saved={false}
+                  onSave={() => {}}
+                  onOpen={() => navigate({ to: "/", search: { listing: l.id } as any })}
+                />
+              ))}
+              {listings.length === 0 && (
+                <div className="col-span-full rounded-2xl bg-surface p-8 text-center text-sm text-muted-foreground shadow-card-md">
+                  No active listings right now.
+                </div>
+              )}
+            </div>
+          )}
+
           {isOwn && listings.length > 0 && (
             <Link to="/post" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
               <Plus className="h-4 w-4" /> Post a new sublease →
             </Link>
           )}
         </section>
+
 
         {/* Roommate profile (public only, if they have one) */}
         {!isOwn && roommateProfile && roommateProfile.is_active && (
@@ -493,5 +514,47 @@ function NudgeChip({ children, onClick }: { children: React.ReactNode; onClick?:
     <button onClick={onClick} className={cn("rounded-full bg-primary-light px-2.5 py-1 font-semibold text-primary-dark hover:bg-primary/20")}>
       {children}
     </button>
+  );
+}
+
+/** Q107 — compact horizontal row for the owner's own listings. */
+function OwnListingRow({ listing }: { listing: any }) {
+  const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0] ?? null;
+  const rented = listing.status === "filled" || listing.is_active === false;
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card-md">
+      {photo ? (
+        <img src={photo} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy" />
+      ) : (
+        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-muted">
+          <Home className="h-5 w-5 text-muted-foreground" />
+        </div>
+      )}
+      <Link
+        to="/listing/$id"
+        params={{ id: listing.id }}
+        className="min-w-0 flex-1"
+      >
+        <div className="truncate text-sm font-semibold">{listing.title}</div>
+        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+          <span>${listing.price}/mo</span>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-bold",
+              rented ? "bg-muted text-muted-foreground" : "bg-emerald-100 text-emerald-700",
+            )}
+          >
+            {rented ? "Rented" : "Active"}
+          </span>
+        </div>
+      </Link>
+      <Link
+        to="/listing/$id/edit"
+        params={{ id: listing.id }}
+        className="shrink-0 text-xs font-bold text-primary hover:underline"
+      >
+        Edit
+      </Link>
+    </div>
   );
 }

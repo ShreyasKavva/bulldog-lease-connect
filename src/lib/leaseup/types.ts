@@ -104,6 +104,9 @@ export type Conversation = {
     id: string;
     title: string;
     price?: number | null;
+    beds?: number | null;
+    area?: string | null;
+
     available_from?: string | null;
     available_to?: string | null;
     is_active?: boolean;

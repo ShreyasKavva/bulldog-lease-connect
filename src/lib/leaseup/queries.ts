@@ -157,11 +157,13 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const [{ data: profs }, { data: lists }] = await Promise.all([
     otherIds.length ? supabase.from("profiles").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
-      ? supabase.from("listings").select("id,title,price,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
+      ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),
   ]);
-  // Sign first photo of each listing
-  const firstPaths = (lists ?? []).map((l: any) => (l.photos && l.photos[0]) || null).filter(Boolean) as string[];
+  // Sign first photo of each listing (absolute URLs pass through untouched)
+  const firstPaths = (lists ?? [])
+    .map((l: any) => (l.photos && l.photos[0]) || null)
+    .filter((p: string | null): p is string => !!p && !/^https?:\/\//.test(p));
   const signedMap = new Map<string, string>();
   if (firstPaths.length) {
     const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(firstPaths, SIGNED_URL_TTL);
@@ -170,8 +172,10 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const pMap = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   const lMap = new Map<string, any>((lists ?? []).map((l: any) => {
     const first = l.photos && l.photos[0];
-    return [l.id, { ...l, photo_url: first ? signedMap.get(first) ?? null : null }];
+    const photo_url = first ? (/^https?:\/\//.test(first) ? first : signedMap.get(first) ?? null) : null;
+    return [l.id, { ...l, photo_url }];
   }));
+
   return visible.map((c) => ({
     ...c,
     other: pMap.get(c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id),

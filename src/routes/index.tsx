@@ -114,11 +114,20 @@ function Home() {
   async function handleSave(listing: Listing) {
     if (!user) { requireAuth("save", { listingId: listing.id }); return; }
     const isSaved = savedIds.has(listing.id);
+    // Q107 — optimistic heart: flip instantly, revert on error.
+    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
+      const s = new Set(prev ?? []);
+      if (isSaved) s.delete(listing.id); else s.add(listing.id);
+      return s;
+    });
     try {
-      await toggleSaved(user.id, listing.id, !isSaved);
+      await toggleSaved(user.id, listing.id, isSaved);
+    } catch (e: any) {
       qc.invalidateQueries({ queryKey: ["saved", user.id] });
-    } catch (e: any) { toast.error(e.message); }
+      toast.error(e.message);
+    }
   }
+
 
   function handlePost() {
     if (!user) { requireAuth("post"); return; }
