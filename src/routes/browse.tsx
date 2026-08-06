@@ -21,6 +21,7 @@ import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
@@ -335,7 +336,7 @@ function Browse() {
 
 
   async function handleSave(listing: Listing) {
-    if (!user) { toast.error("Sign in to save listings"); navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (!user) { openSignIn("/browse"); return; }
     const saved = savedIds.has(listing.id);
     qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
       const s = new Set(prev ?? []);
@@ -414,7 +415,7 @@ function Browse() {
             </button>
           </div>
           <span className="text-xs text-muted-foreground">
-            {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+            {isLoading ? "Loading listings…" : `${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
           {/* Q90 — grid / map toggle */}
           <div className="ml-auto flex items-center gap-1">

@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
  * lister's name when their email is verified.
  */
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, Check, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { postedAgo } from "@/lib/leaseup/constants";
 import { CardPriceBadge } from "./PriceBadge";
 import { cn } from "@/lib/utils";
@@ -148,7 +148,9 @@ export function ListingCard({
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-muted dark:to-background">
+            <Home className="h-8 w-8 text-gray-400" />
+          </div>
         )}
 
         {/* Preload only the adjacent photos */}

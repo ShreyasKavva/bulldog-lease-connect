@@ -16,6 +16,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
@@ -169,27 +171,55 @@ export function AirbnbHome({
     [inCat],
   );
 
-  // Live campus counts (from currently active listings we already have)
+  // Q105 — live campus counts straight from the DB (not just the loaded page
+  // of listings), so "Explore campuses" never shows a stale number.
+  const { data: dbCampusCounts } = useQuery({
+    queryKey: ["campus-listing-counts"],
+    queryFn: fetchCampusListingCounts,
+    staleTime: 60_000,
+  });
   const campusCounts = useMemo(() => {
+    if (dbCampusCounts && dbCampusCounts.size) return dbCampusCounts;
     const m = new Map<string, number>();
     for (const l of listings) m.set(l.campus_id, (m.get(l.campus_id) ?? 0) + 1);
     return m;
-  }, [listings]);
+  }, [dbCampusCounts, listings]);
+
   const spotlightCampuses = useMemo(() => {
+    const ranked = [...campuses].sort(
+      (a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0),
+    );
+    const withListings = ranked.filter((c) => (campusCounts.get(c.id) ?? 0) > 0);
+    if (withListings.length >= 4) return withListings.slice(0, 4);
+    // Top-up with preferred launch campuses so the grid is never half-empty.
     const preferred = ["university-of-georgia", "university-of-florida", "university-of-alabama", "auburn-university"];
-    const byPref = preferred
+    const extras = preferred
       .map((s) => campuses.find((c) => c.slug === s))
-      .filter((c): c is Campus => !!c);
-    if (byPref.length >= 4) return byPref.slice(0, 4);
-    // Fall back to the top campuses by listing count.
-    return [...campuses]
-      .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))
-      .slice(0, 4);
+      .filter((c): c is Campus => !!c && !withListings.some((w) => w.id === c.id));
+    return [...withListings, ...extras, ...ranked].filter(
+      (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i,
+    ).slice(0, 4);
   }, [campuses, campusCounts]);
 
 
   function runSearch() {
-    navigate({ to: "/browse", search: buildBrowseSearch(search) as any });
+    // If the user typed a campus name but never picked from the dropdown,
+    // resolve it here so the search button always applies a real filter.
+    let state = search;
+    if (!state.campusId && state.where.trim()) {
+      const q = state.where.trim().toLowerCase();
+      const hit =
+        campuses.find((c) => (c.short_name ?? "").toLowerCase() === q) ??
+        campuses.find((c) => c.name.toLowerCase() === q) ??
+        campuses.find(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            (c.short_name ?? "").toLowerCase().includes(q) ||
+            c.city.toLowerCase().includes(q),
+        );
+      if (hit) state = { ...state, campusId: hit.id, where: hit.short_name ?? hit.name };
+    }
+    navigate({ to: "/browse", search: buildBrowseSearch(state) as any });
   }
 
   /** Category pills: "All" filters in place, the rest deep-link into /browse. */
@@ -336,8 +366,6 @@ export function AirbnbHome({
       {/* LOOKING FOR STRIP (Q66) */}
       <LookingForStrip posts={lookingForPosts ?? []} />
 
-      {/* HOW IT WORKS (Q66) */}
-      <HowItWorks />
 
 
       {/* CAMPUS SPOTLIGHTS */}
@@ -580,44 +608,3 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   );
 }
 
-function HowItWorks() {
-  const renter = [
-    "Browse real listings from verified .edu students",
-    "Message directly — no middleman",
-    "No application fee, ever",
-  ];
-  const lister = [
-    "Post your sublease free in under 2 minutes",
-    "Get reached by students already searching",
-    "Mark as rented when done",
-  ];
-  return (
-    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
-      <h2 className="text-xl font-extrabold sm:text-2xl">How it works</h2>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl bg-surface p-5 shadow-card">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">For renters</div>
-          <ul className="mt-3 space-y-2 text-sm">
-            {renter.map((t, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="font-black text-primary">{i + 1}.</span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-2xl bg-surface p-5 shadow-card">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">For listers</div>
-          <ul className="mt-3 space-y-2 text-sm">
-            {lister.map((t, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="font-black text-primary">{i + 1}.</span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
