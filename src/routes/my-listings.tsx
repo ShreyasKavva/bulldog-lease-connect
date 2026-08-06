@@ -319,33 +319,38 @@ function MyListingsPage() {
                     <button onClick={() => relist(l)} className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary-dark">Relist →</button>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setSelected(l)} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-muted">
                     {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
                     {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Rented</div>}
                     {expired && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Expired</div>}
                   </button>
                   <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm truncate">{l.title}</span>
-                      {filled
-                        ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Rented</span>
-                        : expired
-                          ? <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Expired</span>
-                          : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                      <span className="truncate text-sm font-semibold">{l.title}</span>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", filled ? "bg-gray-400" : expired ? "bg-gray-400" : !l.is_active ? "bg-amber-500" : "bg-emerald-500")} />
+                        {filled ? "Rented" : expired ? "Expired" : !l.is_active ? "Hidden" : "Active"}
+                      </span>
                     </div>
-
-                    <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <div className="text-sm text-gray-500">
+                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price}/mo
+                    </div>
+                    {(l.available_from || l.available_to) && (
+                      <div className="text-xs text-gray-400">
+                        {[l.available_from, l.available_to]
+                          .filter(Boolean)
+                          .map((d) => new Date(d as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+                          .join(" – ")}
+                      </div>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
                       <SafeScoreBadge score={l.safe_score} />
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                        <Eye className="h-3 w-3" />{l.view_count ?? 0}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                        <Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}
-                      </span>
+                      <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} views</span>
+                      <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
                     </div>
                   </button>
+
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
                   <button
                     onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
