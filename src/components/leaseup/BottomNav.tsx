@@ -117,7 +117,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
           active={isAccount}
           label="Account"
           Icon={User}
-          avatarUrl={profile?.avatar_url ?? undefined}
+          avatarUrl={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? undefined}
         />
       ) : (
         <button
