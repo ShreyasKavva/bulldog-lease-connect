@@ -796,25 +796,34 @@ function ListingDetailPage() {
           </section>
         )}
 
-        {/* PART E — similar */}
-        {similar.length > 0 && (
-          <section className="border-t border-border py-10">
-            <h2 className="mb-6 text-xl font-black sm:text-2xl">
-              Similar subleases{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}
-            </h2>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {similar.map((l) => (
-                <ListingCard
-                  key={l.id}
-                  listing={l}
-                  saved={false}
-                  onSave={() => {}}
-                  onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
-                />
-              ))}
+        {/* PART E — similar (Q100: snap-scroll row, hidden below 2 results) */}
+        {similar.length >= 2 && (
+          <section className="mt-10 border-t border-gray-100 pt-10 dark:border-border">
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="text-xl font-semibold">Similar subleases</h2>
+              <Link
+                to="/browse"
+                search={{ campus: listing.campus_id } as never}
+                className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
+              >
+                See all →
+              </Link>
             </div>
+            <ScrollRow>
+              {similar.map((l) => (
+                <div key={l.id} className="w-[82%] shrink-0 snap-start sm:w-[280px] lg:w-[calc((100%-3rem)/4)]">
+                  <ListingCard
+                    listing={l}
+                    saved={false}
+                    onSave={() => {}}
+                    onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
+                  />
+                </div>
+              ))}
+            </ScrollRow>
           </section>
         )}
+
 
         {/* PART E2 — send to a friend */}
         <section className="border-t border-border py-10">
