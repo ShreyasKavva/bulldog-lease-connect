@@ -50,6 +50,7 @@ type BrowseSearch = {
   pets?: 1;
   wifi?: 1;
   laundry?: 1;
+  verified?: 1;
   sort?: Sort;
   view?: "grid" | "map";
   // Q96 — params emitted by hero/nav search + homepage category pills
@@ -110,6 +111,7 @@ export const Route = createFileRoute("/browse")({
     pets: parseFlag(raw.pets),
     wifi: parseFlag(raw.wifi),
     laundry: parseFlag(raw.laundry),
+    verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     view: raw.view === "map" ? "map" : undefined,
     tenants: parseInt2(raw.tenants),
@@ -286,6 +288,7 @@ function Browse() {
       if (s.pets === 1 && !l.pet_friendly) return false;
       if (s.wifi === 1 && !(l as any).wifi_included) return false;
       if (s.laundry === 1 && !(l as any).laundry) return false;
+      if (s.verified === 1 && !l.profile?.verified_email) return false;
       if (s.baths != null && (l.baths ?? 0) < s.baths) return false;
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
@@ -319,7 +322,7 @@ function Browse() {
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
-      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths,
+      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus]);
 
   const activeFilterCount =
@@ -332,7 +335,8 @@ function Browse() {
     (bedSet.size > 0 ? 1 : 0) +
     (s.from ? 1 : 0) +
     (s.to ? 1 : 0) +
-    (furnishedOnly ? 1 : 0);
+    (furnishedOnly ? 1 : 0) +
+    (s.verified === 1 ? 1 : 0);
 
   function clearFilters() {
     navigate({ to: "/browse", search: {} });

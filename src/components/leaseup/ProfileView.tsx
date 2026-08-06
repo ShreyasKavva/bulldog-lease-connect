@@ -539,8 +539,87 @@ function NudgeChip({ children, onClick }: { children: React.ReactNode; onClick?:
   );
 }
 
+/** Q109 — relist a rented listing for the next semester. */
+function RelistDialog({ listing, onClose }: { listing: any; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [from, setFrom] = useState<string>(listing.available_from ?? "");
+  const [to, setTo] = useState<string>(listing.available_to ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!from || !to) { toast.error("Pick both dates"); return; }
+    if (new Date(to) <= new Date(from)) { toast.error("Move-out must be after move-in"); return; }
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({
+          status: "active",
+          is_active: true,
+          available_from: from,
+          available_to: to,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", listing.id);
+      if (error) throw error;
+      toast.success("Relisted — it's back in browse 🎉");
+      qc.invalidateQueries();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not relist");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <form
+        onSubmit={submit}
+        className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-card-lg"
+      >
+        <h3 className="text-lg font-semibold">Update your availability dates</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{listing.title}</p>
+        <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Move-in date
+        </label>
+        <input
+          type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        />
+        <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Move-out date
+        </label>
+        <input
+          type="date" value={to} onChange={(e) => setTo(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        />
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button" onClick={onClose}
+            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit" disabled={busy}
+            className="rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-gray-900"
+          >
+            {busy ? "Relisting…" : "Relist sublease →"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 /** Q107 — compact horizontal row for the owner's own listings. */
 function OwnListingRow({ listing }: { listing: any }) {
+  const [relistOpen, setRelistOpen] = useState(false);
   const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0] ?? null;
   const rented = listing.status === "filled" || listing.is_active === false;
   return (
@@ -570,6 +649,15 @@ function OwnListingRow({ listing }: { listing: any }) {
           </span>
         </div>
       </Link>
+      {rented && (
+        <button
+          type="button"
+          onClick={() => setRelistOpen(true)}
+          className="shrink-0 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+        >
+          Relist for next semester →
+        </button>
+      )}
       <Link
         to="/listing/$id/edit"
         params={{ id: listing.id }}
@@ -577,6 +665,7 @@ function OwnListingRow({ listing }: { listing: any }) {
       >
         Edit
       </Link>
+      {relistOpen && <RelistDialog listing={listing} onClose={() => setRelistOpen(false)} />}
     </div>
   );
 }
