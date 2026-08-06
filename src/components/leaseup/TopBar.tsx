@@ -103,25 +103,8 @@ export function TopBar(_legacy: LegacyProps = {}) {
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-6 sm:px-10 lg:px-20">
           <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
 
-          {/* Center: compact search pill on non-home routes (desktop only) */}
-          {!isHome && (
-            <Link
-              to="/"
-              className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm hover:shadow md:flex dark:border-border dark:bg-background"
-            >
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">Where</span>
-              <span className="text-gray-300">|</span>
-              <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">When</span>
-              <span className="text-gray-300">|</span>
-              <Users className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">Who</span>
-              <span className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900">
-                <Search className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-          )}
+          {/* Center: functional compact search bar on non-home routes */}
+          {!isHome && <NavSearchBar />}
 
           {/* Right cluster */}
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
