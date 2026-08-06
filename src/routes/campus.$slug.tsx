@@ -15,6 +15,7 @@ import { fetchSavedIds, toggleSaved } from "@/lib/leaseup/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 
 async function fetchCampusListings(campusId: string): Promise<Listing[]> {
   const { data, error } = await supabase
@@ -71,6 +72,7 @@ function CampusLandingPage() {
   const qc = useQueryClient();
   const { user } = useSession();
   const [limit, setLimit] = useState(24);
+  const [where, setWhere] = useState<{ name: string; slug: string }>({ name: campus.name, slug: campus.slug });
   const [when, setWhen] = useState("");
   const [who, setWho] = useState("");
 
@@ -115,7 +117,7 @@ function CampusLandingPage() {
     navigate({
       to: "/browse",
       search: {
-        campus: campus.slug,
+        campus: where.slug || campus.slug,
         ...(when ? { from: when } : {}),
         ...(who ? { tenants: Number(who) || undefined } : {}),
       } as any,
