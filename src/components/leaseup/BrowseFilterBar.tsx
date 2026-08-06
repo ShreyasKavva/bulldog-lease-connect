@@ -29,6 +29,7 @@ export type BrowseFilterValues = {
   pets?: 1;
   wifi?: 1;
   laundry?: 1;
+  verified?: 1;
   sort?: Sort;
 };
 
