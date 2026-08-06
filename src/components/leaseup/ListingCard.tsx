@@ -225,6 +225,12 @@ export function ListingCard({
             /mo · {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {Number(listing.baths)} ba
           </span>
         </p>
+        {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
+        {listing.profile?.verified_email && (
+          <span className="mt-1 inline-flex items-center gap-0.5 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
+            <Check className="h-2.5 w-2.5" /> Verified
+          </span>
+        )}
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
           {listing.user_id ? (
             <Link
@@ -238,10 +244,8 @@ export function ListingCard({
           ) : (
             <span className="truncate">{listing.profile?.name || "Student"}</span>
           )}
-          {listing.profile?.verified_email && (
-            <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />
-          )}
         </p>
+
 
       </div>
     </article>
