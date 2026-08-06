@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSavedIds } from "@/lib/leaseup/queries";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
+import { NavSearchBar } from "@/components/leaseup/NavSearchBar";
 import { SignInModal } from "@/components/leaseup/SignInModal";
 import { useUnreadCount } from "@/hooks/use-unread";
 
