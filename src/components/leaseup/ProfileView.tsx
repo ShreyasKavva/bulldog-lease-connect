@@ -84,7 +84,7 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   const { data, error } = await q;
   if (error) throw error;
   const rows = data ?? [];
-  const paths = rows.flatMap((l: any) => l.photos ?? []);
+  const paths = rows.flatMap((l: any) => (l.photos ?? []).filter((p: string) => !/^https?:\/\//.test(p)));
   let urlMap = new Map<string, string>();
   if (paths.length) {
     const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7);
@@ -92,8 +92,11 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   }
   return rows.map((l: any) => ({
     ...l,
-    photo_urls: (l.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+    photo_urls: (l.photos ?? [])
+      .map((p: string) => (/^https?:\/\//.test(p) ? p : urlMap.get(p) ?? ""))
+      .filter(Boolean),
   }));
+
 }
 
 function useAvatarSignedUrl(path: string | null | undefined) {
