@@ -176,6 +176,8 @@ function Browse() {
   }
 
   const [view, setView] = useState<View>("grid");
+  const mapView = s.view === "map";
+
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
@@ -463,6 +465,8 @@ function Browse() {
             </div>
           )}
         </main>
+        )}
+
       </div>
 
 
