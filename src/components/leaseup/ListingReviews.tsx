@@ -120,7 +120,7 @@ export function ListingReviewsSection({
   const visible = useMemo(() => (showAll ? list : list.slice(0, 6)), [list, showAll]);
   const canReview = !!user && !isOwner && eligible && !alreadyReviewed;
 
-  if (count === 0 && !canReview) return null;
+  if (isLoading && count === 0) return null;
 
   return (
     <section id="reviews" className="mt-10 scroll-mt-24">
