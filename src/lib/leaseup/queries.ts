@@ -20,8 +20,12 @@ import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSear
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
 async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
-  const allPaths = listings.flatMap((l) => l.photos ?? []);
-  if (allPaths.length === 0) return listings.map((l) => ({ ...l, photo_urls: [] }));
+  const isUrl = (p: string) => /^https?:\/\//i.test(p);
+  // Seeded/demo listings can hold absolute URLs; only storage paths need signing.
+  const allPaths = listings.flatMap((l) => (l.photos ?? []).filter((p) => !isUrl(p)));
+  if (allPaths.length === 0) {
+    return listings.map((l) => ({ ...l, photo_urls: (l.photos ?? []).filter(isUrl) }));
+  }
   const { data } = await supabase.storage
     .from("listing-photos")
     .createSignedUrls(allPaths, SIGNED_URL_TTL);
@@ -29,7 +33,7 @@ async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
   data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
   return listings.map((l) => ({
     ...l,
-    photo_urls: (l.photos ?? []).map((p) => map.get(p) ?? "").filter(Boolean),
+    photo_urls: (l.photos ?? []).map((p) => (isUrl(p) ? p : map.get(p) ?? "")).filter(Boolean),
   }));
 }
 
@@ -541,9 +545,13 @@ export async function fetchCuratedListings(opts: {
   maxPrice?: number;
   availableBefore?: string; // ISO date — available_from <= this date
   campusId?: string;
-  orderBy?: "created_at" | "available_from";
+  orderBy?: "created_at" | "available_from" | "view_count";
   ascending?: boolean;
   limit?: number;
+  /** ISO timestamp — only listings created on/after this moment. */
+  createdAfter?: string;
+  /** Drop rows with no views (used by the trending row on a fresh DB). */
+  minViews?: number;
 }): Promise<Listing[]> {
   let q = supabase
     .from("listings").select("*")
@@ -552,6 +560,8 @@ export async function fetchCuratedListings(opts: {
   if (opts.maxPrice != null) q = q.lte("price", opts.maxPrice);
   if (opts.availableBefore) q = q.lte("available_from", opts.availableBefore);
   if (opts.campusId) q = q.eq("campus_id", opts.campusId);
+  if (opts.createdAfter) q = q.gte("created_at", opts.createdAfter);
+  if (opts.minViews != null) q = q.gte("view_count", opts.minViews);
   const { data, error } = await q
     .order(opts.orderBy ?? "created_at", { ascending: opts.ascending ?? false, nullsFirst: false })
     .limit(opts.limit ?? 12);

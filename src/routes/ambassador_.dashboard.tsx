@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusOverview, fetchCampusLeaderboard } from "@/lib/leaseup/referral.queries";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
@@ -57,7 +56,6 @@ function AmbassadorPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <TopBar onOpenMessages={() => setMessagesOpen(true)} />
       <main className="mx-auto max-w-3xl px-4 pt-16">
         <header className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />

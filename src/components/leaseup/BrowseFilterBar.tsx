@@ -36,7 +36,7 @@ const SORT_LABELS: Record<Sort, string> = {
   newest: "Newest",
   price_asc: "Lowest price",
   price_desc: "Highest price",
-  popular: "Most viewed",
+  popular: "Most popular",
 };
 
 const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: string }> = [

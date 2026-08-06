@@ -47,6 +47,20 @@ export function SmartSections({
         }
       : null,
     {
+      // Q102 — "trending" = most-viewed of the last 30 days. minViews keeps the
+      // row hidden on a fresh DB instead of listing everything at "0 views".
+      key: "trending",
+      title: "🔥 Trending this week",
+      seeAll: { sort: "trending" },
+      minItems: 2,
+      query: {
+        createdAfter: new Date(Date.now() - 30 * 86400000).toISOString(),
+        minViews: 1,
+        orderBy: "view_count" as const,
+        limit: 12,
+      },
+    },
+    {
       key: "new",
       title: "Just posted",
       seeAll: { sort: "newest" },
@@ -72,6 +86,7 @@ export function SmartSections({
   ].filter(Boolean) as Array<{
     key: string;
     title: string;
+    minItems?: number;
     seeAll: Record<string, unknown>;
     query: Parameters<typeof fetchCuratedListings>[0];
   }>;
@@ -85,6 +100,7 @@ export function SmartSections({
           title={s.title}
           seeAll={s.seeAll}
           query={s.query}
+          minItems={s.minItems}
           divider={i < sections.length - 1}
           {...rowProps}
         />
@@ -94,10 +110,11 @@ export function SmartSections({
 }
 
 function Section({
-  id, title, seeAll, query, divider, savedIds, onSave, onOpen, filter,
+  id, title, seeAll, query, divider, minItems, savedIds, onSave, onOpen, filter,
 }: RowProps & {
   id: string;
   title: string;
+  minItems?: number;
   seeAll: Record<string, unknown>;
   query: Parameters<typeof fetchCuratedListings>[0];
   divider: boolean;
@@ -127,7 +144,7 @@ function Section({
     );
   }
 
-  if (items.length === 0) return null;
+  if (items.length < (minItems ?? 1)) return null;
 
   return (
     <section className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>

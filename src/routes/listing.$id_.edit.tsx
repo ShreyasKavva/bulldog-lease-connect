@@ -14,7 +14,6 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/listing/$id_/edit")({
@@ -249,7 +248,6 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <TopBar />
       <main className="mx-auto max-w-3xl px-4 py-8">
         <Link
           to="/listing/$id"

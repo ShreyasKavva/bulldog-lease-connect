@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import type { SavedSearch } from "@/lib/leaseup/types";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { useState } from "react";
@@ -63,7 +62,6 @@ function AlertsPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
-      <TopBar onOpenMessages={() => setMessagesOpen(true)} />
 
       <main className="mx-auto max-w-2xl px-4 pt-16">
         <div className="flex items-center gap-2 py-2">

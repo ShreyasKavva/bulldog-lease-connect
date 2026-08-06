@@ -10,12 +10,12 @@
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { openSaveToCollection } from "@/components/leaseup/SaveToCollectionModal";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
-  MoreHorizontal, Flag,
+  MoreHorizontal, Flag, Grid2x2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
@@ -113,7 +113,6 @@ export const Route = createFileRoute("/listing/$id")({
           };
     return (
       <div className="min-h-screen bg-background">
-        <TopBar />
         <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-6 py-16">
           <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-card">
             <h1 className="text-2xl font-black leading-tight">{copy.title}</h1>
@@ -131,7 +130,6 @@ export const Route = createFileRoute("/listing/$id")({
   },
   errorComponent: ({ error, reset }) => (
     <div className="min-h-screen bg-background">
-      <TopBar />
       <div className="mx-auto max-w-md px-6 py-24 text-center">
         <h1 className="mb-2 text-2xl font-black">Couldn't load this listing</h1>
         <p className="mb-6 text-sm text-muted-foreground">{error.message}</p>
@@ -175,13 +173,17 @@ async function fetchListingDetail(id: string): Promise<ListingLoadResult | null>
   const today = new Date().toISOString().slice(0, 10);
   if (row.available_to && row.available_to < today) return { reason: "expired" };
   if (row.is_active === false) return null;
-  const paths: string[] = row.photos ?? [];
+  const all: string[] = row.photos ?? [];
+  const isUrl = (p: string) => /^https?:\/\//i.test(p);
+  const paths = all.filter((p) => !isUrl(p));
   let photo_urls: string[] = [];
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    photo_urls = paths.map((p) => signed?.find((s) => s.path === p)?.signedUrl ?? "").filter(Boolean);
+  if (all.length) {
+    const { data: signed } = paths.length
+      ? await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7)
+      : { data: null };
+    photo_urls = all
+      .map((p) => (isUrl(p) ? p : signed?.find((sg) => sg.path === p)?.signedUrl ?? ""))
+      .filter(Boolean);
   }
   const { data: campus } = await supabase
     .from("campuses")
@@ -248,7 +250,9 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
     }
     return trimmed.map((r) => ({
       ...r,
-      photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+      photo_urls: (r.photos ?? [])
+        .map((p: string) => (/^https?:\/\//i.test(p) ? p : urlMap.get(p) ?? ""))
+        .filter(Boolean),
     })) as Listing[];
   } catch {
     return [];
@@ -443,7 +447,6 @@ function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
-      <TopBar />
 
       <DeepLinkBackLink />
 
@@ -955,14 +958,14 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
               <div key={`blank-${i}`} className="bg-muted" />
             ))}
         </div>
-        {photos.length > 1 && (
+        {photos.length > 4 && (
           <div className="relative -mt-14 flex justify-end pr-4">
             <button
               type="button"
               onClick={() => onOpen(0)}
-              className="rounded-lg border border-border bg-background/95 px-4 py-2 text-sm font-semibold shadow-md backdrop-blur transition hover:bg-background"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-900/10 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-md transition hover:bg-gray-50"
             >
-              Show all {photos.length} photos →
+              <Grid2x2 className="h-4 w-4" /> Show all {photos.length} photos
             </button>
           </div>
         )}
@@ -1255,55 +1258,117 @@ function Lightbox({
   onIndex: (i: number) => void;
   onClose: () => void;
 }) {
+  const go = useCallback(
+    (delta: number) => onIndex((index + delta + photos.length) % photos.length),
+    [index, photos.length, onIndex],
+  );
+
+  // Escape/arrows are bound on window so they work wherever focus sits,
+  // including inside the thumbnail strip.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowRight") onIndex((index + 1) % photos.length);
-      else if (e.key === "ArrowLeft") onIndex((index - 1 + photos.length) % photos.length);
+      else if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [index, photos.length, onClose, onIndex]);
+  }, [go, onClose]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/95">
-      <div className="flex items-center justify-between px-4 py-3 text-white">
-        <span className="text-sm">
-          {index + 1} / {photos.length}
-        </span>
+  // Mobile swipe: 50px horizontal threshold.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  const touchX = useRef<number | null>(null);
+  function onTouchStart(e: React.TouchEvent) {
+    touchX.current = e.changedTouches[0]?.clientX ?? null;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchX.current;
+    touchX.current = null;
+    if (start == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? start) - start;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  }
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex flex-col bg-black/95"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      <div className="flex items-center justify-end px-4 py-3 text-white">
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"
+          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
         >
           <XIcon className="h-5 w-5" />
         </button>
       </div>
-      <div className="relative flex flex-1 items-center justify-center px-4 pb-6">
-        <img src={photos[index]} alt="" className="max-h-full max-w-full object-contain" />
+
+      <div className="relative flex flex-1 items-center justify-center px-4">
+        <img
+          src={photos[index]}
+          alt={`Photo ${index + 1} of ${photos.length}`}
+          className="mx-auto max-h-[80vh] max-w-[90vw] object-contain"
+        />
         {photos.length > 1 && (
           <>
             <button
               type="button"
-              onClick={() => onIndex((index - 1 + photos.length) % photos.length)}
-              aria-label="Previous"
-              className="absolute left-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+              onClick={() => go(-1)}
+              aria-label="Previous photo"
+              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               type="button"
-              onClick={() => onIndex((index + 1) % photos.length)}
-              aria-label="Next"
-              className="absolute right-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+              onClick={() => go(1)}
+              aria-label="Next photo"
+              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
           </>
         )}
+        <div className="absolute bottom-6 left-0 right-0 text-center text-sm text-white">
+          {index + 1} / {photos.length}
+        </div>
       </div>
-    </div>
+
+      {photos.length > 1 && (
+        <div className="flex justify-center gap-2 overflow-x-auto px-4 pb-5 pt-10">
+          {photos.map((p, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onIndex(i)}
+              aria-label={`View photo ${i + 1}`}
+              aria-current={i === index}
+              className={cn(
+                "h-12 w-16 shrink-0 overflow-hidden rounded-md transition",
+                i === index ? "border-2 border-white" : "opacity-60 hover:opacity-100",
+              )}
+            >
+              <img src={p} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>,
+    document.body,
   );
 }
 
