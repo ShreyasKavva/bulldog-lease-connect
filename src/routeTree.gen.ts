@@ -34,7 +34,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SavedIndexRouteImport } from './routes/saved.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
+import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
@@ -177,10 +179,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SavedIndexRoute = SavedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SavedRoute,
+} as any)
 const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   id: '/sublease/$slug',
   path: '/sublease/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SavedCollectionRoute = SavedCollectionRouteImport.update({
+  id: '/$collection',
+  path: '/$collection',
+  getParentRoute: () => SavedRoute,
 } as any)
 const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   id: '/create',
@@ -290,7 +302,7 @@ export interface FileRoutesByFullPath {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
-  '/saved': typeof SavedRoute
+  '/saved': typeof SavedRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -300,7 +312,9 @@ export interface FileRoutesByFullPath {
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
+  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
@@ -334,7 +348,6 @@ export interface FileRoutesByTo {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
-  '/saved': typeof SavedRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -344,7 +357,9 @@ export interface FileRoutesByTo {
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
+  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/saved': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
@@ -379,7 +394,7 @@ export interface FileRoutesById {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
-  '/saved': typeof SavedRoute
+  '/saved': typeof SavedRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -389,7 +404,9 @@ export interface FileRoutesById {
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/roommates/create': typeof RoommatesCreateRoute
+  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/my-listings/$listingId/analytics': typeof MyListingsListingIdAnalyticsRoute
@@ -435,7 +452,9 @@ export interface FileRouteTypes {
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
+    | '/saved/$collection'
     | '/sublease/$slug'
+    | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
@@ -469,7 +488,6 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
-    | '/saved'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -479,7 +497,9 @@ export interface FileRouteTypes {
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
+    | '/saved/$collection'
     | '/sublease/$slug'
+    | '/saved'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
@@ -523,7 +543,9 @@ export interface FileRouteTypes {
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/roommates/create'
+    | '/saved/$collection'
     | '/sublease/$slug'
+    | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
     | '/my-listings/$listingId/analytics'
@@ -558,7 +580,7 @@ export interface RootRouteChildren {
   PostRoute: typeof PostRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
-  SavedRoute: typeof SavedRoute
+  SavedRoute: typeof SavedRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -753,12 +775,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saved/': {
+      id: '/saved/'
+      path: '/'
+      fullPath: '/saved/'
+      preLoaderRoute: typeof SavedIndexRouteImport
+      parentRoute: typeof SavedRoute
+    }
     '/sublease/$slug': {
       id: '/sublease/$slug'
       path: '/sublease/$slug'
       fullPath: '/sublease/$slug'
       preLoaderRoute: typeof SubleaseSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/saved/$collection': {
+      id: '/saved/$collection'
+      path: '/$collection'
+      fullPath: '/saved/$collection'
+      preLoaderRoute: typeof SavedCollectionRouteImport
+      parentRoute: typeof SavedRoute
     }
     '/roommates/create': {
       id: '/roommates/create'
@@ -932,6 +968,18 @@ const RoommatesRouteWithChildren = RoommatesRoute._addFileChildren(
   RoommatesRouteChildren,
 )
 
+interface SavedRouteChildren {
+  SavedCollectionRoute: typeof SavedCollectionRoute
+  SavedIndexRoute: typeof SavedIndexRoute
+}
+
+const SavedRouteChildren: SavedRouteChildren = {
+  SavedCollectionRoute: SavedCollectionRoute,
+  SavedIndexRoute: SavedIndexRoute,
+}
+
+const SavedRouteWithChildren = SavedRoute._addFileChildren(SavedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -954,7 +1002,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostRoute: PostRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
-  SavedRoute: SavedRoute,
+  SavedRoute: SavedRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
