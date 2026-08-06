@@ -86,7 +86,7 @@ export function LeaveReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-2xl p-6 shadow-xl" showCloseButton={false}>
+      <DialogContent className="max-w-md rounded-2xl p-6 shadow-xl">
         <h2 className="text-xl font-semibold">How was it?</h2>
         <p className="truncate text-sm text-muted-foreground">{reviewedName}</p>
 
