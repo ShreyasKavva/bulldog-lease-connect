@@ -266,6 +266,8 @@ export function AirbnbHome({
             </button>
           )}
         </div>
+
+        <LiveCounter />
       </section>
 
       {/* CATEGORY PILLS */}
