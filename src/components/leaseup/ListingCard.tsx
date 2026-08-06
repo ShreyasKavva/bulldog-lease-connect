@@ -196,7 +196,9 @@ export function ListingCard({
           <Heart
             className={cn(
               "h-6 w-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]",
-              saved ? "fill-destructive text-destructive" : "fill-black/20 text-white",
+              saved
+                ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F] transition-transform"
+                : "fill-black/20 text-white transition-transform",
             )}
           />
         </button>
