@@ -147,10 +147,13 @@ export function TopBar(_legacy: LegacyProps = {}) {
               >
                 Messages
                 {unread > 0 && (
-                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#FF5A5F]" />
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5A5F] text-[10px] font-bold text-white">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
                 )}
               </Link>
             )}
+
 
 
 
