@@ -313,18 +313,7 @@ export function AirbnbHome({
       </div>
 
 
-      {/* LATEST SUBLEASES FEED (Q66) */}
-      <LatestFeedSection
-        listings={listings}
-        campuses={campuses}
-        savedIds={savedIds}
-        onSave={onSave}
-        onOpen={onOpen}
-        onPost={onPost}
-        userCampusId={userCampusId ?? null}
-        feedCampusId={feedCampusId ?? null}
-        recentFilledCount={recentFilledCount ?? 0}
-      />
+
 
       {/* LOOKING FOR STRIP (Q66) */}
       <LookingForStrip posts={lookingForPosts ?? []} />
