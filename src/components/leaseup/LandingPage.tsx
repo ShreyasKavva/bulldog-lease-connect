@@ -177,7 +177,6 @@ export function LandingPage() {
           </div>
           <div className="rounded-3xl border bg-gradient-to-br from-primary/10 via-surface to-surface p-8 shadow-card">
             <div className="text-xs font-bold uppercase tracking-wider text-primary">What a complete listing looks like</div>
-            <div className="mt-3 text-5xl font-extrabold">87 <span className="text-base font-bold text-muted-foreground">/ 100</span></div>
             <div className="mt-5 space-y-3 text-sm">
               {[
                 ["Verified .edu email", 15],
@@ -189,7 +188,7 @@ export function LandingPage() {
               ].map(([label, val]) => (
                 <div key={label as string}>
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span>{label}</span><span className="text-muted-foreground">+{val}</span>
+                    <span>{label}</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-background">
                     <div className="h-full rounded-full bg-primary" style={{ width: `${(val as number) * 4}%` }} />

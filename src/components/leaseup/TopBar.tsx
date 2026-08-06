@@ -157,7 +157,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
             {user ? (
               <>
-                <div className="hidden sm:block">
+                <div>
                   <NotificationsBell onOpenMessages={() => navigate({ to: "/messages" as any }).catch(() => {})} />
                 </div>
                 <div ref={menuRef} className="relative">

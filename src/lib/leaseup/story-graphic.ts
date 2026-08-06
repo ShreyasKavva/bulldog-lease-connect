@@ -62,12 +62,6 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   return lines.length;
 }
 
-function safeScoreColor(score: number | null | undefined): string {
-  const s = score ?? 0;
-  if (s >= 7.5) return "#10B981";
-  if (s >= 5) return "#F59E0B";
-  return "#EF4444";
-}
 
 function formatRange(from?: string | null, to?: string | null): string | null {
   if (!from && !to) return null;
