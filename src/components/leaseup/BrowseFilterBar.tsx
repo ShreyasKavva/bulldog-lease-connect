@@ -137,6 +137,8 @@ export function BrowseFilterBar({
     pills.push({ label: dateLabel, clear: { from: undefined, to: undefined } });
   for (const a of AMENITIES)
     if (values[a.key] === 1) pills.push({ label: a.label, clear: { [a.key]: undefined } });
+  if (values.verified === 1)
+    pills.push({ label: "✓ Verified", clear: { verified: undefined } });
 
   return (
     <div className="sticky top-[6.5rem] z-30 border-b border-border bg-surface py-3">
