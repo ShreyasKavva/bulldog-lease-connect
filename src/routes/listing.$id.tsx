@@ -25,6 +25,8 @@ import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesFo
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ShareSheet } from "@/components/leaseup/ShareSheet";
+import { ScrollRow } from "@/components/leaseup/SmartSections";
 import { ListingRatingSummary, ListingReviewsSection } from "@/components/leaseup/ListingReviews";
 import { timeAgo } from "@/lib/leaseup/constants";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
@@ -202,35 +204,55 @@ async function fetchSavedCount(id: string): Promise<number> {
   return ((data as any)?.save_count as number | undefined) ?? 0;
 }
 
+/**
+ * Q100 — "Similar subleases": up to 6 other active listings that share the
+ * campus (ideally within 30% of the price) or the property type. Fails
+ * silently: a query error returns [] rather than crashing the detail page.
+ */
 async function fetchSimilar(l: Listing): Promise<Listing[]> {
-  const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("is_active", true)
-    .eq("campus_id", l.campus_id)
-    .neq("id", l.id)
-    .gte("price", Math.max(0, l.price - 150))
-    .lte("price", l.price + 150)
-    .gte("available_to", today)
-    .limit(6);
-  if (error) throw error;
-  const rows = (data ?? []) as any[];
-  rows.sort((a, b) => Math.abs(a.price - l.price) - Math.abs(b.price - l.price));
-  const trimmed = rows.slice(0, 3);
-  const paths = trimmed.flatMap((r) => r.photos ?? []);
-  const urlMap = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
+  try {
+    const { data, error } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("is_active", true)
+      .eq("status", "active")
+      .neq("id", l.id)
+      .or(`campus_id.eq.${l.campus_id},type.eq.${l.type}`)
+      .order("created_at", { ascending: false })
+      .limit(40);
+    if (error) return [];
+    const rows = (data ?? []) as any[];
+    const lo = l.price * 0.7;
+    const hi = l.price * 1.3;
+    const rank = (r: any) => {
+      const sameCampus = r.campus_id === l.campus_id;
+      if (sameCampus && r.price >= lo && r.price <= hi) return 0;
+      if (sameCampus) return 1;
+      return 2;
+    };
+    rows.sort((a, b) => {
+      const d = rank(a) - rank(b);
+      if (d !== 0) return d;
+      return String(b.created_at).localeCompare(String(a.created_at));
+    });
+    const trimmed = rows.slice(0, 6);
+    const paths = trimmed.flatMap((r) => r.photos ?? []);
+    const urlMap = new Map<string, string>();
+    if (paths.length) {
+      const { data: signed } = await supabase.storage
+        .from("listing-photos")
+        .createSignedUrls(paths, 60 * 60 * 24 * 7);
+      signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
+    }
+    return trimmed.map((r) => ({
+      ...r,
+      photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+    })) as Listing[];
+  } catch {
+    return [];
   }
-  return trimmed.map((r) => ({
-    ...r,
-    photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
-  })) as Listing[];
 }
+
 
 // ---------------- component ----------------
 
@@ -459,14 +481,13 @@ function ListingDetailPage() {
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
               <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  aria-label="Share listing"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-sm font-semibold shadow-sm transition active:scale-95"
-                >
-                  <Share2 className="h-4 w-4" /> Share
-                </button>
+                <ShareSheet
+                  url={baseListingUrl()}
+                  title={`${listing.title} — LeaseUp`}
+                  text={`${listing.beds === 0 ? "Studio" : `${listing.beds} bed`} · ${listing.baths} bath · $${listing.price}/mo${listing.area ? ` · ${listing.area}` : ""}`}
+                  listingId={listing.id}
+                />
+
                 {isOwner && (
                   <Link
                     to="/listing/$id/edit"
@@ -775,25 +796,34 @@ function ListingDetailPage() {
           </section>
         )}
 
-        {/* PART E — similar */}
-        {similar.length > 0 && (
-          <section className="border-t border-border py-10">
-            <h2 className="mb-6 text-xl font-black sm:text-2xl">
-              Similar subleases{listing.campus?.short_name ? ` at ${listing.campus.short_name}` : ""}
-            </h2>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {similar.map((l) => (
-                <ListingCard
-                  key={l.id}
-                  listing={l}
-                  saved={false}
-                  onSave={() => {}}
-                  onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
-                />
-              ))}
+        {/* PART E — similar (Q100: snap-scroll row, hidden below 2 results) */}
+        {similar.length >= 2 && (
+          <section className="mt-10 border-t border-gray-100 pt-10 dark:border-border">
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="text-xl font-semibold">Similar subleases</h2>
+              <Link
+                to="/browse"
+                search={{ campus: listing.campus_id } as never}
+                className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
+              >
+                See all →
+              </Link>
             </div>
+            <ScrollRow>
+              {similar.map((l) => (
+                <div key={l.id} className="w-[82%] shrink-0 snap-start sm:w-[280px] lg:w-[calc((100%-3rem)/4)]">
+                  <ListingCard
+                    listing={l}
+                    saved={false}
+                    onSave={() => {}}
+                    onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
+                  />
+                </div>
+              ))}
+            </ScrollRow>
           </section>
         )}
+
 
         {/* PART E2 — send to a friend */}
         <section className="border-t border-border py-10">

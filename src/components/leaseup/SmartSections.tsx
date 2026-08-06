@@ -157,7 +157,7 @@ function Section({
   );
 }
 
-function ScrollRow({ children }: { children: React.ReactNode }) {
+export function ScrollRow({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(true);

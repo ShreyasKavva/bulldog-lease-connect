@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
+import { CampusAutocomplete } from "./CampusAutocomplete";
 import { cn } from "@/lib/utils";
 
 function short(d: Date | null) {
@@ -69,32 +70,18 @@ export function NavSearchBar() {
             </button>
           </PopoverTrigger>
           <PopoverContent align="start" sideOffset={10} className="w-80 rounded-2xl p-3">
-            <input
+            <CampusAutocomplete
               autoFocus
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
+              value={value.where}
               placeholder="Search campuses…"
-              className="mb-2 w-full rounded-full bg-background px-4 py-2 text-sm outline-none ring-1 ring-border"
+              onSelect={(c) => {
+                setValue((v) => ({ ...v, where: c.short_name ?? c.name, campusId: c.id }));
+                setOpen("when");
+              }}
+              onClear={() => setValue((v) => ({ ...v, where: "", campusId: null }))}
             />
-            <div className="max-h-64 overflow-y-auto">
-              {matches.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    setValue((v) => ({ ...v, where: c.short_name ?? c.name, campusId: c.id }));
-                    setOpen("when");
-                  }}
-                  className="flex w-full flex-col items-start rounded-xl px-3 py-2 text-left hover:bg-background"
-                >
-                  <span className="text-sm font-semibold">{c.name}</span>
-                  <span className="text-xs text-muted-foreground">{c.city}, {c.state}</span>
-                </button>
-              ))}
-              {matches.length === 0 && (
-                <div className="p-3 text-center text-xs text-muted-foreground">No campuses found</div>
-              )}
-            </div>
           </PopoverContent>
+
         </Popover>
 
         <span className="text-gray-300">|</span>

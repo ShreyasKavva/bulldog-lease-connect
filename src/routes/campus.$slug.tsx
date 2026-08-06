@@ -15,6 +15,7 @@ import { fetchSavedIds, toggleSaved } from "@/lib/leaseup/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 
 async function fetchCampusListings(campusId: string): Promise<Listing[]> {
   const { data, error } = await supabase
@@ -71,6 +72,7 @@ function CampusLandingPage() {
   const qc = useQueryClient();
   const { user } = useSession();
   const [limit, setLimit] = useState(24);
+  const [where, setWhere] = useState<{ name: string; slug: string }>({ name: campus.name, slug: campus.slug });
   const [when, setWhen] = useState("");
   const [who, setWho] = useState("");
 
@@ -115,7 +117,7 @@ function CampusLandingPage() {
     navigate({
       to: "/browse",
       search: {
-        campus: campus.slug,
+        campus: where.slug || campus.slug,
         ...(when ? { from: when } : {}),
         ...(who ? { tenants: Number(who) || undefined } : {}),
       } as any,
@@ -140,17 +142,18 @@ function CampusLandingPage() {
             onSubmit={submitSearch}
             className="mt-6 flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-border bg-white p-2 shadow-sm dark:bg-background sm:flex-row sm:items-center"
           >
-            <div className="flex-1 px-3 py-2">
+            <div className="relative flex-1 px-3 py-2">
               <label className="block text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                 Where
               </label>
-              <input
-                readOnly
-                value={campus.name}
-                className="w-full bg-transparent text-sm outline-none"
-                aria-label="Where"
+              <CampusAutocomplete
+                value={where.name}
+                placeholder="Search campuses…"
+                onSelect={(c) => setWhere({ name: c.name, slug: c.slug })}
+                onClear={() => setWhere({ name: "", slug: campus.slug })}
               />
             </div>
+
             <div className="flex-1 border-border px-3 py-2 sm:border-l">
               <label className="block text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                 When
