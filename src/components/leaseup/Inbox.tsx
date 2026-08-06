@@ -261,11 +261,22 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
     if (!body || !user?.id || !otherId || sending) return;
     setSending(true);
     setText("");
+    const optimistic = {
+      id: `pending-${Date.now()}`,
+      conversation_id: conversationId,
+      sender_id: user.id,
+      recipient_id: otherId,
+      content: body,
+      created_at: new Date().toISOString(),
+      read_at: null,
+    } as unknown as Message;
+    setPending((p) => [...p, optimistic]);
     try {
       await sendMessage(conversationId, user.id, otherId, body, conv?.listing_id ?? null);
       qc.invalidateQueries({ queryKey: ["messages", conversationId] });
       qc.invalidateQueries({ queryKey: ["conversations", user.id] });
     } catch {
+      setPending((p) => p.filter((m) => m.id !== optimistic.id));
       setText(body);
     } finally {
       setSending(false);
