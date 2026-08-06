@@ -14,7 +14,8 @@
  * for save / message / post — those actions call the callbacks passed in
  * from src/routes/index.tsx which route to /auth?next=... .
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
