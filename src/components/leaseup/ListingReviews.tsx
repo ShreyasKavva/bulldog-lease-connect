@@ -49,15 +49,37 @@ export function useListingReviews(listingId: string) {
 /** Compact "★ 4.8 (12 reviews)" line. Renders nothing with no reviews. */
 export function ListingRatingSummary({ listingId }: { listingId: string }) {
   const { avg, count } = useListingReviews(listingId);
-  if (count === 0) return null;
+
+  function jump(e: React.MouseEvent) {
+    e.preventDefault();
+    document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Q111 — no reviews yet: nudge instead of an empty star row.
+  if (count === 0) {
+    return (
+      <a
+        href="#reviews"
+        onClick={jump}
+        className="mt-2 inline-block text-sm text-muted-foreground hover:text-foreground hover:underline"
+      >
+        Be the first to review →
+      </a>
+    );
+  }
+
   return (
-    <p className="mt-2 flex items-center gap-1.5 text-lg font-semibold">
+    <a
+      href="#reviews"
+      onClick={jump}
+      className="mt-2 flex items-center gap-1.5 text-lg font-semibold hover:underline"
+    >
       <Star style={{ color: CORAL, fill: CORAL }} className="h-4 w-4" strokeWidth={1.5} />
       <span>{avg.toFixed(1)}</span>
       <span className="text-sm font-medium text-muted-foreground">
-        ({count} review{count === 1 ? "" : "s"})
+        · {count} review{count === 1 ? "" : "s"}
       </span>
-    </p>
+    </a>
   );
 }
 
@@ -80,7 +102,7 @@ export function ListingReviewsSection({
   listingTitle: string;
   ownerId: string;
 }) {
-  const { list, avg, count } = useListingReviews(listingId);
+  const { list, avg, count, isLoading } = useListingReviews(listingId);
   const { user } = useSession();
   const [showAll, setShowAll] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -98,10 +120,10 @@ export function ListingReviewsSection({
   const visible = useMemo(() => (showAll ? list : list.slice(0, 6)), [list, showAll]);
   const canReview = !!user && !isOwner && eligible && !alreadyReviewed;
 
-  if (count === 0 && !canReview) return null;
+  if (isLoading && count === 0) return null;
 
   return (
-    <section className="mt-10">
+    <section id="reviews" className="mt-10 scroll-mt-24">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Reviews</h2>
         {count > 0 && (

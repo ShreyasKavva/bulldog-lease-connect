@@ -72,13 +72,12 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
       <Bell className="h-5 w-5" />
       {unread > 0 && (
         <span
+          aria-label={`${unread} unread notifications`}
           className={cn(
-            "absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white",
+            "absolute right-1 top-1 h-2 w-2 rounded-full bg-[#FF5A5F]",
             pulse && "lu-badge-pulse",
           )}
-        >
-          {unread > 99 ? "99+" : unread}
-        </span>
+        />
       )}
     </button>
   );

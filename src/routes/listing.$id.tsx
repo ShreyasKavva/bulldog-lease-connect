@@ -74,7 +74,7 @@ export const Route = createFileRoute("/listing/$id")({
       { name: "description", content: desc },
       { property: "og:title", content: title },
       { property: "og:description", content: desc },
-      { property: "og:type", content: "article" },
+      { property: "og:type", content: "website" },
       { property: "og:url", content: url },
       { name: "twitter:card", content: img ? "summary_large_image" : "summary" },
       { name: "twitter:title", content: title },

@@ -17,6 +17,7 @@ import { useReactionPicker } from "./useReactionPicker";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
 import { openSaveToCollection } from "./SaveToCollectionModal";
+import { useListingRating } from "@/lib/leaseup/ratings";
 
 function fmtDate(iso: string | null) {
   if (!iso) return null;
@@ -72,6 +73,7 @@ export function ListingCard({
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
   const { user } = useSession();
+  const rating = useListingRating(listing.id);
 
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
@@ -224,6 +226,12 @@ export function ListingCard({
           <span className="font-normal">
             /mo · {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {Number(listing.baths)} ba
           </span>
+          {/* Q111 — review stars, only when the listing actually has reviews */}
+          {rating && rating.count > 0 && (
+            <span className="ml-1.5 whitespace-nowrap text-xs text-gray-600 dark:text-muted-foreground">
+              <span className="text-amber-400">★</span> {rating.avg.toFixed(1)}
+            </span>
+          )}
         </p>
         {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
         {listing.profile?.verified_email && (
