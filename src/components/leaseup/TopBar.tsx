@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, MapPin, Calendar, Users, Search } from "lucide-react";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSavedIds } from "@/lib/leaseup/queries";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
 import { SignInModal } from "@/components/leaseup/SignInModal";
 
@@ -20,6 +22,11 @@ type LegacyProps = { onOpenMessages?: () => void; transparent?: boolean };
 
 export function TopBar(_legacy: LegacyProps = {}) {
   const { user } = useSession();
+  const { data: savedIds = new Set<string>() } = useQuery({
+    queryKey: ["saved", user?.id],
+    queryFn: () => fetchSavedIds(user!.id),
+    enabled: !!user?.id,
+  });
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
