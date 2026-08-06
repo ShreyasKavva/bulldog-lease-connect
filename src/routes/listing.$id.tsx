@@ -34,8 +34,10 @@ import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
+  MoreHorizontal, Flag,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
+import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
 import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import {
   buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
@@ -488,6 +490,8 @@ function ListingDetailPage() {
                   listingId={listing.id}
                 />
 
+                <MoreOptionsMenu onReport={() => setReportOpen(true)} />
+
                 {isOwner && (
                   <Link
                     to="/listing/$id/edit"
@@ -546,6 +550,7 @@ function ListingDetailPage() {
                 icon={<Calendar className="h-4 w-4" />}
                 label="Available"
                 value={formatRange(listing.available_from, listing.available_to)}
+                sub={formatDuration(listing.available_from, listing.available_to)}
               />
               <FactRow
                 icon={<span className="text-base font-bold leading-none">$</span>}
@@ -657,10 +662,7 @@ function ListingDetailPage() {
                 Something wrong with this listing?{" "}
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!user) { openSignIn(`/listing/${listing.id}`); return; }
-                    setReportOpen(true);
-                  }}
+                  onClick={() => setReportOpen(true)}
                   className="underline underline-offset-2 hover:text-foreground"
                 >
                   Report it →
@@ -1157,6 +1159,7 @@ function PriceSidebar({
       <div className="flex items-baseline gap-1.5">
         <span className="text-2xl font-black">${listing.price.toLocaleString()}</span>
         <span className="text-sm text-muted-foreground">/ month</span>
+        <InlinePriceBadge price={listing.price} campusId={listing.campus_id} />
       </div>
 
       <div className="mt-4 space-y-2 rounded-xl border border-border p-3 text-sm">
@@ -1304,7 +1307,17 @@ function Lightbox({
 
 // ---------------- misc ----------------
 
-function FactRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function FactRow({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string | null;
+}) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
@@ -1313,22 +1326,94 @@ function FactRow({ icon, label, value }: { icon: React.ReactNode; label: string;
       <div className="min-w-0">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
         <div className="text-sm font-semibold">{value}</div>
+        {sub && <div className="text-sm text-muted-foreground">{sub}</div>}
       </div>
     </div>
   );
 }
 
+function toDate(iso: string) {
+  return new Date(iso + (iso.length === 10 ? "T00:00:00" : ""));
+}
+
+/** Q101 C2 — drop the year unless the range crosses out of the current year. */
 function formatRange(from: string | null | undefined, to: string | null | undefined): string {
+  const thisYear = new Date().getFullYear();
+  const years = [from, to].filter(Boolean).map((iso) => toDate(iso as string).getFullYear());
+  const showYear = years.some((y) => y !== thisYear);
   const fmt = (iso: string) =>
-    new Date(iso + (iso.length === 10 ? "T00:00:00" : "")).toLocaleDateString("en-US", {
+    toDate(iso).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: "numeric",
+      ...(showYear ? { year: "numeric" as const } : {}),
     });
-  if (from && to) return `${fmt(from)} → ${fmt(to)}`;
+  if (from && to) return `${fmt(from)} – ${fmt(to)}`;
   if (from) return `From ${fmt(from)}`;
   if (to) return `Until ${fmt(to)}`;
   return "Flexible";
+}
+
+/** "~4 months" / "12 nights" for a date range; null when it can't be computed. */
+function formatDuration(from: string | null | undefined, to: string | null | undefined): string | null {
+  if (!from || !to) return null;
+  const a = toDate(from).getTime();
+  const b = toDate(to).getTime();
+  if (Number.isNaN(a) || Number.isNaN(b) || b <= a) return null;
+  const nights = Math.round((b - a) / 86400000);
+  if (nights < 45) return `${nights} night${nights === 1 ? "" : "s"}`;
+  const months = Math.round(nights / 30);
+  return `~${months} month${months === 1 ? "" : "s"}`;
+}
+
+/** Q101 Part B — ⋯ menu with a single "Report this listing" action. */
+function MoreOptionsMenu({ onReport }: { onReport: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        aria-label="More options"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted"
+      >
+        <MoreHorizontal className="h-5 w-5" />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 z-30 mt-1 w-52 overflow-hidden rounded-xl border border-border bg-surface p-1 shadow-xl"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onReport();
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-muted"
+          >
+            <Flag className="h-4 w-4" /> Report this listing
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const CAMPUS_ABBREV: Record<string, string> = {
