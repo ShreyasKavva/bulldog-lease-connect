@@ -90,13 +90,12 @@ function Home() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [msgDraft, setMsgDraft] = useState<string | null>(null);
 
-  /** Redirect to /auth preserving the current URL + an intent flag. */
+  /** Q105 — open the sign-in modal in place, preserving the intent. */
   function requireAuth(intent: "post" | "message" | "save", ctx?: { listingId?: string }) {
     const params = new URLSearchParams();
     if (ctx?.listingId) params.set("listing", ctx.listingId);
     params.set(intent, "1");
-    const next = `/?${params.toString()}`;
-    navigate({ to: "/auth", search: { mode: intent === "message" ? "in" : "up", next } });
+    openSignIn(`/?${params.toString()}`);
   }
 
   async function handleMessage(listing: Listing) {
