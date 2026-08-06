@@ -14,7 +14,7 @@ import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera } from "lucide-react";
+import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function maskLastName(name: string | null | undefined): string {
@@ -514,5 +514,47 @@ function NudgeChip({ children, onClick }: { children: React.ReactNode; onClick?:
     <button onClick={onClick} className={cn("rounded-full bg-primary-light px-2.5 py-1 font-semibold text-primary-dark hover:bg-primary/20")}>
       {children}
     </button>
+  );
+}
+
+/** Q107 — compact horizontal row for the owner's own listings. */
+function OwnListingRow({ listing }: { listing: any }) {
+  const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0] ?? null;
+  const rented = listing.status === "filled" || listing.is_active === false;
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card-md">
+      {photo ? (
+        <img src={photo} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy" />
+      ) : (
+        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-muted">
+          <Home className="h-5 w-5 text-muted-foreground" />
+        </div>
+      )}
+      <Link
+        to="/listing/$id"
+        params={{ id: listing.id }}
+        className="min-w-0 flex-1"
+      >
+        <div className="truncate text-sm font-semibold">{listing.title}</div>
+        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+          <span>${listing.price}/mo</span>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-bold",
+              rented ? "bg-muted text-muted-foreground" : "bg-emerald-100 text-emerald-700",
+            )}
+          >
+            {rented ? "Rented" : "Active"}
+          </span>
+        </div>
+      </Link>
+      <Link
+        to="/listing/$id/edit"
+        params={{ id: listing.id }}
+        className="shrink-0 text-xs font-bold text-primary hover:underline"
+      >
+        Edit
+      </Link>
+    </div>
   );
 }
