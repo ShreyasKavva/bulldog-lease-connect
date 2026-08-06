@@ -17,7 +17,7 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/listing/$id/edit")({
+export const Route = createFileRoute("/listing/$id_/edit")({
   head: () => ({
     meta: [
       { title: "Edit sublease — LeaseUp" },
