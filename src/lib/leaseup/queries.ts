@@ -533,6 +533,33 @@ export async function fetchListingsByIds(ids: string[]): Promise<Listing[]> {
   return attachSignedUrls(withProfiles);
 }
 
+/**
+ * Curated homepage section reads (Q93). Each section is its own narrow query
+ * so the homepage doesn't depend on one giant client-side filter pass.
+ */
+export async function fetchCuratedListings(opts: {
+  maxPrice?: number;
+  availableBefore?: string; // ISO date — available_from <= this date
+  campusId?: string;
+  orderBy?: "created_at" | "available_from";
+  ascending?: boolean;
+  limit?: number;
+}): Promise<Listing[]> {
+  let q = supabase
+    .from("listings").select("*")
+    .eq("is_active", true)
+    .eq("status", "active");
+  if (opts.maxPrice != null) q = q.lte("price", opts.maxPrice);
+  if (opts.availableBefore) q = q.lte("available_from", opts.availableBefore);
+  if (opts.campusId) q = q.eq("campus_id", opts.campusId);
+  const { data, error } = await q
+    .order(opts.orderBy ?? "created_at", { ascending: opts.ascending ?? false, nullsFirst: false })
+    .limit(opts.limit ?? 12);
+  if (error) throw error;
+  const withProfiles = await attachProfiles(data ?? []);
+  return attachSignedUrls(withProfiles);
+}
+
 
 
 export async function fetchMyListings(userId: string): Promise<Listing[]> {
