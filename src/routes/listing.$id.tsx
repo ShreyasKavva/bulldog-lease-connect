@@ -158,7 +158,10 @@ type ListingLoadResult =
   | { listing: ListingWithCampus; reason?: undefined }
   | { listing?: undefined; reason: "expired" | "rented" };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function fetchListingDetail(id: string): Promise<ListingLoadResult | null> {
+  if (!UUID_RE.test(id)) return null;
   const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
