@@ -641,6 +641,8 @@ function ListingDetailPage() {
 
             <p className="mt-8 text-sm text-muted-foreground">
               Posted {timeAgo(listing.created_at)}
+              {viewCount >= 1 && <> · 👁 {viewCount.toLocaleString()} views</>}
+
               {poster?.name && (
                 <>
                   {" by "}
