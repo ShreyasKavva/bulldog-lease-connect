@@ -281,6 +281,20 @@ export function BrowseFilterBar({
               {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
             </button>
           ))}
+
+          {/* Q109 — verified-host quick filter */}
+          <button
+            onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
+            aria-pressed={values.verified === 1}
+            className={cn(
+              "rounded-full border px-3 py-1 text-sm font-semibold transition-colors",
+              values.verified === 1
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                : "border-border text-muted-foreground hover:border-foreground",
+            )}
+          >
+            ✓ Verified
+          </button>
         </div>
       </div>
 
