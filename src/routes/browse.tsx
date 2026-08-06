@@ -25,6 +25,7 @@ import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { CampusPills } from "@/components/leaseup/CampusPills";
 
 type Sort = "newest" | "price_asc" | "price_desc" | "popular";
 
@@ -394,6 +395,10 @@ function Browse() {
           placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
           initialFiltersOpen={s.openFilters === 1}
         />
+
+        <div className="mx-auto max-w-7xl">
+          <CampusPills title="Browse by campus" />
+        </div>
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
           <div className={cn("flex rounded-lg bg-background p-1", mapView && "hidden")}>
