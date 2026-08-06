@@ -138,10 +138,6 @@ export function TopBar(_legacy: LegacyProps = {}) {
               </Link>
             )}
 
-            <Link
-              to="/roommates"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
-            >Roommates</Link>
 
 
             <button
