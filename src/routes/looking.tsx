@@ -70,10 +70,29 @@ function LookingForPage() {
   const { user } = useSession();
   const { data: myProfile } = useMyProfile();
   const qc = useQueryClient();
-  const campusId = myProfile?.campus_id ?? null;
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: campuses = [] } = useQuery({
+    queryKey: ["campuses"],
+    queryFn: fetchCampuses,
+    staleTime: Infinity,
+  });
+
+  // Filters — campus scope defaults to the student's own campus.
+  const [campusFilter, setCampusFilter] = useState<string>("mine");
+  const [budgetFilter, setBudgetFilter] = useState<string>("");
+  const [moveInBy, setMoveInBy] = useState<string>("");
+
+  const campusId =
+    campusFilter === "all" ? null : campusFilter === "mine" ? myProfile?.campus_id ?? null : campusFilter;
+
+  const { data: allPosts = [], isLoading } = useQuery({
     queryKey: ["looking-for", campusId],
     queryFn: () => fetchLookingFor(campusId),
+  });
+
+  const posts = allPosts.filter((p) => {
+    if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
+    if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
+    return true;
   });
   const { data: myInterests = [] } = useQuery({
     queryKey: ["looking-for-interests", user?.id],
@@ -81,6 +100,7 @@ function LookingForPage() {
     enabled: !!user,
   });
   const interestSet = new Set(myInterests);
+
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<LookingForPost | null>(null);
