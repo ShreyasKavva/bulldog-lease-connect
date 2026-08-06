@@ -36,7 +36,7 @@ import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
-  MoreHorizontal, Flag, Grid2x2,
+  MoreHorizontal, Flag, Grid2x2, Loader2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
