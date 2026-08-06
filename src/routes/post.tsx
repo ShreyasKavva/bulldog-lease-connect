@@ -12,6 +12,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "@/lib/leaseup/use-session";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
+import { PostWizard } from "@/components/leaseup/PostWizard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/post")({
