@@ -50,6 +50,13 @@ type BrowseSearch = {
   laundry?: 1;
   sort?: Sort;
   view?: "grid" | "map";
+  // Q96 — params emitted by hero/nav search + homepage category pills
+  tenants?: number;
+  type?: string;
+  maxDuration?: number;
+  availableSoon?: 1;
+  postedToday?: 1;
+  nearCampus?: 1;
 };
 
 
@@ -60,13 +67,24 @@ function parseInt2(v: unknown): number | undefined {
 function parseStr(v: unknown): string | undefined {
   return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
+function parseFlag(v: unknown): 1 | undefined {
+  return v === 1 || v === "1" || v === true || v === "true" ? 1 : undefined;
+}
 function parseBeds(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
   const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
   return parts.length ? parts.join(",") : undefined;
 }
+/** Accepts internal values plus the friendly aliases used by search links. */
 function parseSort(v: unknown): Sort | undefined {
-  return typeof v === "string" && (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+  if (typeof v !== "string") return undefined;
+  if (v === "lowest") return "price_asc";
+  if (v === "highest") return "price_desc";
+  return (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+}
+function parseType(v: unknown): string | undefined {
+  const t = parseStr(v);
+  return t && ["studio", "private_room", "entire", "shared"].includes(t) ? t : undefined;
 }
 
 export const Route = createFileRoute("/browse")({
@@ -74,21 +92,26 @@ export const Route = createFileRoute("/browse")({
     q: parseStr(raw.q),
     campus: parseStr(raw.campus),
     area: parseStr(raw.area),
-    min_price: parseInt2(raw.min_price),
-    max_price: parseInt2(raw.max_price),
+    min_price: parseInt2(raw.min_price ?? raw.minPrice),
+    max_price: parseInt2(raw.max_price ?? raw.maxPrice),
     bedrooms: parseBeds(raw.bedrooms),
     baths: parseInt2(raw.baths),
-    from: parseStr(raw.from),
-    to: parseStr(raw.to),
-    furnished: raw.furnished === 1 || raw.furnished === "1" ? 1 : undefined,
-    utilities: raw.utilities === 1 || raw.utilities === "1" ? 1 : undefined,
-    parking: raw.parking === 1 || raw.parking === "1" ? 1 : undefined,
-    pets: raw.pets === 1 || raw.pets === "1" ? 1 : undefined,
-    wifi: raw.wifi === 1 || raw.wifi === "1" ? 1 : undefined,
-    laundry: raw.laundry === 1 || raw.laundry === "1" ? 1 : undefined,
+    from: parseStr(raw.from ?? raw.availableFrom),
+    to: parseStr(raw.to ?? raw.availableTo),
+    furnished: parseFlag(raw.furnished),
+    utilities: parseFlag(raw.utilities),
+    parking: parseFlag(raw.parking),
+    pets: parseFlag(raw.pets),
+    wifi: parseFlag(raw.wifi),
+    laundry: parseFlag(raw.laundry),
     sort: parseSort(raw.sort),
     view: raw.view === "map" ? "map" : undefined,
-
+    tenants: parseInt2(raw.tenants),
+    type: parseType(raw.type),
+    maxDuration: parseInt2(raw.maxDuration),
+    availableSoon: parseFlag(raw.availableSoon),
+    postedToday: parseFlag(raw.postedToday),
+    nearCampus: parseFlag(raw.nearCampus),
   }),
   head: () => ({
     meta: [
