@@ -692,6 +692,24 @@ function ListingDetailPage() {
               />
               {/* Q103 Part B — host profile card */}
               <HostProfileCard hostId={listing.user_id} poster={poster} />
+
+              {/* Q104 Part D — shared-home context for room listings */}
+              {(listing.type === "private_room" || listing.type === "shared_room") && (
+                <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
+                  <h3 className="mb-3 text-lg font-semibold">About the household</h3>
+                  <p className="text-sm text-gray-600 dark:text-muted-foreground">
+                    This is a room in a shared home. Message the host to learn more about your
+                    future roommates before committing.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => messageAboutRoommates()}
+                    className="mt-3 text-sm text-[#FF5A5F] hover:underline"
+                  >
+                    Message host about roommates →
+                  </button>
+                </div>
+              )}
               {/* PART D — activity signals */}
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
