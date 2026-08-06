@@ -13,7 +13,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchCuratedListings } from "@/lib/leaseup/queries";
 import { ListingCard } from "./ListingCard";
-import type { Campus, Listing } from "@/lib/leaseup/types";
+import type { Campus } from "@/lib/leaseup/campuses";
+import type { Listing } from "@/lib/leaseup/types";
 
 const UGA_SLUG = "university-of-georgia";
 
