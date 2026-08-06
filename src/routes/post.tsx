@@ -12,6 +12,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "@/lib/leaseup/use-session";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
+import { PostWizard } from "@/components/leaseup/PostWizard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/post")({
@@ -63,21 +64,23 @@ function PostPage() {
     );
   }
 
-  return (
-    <main className="mx-auto min-h-[60vh] max-w-2xl px-4 pb-28 pt-8 md:pb-8">
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-gray-900">
-        Post your sublease
-      </h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Fill out the details — students at your campus will see it right away.
-      </p>
-      <PostListingDialog
-        open
-        relistFrom={relist ?? null}
-        onOpenChange={(o) => {
-          if (!o) navigate({ to: "/" });
-        }}
-      />
-    </main>
-  );
+  // Relist keeps the legacy pre-filled dialog (it hydrates from an old listing).
+  if (relist) {
+    return (
+      <main className="mx-auto min-h-[60vh] max-w-2xl px-4 pb-28 pt-8 md:pb-8">
+        <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-gray-900">
+          Relist your sublease
+        </h1>
+        <PostListingDialog
+          open
+          relistFrom={relist}
+          onOpenChange={(o) => {
+            if (!o) navigate({ to: "/" });
+          }}
+        />
+      </main>
+    );
+  }
+
+  return <PostWizard userId={user.id} />;
 }
