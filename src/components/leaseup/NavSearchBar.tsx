@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
+import { CampusAutocomplete } from "./CampusAutocomplete";
 import { cn } from "@/lib/utils";
 
 function short(d: Date | null) {
