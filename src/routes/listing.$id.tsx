@@ -1367,7 +1367,8 @@ function Lightbox({
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
