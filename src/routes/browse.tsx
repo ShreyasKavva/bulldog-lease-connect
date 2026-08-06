@@ -415,8 +415,18 @@ function Browse() {
           </div>
         </div>
 
+        {/* Q108 — page heading reflects the active campus filter */}
+        <div className="mx-auto max-w-7xl px-4 pt-5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {campusId
+              ? `Subleases near ${campuses.find((c) => c.id === campusId)?.name ?? "your campus"}`
+              : "Browse subleases"}
+          </h1>
+        </div>
+
         {/* Q87 — Airbnb-style sticky search bar + filter modal */}
         <BrowseFilterBar
+
           values={s as BrowseFilterValues}
           onPatch={(patch) => patchSearch(patch as Partial<BrowseSearch>)}
           onClearAll={clearFilters}
