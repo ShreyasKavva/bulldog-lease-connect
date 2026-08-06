@@ -456,16 +456,37 @@ function ListingDetailPage() {
     ? new Date(poster.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : null;
 
-  function handleMessage() {
+  /**
+   * Q106 Part B — resolve (or create) the conversation with this host about
+   * this listing, then deep-link straight into that thread.
+   */
+  async function handleMessage() {
     if (!user) {
-      openSignIn(`/messages/${listing.id}`);
+      openSignIn(`/listing/${listing.id}`);
       return;
     }
     if (isOwner) {
       navigate({ to: "/my-listings" });
       return;
     }
-    navigate({ to: "/messages/$conversationId", params: { conversationId: listing.id } });
+    if (messaging) return;
+    setMessaging(true);
+    try {
+      try {
+        if (!sessionStorage.getItem("leaseup-msg-draft")) {
+          sessionStorage.setItem(
+            "leaseup-msg-draft",
+            "Hi, I'm interested in your listing — is it still available?",
+          );
+        }
+      } catch { /* noop */ }
+      const convId = await getOrCreateConversation(user.id, listing.user_id, listing.id);
+      navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't open the conversation");
+    } finally {
+      setMessaging(false);
+    }
   }
 
   /** Q104 — open the thread with a suggested opener about the household. */
@@ -478,6 +499,7 @@ function ListingDetailPage() {
     } catch { /* noop */ }
     handleMessage();
   }
+
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
