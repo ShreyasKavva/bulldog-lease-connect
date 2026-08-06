@@ -479,14 +479,13 @@ function ListingDetailPage() {
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
               <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  aria-label="Share listing"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-sm font-semibold shadow-sm transition active:scale-95"
-                >
-                  <Share2 className="h-4 w-4" /> Share
-                </button>
+                <ShareSheet
+                  url={baseListingUrl()}
+                  title={`${listing.title} — LeaseUp`}
+                  text={`${listing.beds === 0 ? "Studio" : `${listing.beds} bed`} · ${listing.baths} bath · $${listing.price}/mo${listing.area ? ` · ${listing.area}` : ""}`}
+                  listingId={listing.id}
+                />
+
                 {isOwner && (
                   <Link
                     to="/listing/$id/edit"
