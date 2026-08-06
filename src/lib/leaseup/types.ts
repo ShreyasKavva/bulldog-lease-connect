@@ -100,6 +100,10 @@ export type Conversation = {
   deleted_by_p1?: boolean;
   deleted_by_p2?: boolean;
   other?: Profile;
+  /** Q108 — inbox preview extras (computed in fetchConversations). */
+  last_message_sender_id?: string | null;
+  unread_count?: number;
+
   listing?: {
     id: string;
     title: string;
