@@ -227,8 +227,11 @@ export function AirbnbHome({
           <Link to="/" className="inline-block text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
             LeaseUp
           </Link>
-          <p className="mt-1 text-base text-gray-500 dark:text-muted-foreground">
-            Find a sublease. Move in easy.
+          <h1 className="mt-4 text-4xl font-bold text-gray-900 dark:text-foreground">
+            Sublease near your campus.
+          </h1>
+          <p className="mt-3 text-xl text-gray-500 dark:text-muted-foreground">
+            Verified students. Semester-ready dates. No Craigslist drama.
           </p>
         </div>
 
