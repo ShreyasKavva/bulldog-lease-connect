@@ -59,6 +59,7 @@ type BrowseSearch = {
   postedToday?: 1;
   nearCampus?: 1;
   openFilters?: 1;
+  hostId?: string;
 };
 
 
@@ -116,6 +117,7 @@ export const Route = createFileRoute("/browse")({
     postedToday: parseFlag(raw.postedToday),
     nearCampus: parseFlag(raw.nearCampus),
     openFilters: parseFlag(raw.openFilters),
+    hostId: parseStr(raw.hostId),
   }),
   head: () => ({
     meta: [
@@ -269,6 +271,7 @@ function Browse() {
         (l.area ?? "").toLowerCase().includes(qLower) ||
         (l.description ?? "").toLowerCase().includes(qLower)
       )) return false;
+      if (s.hostId && l.user_id !== s.hostId) return false;
       if (campusId && l.campus_id !== campusId) return false;
       if (area && l.area !== area) return false;
       if (furnishedOnly && !l.furnished) return false;
