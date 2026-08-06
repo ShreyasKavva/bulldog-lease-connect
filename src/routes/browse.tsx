@@ -414,7 +414,7 @@ function Browse() {
             </button>
           </div>
           <span className="text-xs text-muted-foreground">
-            {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+            {isLoading ? "Loading listings…" : `${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
           {/* Q90 — grid / map toggle */}
           <div className="ml-auto flex items-center gap-1">
