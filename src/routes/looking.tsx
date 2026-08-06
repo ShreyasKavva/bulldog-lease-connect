@@ -239,12 +239,13 @@ function LookingForPage() {
         ) : posts.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🔎</div>
-            <h3 className="mt-3 text-lg font-bold">No posts yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Be the first to tell the community what you're looking for.</p>
-            <Button onClick={openPost} className="mt-4 bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
-              <Plus className="h-4 w-4" />Post a request
+            <h3 className="mt-3 text-lg font-bold">No one's searching here yet.</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Post your search and let hosts find you.</p>
+            <Button onClick={openPost} className="mt-4 gap-1 bg-[#FF5A5F] font-bold text-white hover:bg-[#e14e53]">
+              <Plus className="h-4 w-4" />Post my search →
             </Button>
           </div>
+
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {posts.map(p => (
