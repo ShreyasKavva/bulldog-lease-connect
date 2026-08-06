@@ -1275,6 +1275,14 @@ function Lightbox({
   }, [go, onClose]);
 
   // Mobile swipe: 50px horizontal threshold.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   const touchX = useRef<number | null>(null);
   function onTouchStart(e: React.TouchEvent) {
     touchX.current = e.changedTouches[0]?.clientX ?? null;
@@ -1289,7 +1297,7 @@ function Lightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/95"
+      className="fixed inset-0 z-[100] flex flex-col bg-black/95"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
