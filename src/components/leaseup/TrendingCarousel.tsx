@@ -14,14 +14,13 @@ export function TrendingCarousel({
   // Q105 — only a real trend counts: need at least 2 listings with views.
   const viewed = listings.filter((l) => (l.view_count ?? 0) > 0);
   if (viewed.length < 2) return null;
-  listings = viewed;
   return (
     <section className="mb-5">
       <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-extrabold">
         🔥 Trending {campusName ? `at ${campusName}` : "this week"}
       </h2>
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {listings.map((l) => (
+        {viewed.map((l) => (
           <button
             key={l.id}
             onClick={() => onOpen(l)}
