@@ -14,6 +14,7 @@ import {
   getOrCreateConversation,
 } from "@/lib/leaseup/queries";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
 
 import { Button } from "@/components/ui/button";
 import {
