@@ -157,7 +157,7 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const [{ data: profs }, { data: lists }] = await Promise.all([
     otherIds.length ? supabase.from("profiles").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
-      ? supabase.from("listings").select("id,title,price,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
+      ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),
   ]);
   // Sign first photo of each listing
