@@ -622,6 +622,19 @@ function OwnListingRow({ listing }: { listing: any }) {
   const [relistOpen, setRelistOpen] = useState(false);
   const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0] ?? null;
   const rented = listing.status === "filled" || listing.is_active === false;
+  // Q112 — how many students saved this listing.
+  const { data: savedCount = 0 } = useQuery({
+    queryKey: ["listing-save-count", listing.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("saved_listings")
+        .select("id", { count: "exact", head: true })
+        .eq("listing_id", listing.id);
+      return count ?? 0;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card-md">
       {photo ? (
@@ -637,6 +650,9 @@ function OwnListingRow({ listing }: { listing: any }) {
         className="min-w-0 flex-1"
       >
         <div className="truncate text-sm font-semibold">{listing.title}</div>
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {(listing.view_count ?? 0).toLocaleString()} views · {savedCount} saved
+        </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           <span>${listing.price}/mo</span>
           <span
@@ -648,6 +664,7 @@ function OwnListingRow({ listing }: { listing: any }) {
             {rented ? "Rented" : "Active"}
           </span>
         </div>
+
       </Link>
       {rented && (
         <button

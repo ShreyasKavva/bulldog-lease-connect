@@ -8,12 +8,24 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
-import { fetchListingReviews, canLeaveReview, type Review } from "@/lib/leaseup/reviews.queries";
+import { fetchListingReviews, type Review } from "@/lib/leaseup/reviews.queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
+import { openSignIn } from "./SignInModal";
 import { cn } from "@/lib/utils";
 
 const CORAL = "#FF5A5F";
+
+function initials(name: string | null | undefined) {
+  const n = (name ?? "").trim();
+  if (!n) return "S";
+  return n
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 
 function StarRow({ value, size = 14 }: { value: number; size?: number }) {
   return (
@@ -83,14 +95,37 @@ export function ListingRatingSummary({ listingId }: { listingId: string }) {
   );
 }
 
-function initials(name: string | null | undefined) {
-  const n = (name ?? "").trim();
-  if (!n) return "S";
-  return n
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
+function daysAgo(iso: string) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (d <= 0) return "today";
+  if (d === 1) return "1 day ago";
+  if (d < 30) return `${d} days ago`;
+  const m = Math.floor(d / 30);
+  return `${m} month${m === 1 ? "" : "s"} ago`;
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  return (
+    <article className="mb-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2">
+        <div
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold"
+          style={review.reviewer?.banner_color ? { background: review.reviewer.banner_color, color: "#fff" } : undefined}
+          aria-hidden
+        >
+          {review.reviewer?.avatar_emoji ?? initials(review.reviewer?.name)}
+        </div>
+        <span className="truncate text-sm font-medium">{review.reviewer?.name ?? "Student"}</span>
+        <span className="text-xs text-muted-foreground">· {daysAgo(review.created_at)}</span>
+      </div>
+      <div className="mt-2">
+        <StarRow value={review.stars} size={16} />
+      </div>
+      {review.content && (
+        <p className={cn("mt-2 whitespace-pre-wrap text-sm text-foreground/80")}>{review.content}</p>
+      )}
+    </article>
+  );
 }
 
 export function ListingReviewsSection({
@@ -102,25 +137,16 @@ export function ListingReviewsSection({
   listingTitle: string;
   ownerId: string;
 }) {
-  const { list, avg, count, isLoading } = useListingReviews(listingId);
+  const { list, avg, count } = useListingReviews(listingId);
   const { user } = useSession();
   const [showAll, setShowAll] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const isOwner = !!user && user.id === ownerId;
-  const alreadyReviewed = !!user && list.some((r) => r.reviewer_id === user.id);
+  const mine = user ? list.find((r) => r.reviewer_id === user.id) ?? null : null;
 
-  const { data: eligible = false } = useQuery({
-    queryKey: ["can-review", user?.id, ownerId],
-    queryFn: () => canLeaveReview(user!.id, ownerId),
-    enabled: !!user?.id && !isOwner,
-    staleTime: 60 * 1000,
-  });
-
-  const visible = useMemo(() => (showAll ? list : list.slice(0, 6)), [list, showAll]);
-  const canReview = !!user && !isOwner && eligible && !alreadyReviewed;
-
-  if (isLoading && count === 0) return null;
+  const others = useMemo(() => list.filter((r) => r.id !== mine?.id), [list, mine]);
+  const visible = useMemo(() => (showAll ? others : others.slice(0, 6)), [others, showAll]);
 
   return (
     <section id="reviews" className="mt-10 scroll-mt-24">
@@ -134,70 +160,49 @@ export function ListingReviewsSection({
         )}
       </div>
 
-      {canReview && (
+      {!isOwner && !mine && (
         <button
           type="button"
-          onClick={() => setReviewOpen(true)}
-          className="mt-2 text-sm font-semibold hover:underline"
-          style={{ color: CORAL }}
+          onClick={() => (user ? setReviewOpen(true) : openSignIn(`/listing/${listingId}`))}
+          className="mt-3 rounded-full bg-gray-900 px-4 py-2 text-sm text-white dark:bg-white dark:text-gray-900"
         >
-          Leave a review
+          Write a review
         </button>
       )}
 
+      {mine && (
+        <div className="mt-4">
+          <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Your review
+            <button
+              type="button"
+              onClick={() => setReviewOpen(true)}
+              className="text-xs font-semibold normal-case text-primary hover:underline"
+            >
+              Edit
+            </button>
+          </div>
+          <ReviewCard review={mine} />
+        </div>
+      )}
+
       {count === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">
-          No reviews yet — be the first to share your experience.
-        </p>
+        <p className="mt-3 text-sm italic text-muted-foreground">No reviews yet — be the first!</p>
       ) : (
-        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+        <div className="mt-4">
           {visible.map((r) => (
-            <article key={r.id}>
-              <div className="flex items-center gap-2">
-                <div
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold text-white"
-                  style={{ background: r.reviewer?.banner_color ?? "#111827" }}
-                  aria-hidden
-                >
-                  {r.reviewer?.avatar_emoji ?? initials(r.reviewer?.name)}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate text-sm font-semibold">
-                      {r.reviewer?.name ?? "Student"}
-                    </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      Verified renter
-                    </span>
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <StarRow value={r.stars} size={12} />
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleDateString("en-US", {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {r.content && (
-                <p className={cn("mt-2 whitespace-pre-wrap text-sm text-muted-foreground")}>
-                  {r.content}
-                </p>
-              )}
-            </article>
+            <ReviewCard key={r.id} review={r} />
           ))}
         </div>
       )}
 
-      {!showAll && count > 6 && (
+      {!showAll && others.length > 6 && (
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="mt-4 rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
+          className="mt-1 rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
         >
-          Show all {count} reviews
+          Show all {others.length} reviews
         </button>
       )}
 
@@ -209,8 +214,11 @@ export function ListingReviewsSection({
           reviewedName={listingTitle}
           listingId={listingId}
           reviewerRole="subletter"
+          initialStars={mine?.stars ?? 0}
+          initialContent={mine?.content ?? ""}
         />
       )}
     </section>
   );
 }
+

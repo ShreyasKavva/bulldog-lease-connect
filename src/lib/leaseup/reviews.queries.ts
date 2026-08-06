@@ -90,16 +90,28 @@ export async function submitReview(input: {
   content: string | null;
   reviewerRole: "subletter" | "poster";
 }) {
+  const body = input.content?.trim() ? input.content.trim() : null;
+  // Q112 — one review per user per listing: update in place when it exists.
+  const existing = await getMyReviewFor(input.reviewerId, input.reviewedUserId, input.listingId);
+  if (existing) {
+    const { error } = await supabase
+      .from("reviews")
+      .update({ stars: input.stars, content: body })
+      .eq("id", existing.id);
+    if (error) throw error;
+    return;
+  }
   const { error } = await supabase.from("reviews").insert({
     reviewer_id: input.reviewerId,
     reviewed_user_id: input.reviewedUserId,
     listing_id: input.listingId,
     stars: input.stars,
-    content: input.content?.trim() ? input.content.trim() : null,
+    content: body,
     reviewer_role: input.reviewerRole,
   });
   if (error) throw error;
 }
+
 
 export async function deleteMyReview(id: string) {
   const { error } = await supabase.from("reviews").delete().eq("id", id);

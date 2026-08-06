@@ -1,37 +1,38 @@
 /**
- * PostWizard — Airbnb-style "Become a Host" multi-step flow for posting a
- * sublease (Q95). Six steps, progress bar, fixed footer, localStorage draft.
+ * PostWizard — 2-step "Post a sublease" flow (Q112).
+ *
+ * Step 1: the basics (title, type, campus, rent, dates, neighborhood).
+ * Step 2: photos & details (photos, beds/baths, furnished, description, amenities).
+ * State persists in localStorage so Back never loses step 1.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Check, X, Minus, Plus, ImagePlus, Loader2 } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
-import { ListingCard } from "./ListingCard";
-import type { Listing } from "@/lib/leaseup/types";
 
 const DRAFT_KEY = "leaseup-post-draft";
-const TOTAL_STEPS = 6;
+const MAX_PHOTOS = 5;
 
 const PLACE_TYPES = [
-  { id: "entire", label: "Entire apartment", emoji: "🏢" },
-  { id: "private", label: "Private room", emoji: "🚪" },
-  { id: "shared", label: "Shared room", emoji: "🛏️" },
-  { id: "studio", label: "Studio", emoji: "🏠" },
+  { id: "entire", label: "Entire Place" },
+  { id: "private", label: "Private Room" },
+  { id: "shared", label: "Shared Room" },
 ] as const;
 
 const AMENITIES = [
-  { id: "furnished", label: "Furnished" },
-  { id: "utilities_included", label: "Utilities included" },
-  { id: "parking", label: "Parking" },
-  { id: "pet_friendly", label: "Pets allowed" },
-  { id: "wifi", label: "WiFi" },
   { id: "laundry", label: "In-unit laundry" },
-  { id: "ac", label: "A/C" },
-  { id: "gym", label: "Pool/gym" },
+  { id: "parking", label: "Parking" },
+  { id: "pet_friendly", label: "Pet-friendly" },
+  { id: "ac", label: "AC" },
+  { id: "gym", label: "Gym" },
+  { id: "pool", label: "Pool" },
+  { id: "utilities_included", label: "Utilities included" },
+  { id: "furnished", label: "Furnished" },
+  { id: "bus", label: "Near bus stop" },
 ] as const;
 
 type Photo = { path: string; url: string };
@@ -46,6 +47,7 @@ type Draft = {
   baths: number;
   photos: Photo[];
   amenities: string[];
+  furnished: boolean;
   price: string;
   availableFrom: string;
   availableTo: string;
@@ -54,7 +56,7 @@ type Draft = {
 
 const EMPTY: Draft = {
   step: 1,
-  placeType: "",
+  placeType: "entire",
   title: "",
   campusId: "",
   area: "",
@@ -62,15 +64,16 @@ const EMPTY: Draft = {
   baths: 1,
   photos: [],
   amenities: [],
+  furnished: false,
   price: "",
   availableFrom: "",
   availableTo: "",
   description: "",
 };
 
-function labelInput(extra?: string) {
+function inputCls(extra?: string) {
   return cn(
-    "w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none transition focus:border-gray-900",
+    "w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none transition focus:border-gray-900 dark:border-border dark:bg-background",
     extra,
   );
 }
@@ -86,15 +89,13 @@ function Stepper({
   format?: (v: number) => string;
 }) {
   const btn =
-    "flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40";
+    "flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40 dark:border-border dark:text-foreground";
   return (
     <div className="flex items-center gap-4">
       <button type="button" className={btn} disabled={value <= min} onClick={() => onChange(Math.max(min, +(value - step).toFixed(1)))}>
         <Minus className="h-4 w-4" />
       </button>
-      <span className="min-w-[72px] text-center text-base font-medium text-gray-900">
-        {format ? format(value) : value}
-      </span>
+      <span className="min-w-[72px] text-center text-base font-medium">{format ? format(value) : value}</span>
       <button type="button" className={btn} disabled={value >= max} onClick={() => onChange(Math.min(max, +(value + step).toFixed(1)))}>
         <Plus className="h-4 w-4" />
       </button>
@@ -106,11 +107,11 @@ export function PostWizard({ userId }: { userId: string }) {
   const navigate = useNavigate();
   const [d, setD] = useState<Draft>(EMPTY);
   const [campuses, setCampuses] = useState<Campus[]>([]);
-  const [draftPrompt, setDraftPrompt] = useState<Draft | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
@@ -121,42 +122,19 @@ export function PostWizard({ userId }: { userId: string }) {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Draft;
-        if (parsed && (parsed.title || parsed.placeType || parsed.photos?.length)) {
-          setDraftPrompt({ ...EMPTY, ...parsed });
-        }
+        if (parsed && (parsed.title || parsed.photos?.length)) setD({ ...EMPTY, ...parsed });
       }
     } catch { /* ignore bad draft */ }
   }, []);
 
-  // Persist on step change
   useEffect(() => {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-    } catch { /* quota */ }
-  }, [d.step]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const checklist = useMemo(
-    () => [
-      { label: "Title", ok: d.title.trim().length > 2 },
-      { label: "Campus", ok: !!d.campusId },
-      { label: "At least 1 photo", ok: d.photos.length > 0 },
-      { label: "Price", ok: Number(d.price) > 0 },
-      { label: "Available from + until", ok: !!d.availableFrom && !!d.availableTo },
-    ],
-    [d],
-  );
-  const canPublish = checklist.every((c) => c.ok);
-
-  const stepValid = (() => {
-    if (d.step === 1) return !!d.placeType;
-    if (d.step === 2) return d.title.trim().length > 2 && !!d.campusId;
-    if (d.step === 3) return d.photos.length > 0;
-    if (d.step === 5) return Number(d.price) > 0 && !!d.availableFrom && !!d.availableTo;
-    return true;
-  })();
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* quota */ }
+  }, [d]);
 
   async function handleFiles(list: FileList | File[]) {
-    const files = Array.from(list).filter((f) => f.type.startsWith("image/"));
+    const files = Array.from(list)
+      .filter((f) => f.type.startsWith("image/"))
+      .slice(0, MAX_PHOTOS - d.photos.length);
     if (!files.length) return;
     setPhotoError(null);
     try {
@@ -173,16 +151,28 @@ export function PostWizard({ userId }: { userId: string }) {
     }
   }
 
+  function next() {
+    if (d.title.trim().length < 3) return setError("Add a listing title");
+    if (!d.campusId) return setError("Pick your campus");
+    if (!(Number(d.price) > 0)) return setError("Add a monthly rent");
+    if (!d.availableFrom || !d.availableTo) return setError("Add your available dates");
+    setError(null);
+    set({ step: 2 });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }
+
   async function publish() {
-    if (!canPublish || publishing) return;
+    if (publishing) return;
+    if (d.photos.length === 0) { setPhotoError("Add at least 1 photo"); return; }
     setPublishing(true);
     try {
       const a = new Set(d.amenities);
       const extras: string[] = [];
       if (a.has("ac")) extras.push("A/C");
-      if (a.has("gym")) extras.push("Pool/gym");
-      const beds = d.placeType === "studio" ? 0 : d.beds;
-      const { data, error } = await supabase
+      if (a.has("gym")) extras.push("Gym");
+      if (a.has("pool")) extras.push("Pool");
+      if (a.has("bus")) extras.push("Near bus stop");
+      const { data, error: err } = await supabase
         .from("listings")
         .insert({
           user_id: userId,
@@ -191,14 +181,13 @@ export function PostWizard({ userId }: { userId: string }) {
           description: d.description.trim() || d.title.trim(),
           type: "sublease",
           price: Math.round(Number(d.price)),
-          beds,
+          beds: d.beds,
           baths: d.baths,
           area: d.area.trim() || null,
-          furnished: a.has("furnished"),
+          furnished: d.furnished || a.has("furnished"),
           utilities_included: a.has("utilities_included"),
           parking: a.has("parking"),
           pet_friendly: a.has("pet_friendly"),
-          wifi_included: a.has("wifi"),
           laundry: a.has("laundry") ? "in-unit" : null,
           amenities: extras,
           photos: d.photos.map((p) => p.path),
@@ -209,9 +198,9 @@ export function PostWizard({ userId }: { userId: string }) {
         })
         .select("id")
         .single();
-      if (error) throw error;
+      if (err) throw err;
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
-      toast.success("Your listing is live! 🎉");
+      toast.success("Listing posted! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not publish listing");
@@ -219,332 +208,263 @@ export function PostWizard({ userId }: { userId: string }) {
     }
   }
 
-  const previewListing = {
-    id: "preview",
-    user_id: userId,
-    campus_id: d.campusId,
-    title: d.title || "Your listing title",
-    description: d.description,
-    type: "sublease",
-    price: Number(d.price) || 0,
-    beds: d.placeType === "studio" ? 0 : d.beds,
-    baths: d.baths,
-    area: d.area || null,
-    lat: null,
-    lng: null,
-    furnished: d.amenities.includes("furnished"),
-    utilities_included: d.amenities.includes("utilities_included"),
-    pet_friendly: d.amenities.includes("pet_friendly"),
-    parking: d.amenities.includes("parking"),
-    available_from: d.availableFrom || null,
-    available_to: d.availableTo || null,
-    amenities: [],
-    photos: d.photos.map((p) => p.path),
-    photo_urls: d.photos.map((p) => p.url),
-    is_active: true,
-    safe_score: null,
-    created_at: new Date().toISOString(),
-  } as unknown as Listing;
-
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      {/* progress */}
-      <div className="sticky top-0 z-30 bg-white">
-        <div className="h-1 w-full bg-gray-200">
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="sticky top-0 z-30 bg-background">
+        <div className="h-1 w-full bg-gray-200 dark:bg-muted">
           <div
-            className="h-1 bg-gray-900 transition-all duration-300 ease-out"
-            style={{ width: `${(d.step / TOTAL_STEPS) * 100}%` }}
+            className="h-1 bg-gray-900 transition-all duration-300 ease-out dark:bg-white"
+            style={{ width: d.step === 1 ? "50%" : "100%" }}
           />
         </div>
         <div className="flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-xl font-bold text-gray-900">LeaseUp</Link>
+          <Link to="/" className="text-xl font-bold">LeaseUp</Link>
           <button
             type="button"
-            onClick={() => {
-              try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* noop */ }
-              toast.success("Draft saved");
-              navigate({ to: "/" });
-            }}
-            className="text-sm text-gray-500 transition hover:text-gray-900"
+            onClick={() => { toast.success("Draft saved"); navigate({ to: "/" }); }}
+            className="text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
           >
             Save &amp; exit
           </button>
         </div>
       </div>
 
-      {draftPrompt && (
-        <div className="mx-auto mt-2 flex w-full max-w-xl items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3">
-          <span className="text-sm font-medium text-gray-900">Continue your draft?</span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => { setD(draftPrompt); setDraftPrompt(null); }}
-              className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Continue
-            </button>
-            <button
-              type="button"
-              onClick={() => { setDraftPrompt(null); try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }}
-              className="text-sm text-gray-500"
-            >
-              Start fresh
-            </button>
-          </div>
-        </div>
-      )}
-
-      <main className="mx-auto w-full max-w-xl flex-1 px-6 py-12 pb-40 md:py-16">
-        {d.step === 1 && (
+      <main className="mx-auto w-full max-w-xl flex-1 px-6 py-10 pb-24">
+        {d.step === 1 ? (
           <>
-            <h1 className="text-2xl font-bold text-gray-900">What kind of place are you listing?</h1>
-            <div className="mt-8 grid grid-cols-2 gap-4">
-              {PLACE_TYPES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => set({ placeType: t.id })}
-                  className={cn(
-                    "rounded-2xl border-2 border-gray-200 p-6 text-left transition hover:border-gray-400",
-                    d.placeType === t.id && "border-gray-900 bg-gray-50",
-                  )}
-                >
-                  <div className="text-2xl">{t.emoji}</div>
-                  <div className="mt-3 text-base font-semibold text-gray-900">{t.label}</div>
-                </button>
-              ))}
-            </div>
-            {d.placeType === "private" && (
-              <p className="mt-2 text-xs text-gray-400">
-                Renters will want to know about your existing roommates — mention them in your description!
-              </p>
-            )}
-          </>
-
-        )}
-
-        {d.step === 2 && (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900">Tell us about the place</h1>
-            <div className="mt-8 space-y-6">
+            <p className="mb-6 text-xs text-gray-400">Step 1 of 2 — Basic details</p>
+            <div className="space-y-6">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Title</label>
+                <label className="mb-1 block text-sm font-medium">Listing title</label>
                 <input
-                  className={labelInput()}
-                  value={d.title}
+                  className={inputCls()}
                   maxLength={100}
+                  value={d.title}
                   onChange={(e) => set({ title: e.target.value })}
-                  placeholder="e.g. Cozy 1BR near campus"
+                  placeholder="e.g. Cozy 1BR in West Campus"
                 />
               </div>
+
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Campus</label>
-                <select className={labelInput("bg-white")} value={d.campusId} onChange={(e) => set({ campusId: e.target.value })}>
+                <label className="mb-1 block text-sm font-medium">Listing type</label>
+                <div className="flex overflow-hidden rounded-full border border-gray-300 dark:border-border">
+                  {PLACE_TYPES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => set({ placeType: t.id })}
+                      className={cn(
+                        "flex-1 px-3 py-2.5 text-sm font-medium transition",
+                        d.placeType === t.id ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "hover:bg-muted",
+                      )}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Campus</label>
+                <select className={inputCls("bg-background")} value={d.campusId} onChange={(e) => set({ campusId: e.target.value })}>
                   <option value="">Select your campus</option>
                   {campuses.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Neighborhood</label>
-                <input
-                  className={labelInput()}
-                  value={d.area}
-                  onChange={(e) => set({ area: e.target.value })}
-                  placeholder="e.g. Milledge Ave, Five Points"
-                />
-              </div>
-              <div className="flex items-center justify-between border-t border-gray-100 pt-5">
-                <span className="text-sm font-medium text-gray-700">Bedrooms</span>
-                <Stepper value={d.beds} min={0} max={10} onChange={(v) => set({ beds: v })} format={(v) => (v === 0 ? "Studio" : String(v))} />
-              </div>
-              <div className="flex items-center justify-between border-t border-gray-100 pt-5">
-                <span className="text-sm font-medium text-gray-700">Bathrooms</span>
-                <Stepper value={d.baths} min={1} max={10} step={0.5} onChange={(v) => set({ baths: v })} />
-              </div>
-            </div>
-          </>
-        )}
-
-        {d.step === 3 && (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900">Add some photos</h1>
-            <p className="mt-2 text-sm text-gray-500">Listings with photos get 3x more inquiries</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }}
-            />
-            <div
-              onClick={() => fileRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
-              className={cn(
-                "mt-8 flex h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-300 transition hover:border-gray-500",
-                dragging && "border-gray-900 bg-gray-50",
-              )}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-                  <span className="text-sm text-gray-500">Uploading {uploading}…</span>
-                </>
-              ) : (
-                <>
-                  <ImagePlus className="h-7 w-7 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">Click to upload or drag &amp; drop</span>
-                  <span className="text-xs text-gray-400">JPG or PNG</span>
-                </>
-              )}
-            </div>
-            {photoError && <p className="mt-3 text-sm text-red-600">{photoError}</p>}
-            {d.photos.length > 0 && (
-              <div className={cn("mt-6 grid gap-3", d.photos.length >= 3 ? "grid-cols-2" : "grid-cols-1")}>
-                {d.photos.map((p, i) => (
-                  <div
-                    key={p.path}
-                    className={cn(
-                      "relative overflow-hidden rounded-xl bg-gray-100",
-                      d.photos.length >= 3 && i === 0 && "col-span-2",
-                    )}
-                  >
-                    <img src={p.url} alt="" className="h-44 w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
-                      className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow"
-                    >
-                      <X className="h-4 w-4 text-gray-900" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {d.step === 4 && (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900">What&apos;s included?</h1>
-            <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-              {AMENITIES.map((a) => {
-                const on = d.amenities.includes(a.id);
-                return (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() =>
-                      set({ amenities: on ? d.amenities.filter((x) => x !== a.id) : [...d.amenities, a.id] })
-                    }
-                    className={cn(
-                      "rounded-xl border-2 border-gray-200 p-4 text-sm font-medium text-gray-900 transition hover:border-gray-400",
-                      on && "border-gray-900 bg-gray-50",
-                    )}
-                  >
-                    {a.label}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {d.step === 5 && (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900">Set your price and availability</h1>
-            <div className="mt-8 space-y-6">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Monthly rent</label>
+                <label className="mb-1 block text-sm font-medium">Monthly rent</label>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold text-gray-900">$</span>
+                  <span className="text-lg font-semibold">$</span>
                   <input
                     type="number"
                     inputMode="numeric"
                     min={0}
-                    className={labelInput()}
+                    className={inputCls()}
                     value={d.price}
                     onChange={(e) => set({ price: e.target.value })}
                     placeholder="750"
                   />
                 </div>
               </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Available from</label>
-                  <input type="date" className={labelInput()} value={d.availableFrom} onChange={(e) => set({ availableFrom: e.target.value })} />
+                  <label className="mb-1 block text-sm font-medium">Available from</label>
+                  <input type="date" className={inputCls()} value={d.availableFrom} onChange={(e) => set({ availableFrom: e.target.value })} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Available until</label>
-                  <input type="date" className={labelInput()} value={d.availableTo} onChange={(e) => set({ availableTo: e.target.value })} />
+                  <label className="mb-1 block text-sm font-medium">Available until</label>
+                  <input type="date" className={inputCls()} value={d.availableTo} onChange={(e) => set({ availableTo: e.target.value })} />
                 </div>
               </div>
+
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+                <label className="mb-1 block text-sm font-medium">Address or neighborhood</label>
+                <input
+                  className={inputCls()}
+                  value={d.area}
+                  onChange={(e) => set({ area: e.target.value })}
+                  placeholder="e.g. 120 W 21st St or West Campus"
+                />
+              </div>
+
+              {error && <p className="text-sm text-red-600">{error}</p>}
+
+              <button
+                type="button"
+                onClick={next}
+                className="rounded-full bg-gray-900 px-6 py-3 font-medium text-white dark:bg-white dark:text-gray-900"
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mb-6 text-xs text-gray-400">Step 2 of 2 — Photos &amp; details</p>
+            <div className="space-y-8">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Photos (up to {MAX_PHOTOS})</label>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }}
+                />
+                <div
+                  onClick={() => d.photos.length < MAX_PHOTOS && fileRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+                  className={cn(
+                    "flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-300 transition hover:border-gray-500 dark:border-border",
+                    dragging && "border-gray-900 bg-muted",
+                    d.photos.length >= MAX_PHOTOS && "cursor-not-allowed opacity-50",
+                  )}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+                      <span className="text-sm text-gray-500">Uploading {uploading}…</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-7 w-7 text-gray-400" />
+                      <span className="text-sm font-medium">Click to upload or drag &amp; drop</span>
+                      <span className="text-xs text-gray-400">JPG or PNG · {d.photos.length}/{MAX_PHOTOS}</span>
+                    </>
+                  )}
+                </div>
+                {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
+                {d.photos.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    {d.photos.map((p) => (
+                      <div key={p.path} className="relative overflow-hidden rounded-xl bg-muted">
+                        <img src={p.url} alt="" className="h-32 w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
+                          className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow"
+                        >
+                          <X className="h-4 w-4 text-gray-900" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-100 pt-5 dark:border-border">
+                <span className="text-sm font-medium">Bedrooms</span>
+                <Stepper value={d.beds} min={0} max={6} onChange={(v) => set({ beds: v })} format={(v) => (v === 0 ? "Studio" : String(v))} />
+              </div>
+              <div className="flex items-center justify-between border-t border-gray-100 pt-5 dark:border-border">
+                <span className="text-sm font-medium">Bathrooms</span>
+                <Stepper value={d.baths} min={1} max={4} step={0.5} onChange={(v) => set({ baths: v })} />
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-100 pt-5 dark:border-border">
+                <span className="text-sm font-medium">Furnished?</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={d.furnished}
+                  onClick={() => set({ furnished: !d.furnished })}
+                  className={cn(
+                    "relative h-6 w-11 rounded-full transition",
+                    d.furnished ? "bg-gray-900 dark:bg-white" : "bg-gray-300 dark:bg-muted",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all dark:bg-gray-900",
+                      d.furnished ? "left-[22px]" : "left-0.5",
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Description</label>
                 <textarea
                   rows={6}
                   maxLength={500}
-                  className={labelInput("resize-none")}
+                  className={inputCls("resize-none")}
                   value={d.description}
                   onChange={(e) => set({ description: e.target.value })}
-                  placeholder="Describe your place — what makes it great, what's nearby, house rules..."
+                  placeholder="Describe the space, vibe, and what's included..."
                 />
                 <div className="mt-1 text-right text-xs text-gray-400">{d.description.length}/500</div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Amenities</label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {AMENITIES.map((a) => {
+                    const on = d.amenities.includes(a.id);
+                    return (
+                      <label key={a.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          onChange={() =>
+                            set({ amenities: on ? d.amenities.filter((x) => x !== a.id) : [...d.amenities, a.id] })
+                          }
+                          className="h-4 w-4 rounded border-gray-300 accent-gray-900"
+                        />
+                        {a.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => set({ step: 1 })}
+                  className="text-sm text-gray-400 hover:text-gray-600"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  disabled={publishing}
+                  onClick={publish}
+                  className="rounded-full bg-gray-900 px-6 py-3 font-medium text-white disabled:opacity-50 dark:bg-white dark:text-gray-900"
+                >
+                  {publishing ? "Posting…" : "Post listing →"}
+                </button>
               </div>
             </div>
           </>
         )}
-
-        {d.step === 6 && (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900">Review your listing</h1>
-            <div className="mt-8 max-w-sm">
-              <ListingCard listing={previewListing} saved={false} onSave={() => {}} onOpen={() => {}} onHeart={() => {}} />
-            </div>
-            <ul className="mt-8 space-y-2">
-              {checklist.map((c) => (
-                <li key={c.label} className="flex items-center gap-2 text-sm">
-                  {c.ok ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
-                  <span className={c.ok ? "text-gray-700" : "text-red-600"}>{c.label}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              disabled={!canPublish || publishing}
-              onClick={publish}
-              className="mt-8 w-full rounded-full bg-gray-900 py-4 text-lg font-semibold text-white transition disabled:opacity-50"
-            >
-              {publishing ? "Publishing…" : "Publish listing →"}
-            </button>
-          </>
-        )}
       </main>
-
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4">
-        {d.step > 1 ? (
-          <button type="button" onClick={() => set({ step: d.step - 1 })} className="text-sm font-medium text-gray-500">
-            Back
-          </button>
-        ) : <span />}
-        {d.step < TOTAL_STEPS && (
-          <button
-            type="button"
-            disabled={!stepValid}
-            onClick={() => {
-              if (d.step === 3 && d.photos.length === 0) { setPhotoError("Add at least 1 photo"); return; }
-              set({ step: d.step + 1 });
-            }}
-            className="rounded-full bg-gray-900 px-8 py-3 font-semibold text-white transition disabled:opacity-50"
-          >
-            Next →
-          </button>
-        )}
-      </div>
     </div>
   );
 }
