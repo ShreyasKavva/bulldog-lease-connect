@@ -335,7 +335,7 @@ function Browse() {
 
 
   async function handleSave(listing: Listing) {
-    if (!user) { toast.error("Sign in to save listings"); navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (!user) { openSignIn("/browse"); return; }
     const saved = savedIds.has(listing.id);
     qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
       const s = new Set(prev ?? []);
