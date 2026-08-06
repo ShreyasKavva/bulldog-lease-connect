@@ -87,3 +87,21 @@ export async function fetchCampusStats(campusId: string): Promise<{
     looking: looking.count ?? 0,
   };
 }
+
+/** Q99: resolve a campus from a URL slug, falling back to common aliases
+ *  ("uga", "osu") derived from short_name / name. */
+export async function fetchCampusBySlugOrAlias(slug: string): Promise<Campus | null> {
+  const key = (slug ?? "").toLowerCase().trim();
+  if (!key) return null;
+  const exact = await fetchCampusBySlug(key);
+  if (exact) return exact;
+  const norm = (s: string | null | undefined) =>
+    (s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const all = await fetchCampuses();
+  return (
+    all.find((c) => norm(c.short_name) === norm(key)) ??
+    all.find((c) => norm(c.name) === norm(key)) ??
+    all.find((c) => norm(c.slug) === norm(key)) ??
+    null
+  );
+}
