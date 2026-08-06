@@ -447,6 +447,17 @@ function ListingDetailPage() {
     navigate({ to: "/messages/$conversationId", params: { conversationId: listing.id } });
   }
 
+  /** Q104 — open the thread with a suggested opener about the household. */
+  function messageAboutRoommates() {
+    try {
+      sessionStorage.setItem(
+        "leaseup-msg-draft",
+        "Hi! I'm interested in the room. Could you tell me a bit about the other people living there?",
+      );
+    } catch { /* noop */ }
+    handleMessage();
+  }
+
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
 
