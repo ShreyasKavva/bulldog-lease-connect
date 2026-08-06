@@ -216,7 +216,7 @@
 }
 @media (hover: hover) {
   .lu-card-hover:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.01);
     box-shadow: 0 12px 32px rgba(0,0,0,0.12);
   }
   .lu-card-hover:hover .lu-card-img { transform: scale(1.04); }
