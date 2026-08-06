@@ -64,7 +64,7 @@ export function CampusPills({ title }: { title?: string } = {}) {
           return (
             <Link
               key={c.id}
-              to="/sublease/$slug"
+              to="/campus/$slug"
               params={{ slug: c.slug }}
               className="group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
             >
