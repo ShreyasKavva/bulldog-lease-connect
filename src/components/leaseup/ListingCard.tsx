@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 /**
  * ListingCard — Airbnb-style listing tile used in grid views (browse,
  * saved, campus pages, homepage). Deliberately minimal: full-bleed photo,
@@ -225,7 +226,7 @@ export function ListingCard({
             <Link
               to="/profile/$userId"
               params={{ userId: listing.user_id }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className="truncate hover:underline"
             >
               {listing.profile?.name || "Student"}
