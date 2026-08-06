@@ -1,4 +1,4 @@
-import { Flame } from "lucide-react";
+import { Flame, Home } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 
 
