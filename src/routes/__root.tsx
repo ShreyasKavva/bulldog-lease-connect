@@ -40,6 +40,7 @@ import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt"
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
+import { SaveToCollectionModal } from "@/components/leaseup/SaveToCollectionModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
 import { useRouterState } from "@tanstack/react-router";
 
@@ -60,6 +61,7 @@ function AppShell() {
         </div>
       </PullToRefresh>
       <BottomNav />
+      <SaveToCollectionModal />
     </>
   );
 }

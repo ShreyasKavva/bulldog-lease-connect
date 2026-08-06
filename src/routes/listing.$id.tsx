@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { openSaveToCollection } from "@/components/leaseup/SaveToCollectionModal";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { Button } from "@/components/ui/button";
@@ -276,27 +277,15 @@ function ListingDetailPage() {
     - dailyStats.slice(-14, -7).reduce((s, d) => s + (d.views ?? 0), 0);
   const unanswered = msgStats ? Math.max(0, msgStats.inbound - msgStats.replies) : 0;
 
-  async function handleToggleSave() {
+  function handleToggleSave() {
     if (!user) {
       openSignIn(`/listing/${listing.id}?save=1`);
       return;
     }
-    const wasSaved = isSaved;
-    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
-      const s = new Set(prev ?? []);
-      if (wasSaved) s.delete(listing.id); else s.add(listing.id);
-      return s;
-    });
-    qc.setQueryData(["listing-saved-count", listing.id], (prev: number | undefined) =>
-      Math.max(0, (prev ?? 0) + (wasSaved ? -1 : 1))
-    );
-    try {
-      await toggleSaved(user.id, listing.id, wasSaved);
-    } catch {
-      qc.invalidateQueries({ queryKey: ["saved", user.id] });
-      qc.invalidateQueries({ queryKey: ["listing-saved-count", listing.id] });
-    }
+    // Q91: hearts open the "Save to collection" modal.
+    openSaveToCollection(listing.id);
   }
+
 
   const { data: similar = [] } = useQuery({
     queryKey: ["listing-similar", listing.id],
@@ -481,7 +470,7 @@ function ListingDetailPage() {
                     aria-label={isSaved ? "Remove from saved" : "Save listing"}
                     className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
                   >
-                    <Heart className={cn("h-5 w-5", isSaved ? "fill-destructive text-destructive" : "text-foreground")} />
+                    <Heart className={cn("h-5 w-5", isSaved ? "fill-[#FF5A5F] text-[#FF5A5F]" : "text-foreground")} />
                   </button>
                 )}
               </div>

@@ -2167,18 +2167,21 @@ export type Database = {
       }
       saved_listings: {
         Row: {
+          collection_name: string
           created_at: string
           id: string
           listing_id: string
           user_id: string
         }
         Insert: {
+          collection_name?: string
           created_at?: string
           id?: string
           listing_id: string
           user_id: string
         }
         Update: {
+          collection_name?: string
           created_at?: string
           id?: string
           listing_id?: string
