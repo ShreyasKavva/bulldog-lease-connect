@@ -82,6 +82,7 @@ function parseSort(v: unknown): Sort | undefined {
   if (typeof v !== "string") return undefined;
   if (v === "lowest") return "price_asc";
   if (v === "highest") return "price_desc";
+  if (v === "trending") return "popular";
   return (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
 }
 function parseType(v: unknown): string | undefined {

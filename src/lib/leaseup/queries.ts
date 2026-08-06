@@ -541,9 +541,13 @@ export async function fetchCuratedListings(opts: {
   maxPrice?: number;
   availableBefore?: string; // ISO date — available_from <= this date
   campusId?: string;
-  orderBy?: "created_at" | "available_from";
+  orderBy?: "created_at" | "available_from" | "view_count";
   ascending?: boolean;
   limit?: number;
+  /** ISO timestamp — only listings created on/after this moment. */
+  createdAfter?: string;
+  /** Drop rows with no views (used by the trending row on a fresh DB). */
+  minViews?: number;
 }): Promise<Listing[]> {
   let q = supabase
     .from("listings").select("*")
@@ -552,6 +556,8 @@ export async function fetchCuratedListings(opts: {
   if (opts.maxPrice != null) q = q.lte("price", opts.maxPrice);
   if (opts.availableBefore) q = q.lte("available_from", opts.availableBefore);
   if (opts.campusId) q = q.eq("campus_id", opts.campusId);
+  if (opts.createdAfter) q = q.gte("created_at", opts.createdAfter);
+  if (opts.minViews != null) q = q.gte("view_count", opts.minViews);
   const { data, error } = await q
     .order(opts.orderBy ?? "created_at", { ascending: opts.ascending ?? false, nullsFirst: false })
     .limit(opts.limit ?? 12);
