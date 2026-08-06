@@ -26,7 +26,7 @@ import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -357,6 +357,14 @@ function MyListingsPage() {
                   >
                     <BarChart3 className="h-4 w-4" />
                   </button>
+                  <Link
+                    to="/listing/$id/edit"
+                    params={{ id: l.id }}
+                    title="Edit listing"
+                    className="rounded-md p-2 hover:bg-background"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
                   {!filled && (
                     <button
                       onClick={() => setTourFor(l)}

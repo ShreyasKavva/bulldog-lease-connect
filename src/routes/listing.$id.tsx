@@ -463,6 +463,15 @@ function ListingDetailPage() {
                 >
                   <Share2 className="h-4 w-4" /> Share
                 </button>
+                {isOwner && (
+                  <Link
+                    to="/listing/$id/edit"
+                    params={{ id: listing.id }}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-4 text-sm font-medium shadow-sm transition active:scale-95"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit listing
+                  </Link>
+                )}
                 {!isOwner && (
                   <button
                     type="button"
@@ -554,7 +563,7 @@ function ListingDetailPage() {
                     <MarkAsRentedButton listingId={listing.id} />
                   )}
                   <Link
-                    to="/post/edit/$id"
+                    to="/listing/$id/edit"
                     params={{ id: listing.id }}
                     className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-primary hover:text-primary"
                   >
