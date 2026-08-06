@@ -48,7 +48,7 @@ export function CampusPills({ title }: { title?: string } = {}) {
     <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="text-lg font-black sm:text-xl">
-          LeaseUp is live at {campuses.length} schools
+          {title ?? `LeaseUp is live at ${campuses.length} schools`}
         </h2>
         <Link
           to="/campuses"
