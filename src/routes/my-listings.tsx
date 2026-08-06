@@ -227,15 +227,19 @@ function MyListingsPage() {
         onOpenProfile={() => navigate({ to: "/" })}
         search="" onSearch={() => {}}
       />
-      <header className="border-b bg-surface">
-        <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-black"><HomeIcon className="h-6 w-6 text-primary" />My listings</h1>
+      <header className="border-b border-gray-100 bg-surface dark:border-border">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold">My subleases</h1>
             <p className="text-sm text-muted-foreground">{listings.length} total · {listings.filter(l => l.is_active).length} active</p>
           </div>
-          <Button onClick={() => setPosting(true)} className="ml-auto bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
-            <Plus className="h-4 w-4" />New listing
-          </Button>
+          <button
+            type="button"
+            onClick={() => setPosting(true)}
+            className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition active:scale-95 sm:ml-auto dark:bg-foreground dark:text-background"
+          >
+            Post a sublease →
+          </button>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
@@ -264,19 +268,19 @@ function MyListingsPage() {
           </div>
         )}
 
-        <div className="flex gap-2 border-b border-border">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {(["active", "rented", "expired"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "px-3 py-2 text-sm font-semibold capitalize -mb-px border-b-2",
+                "shrink-0 rounded-full border px-4 py-2 text-sm capitalize transition",
                 tab === t
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                  ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
+                  : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
               )}
             >
-              {t} ({groups[t].length})
+              {t}{groups[t].length > 0 ? ` (${groups[t].length})` : ""}
             </button>
           ))}
         </div>
@@ -315,33 +319,38 @@ function MyListingsPage() {
                     <button onClick={() => relist(l)} className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary-dark">Relist →</button>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setSelected(l)} className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted relative">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setSelected(l)} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-muted">
                     {l.photo_urls?.[0] ? <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl">🏠</div>}
                     {filled && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Rented</div>}
                     {expired && <div className="absolute inset-0 grid place-items-center bg-black/40 text-[10px] font-black uppercase text-white">Expired</div>}
                   </button>
                   <button onClick={() => setSelected(l)} className="min-w-0 flex-1 text-left">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm truncate">{l.title}</span>
-                      {filled
-                        ? <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">✓ Rented</span>
-                        : expired
-                          ? <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Expired</span>
-                          : !l.is_active && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">Hidden</span>}
+                      <span className="truncate text-sm font-semibold">{l.title}</span>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", filled ? "bg-gray-400" : expired ? "bg-gray-400" : !l.is_active ? "bg-amber-500" : "bg-emerald-500")} />
+                        {filled ? "Rented" : expired ? "Expired" : !l.is_active ? "Hidden" : "Active"}
+                      </span>
                     </div>
-
-                    <div className="text-xs text-muted-foreground">${l.price}/mo · {l.beds} bd · {l.area ?? "Near campus"}</div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <div className="text-sm text-gray-500">
+                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price}/mo
+                    </div>
+                    {(l.available_from || l.available_to) && (
+                      <div className="text-xs text-gray-400">
+                        {[l.available_from, l.available_to]
+                          .filter(Boolean)
+                          .map((d) => new Date(d as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+                          .join(" – ")}
+                      </div>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
                       <SafeScoreBadge score={l.safe_score} />
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                        <Eye className="h-3 w-3" />{l.view_count ?? 0}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                        <Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}
-                      </span>
+                      <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} views</span>
+                      <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
                     </div>
                   </button>
+
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
                   <button
                     onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
