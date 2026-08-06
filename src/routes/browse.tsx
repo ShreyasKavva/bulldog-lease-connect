@@ -276,6 +276,23 @@ function Browse() {
       if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
       if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
 
+      // Q96 — search-bar / category-pill params
+      if (s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+      if (s.type === "studio" && (l.beds ?? 0) !== 0) return false;
+      if (s.type === "private_room" && (l.beds ?? 0) !== 1) return false;
+      if (s.type === "entire" && (l.beds ?? 0) < 1) return false;
+      if (s.maxDuration != null) {
+        if (!l.available_from || !l.available_to) return false;
+        const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
+        if (!(days > 0 && days <= s.maxDuration)) return false;
+      }
+      if (s.availableSoon === 1) {
+        if (!l.available_from) return false;
+        if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
+      }
+      if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
+      if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+
       return true;
     });
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
@@ -285,7 +302,8 @@ function Browse() {
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
-      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths]);
+      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths,
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
