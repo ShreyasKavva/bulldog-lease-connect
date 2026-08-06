@@ -139,6 +139,27 @@ export const Route = createFileRoute("/listing/$id")({
       </div>
     </div>
   ),
+  pendingMs: 200,
+  pendingComponent: () => (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="h-6 w-40 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-200 dark:bg-muted" />
+          <div className="hidden aspect-[4/3] animate-pulse rounded-2xl bg-gray-200 sm:block dark:bg-muted" />
+        </div>
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
+          <div className="space-y-3">
+            <div className="h-7 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+            <div className="h-4 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+            <div className="h-24 w-full animate-pulse rounded bg-gray-200 dark:bg-muted" />
+          </div>
+          <div className="h-56 animate-pulse rounded-2xl bg-gray-200 dark:bg-muted" />
+        </div>
+      </div>
+    </div>
+  ),
   component: ListingDetailPage,
 });
 
