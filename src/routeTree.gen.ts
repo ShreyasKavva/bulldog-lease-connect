@@ -44,6 +44,7 @@ import { Route as MessagesConversationIdRouteImport } from './routes/messages.$c
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CampusSlugRouteImport } from './routes/campus.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
 import { Route as PostEditIdRouteImport } from './routes/post.edit.$id'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
@@ -232,6 +233,11 @@ const CampusSlugRoute = CampusSlugRouteImport.update({
   path: '/campus/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth_/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
   id: '/ambassador_/dashboard',
   path: '/ambassador/dashboard',
@@ -324,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
@@ -373,6 +380,7 @@ export interface FileRoutesByTo {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
@@ -423,6 +431,7 @@ export interface FileRoutesById {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
+  '/auth_/callback': typeof AuthCallbackRoute
   '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
+    | '/auth/callback'
     | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
+    | '/auth/callback'
     | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
@@ -572,6 +583,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador_/dashboard'
+    | '/auth_/callback'
     | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
@@ -622,6 +634,7 @@ export interface RootRouteChildren {
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   CampusSlugRoute: typeof CampusSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
@@ -888,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampusSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth_/callback': {
+      id: '/auth_/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ambassador_/dashboard': {
       id: '/ambassador_/dashboard'
       path: '/ambassador/dashboard'
@@ -1048,6 +1068,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   CampusSlugRoute: CampusSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
@@ -1070,13 +1091,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
