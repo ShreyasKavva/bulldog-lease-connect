@@ -279,31 +279,15 @@ export function AirbnbHome({
       </div>
 
 
-      {/* RAILS */}
+      {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
       <div ref={railsRef} className="scroll-mt-20">
-        <ListingRail
-          title={<span className="inline-flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Near Campus</span>}
-          listings={nearCampus}
+        <SmartSections
+          campuses={campuses}
+          userCampusId={search.campusId ?? userCampusId ?? feedCampusId ?? null}
           savedIds={savedIds}
           onSave={onSave}
           onOpen={onOpen}
-          onSeeAll={() => navigate({ to: "/browse" })}
-        />
-        <ListingRail
-          title={<span className="inline-flex items-center gap-2"><Flame className="h-5 w-5 text-orange-500" /> Best Deals</span>}
-          listings={bestDeals}
-          savedIds={savedIds}
-          onSave={onSave}
-          onOpen={onOpen}
-          onSeeAll={() => navigate({ to: "/browse" })}
-        />
-        <ListingRail
-          title={<span className="inline-flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Just Posted</span>}
-          listings={justPosted}
-          savedIds={savedIds}
-          onSave={onSave}
-          onOpen={onOpen}
-          onSeeAll={() => navigate({ to: "/browse" })}
+          filter={(l) => matchesCategory(l, cat, medianFor)}
         />
 
         {inCat.length === 0 && (
@@ -326,6 +310,7 @@ export function AirbnbHome({
           </div>
         )}
       </div>
+
 
       {/* LATEST SUBLEASES FEED (Q66) */}
       <LatestFeedSection
