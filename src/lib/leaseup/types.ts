@@ -147,6 +147,7 @@ export type LookingForPost = {
   move_in_date: string | null;
   move_out_date: string | null;
   beds_min: number | null;
+  num_people?: number | null;
   area: string | null;
   furnished: boolean | null;
   pets_ok: boolean | null;

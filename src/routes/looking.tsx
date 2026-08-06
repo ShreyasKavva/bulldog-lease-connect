@@ -388,6 +388,11 @@ function LookingForCard({
                 <Calendar className="h-3 w-3" />{dateRange}
               </span>
             )}
+            {(p.num_people ?? 1) > 1 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 font-semibold">
+                <Users className="h-3 w-3" />{p.num_people} people
+              </span>
+            )}
             {p.beds_min != null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 font-semibold">
                 <Bed className="h-3 w-3" />{p.beds_min}+ bd
@@ -482,6 +487,7 @@ function LookingForFormDialog({
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [beds, setBeds] = useState("");
+  const [people, setPeople] = useState("1");
   const [area, setArea] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -496,13 +502,14 @@ function LookingForFormDialog({
       setDescription(editing.description ?? "");
       setBudget(editing.budget_max?.toString() ?? "");
       setBeds(editing.beds_min?.toString() ?? "");
+      setPeople((editing.num_people ?? 1).toString());
       setArea(editing.area ?? "");
       setFrom(editing.move_in_date ?? "");
       setTo(editing.move_out_date ?? "");
       setFurnished(!!editing.furnished);
       setPets(!!editing.pets_ok);
     } else {
-      setTitle(""); setDescription(""); setBudget(""); setBeds("");
+      setTitle(""); setDescription(""); setBudget(""); setBeds(""); setPeople("1");
       setArea(""); setFrom(""); setTo(""); setFurnished(false); setPets(false);
     }
   }, [open, editing]);
@@ -516,6 +523,7 @@ function LookingForFormDialog({
         title, description,
         budget_max: budget ? parseInt(budget) : null,
         beds_min: beds ? parseInt(beds) : null,
+        num_people: people ? Math.max(1, parseInt(people)) : 1,
         area: area || null,
         move_in_date: from || null,
         move_out_date: to || null,
@@ -556,6 +564,7 @@ function LookingForFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Max budget</Label><Input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="900" /></div>
             <div><Label>Min beds</Label><Input type="number" value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="2" /></div>
+            <div><Label>How many people</Label><Input type="number" min={1} value={people} onChange={(e) => setPeople(e.target.value)} placeholder="1" /></div>
             <div><Label>Move-in</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
             <div><Label>Move-out</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
           </div>
