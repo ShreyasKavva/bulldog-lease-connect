@@ -151,6 +151,48 @@ export function TopBar(_legacy: LegacyProps = {}) {
               className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white md:hidden dark:bg-white dark:text-gray-900"
             >Post</button>
 
+            {/* Q105 — mobile hamburger menu */}
+            <div ref={mobileRef} className="relative md:hidden">
+              <button
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white dark:border-border dark:bg-background"
+              >
+                {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+              {mobileOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl dark:border-border dark:bg-surface">
+                  <MenuItem to="/browse" onClick={() => setMobileOpen(false)}>Subleases</MenuItem>
+                  <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Looking for a place?</MenuItem>
+                  <MenuItem to="/roommates" onClick={() => setMobileOpen(false)}>Rooms &amp; Roommates</MenuItem>
+                  {user && <MenuItem to="/saved" onClick={() => setMobileOpen(false)}>Saved</MenuItem>}
+                  {user && <MenuItem to="/messages" onClick={() => setMobileOpen(false)}>Messages</MenuItem>}
+                  {user && <MenuItem to="/my-listings" onClick={() => setMobileOpen(false)}>My Listings</MenuItem>}
+                  {user && <MenuItem to="/profile" onClick={() => setMobileOpen(false)}>Profile</MenuItem>}
+                  <div className="my-1 h-px bg-gray-100 dark:bg-border" />
+                  <div className="px-3 pb-1 pt-1">
+                    <button
+                      onClick={(e) => { setMobileOpen(false); handlePost(e); }}
+                      className="w-full rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+                    >Post a sublease →</button>
+                  </div>
+                  {user ? (
+                    <button
+                      onClick={() => { setMobileOpen(false); signOut(); }}
+                      className="mt-1 w-full px-4 py-2 text-left text-sm font-medium text-red-600"
+                    >Sign Out</button>
+                  ) : (
+                    <button
+                      onClick={() => { setMobileOpen(false); openSignIn(); }}
+                      className="mt-1 w-full px-4 py-2 text-left text-sm font-medium"
+                    >Sign In</button>
+                  )}
+                </div>
+              )}
+            </div>
+
+
             {user ? (
               <>
                 <div>
