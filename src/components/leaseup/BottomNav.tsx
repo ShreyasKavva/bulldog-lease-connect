@@ -59,7 +59,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/browse") ||
     path.startsWith("/sublease") ||
     path.startsWith("/listing") ||
-    path.startsWith("/looking-for") ||
+    path.startsWith("/looking") ||
     path.startsWith("/map");
   const isSaved = path.startsWith("/saved");
   const isAccount =

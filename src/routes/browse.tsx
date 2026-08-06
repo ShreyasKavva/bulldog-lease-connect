@@ -380,7 +380,7 @@ function Browse() {
         <div className="sticky top-14 z-30 border-b bg-surface">
           <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 text-sm font-bold">
             <span className="rounded-full bg-primary px-3 py-1.5 text-primary-foreground">🏠 Available</span>
-            <Link to="/looking-for" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">🔍 Looking For</Link>
+            <Link to="/looking" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">🔍 Looking For</Link>
             <Link to="/roommates" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">👥 Roommates</Link>
           </div>
         </div>
@@ -459,7 +459,7 @@ function Browse() {
           )}
           {view === "grid" && (
             <Link
-              to="/looking-for"
+              to="/looking"
               className="mb-4 mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3 text-sm transition hover:bg-primary-light/70"
             >
               <span className="font-medium text-primary-dark">
