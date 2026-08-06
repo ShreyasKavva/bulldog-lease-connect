@@ -25,6 +25,8 @@ import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesFo
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ShareSheet } from "@/components/leaseup/ShareSheet";
+import { ScrollRow } from "@/components/leaseup/SmartSections";
 import { ListingRatingSummary, ListingReviewsSection } from "@/components/leaseup/ListingReviews";
 import { timeAgo } from "@/lib/leaseup/constants";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
