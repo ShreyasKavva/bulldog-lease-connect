@@ -833,7 +833,7 @@ export type Database = {
           listing_id: string
           priority: string
           reason: string
-          reporter_id: string
+          reporter_id: string | null
           resolved_at: string | null
           resolved_by: string | null
           status: string
@@ -847,7 +847,7 @@ export type Database = {
           listing_id: string
           priority?: string
           reason: string
-          reporter_id: string
+          reporter_id?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
@@ -861,7 +861,7 @@ export type Database = {
           listing_id?: string
           priority?: string
           reason?: string
-          reporter_id?: string
+          reporter_id?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string

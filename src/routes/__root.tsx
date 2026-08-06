@@ -40,6 +40,7 @@ import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt"
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
+import { Footer } from "@/components/leaseup/Footer";
 import { SaveToCollectionModal } from "@/components/leaseup/SaveToCollectionModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
 import { useRouterState } from "@tanstack/react-router";
@@ -58,6 +59,7 @@ function AppShell() {
       <PullToRefresh onRefresh={handleRefresh}>
         <div key={path} className="lu-page-enter min-h-[calc(100dvh-3.5rem)] pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
           <Outlet />
+          <Footer />
         </div>
       </PullToRefresh>
       <BottomNav />
