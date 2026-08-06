@@ -39,9 +39,9 @@ export type ListingReport = {
   reportCount?: number;
 };
 
-export async function fileReport(listingId: string, reporterId: string, reason: string, details?: string) {
+export async function fileReport(listingId: string, reporterId: string | null, reason: string, details?: string) {
   const { error } = await supabase.from("listing_reports").insert({
-    listing_id: listingId, reporter_id: reporterId, reason, details: details ?? null,
+    listing_id: listingId, reporter_id: reporterId ?? null, reason, details: details ?? null,
   });
   if (error) throw error;
 }
