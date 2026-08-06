@@ -410,7 +410,7 @@ function ListingDetailPage() {
       navigate({ to: "/my-listings" });
       return;
     }
-    navigate({ to: "/messages/$listingId", params: { listingId: listing.id } });
+    navigate({ to: "/messages/$conversationId", params: { conversationId: listing.id } });
   }
 
   return (

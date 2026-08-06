@@ -41,6 +41,7 @@ import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
+import { Route as MessagesConversationIdRouteImport } from './routes/messages.$conversationId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
@@ -215,6 +216,11 @@ const MessagesListingIdRoute = MessagesListingIdRouteImport.update({
   path: '/$listingId',
   getParentRoute: () => MessagesRoute,
 } as any)
+const MessagesConversationIdRoute = MessagesConversationIdRouteImport.update({
+  id: '/$conversationId',
+  path: '/$conversationId',
+  getParentRoute: () => MessagesRoute,
+} as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
   path: '/listing/$id',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByTo {
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -408,6 +416,7 @@ export interface FileRoutesById {
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
+    | '/messages/$conversationId'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/profile/edit'
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
+    | '/messages/$conversationId'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/profile/edit'
@@ -550,6 +561,7 @@ export interface FileRouteTypes {
     | '/ambassador_/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
+    | '/messages/$conversationId'
     | '/messages/$listingId'
     | '/profile/$userId'
     | '/profile/edit'
@@ -837,6 +849,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesListingIdRouteImport
       parentRoute: typeof MessagesRoute
     }
+    '/messages/$conversationId': {
+      id: '/messages/$conversationId'
+      path: '/$conversationId'
+      fullPath: '/messages/$conversationId'
+      preLoaderRoute: typeof MessagesConversationIdRouteImport
+      parentRoute: typeof MessagesRoute
+    }
     '/listing/$id': {
       id: '/listing/$id'
       path: '/listing/$id'
@@ -932,11 +951,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface MessagesRouteChildren {
+  MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   MessagesListingIdRoute: typeof MessagesListingIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
 }
 
 const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesConversationIdRoute: MessagesConversationIdRoute,
   MessagesListingIdRoute: MessagesListingIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
 }
