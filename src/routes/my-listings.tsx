@@ -227,15 +227,19 @@ function MyListingsPage() {
         onOpenProfile={() => navigate({ to: "/" })}
         search="" onSearch={() => {}}
       />
-      <header className="border-b bg-surface">
-        <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-black"><HomeIcon className="h-6 w-6 text-primary" />My listings</h1>
+      <header className="border-b border-gray-100 bg-surface dark:border-border">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold">My subleases</h1>
             <p className="text-sm text-muted-foreground">{listings.length} total · {listings.filter(l => l.is_active).length} active</p>
           </div>
-          <Button onClick={() => setPosting(true)} className="ml-auto bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
-            <Plus className="h-4 w-4" />New listing
-          </Button>
+          <button
+            type="button"
+            onClick={() => setPosting(true)}
+            className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition active:scale-95 sm:ml-auto dark:bg-foreground dark:text-background"
+          >
+            Post a sublease →
+          </button>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
