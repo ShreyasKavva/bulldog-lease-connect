@@ -366,8 +366,6 @@ export function AirbnbHome({
       {/* LOOKING FOR STRIP (Q66) */}
       <LookingForStrip posts={lookingForPosts ?? []} />
 
-      {/* HOW IT WORKS (Q66) */}
-      <HowItWorks />
 
 
       {/* CAMPUS SPOTLIGHTS */}
@@ -610,44 +608,3 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   );
 }
 
-function HowItWorks() {
-  const renter = [
-    "Browse real listings from verified .edu students",
-    "Message directly — no middleman",
-    "No application fee, ever",
-  ];
-  const lister = [
-    "Post your sublease free in under 2 minutes",
-    "Get reached by students already searching",
-    "Mark as rented when done",
-  ];
-  return (
-    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
-      <h2 className="text-xl font-extrabold sm:text-2xl">How it works</h2>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl bg-surface p-5 shadow-card">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">For renters</div>
-          <ul className="mt-3 space-y-2 text-sm">
-            {renter.map((t, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="font-black text-primary">{i + 1}.</span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-2xl bg-surface p-5 shadow-card">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">For listers</div>
-          <ul className="mt-3 space-y-2 text-sm">
-            {lister.map((t, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="font-black text-primary">{i + 1}.</span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
