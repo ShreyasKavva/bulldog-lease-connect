@@ -450,7 +450,9 @@ function ListingDetailPage() {
   }, [user?.id]);
 
 
+  const [messaging, setMessaging] = useState(false);
   const firstName = (poster?.name ?? "").split(" ")[0] || "the host";
+
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
     ? new Date(poster.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
