@@ -194,6 +194,9 @@ function RoommatesPage() {
       )}
 
       {/* Grid */}
+      <p className="mb-4 text-sm text-gray-500 dark:text-muted-foreground">
+        Private rooms and shared spaces — perfect if you want the social experience of shared living near campus.
+      </p>
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
