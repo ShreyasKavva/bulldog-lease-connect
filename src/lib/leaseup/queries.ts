@@ -322,12 +322,16 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     try { window.dispatchEvent(new CustomEvent("lu:message-sent", { detail: { conversationId } })); } catch {}
   }
 
-  // Fire-and-forget email notification to the recipient.
-  // Debounce: bucket by 10-minute windows so rapid back-and-forth in the same
-  // conversation doesn't spam the recipient's inbox — the email queue dedupes
-  // by idempotency key.
+  // Q110 Part A — email the host ONLY on the first message of a conversation.
+  // Every later message is silent, so an active back-and-forth never spams.
   if (recipientId === senderId) return;
   try {
+    const { count } = await supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("conversation_id", conversationId);
+    if ((count ?? 0) > 1) return; // not the first message — stay quiet
+
     const { sendTransactionalEmail } = await import("@/lib/email/send");
     const [{ data: recipient }, { data: sender }, listingRes] = await Promise.all([
       supabase.from("profiles").select("email,name").eq("id", recipientId).maybeSingle(),
@@ -338,16 +342,13 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     ]);
     if (recipient?.email) {
       const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
-      const bucket = Math.floor(Date.now() / (10 * 60 * 1000));
       const listing = (listingRes as any)?.data ?? null;
-      const replyUrl = listingId
-        ? `${origin}/messages/${listingId}`
-        : `${origin}/messages`;
+      const replyUrl = `${origin}/messages/${conversationId}`;
       void sendTransactionalEmail({
         templateName: "new-message",
         recipientEmail: recipient.email,
-        // Same (conversation, recipient, 10-min bucket) → same key → deduped
-        idempotencyKey: `msg-${conversationId}-${recipientId}-${bucket}`,
+        // One email per (conversation, recipient) — first message only.
+        idempotencyKey: `msg-first-${conversationId}-${recipientId}`,
         templateData: {
           senderName: sender?.name || (sender?.email ? sender.email.split("@")[0] : "Someone"),
           preview: content.slice(0, 150),

@@ -28,6 +28,7 @@ import { ListingRail } from "./ListingRail";
 import { ListingCard } from "./ListingCard";
 import { SmartSections } from "./SmartSections";
 import { cn } from "@/lib/utils";
+import { openSignIn } from "./SignInModal";
 
 type Cat =
   | "all" | "near-campus" | "furnished" | "studio"
@@ -300,6 +301,10 @@ export function AirbnbHome({
 
         <LiveCounter />
       </section>
+
+      {/* Q110 Part C — signed-out welcome strip (tablet+) */}
+      <GuestWelcomeStrip />
+
 
       {/* CATEGORY PILLS */}
       <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
@@ -594,3 +599,40 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   );
 }
 
+
+/**
+ * Q110 Part C — friendly strip for signed-out visitors: one tap into the
+ * authenticated experience. Disappears entirely once signed in.
+ */
+function GuestWelcomeStrip() {
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (alive) setSignedIn(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSignedIn(!!session);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
+
+  if (signedIn !== false) return null;
+
+  return (
+    <div className="mx-auto hidden max-w-7xl px-4 pb-2 sm:block sm:px-6">
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 dark:border-border dark:bg-surface">
+        <p className="text-sm text-gray-700 dark:text-foreground">
+          👋 Exploring LeaseUp? Browse real listings or
+        </p>
+        <button
+          onClick={() => openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined)}
+          className="shrink-0 rounded-full bg-gray-900 px-4 py-2 text-sm text-white hover:bg-black dark:bg-foreground dark:text-background"
+        >
+          Sign in with Google →
+        </button>
+      </div>
+    </div>
+  );
+}
