@@ -22,6 +22,7 @@ import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { ListingRail } from "./ListingRail";
 import { ListingCard } from "./ListingCard";
+import { SmartSections } from "./SmartSections";
 import { cn } from "@/lib/utils";
 
 type Cat =
@@ -287,7 +288,7 @@ export function AirbnbHome({
           savedIds={savedIds}
           onSave={onSave}
           onOpen={onOpen}
-          filter={(l) => matchesCategory(l, cat, medianFor)}
+          filter={(l: Listing) => matchesCategory(l, cat, medianFor)}
         />
 
         {inCat.length === 0 && (
