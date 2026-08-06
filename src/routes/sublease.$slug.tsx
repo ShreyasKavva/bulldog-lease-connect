@@ -450,7 +450,7 @@ function CampusPage() {
           const short = campus.short_name;
           const gmUrl = withUtm(baseUrl, "groupme", "campus_share");
           const dcUrl = withUtm(baseUrl, "discord", "campus_share");
-          const gmText = `If you're looking for a sublease at ${short} this summer/fall, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo SafeScore BS, just real listings from real students 👇\n${gmUrl}`;
+          const gmText = `If you're looking for a sublease at ${short} this summer/fall, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo fees, just real listings from real students 👇\n${gmUrl}`;
           const dcText = `**LeaseUp — ${short} subleases**\nFree marketplace just for ${short} students · verified .edu sign-in only.\nReal listings from real students 👇\n\n${dcUrl}`;
           return (
             <section className="mt-12 rounded-2xl border border-border bg-surface p-6 md:p-8">

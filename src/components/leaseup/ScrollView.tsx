@@ -16,7 +16,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, MessageCircle, ArrowRight, Flame, BedDouble, Bath, MapPin, Calendar, Scale } from "lucide-react";
-import { SafeScoreBadge } from "./SafeScoreBadge";
 import { cn } from "@/lib/utils";
 import { useReactionPicker } from "./useReactionPicker";
 import { ShareToStoryButton } from "./ShareToStoryButton";
@@ -218,7 +217,6 @@ function ScrollCard({
       const opts: string[] = [];
       if ((l.view_count ?? 0) > 0) opts.push(`👀 ${l.view_count} students viewed this`);
       if (fire) opts.push(`🔥 Priced below campus average`);
-      if (l.safe_score && l.safe_score >= 80) opts.push(`⚡ SafeScore ${l.safe_score} — trusted poster`);
       if (l.profile?.verified_email) opts.push(`✓ Verified .edu student`);
       if (opts.length === 0) opts.push(`📍 ${l.area ?? "Near campus"}`);
       setPulseText(opts[Math.floor(Math.random() * opts.length)]);
@@ -294,9 +292,7 @@ function ScrollCard({
         Posted {timeAgo(l.created_at)}
       </div>
 
-      {/* Top-right: SafeScore */}
       <div className="pointer-events-none absolute right-4 top-5">
-        <SafeScoreBadge score={l.safe_score ?? 0} />
       </div>
 
       {fire && (

@@ -21,7 +21,6 @@ import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
-import { SafeScoreBadge } from "@/components/leaseup/SafeScoreBadge";
 import { LeaveReviewDialog } from "@/components/leaseup/LeaveReviewDialog";
 import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
@@ -345,7 +344,6 @@ function MyListingsPage() {
                       </div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                      <SafeScoreBadge score={l.safe_score} />
                       <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} views</span>
                       <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
                     </div>

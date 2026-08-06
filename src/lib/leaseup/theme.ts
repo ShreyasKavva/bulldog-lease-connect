@@ -19,7 +19,7 @@ export function applyTheme(pref: ThemePref) {
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0F1117" : "#2563EB");
+  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0F1117" : "#111827");
 }
 
 export function getStoredTheme(): ThemePref {
