@@ -202,35 +202,55 @@ async function fetchSavedCount(id: string): Promise<number> {
   return ((data as any)?.save_count as number | undefined) ?? 0;
 }
 
+/**
+ * Q100 — "Similar subleases": up to 6 other active listings that share the
+ * campus (ideally within 30% of the price) or the property type. Fails
+ * silently: a query error returns [] rather than crashing the detail page.
+ */
 async function fetchSimilar(l: Listing): Promise<Listing[]> {
-  const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("is_active", true)
-    .eq("campus_id", l.campus_id)
-    .neq("id", l.id)
-    .gte("price", Math.max(0, l.price - 150))
-    .lte("price", l.price + 150)
-    .gte("available_to", today)
-    .limit(6);
-  if (error) throw error;
-  const rows = (data ?? []) as any[];
-  rows.sort((a, b) => Math.abs(a.price - l.price) - Math.abs(b.price - l.price));
-  const trimmed = rows.slice(0, 3);
-  const paths = trimmed.flatMap((r) => r.photos ?? []);
-  const urlMap = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
+  try {
+    const { data, error } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("is_active", true)
+      .eq("status", "active")
+      .neq("id", l.id)
+      .or(`campus_id.eq.${l.campus_id},type.eq.${l.type}`)
+      .order("created_at", { ascending: false })
+      .limit(40);
+    if (error) return [];
+    const rows = (data ?? []) as any[];
+    const lo = l.price * 0.7;
+    const hi = l.price * 1.3;
+    const rank = (r: any) => {
+      const sameCampus = r.campus_id === l.campus_id;
+      if (sameCampus && r.price >= lo && r.price <= hi) return 0;
+      if (sameCampus) return 1;
+      return 2;
+    };
+    rows.sort((a, b) => {
+      const d = rank(a) - rank(b);
+      if (d !== 0) return d;
+      return String(b.created_at).localeCompare(String(a.created_at));
+    });
+    const trimmed = rows.slice(0, 6);
+    const paths = trimmed.flatMap((r) => r.photos ?? []);
+    const urlMap = new Map<string, string>();
+    if (paths.length) {
+      const { data: signed } = await supabase.storage
+        .from("listing-photos")
+        .createSignedUrls(paths, 60 * 60 * 24 * 7);
+      signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
+    }
+    return trimmed.map((r) => ({
+      ...r,
+      photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+    })) as Listing[];
+  } catch {
+    return [];
   }
-  return trimmed.map((r) => ({
-    ...r,
-    photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
-  })) as Listing[];
 }
+
 
 // ---------------- component ----------------
 
