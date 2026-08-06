@@ -275,7 +275,7 @@ export function AirbnbHome({
             return (
               <button
                 key={k}
-                onClick={() => setCat(k)}
+                onClick={() => pickCategory(k)}
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
                   active
