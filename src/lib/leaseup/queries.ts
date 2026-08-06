@@ -677,3 +677,23 @@ export async function bumpListing(listingId: string): Promise<string> {
 }
 
 
+
+/**
+ * Q105 — live active-listing count per campus, straight from the DB so the
+ * homepage "Explore campuses" grid never shows a stale/partial number.
+ */
+export async function fetchCampusListingCounts(): Promise<Map<string, number>> {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from("listings")
+    .select("campus_id")
+    .eq("is_active", true)
+    .eq("status", "active")
+    .or(`available_to.is.null,available_to.gte.${today}`);
+  if (error) return new Map();
+  const m = new Map<string, number>();
+  for (const r of (data ?? []) as { campus_id: string }[]) {
+    m.set(r.campus_id, (m.get(r.campus_id) ?? 0) + 1);
+  }
+  return m;
+}
