@@ -73,6 +73,18 @@ export function TopBar(_legacy: LegacyProps = {}) {
     return () => document.removeEventListener("mousedown", onDown);
   }, [menuOpen]);
 
+  // Close the mobile menu on outside click.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function onDown(e: MouseEvent) {
+      if (!mobileRef.current?.contains(e.target as Node)) setMobileOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [mobileOpen]);
+
+
+
   function handlePost(e: React.MouseEvent) {
     e.preventDefault();
     if (user) navigate({ to: "/", search: { post: "1" } as any });
