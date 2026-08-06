@@ -492,17 +492,18 @@ function Browse() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-xl bg-surface p-12 text-center shadow-card">
-              <div className="text-5xl">🏠</div>
-              <h3 className="mt-3 text-lg font-bold">No subleases found with those filters.</h3>
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
-                >
-                  Clear filters → to see all listings
-                </button>
-              )}
+            <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+              <div className="text-5xl">🔍</div>
+              <h3 className="mt-4 text-xl font-semibold">No subleases match your search</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try adjusting your filters or searching a different campus.
+              </p>
+              <button
+                onClick={clearFilters}
+                className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+              >
+                Clear filters
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
