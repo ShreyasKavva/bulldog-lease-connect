@@ -34,6 +34,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SavedIndexRouteImport } from './routes/saved.index'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
@@ -179,6 +180,11 @@ const SavedIndexRoute = SavedIndexRouteImport.update({
   path: '/saved/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MessagesRoute,
+} as any)
 const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   id: '/sublease/$slug',
   path: '/sublease/$slug',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -341,7 +348,6 @@ export interface FileRoutesByTo {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -360,6 +366,7 @@ export interface FileRoutesByTo {
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages': typeof MessagesIndexRoute
   '/saved': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -407,6 +414,7 @@ export interface FileRoutesById {
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -455,6 +463,7 @@ export interface FileRouteTypes {
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -482,7 +491,6 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
-    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -501,6 +509,7 @@ export interface FileRouteTypes {
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages'
     | '/saved'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -547,6 +556,7 @@ export interface FileRouteTypes {
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -778,6 +788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/': {
+      id: '/messages/'
+      path: '/'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof MessagesRoute
+    }
     '/sublease/$slug': {
       id: '/sublease/$slug'
       path: '/sublease/$slug'
@@ -916,10 +933,12 @@ declare module '@tanstack/react-router' {
 
 interface MessagesRouteChildren {
   MessagesListingIdRoute: typeof MessagesListingIdRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
 }
 
 const MessagesRouteChildren: MessagesRouteChildren = {
   MessagesListingIdRoute: MessagesListingIdRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
 }
 
 const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
@@ -1017,13 +1036,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

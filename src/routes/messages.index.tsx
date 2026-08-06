@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/leaseup/BottomNav";
 import { Inbox } from "@/components/leaseup/Inbox";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 
-export const Route = createFileRoute("/messages")({
+export const Route = createFileRoute("/messages/")({
   head: () => ({
     meta: [
       { title: "Messages — LeaseUp" },
