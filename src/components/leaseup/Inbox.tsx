@@ -303,17 +303,58 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         {conv && <Avatar c={conv} size={36} />}
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</div>
-          {conv?.listing?.id && (
+        </div>
+      </header>
+
+      {/* Q107 — listing context strip */}
+      <div className="flex items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 dark:border-border dark:bg-surface">
+        {conv?.listing?.id ? (
+          <>
+            {conv.listing.photo_url ? (
+              <img
+                src={conv.listing.photo_url}
+                alt=""
+                className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10">
+                <Home className="h-5 w-5 text-gray-400" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">
+                {conv.listing.title}
+              </div>
+              <div className="truncate text-xs text-gray-500">
+                {[
+                  conv.listing.price != null ? `$${conv.listing.price}/mo` : null,
+                  conv.listing.beds != null ? `${conv.listing.beds || "Studio"}${conv.listing.beds ? "BR" : ""}` : null,
+                  conv.listing.area || null,
+                ].filter(Boolean).join(" · ")}
+              </div>
+            </div>
             <Link
               to="/listing/$id"
               params={{ id: conv.listing.id }}
-              className="block truncate text-sm text-gray-500 hover:underline"
+              className="shrink-0 text-xs text-[#FF5A5F] hover:underline"
             >
-              about {conv.listing.title}
+              View listing →
             </Link>
-          )}
-        </div>
-      </header>
+          </>
+        ) : (
+          <>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10">
+              <MessageCircle className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">General inquiry</div>
+              <div className="truncate text-xs text-gray-500">Not about a specific listing</div>
+            </div>
+          </>
+        )}
+      </div>
+
 
       {/* Messages */}
       <div className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
