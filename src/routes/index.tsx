@@ -189,7 +189,7 @@ function Home() {
         recentFilledCount={filledCount}
       />
 
-      <CampusPills />
+      <CampusPills title="Popular campuses" />
 
 
 
