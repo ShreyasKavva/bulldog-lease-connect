@@ -200,6 +200,12 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         setText((t) => (t ? t : draft));
       }
     } catch { /* noop */ }
+    // Q106 — focus the composer when a thread is opened (deep-link or click).
+    const t = setTimeout(() => {
+      taRef.current?.focus();
+      bottomRef.current?.scrollIntoView({ block: "end" });
+    }, 60);
+    return () => clearTimeout(t);
   }, [conversationId]);
 
   const { data: serverMessages = [] } = useQuery({
@@ -249,7 +255,7 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
   }, [messages, conversationId, user?.id, qc]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
   }, [messages.length]);
 
   const otherId = conv
