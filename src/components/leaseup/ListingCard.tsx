@@ -9,7 +9,8 @@ import { Link } from "@tanstack/react-router";
  */
 import type { Listing } from "@/lib/leaseup/types";
 import { Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { timeAgo } from "@/lib/leaseup/constants";
+import { postedAgo } from "@/lib/leaseup/constants";
+import { CardPriceBadge } from "./PriceBadge";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
@@ -128,7 +129,7 @@ export function ListingCard({
   }
 
   return (
-    <article className="group cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none transition-shadow duration-200 hover:shadow-md">
+    <article className="lu-card-hover group cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none">
       <div
         ref={picker.containerRef}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
@@ -189,6 +190,8 @@ export function ListingCard({
           </>
         )}
 
+        <CardPriceBadge price={listing.price} campusId={listing.campus_id} />
+
         <button
           onClick={handleSave}
           aria-label={saved ? "Unsave" : "Save"}
@@ -208,11 +211,10 @@ export function ListingCard({
 
       <div className="px-1 py-3" onClick={onOpen}>
         <h3 className="truncate text-sm font-medium text-foreground">{listing.title}</h3>
-        {views > 0 && (
-          <p className="mt-0.5 text-xs text-muted-foreground/80">
-            {views} view{views === 1 ? "" : "s"} · Posted {timeAgo(listing.created_at)}
-          </p>
-        )}
+        <p className="mt-0.5 text-xs text-muted-foreground/80">
+          {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
+          Posted {postedAgo(listing.created_at)}
+        </p>
         <p className="mt-0.5 truncate text-sm text-muted-foreground">{location}</p>
         {dates && <p className="mt-0.5 text-sm text-muted-foreground/70">{dates}</p>}
         <p className="mt-1 text-sm text-foreground">
