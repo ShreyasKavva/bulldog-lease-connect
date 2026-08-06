@@ -7,10 +7,10 @@
  * lister's name when their email is verified.
  */
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, Check } from "lucide-react";
+import { Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
 
 function fmtDate(iso: string | null) {
@@ -18,6 +18,33 @@ function fmtDate(iso: string | null) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
+function PhotoDots({ count, index }: { count: number; index: number }) {
+  const max = 5;
+  const visible = Math.min(count, max);
+  let start = 0;
+  if (count > max) {
+    start = Math.min(Math.max(index - 2, 0), count - max);
+  }
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-1.5">
+      {Array.from({ length: visible }).map((_, i) => {
+        const idx = start + i;
+        const active = idx === index;
+        return (
+          <span
+            key={idx}
+            className={cn(
+              "rounded-full transition-all",
+              active ? "h-1.5 w-1.5 bg-white" : "h-1 w-1 bg-white/40",
+            )}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 export function ListingCard({
@@ -31,9 +58,15 @@ export function ListingCard({
   onPin?: () => void;
   isHotDeal?: boolean;
 }) {
-  const photo = listing.photo_urls?.[0] ?? listing.photos?.[0];
+  const photos = (listing.photo_urls?.length ? listing.photo_urls : listing.photos) ?? [];
+  const [idx, setIdx] = useState(0);
   const [imgError, setImgError] = useState(false);
   const picker = useReactionPicker(listing.id);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+
+  const photo = photos[idx] ?? photos[0];
+  const multi = photos.length > 1;
 
   const from = fmtDate(listing.available_from);
   const to = fmtDate(listing.available_to);
@@ -48,10 +81,37 @@ export function ListingCard({
     onSave();
   }
 
+  function step(e: React.MouseEvent, dir: 1 | -1) {
+    e.stopPropagation();
+    e.preventDefault();
+    setIdx((p) => Math.min(Math.max(p + dir, 0), photos.length - 1));
+  }
+
   function handlePhotoClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (swiped.current) { swiped.current = false; e.stopPropagation(); return; }
     const res = picker.handleClick(e);
     if (res.suppressed) { e.stopPropagation(); return; }
     onOpen();
+  }
+
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+    swiped.current = false;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const s = touchStart.current;
+    touchStart.current = null;
+    if (!s || !multi) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    swiped.current = true;
+    setIdx((p) => {
+      const next = dx < 0 ? p + 1 : p - 1;
+      return Math.min(Math.max(next, 0), photos.length - 1);
+    });
   }
 
   return (
@@ -60,6 +120,9 @@ export function ListingCard({
         ref={picker.containerRef}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
         onClick={handlePhotoClick}
+        onMouseLeave={() => setIdx(0)}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
         {...picker.bind}
       >
         {photo && !imgError ? (
@@ -73,7 +136,45 @@ export function ListingCard({
         ) : (
           <div className="flex h-full w-full items-center justify-center text-4xl">🏠</div>
         )}
+
+        {/* Preload only the adjacent photos */}
+        {multi && !imgError && (
+          <div className="hidden">
+            {[idx - 1, idx + 1].map((i) =>
+              photos[i] ? <img key={i} src={photos[i]} alt="" aria-hidden /> : null,
+            )}
+          </div>
+        )}
+
         {picker.overlay}
+
+        {multi && !imgError && (
+          <>
+            {idx > 0 && (
+              <button
+                type="button"
+                onClick={(e) => step(e, -1)}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 hidden h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-white text-gray-900 opacity-0 shadow-md transition hover:scale-105 group-hover:opacity-100 md:grid"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+            {idx < photos.length - 1 && (
+              <button
+                type="button"
+                onClick={(e) => step(e, 1)}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 hidden h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-white text-gray-900 opacity-0 shadow-md transition hover:scale-105 group-hover:opacity-100 md:grid"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+            <div className="opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+              <PhotoDots count={photos.length} index={idx} />
+            </div>
+          </>
+        )}
 
         <button
           onClick={handleSave}
@@ -88,6 +189,7 @@ export function ListingCard({
           />
         </button>
       </div>
+
 
       <div className="px-1 py-3" onClick={onOpen}>
         <h3 className="truncate text-sm font-medium text-foreground">{listing.title}</h3>
