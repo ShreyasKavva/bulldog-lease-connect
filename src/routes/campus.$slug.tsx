@@ -37,8 +37,8 @@ export const Route = createFileRoute("/campus/$slug")({
   },
   head: ({ loaderData, params }) => {
     const name = loaderData?.campus?.name ?? "your campus";
-    const title = `Student Subleases near ${name} — LeaseUp`;
-    const description = `Find verified student subleases near ${name}. Browse active listings and message hosts for free.`;
+    const title = `${name} Subleases | LeaseUp`;
+    const description = `Browse verified student subleases near ${name}. Semester-ready dates, real photos, message hosts directly.`;
     const url = `https://leasup.co/campus/${params.slug}`;
     return {
       meta: [
@@ -71,7 +71,6 @@ function CampusLandingPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { user } = useSession();
-  const [limit, setLimit] = useState(24);
   const [where, setWhere] = useState<{ name: string; slug: string }>({ name: campus.name, slug: campus.slug });
   const [when, setWhen] = useState("");
   const [who, setWho] = useState("");
@@ -87,16 +86,16 @@ function CampusLandingPage() {
   });
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
     const prices = listings.map((l) => l.price).filter((p) => typeof p === "number");
+    const monthAgo = Date.now() - 30 * 86400000;
     return {
       count: listings.length,
       avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
-      now: listings.filter((l) => !l.available_from || l.available_from <= today).length,
+      thisMonth: listings.filter((l) => new Date(l.created_at).getTime() >= monthAgo).length,
     };
   }, [listings]);
 
-  const visible = listings.slice(0, limit);
+  const visible = listings.slice(0, 6);
 
   async function handleSave(l: Listing) {
     if (!user) {
@@ -131,12 +130,19 @@ function CampusLandingPage() {
       {/* Hero */}
       <section className="w-full bg-gray-50 px-6 py-16 dark:bg-surface">
         <div className="mx-auto max-w-5xl">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-foreground">
-            Subleases near {short}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-foreground sm:text-4xl">
+            {campus.name} Subleases
           </h1>
           <p className="mt-2 text-lg text-gray-500">
-            Find verified student subleases close to {campus.name}
+            Find verified student subleases near {campus.city}.
           </p>
+          <Link
+            to="/browse"
+            search={{ campus: campus.slug } as any}
+            className="mt-5 inline-flex items-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+          >
+            Browse {stats.count} active listing{stats.count === 1 ? "" : "s"} →
+          </Link>
 
           <form
             onSubmit={submitSearch}
@@ -201,15 +207,15 @@ function CampusLandingPage() {
             <div className="text-xs text-muted-foreground">average price</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold">{stats.now}</div>
-            <div className="text-xs text-muted-foreground">available now</div>
+            <div className="text-lg font-bold">{stats.thisMonth}</div>
+            <div className="text-xs text-muted-foreground">added this month</div>
           </div>
         </div>
       </div>
 
       {/* Listings */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <h2 className="mb-4 text-xl font-semibold">All subleases near {campus.name}</h2>
+        <h2 className="mb-4 text-xl font-semibold">Recent subleases near {short}</h2>
         {isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -238,17 +244,15 @@ function CampusLandingPage() {
                 />
               ))}
             </div>
-            {listings.length > visible.length && (
-              <div className="mt-8 text-center">
-                <button
-                  type="button"
-                  onClick={() => setLimit((n) => n + 24)}
-                  className="rounded-full border border-border px-6 py-3 text-sm font-semibold hover:bg-muted"
-                >
-                  Load more
-                </button>
-              </div>
-            )}
+            <div className="mt-8 text-center">
+              <Link
+                to="/browse"
+                search={{ campus: campus.slug } as any}
+                className="inline-block text-sm font-semibold text-primary hover:underline"
+              >
+                View all {listings.length} sublease{listings.length === 1 ? "" : "s"} at {campus.name} →
+              </Link>
+            </div>
           </>
         )}
       </section>
