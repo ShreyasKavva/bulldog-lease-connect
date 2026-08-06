@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MessageSquare, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from "@/lib/leaseup/types";
+
 
 type HostStats = {
   response_rate: number | null;
@@ -46,7 +46,13 @@ export function HostProfileCard({
   hostId, poster, memberSince,
 }: {
   hostId: string;
-  poster?: Profile | null;
+  poster?: {
+    name?: string | null;
+    avatar_emoji?: string | null;
+    banner_color?: string | null;
+    verified_email?: boolean | null;
+    created_at?: string | null;
+  } | null;
   memberSince?: string | null;
 }) {
   const { data: stats } = useQuery({
