@@ -336,8 +336,8 @@ export function ProfileView({ userId }: { userId: string }) {
         {/* Listings */}
         <section className="mt-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-lg font-extrabold">
-              {isOwn ? "My Listings" : `${(profile.name || "").split(" ")[0]}'s Listings`}
+            <h2 className="text-lg font-semibold">
+              {isOwn ? "Your subleases" : `${(profile.name || "").split(" ")[0]}'s Listings`}
               {" "}<span className="text-sm font-semibold text-muted-foreground">({isOwn ? listings.length : profile.active_listing_count} active)</span>
             </h2>
             {isOwn && listings.length > 0 && (
@@ -346,32 +346,50 @@ export function ProfileView({ userId }: { userId: string }) {
               </Link>
             )}
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {listings.map((l: any) => (
-              <ListingCard
-                key={l.id}
-                listing={l}
-                saved={false}
-                onSave={() => {}}
-                onOpen={() => navigate({ to: "/", search: { listing: l.id } as any })}
-              />
-            ))}
-            {listings.length === 0 && (
-              <div className="col-span-full rounded-2xl bg-surface p-8 text-center text-sm text-muted-foreground shadow-card-md">
-                {isOwn ? (
-                  <Link to="/post" className="font-semibold text-primary hover:underline">+ Post your first sublease →</Link>
-                ) : (
-                  "No active listings right now."
-                )}
-              </div>
-            )}
-          </div>
+
+          {isOwn ? (
+            <div className="space-y-2">
+              {listings.map((l: any) => (
+                <OwnListingRow key={l.id} listing={l} />
+              ))}
+              {listings.length === 0 && (
+                <div className="rounded-2xl bg-surface p-8 text-center shadow-card-md">
+                  <p className="text-sm text-muted-foreground">You haven't posted a sublease yet.</p>
+                  <Link
+                    to="/post"
+                    className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+                  >
+                    Post a sublease →
+                  </Link>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {listings.map((l: any) => (
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  saved={false}
+                  onSave={() => {}}
+                  onOpen={() => navigate({ to: "/", search: { listing: l.id } as any })}
+                />
+              ))}
+              {listings.length === 0 && (
+                <div className="col-span-full rounded-2xl bg-surface p-8 text-center text-sm text-muted-foreground shadow-card-md">
+                  No active listings right now.
+                </div>
+              )}
+            </div>
+          )}
+
           {isOwn && listings.length > 0 && (
             <Link to="/post" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
               <Plus className="h-4 w-4" /> Post a new sublease →
             </Link>
           )}
         </section>
+
 
         {/* Roommate profile (public only, if they have one) */}
         {!isOwn && roommateProfile && roommateProfile.is_active && (
