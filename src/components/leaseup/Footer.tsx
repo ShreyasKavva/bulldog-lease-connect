@@ -91,6 +91,8 @@ export function Footer() {
           >
             leasup.co <ArrowUpRight className="h-3 w-3" />
           </a>
+          <p className="mt-2 text-xs text-gray-400">Built for college students.</p>
+
         </div>
       </div>
     </footer>

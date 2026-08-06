@@ -1530,18 +1530,22 @@ function formatDuration(from: string | null | undefined, to: string | null | und
  * result) and therefore has no in-app history to go back to.
  */
 function DeepLinkBackLink() {
-  const [show, setShow] = useState(false);
+  // Q108 — always offer a way back to browse, preserving ?campus when present.
+  const [campus, setCampus] = useState<string | undefined>(undefined);
   useEffect(() => {
-    const ref = document.referrer || "";
-    const sameSite = ref && new URL(ref).host === window.location.host;
-    setShow(window.history.length <= 1 || !sameSite);
+    const c = new URLSearchParams(window.location.search).get("campus");
+    setCampus(c ?? undefined);
   }, []);
-  if (!show) return null;
   return (
     <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 lg:px-8">
-      <Link to="/browse" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/browse"
+        search={(campus ? { campus } : {}) as any}
+        className="text-sm text-muted-foreground hover:text-foreground"
+      >
         ← Back to browse
       </Link>
+
     </div>
   );
 }

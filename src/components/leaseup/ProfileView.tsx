@@ -351,23 +351,45 @@ export function ProfileView({ userId }: { userId: string }) {
           </div>
 
           {isOwn ? (
-            <div className="space-y-2">
-              {listings.map((l: any) => (
-                <OwnListingRow key={l.id} listing={l} />
-              ))}
-              {listings.length === 0 && (
-                <div className="rounded-2xl bg-surface p-8 text-center shadow-card-md">
-                  <p className="text-sm text-muted-foreground">You haven't posted a sublease yet.</p>
-                  <Link
-                    to="/post"
-                    className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
-                  >
-                    Post a sublease →
-                  </Link>
-                </div>
-              )}
-            </div>
+            (() => {
+              // Q108 — active listings first, rented ones in their own section.
+              const rentedRows = listings.filter((l: any) => l.status === "filled");
+              const activeRows = listings.filter((l: any) => l.status !== "filled");
+              return (
+                <>
+                  <div className="space-y-2">
+                    {activeRows.map((l: any) => (
+                      <OwnListingRow key={l.id} listing={l} />
+                    ))}
+                    {activeRows.length === 0 && (
+                      <div className="rounded-2xl bg-surface p-8 text-center shadow-card-md">
+                        <p className="text-sm text-muted-foreground">You haven't posted a sublease yet.</p>
+                        <Link
+                          to="/post"
+                          className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+                        >
+                          Post a sublease →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                  {rentedRows.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                        Rented
+                      </h3>
+                      <div className="space-y-2 opacity-80">
+                        {rentedRows.map((l: any) => (
+                          <OwnListingRow key={l.id} listing={l} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()
           ) : (
+
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {listings.map((l: any) => (
                 <ListingCard

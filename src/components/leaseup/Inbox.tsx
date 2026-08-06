@@ -137,19 +137,13 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
 function ConversationRow({
   c, meId, active, onOpen,
 }: { c: Conversation; meId: string; active: boolean; onOpen: () => void }) {
-  const { data: unread = 0 } = useQuery({
-    queryKey: ["conv-unread", c.id, meId],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("conversation_id", c.id)
-        .eq("recipient_id", meId)
-        .is("read_at", null);
-      return count ?? 0;
-    },
-  });
+  // Q108 — unread count + last sender arrive with the conversation list.
+  const unread = c.unread_count ?? 0;
   const isUnread = unread > 0 && !active;
+  const mine = !!c.last_message_sender_id && c.last_message_sender_id === meId;
+  const preview = c.last_message
+    ? `${mine ? "You: " : ""}${c.last_message}`
+    : "No messages yet";
 
   return (
     <li>
@@ -157,11 +151,23 @@ function ConversationRow({
         onClick={onOpen}
         className={cn(
           "relative flex w-full items-center gap-3 px-4 py-3 text-left transition active:scale-[0.99]",
-          active ? "bg-gray-100 dark:bg-white/10" : isUnread ? "bg-gray-50 dark:bg-white/5" : "hover:bg-gray-50 dark:hover:bg-white/5",
+          active ? "bg-gray-100 dark:bg-white/10" : "hover:bg-gray-50 dark:hover:bg-white/5",
         )}
       >
-        {isUnread && <span className="absolute left-1 h-1.5 w-1.5 rounded-full bg-[#FF5A5F]" />}
-        <Avatar c={c} />
+        {c.listing?.photo_url ? (
+          <img
+            src={c.listing.photo_url}
+            alt=""
+            className="h-12 w-12 shrink-0 rounded-lg object-cover"
+            loading="lazy"
+          />
+        ) : c.listing ? (
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10">
+            <Home className="h-5 w-5 text-gray-400" />
+          </span>
+        ) : (
+          <Avatar c={c} size={48} />
+        )}
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline justify-between gap-2">
             <span className={cn("truncate text-sm", isUnread ? "font-bold" : "font-semibold")}>
@@ -170,16 +176,27 @@ function ConversationRow({
             <span className="shrink-0 text-xs text-gray-400">{relTime(c.last_message_at)}</span>
           </span>
           {c.listing?.title && (
-            <span className="block truncate text-sm text-gray-500">{c.listing.title}</span>
+            <span className="block truncate text-xs text-gray-400">{c.listing.title}</span>
           )}
-          <span className="block truncate text-sm text-gray-500 dark:text-foreground/60">
-            {c.last_message ?? "No messages yet"}
+          <span
+            className={cn(
+              "block truncate text-sm",
+              isUnread ? "font-medium text-gray-900 dark:text-foreground" : "text-gray-500 dark:text-foreground/60",
+            )}
+          >
+            {preview}
           </span>
         </span>
+        {isUnread && (
+          <span className="ml-1 grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[#FF5A5F] px-1.5 text-[10px] font-bold text-white">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        )}
       </button>
     </li>
   );
 }
+
 
 function Thread({ conversationId, conv }: { conversationId: string; conv: Conversation | null }) {
   const { user } = useSession();
