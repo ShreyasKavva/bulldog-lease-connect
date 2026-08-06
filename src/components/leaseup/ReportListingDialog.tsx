@@ -5,7 +5,7 @@
  * allows an anon insert with a null reporter). Reporter identity is never
  * surfaced anywhere in the UI.
  */
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fileReport } from "@/lib/leaseup/admin.queries";
@@ -59,10 +59,10 @@ export function ReportListingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm rounded-2xl bg-surface p-6 shadow-xl">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Report this listing</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <DialogTitle className="text-lg font-semibold text-foreground">Report this listing</DialogTitle>
+          <DialogDescription className="mt-1 text-sm text-muted-foreground">
             Help us keep LeaseUp safe. We review all reports.
-          </p>
+          </DialogDescription>
         </div>
 
         <fieldset className="mt-3">
