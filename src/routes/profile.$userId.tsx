@@ -2,8 +2,9 @@
  * /profile/$userId — public profile view for any user.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { ProfileView } from "@/components/leaseup/ProfileView";
+import { HostProfile } from "@/components/leaseup/HostProfile";
 import { supabase } from "@/integrations/supabase/client";
+
 
 function maskName(name: string | null | undefined): string {
   if (!name) return "Student";
@@ -59,5 +60,5 @@ export const Route = createFileRoute("/profile/$userId")({
 
 function PublicProfilePage() {
   const { userId } = Route.useParams();
-  return <ProfileView userId={userId} />;
+  return <HostProfile userId={userId} />;
 }
