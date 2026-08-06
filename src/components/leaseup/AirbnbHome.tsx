@@ -20,6 +20,7 @@ import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
+import { buildBrowseSearch } from "@/lib/leaseup/search-params";
 import { ListingRail } from "./ListingRail";
 import { ListingCard } from "./ListingCard";
 import { SmartSections } from "./SmartSections";
@@ -187,16 +188,27 @@ export function AirbnbHome({
 
 
   function runSearch() {
-    const params: Record<string, string> = {};
-    if (search.campusId) {
-      const c = campuses.find((c) => c.id === search.campusId);
-      if (c?.slug) params.campus = c.slug;
-    } else if (search.where.trim()) {
-      params.q = search.where.trim();
+    navigate({ to: "/browse", search: buildBrowseSearch(search) as any });
+  }
+
+  /** Category pills: "All" filters in place, the rest deep-link into /browse. */
+  const CAT_SEARCH: Partial<Record<Cat, Record<string, string | number>>> = {
+    "near-campus": { nearCampus: 1 },
+    furnished: { furnished: 1 },
+    studio: { type: "studio" },
+    "private-room": { type: "private_room" },
+    "short-term": { maxDuration: 90 },
+    "best-deals": { sort: "lowest" },
+    "new-today": { sort: "newest", postedToday: 1 },
+  };
+
+  function pickCategory(k: Cat) {
+    setCat(k);
+    if (k === "all") {
+      setSearch(EMPTY_SEARCH);
+      return;
     }
-    if (search.from) params.from = search.from.toISOString().slice(0, 10);
-    if (search.to) params.to = search.to.toISOString().slice(0, 10);
-    navigate({ to: "/browse", search: params as any });
+    navigate({ to: "/browse", search: CAT_SEARCH[k] as any });
   }
 
   const chipLabel = [
@@ -263,11 +275,11 @@ export function AirbnbHome({
             return (
               <button
                 key={k}
-                onClick={() => setCat(k)}
+                onClick={() => pickCategory(k)}
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
                   active
-                    ? "border-gray-900 bg-gray-50 font-semibold text-gray-900 dark:border-foreground dark:bg-background dark:text-foreground"
+                    ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
                     : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >

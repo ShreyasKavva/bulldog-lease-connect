@@ -50,6 +50,14 @@ type BrowseSearch = {
   laundry?: 1;
   sort?: Sort;
   view?: "grid" | "map";
+  // Q96 — params emitted by hero/nav search + homepage category pills
+  tenants?: number;
+  type?: string;
+  maxDuration?: number;
+  availableSoon?: 1;
+  postedToday?: 1;
+  nearCampus?: 1;
+  openFilters?: 1;
 };
 
 
@@ -60,13 +68,24 @@ function parseInt2(v: unknown): number | undefined {
 function parseStr(v: unknown): string | undefined {
   return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
+function parseFlag(v: unknown): 1 | undefined {
+  return v === 1 || v === "1" || v === true || v === "true" ? 1 : undefined;
+}
 function parseBeds(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
   const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
   return parts.length ? parts.join(",") : undefined;
 }
+/** Accepts internal values plus the friendly aliases used by search links. */
 function parseSort(v: unknown): Sort | undefined {
-  return typeof v === "string" && (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+  if (typeof v !== "string") return undefined;
+  if (v === "lowest") return "price_asc";
+  if (v === "highest") return "price_desc";
+  return (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
+}
+function parseType(v: unknown): string | undefined {
+  const t = parseStr(v);
+  return t && ["studio", "private_room", "entire", "shared"].includes(t) ? t : undefined;
 }
 
 export const Route = createFileRoute("/browse")({
@@ -74,21 +93,27 @@ export const Route = createFileRoute("/browse")({
     q: parseStr(raw.q),
     campus: parseStr(raw.campus),
     area: parseStr(raw.area),
-    min_price: parseInt2(raw.min_price),
-    max_price: parseInt2(raw.max_price),
+    min_price: parseInt2(raw.min_price ?? raw.minPrice),
+    max_price: parseInt2(raw.max_price ?? raw.maxPrice),
     bedrooms: parseBeds(raw.bedrooms),
     baths: parseInt2(raw.baths),
-    from: parseStr(raw.from),
-    to: parseStr(raw.to),
-    furnished: raw.furnished === 1 || raw.furnished === "1" ? 1 : undefined,
-    utilities: raw.utilities === 1 || raw.utilities === "1" ? 1 : undefined,
-    parking: raw.parking === 1 || raw.parking === "1" ? 1 : undefined,
-    pets: raw.pets === 1 || raw.pets === "1" ? 1 : undefined,
-    wifi: raw.wifi === 1 || raw.wifi === "1" ? 1 : undefined,
-    laundry: raw.laundry === 1 || raw.laundry === "1" ? 1 : undefined,
+    from: parseStr(raw.from ?? raw.availableFrom),
+    to: parseStr(raw.to ?? raw.availableTo),
+    furnished: parseFlag(raw.furnished),
+    utilities: parseFlag(raw.utilities),
+    parking: parseFlag(raw.parking),
+    pets: parseFlag(raw.pets),
+    wifi: parseFlag(raw.wifi),
+    laundry: parseFlag(raw.laundry),
     sort: parseSort(raw.sort),
     view: raw.view === "map" ? "map" : undefined,
-
+    tenants: parseInt2(raw.tenants),
+    type: parseType(raw.type),
+    maxDuration: parseInt2(raw.maxDuration),
+    availableSoon: parseFlag(raw.availableSoon),
+    postedToday: parseFlag(raw.postedToday),
+    nearCampus: parseFlag(raw.nearCampus),
+    openFilters: parseFlag(raw.openFilters),
   }),
   head: () => ({
     meta: [
@@ -153,7 +178,10 @@ function Browse() {
   const fromDate = s.from ? new Date(s.from) : null;
   const toDate = s.to ? new Date(s.to) : null;
   const campusSlug = s.campus ?? null;
-  const campusId = campusSlug ? campuses.find(c => c.slug === campusSlug)?.id ?? null : null;
+  // Accepts either a campus slug (shareable links) or a raw campus id (search bar).
+  const campusId = campusSlug
+    ? campuses.find((c) => c.slug === campusSlug)?.id ?? (campuses.some((c) => c.id === campusSlug) ? campusSlug : null)
+    : null;
 
   // Debounced text search — local state, flushes to URL after 300ms.
   const [searchInput, setSearchInput] = useState(s.q ?? "");
@@ -250,6 +278,23 @@ function Browse() {
       if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
       if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
 
+      // Q96 — search-bar / category-pill params
+      if (s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+      if (s.type === "studio" && (l.beds ?? 0) !== 0) return false;
+      if (s.type === "private_room" && (l.beds ?? 0) !== 1) return false;
+      if (s.type === "entire" && (l.beds ?? 0) < 1) return false;
+      if (s.maxDuration != null) {
+        if (!l.available_from || !l.available_to) return false;
+        const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
+        if (!(days > 0 && days <= s.maxDuration)) return false;
+      }
+      if (s.availableSoon === 1) {
+        if (!l.available_from) return false;
+        if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
+      }
+      if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
+      if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+
       return true;
     });
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
@@ -259,7 +304,8 @@ function Browse() {
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
-      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths]);
+      s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths,
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -342,6 +388,7 @@ function Browse() {
           onSearchInput={setSearchInput}
           resultCount={filtered.length}
           placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
+          initialFiltersOpen={s.openFilters === 1}
         />
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
