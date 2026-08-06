@@ -36,6 +36,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { OfflineIndicator } from "@/components/leaseup/OfflineIndicator";
 import { InstallPrompt } from "@/components/leaseup/InstallPrompt";
+import { OnboardingModal } from "@/components/leaseup/OnboardingModal";
 import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
@@ -219,6 +220,7 @@ function RootComponent() {
       <OfflineIndicator />
       <NotificationToastListener />
       <AppShell />
+      <OnboardingModal />
       <InstallPrompt />
       <PushPermissionPrompt />
       <Toaster position="top-center" richColors />
