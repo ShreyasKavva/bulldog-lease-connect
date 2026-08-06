@@ -301,6 +301,10 @@ export function AirbnbHome({
         <LiveCounter />
       </section>
 
+      {/* Q110 Part C — signed-out welcome strip (tablet+) */}
+      <GuestWelcomeStrip />
+
+
       {/* CATEGORY PILLS */}
       <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
         <div
