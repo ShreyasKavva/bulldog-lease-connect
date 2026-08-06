@@ -184,7 +184,21 @@ export function TopBar(_legacy: LegacyProps = {}) {
                   <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Looking for a place?</MenuItem>
                   <MenuItem to="/roommates" onClick={() => setMobileOpen(false)}>Rooms &amp; Roommates</MenuItem>
                   {user && <MenuItem to="/saved" onClick={() => setMobileOpen(false)}>Saved</MenuItem>}
-                  {user && <MenuItem to="/messages" onClick={() => setMobileOpen(false)}>Messages</MenuItem>}
+                  {user && (
+                    <Link
+                      to="/messages"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-background dark:text-foreground/80"
+                    >
+                      Messages
+                      {unread > 0 && (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5A5F] text-[10px] font-bold text-white">
+                          {unread > 9 ? "9+" : unread}
+                        </span>
+                      )}
+                    </Link>
+                  )}
+
                   {user && <MenuItem to="/my-listings" onClick={() => setMobileOpen(false)}>My Listings</MenuItem>}
                   {user && <MenuItem to="/profile" onClick={() => setMobileOpen(false)}>Profile</MenuItem>}
                   <div className="my-1 h-px bg-gray-100 dark:bg-border" />
