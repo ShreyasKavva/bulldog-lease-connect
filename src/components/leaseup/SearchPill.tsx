@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "./CampusAutocomplete";
 import { cn } from "@/lib/utils";
 
 export type SearchState = {
