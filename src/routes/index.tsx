@@ -30,9 +30,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LeaseUp — Student subleases at your campus" },
-      { name: "description", content: "Browse verified student subleases and transfers at campuses nationwide. Search by destination, dates, and roommates — no sign-up required." },
+      { name: "description", content: "Browse verified student subleases at campuses nationwide. Find your perfect place — no sign-up required." },
+      { name: "theme-color", content: "#111827" },
       { property: "og:title", content: "LeaseUp — Student subleases" },
-      { property: "og:description", content: "Search verified student subleases at any campus. Connect with verified students at your campus." },
+      { property: "og:description", content: "Student subleases at your campus. Verified .edu emails, real listings, no fees." },
       { property: "og:type", content: "website" },
     ],
   }),
