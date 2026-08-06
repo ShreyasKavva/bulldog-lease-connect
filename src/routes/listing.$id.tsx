@@ -745,6 +745,7 @@ function ListingDetailPage() {
                 isOwner={isOwner}
                 firstName={firstName}
                 onMessage={handleMessage}
+                messaging={messaging}
               />
               {/* Q103 Part B — host profile card */}
               <HostProfileCard hostId={listing.user_id} poster={poster} />
@@ -952,6 +953,7 @@ function ListingDetailPage() {
         firstName={firstName}
         isOwner={isOwner}
         onMessage={handleMessage}
+        messaging={messaging}
       />
 
       {/* Lightbox */}
@@ -1224,12 +1226,13 @@ function HostCard({
 // ---------------- sticky price sidebar ----------------
 
 function PriceSidebar({
-  listing, isOwner, firstName, onMessage,
+  listing, isOwner, firstName, onMessage, messaging,
 }: {
   listing: Listing;
   isOwner: boolean;
   firstName: string;
   onMessage: () => void;
+  messaging?: boolean;
 }) {
   const months = (() => {
     if (!listing.available_from || !listing.available_to) return 0;
@@ -1265,11 +1268,16 @@ function PriceSidebar({
       <Button
         onClick={onMessage}
         size="lg"
+        disabled={messaging}
         className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#E14E52]"
       >
         {isOwner ? (
           <>
             <Pencil className="mr-2 h-4 w-4" /> Edit listing
+          </>
+        ) : messaging ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
           </>
         ) : (
           <>
@@ -1301,12 +1309,13 @@ function PriceSidebar({
 // ---------------- mobile sticky CTA ----------------
 
 function MobileStickyCTA({
-  listing, firstName, isOwner, onMessage,
+  listing, firstName, isOwner, onMessage, messaging,
 }: {
   listing: Listing;
   firstName: string;
   isOwner: boolean;
   onMessage: () => void;
+  messaging?: boolean;
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
@@ -1315,8 +1324,12 @@ function MobileStickyCTA({
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
           <div className="text-[11px] text-muted-foreground">per month</div>
         </div>
-        <Button onClick={onMessage} className="ml-auto flex-1" size="lg">
-          {isOwner ? "Edit listing" : (
+        <Button onClick={onMessage} disabled={messaging} className="ml-auto flex-1" size="lg">
+          {isOwner ? "Edit listing" : messaging ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
+            </>
+          ) : (
             <>
               Message {firstName}
               <ArrowRight className="ml-2 h-4 w-4" />
