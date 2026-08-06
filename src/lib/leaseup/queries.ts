@@ -20,8 +20,12 @@ import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSear
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
 async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
-  const allPaths = listings.flatMap((l) => l.photos ?? []);
-  if (allPaths.length === 0) return listings.map((l) => ({ ...l, photo_urls: [] }));
+  const isUrl = (p: string) => /^https?:\/\//i.test(p);
+  // Seeded/demo listings can hold absolute URLs; only storage paths need signing.
+  const allPaths = listings.flatMap((l) => (l.photos ?? []).filter((p) => !isUrl(p)));
+  if (allPaths.length === 0) {
+    return listings.map((l) => ({ ...l, photo_urls: (l.photos ?? []).filter(isUrl) }));
+  }
   const { data } = await supabase.storage
     .from("listing-photos")
     .createSignedUrls(allPaths, SIGNED_URL_TTL);
@@ -29,7 +33,7 @@ async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
   data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
   return listings.map((l) => ({
     ...l,
-    photo_urls: (l.photos ?? []).map((p) => map.get(p) ?? "").filter(Boolean),
+    photo_urls: (l.photos ?? []).map((p) => (isUrl(p) ? p : map.get(p) ?? "")).filter(Boolean),
   }));
 }
 
