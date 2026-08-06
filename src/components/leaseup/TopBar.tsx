@@ -10,7 +10,7 @@
  */
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, MapPin, Calendar, Users, Search } from "lucide-react";
+import { ChevronDown, MapPin, Calendar, Users, Search, Menu, X } from "lucide-react";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -48,6 +48,8 @@ export function TopBar(_legacy: LegacyProps = {}) {
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInNext, setSignInNext] = useState<string | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Global event bus so "Sign in to X" prompts from anywhere open this modal.
