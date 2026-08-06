@@ -16,7 +16,8 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Bell } from "lucide-react";
+import { LayoutGrid, Flame, Bell, Map as MapIcon } from "lucide-react";
+import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
@@ -48,6 +49,7 @@ type BrowseSearch = {
   wifi?: 1;
   laundry?: 1;
   sort?: Sort;
+  view?: "grid" | "map";
 };
 
 
@@ -85,6 +87,7 @@ export const Route = createFileRoute("/browse")({
     wifi: raw.wifi === 1 || raw.wifi === "1" ? 1 : undefined,
     laundry: raw.laundry === 1 || raw.laundry === "1" ? 1 : undefined,
     sort: parseSort(raw.sort),
+    view: raw.view === "map" ? "map" : undefined,
 
   }),
   head: () => ({
@@ -173,6 +176,8 @@ function Browse() {
   }
 
   const [view, setView] = useState<View>("grid");
+  const mapView = s.view === "map";
+
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
   const [profileViewId, setProfileViewId] = useState<string | null>(null);
@@ -340,7 +345,7 @@ function Browse() {
         />
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
-          <div className="flex rounded-lg bg-background p-1">
+          <div className={cn("flex rounded-lg bg-background p-1", mapView && "hidden")}>
             <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
               <LayoutGrid className="h-3.5 w-3.5" />Grid
             </button>
@@ -351,17 +356,42 @@ function Browse() {
           <span className="text-xs text-muted-foreground">
             {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
           </span>
+          {/* Q90 — grid / map toggle */}
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => patchSearch({ view: undefined })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                mapView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />Grid
+            </button>
+            <button
+              onClick={() => patchSearch({ view: "map" })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                mapView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
+              )}
+            >
+              <MapIcon className="h-3.5 w-3.5" />Map
+            </button>
+          </div>
           <button
             onClick={() => setSaveSearchOpen(true)}
-            className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
+            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
           >
             <Bell className="h-3.5 w-3.5" />Save search
           </button>
         </div>
 
-
-
+        {mapView ? (
+          <div className="mt-3">
+            <BrowseMapView listings={filtered} />
+          </div>
+        ) : (
         <main className="mx-auto max-w-7xl px-4 py-5">
+
           {user && <RenterFeedbackPrompt userId={user.id} />}
           {view === "grid" && (
             <TrendingCarousel
@@ -435,6 +465,8 @@ function Browse() {
             </div>
           )}
         </main>
+        )}
+
       </div>
 
 
