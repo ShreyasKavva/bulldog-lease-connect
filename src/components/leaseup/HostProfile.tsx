@@ -134,9 +134,9 @@ export function HostProfile({ userId }: { userId: string }) {
     if (!user) { openSignIn(`/profile/${userId}`); return; }
     try {
       const convId = await getOrCreateConversation(user.id, userId, null);
-      navigate({ to: "/messages", search: { conversation: convId } });
+      navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch {
-      navigate({ to: "/messages", search: {} });
+      navigate({ to: "/messages" });
     }
   }
 

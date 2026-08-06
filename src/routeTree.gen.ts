@@ -18,7 +18,6 @@ import { Route as PostRouteImport } from './routes/post'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyListingsRouteImport } from './routes/my-listings'
-import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as LookingForRouteImport } from './routes/looking-for'
 import { Route as LeaseAnalysisRouteImport } from './routes/lease-analysis'
@@ -34,12 +33,13 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SavedIndexRouteImport } from './routes/saved.index'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
-import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
+import { Route as MessagesConversationIdRouteImport } from './routes/messages.$conversationId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
@@ -97,11 +97,6 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const MyListingsRoute = MyListingsRouteImport.update({
   id: '/my-listings',
   path: '/my-listings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MessagesRoute = MessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketRoute = MarketRouteImport.update({
@@ -179,6 +174,11 @@ const SavedIndexRoute = SavedIndexRouteImport.update({
   path: '/saved/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   id: '/sublease/$slug',
   path: '/sublease/$slug',
@@ -204,10 +204,10 @@ const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
   path: '/$userId',
   getParentRoute: () => ProfileRoute,
 } as any)
-const MessagesListingIdRoute = MessagesListingIdRouteImport.update({
-  id: '/$listingId',
-  path: '/$listingId',
-  getParentRoute: () => MessagesRoute,
+const MessagesConversationIdRoute = MessagesConversationIdRouteImport.update({
+  id: '/messages/$conversationId',
+  path: '/messages/$conversationId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
@@ -295,7 +295,6 @@ export interface FileRoutesByFullPath {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -308,12 +307,13 @@ export interface FileRoutesByFullPath {
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
-  '/messages/$listingId': typeof MessagesListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -341,7 +341,6 @@ export interface FileRoutesByTo {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -354,12 +353,13 @@ export interface FileRoutesByTo {
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
-  '/messages/$listingId': typeof MessagesListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages': typeof MessagesIndexRoute
   '/saved': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -388,7 +388,6 @@ export interface FileRoutesById {
   '/lease-analysis': typeof LeaseAnalysisRoute
   '/looking-for': typeof LookingForRoute
   '/market': typeof MarketRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/my-listings': typeof MyListingsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
@@ -401,12 +400,13 @@ export interface FileRoutesById {
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
-  '/messages/$listingId': typeof MessagesListingIdRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
+  '/messages/': typeof MessagesIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -436,7 +436,6 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
-    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -449,12 +448,13 @@ export interface FileRouteTypes {
     | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
-    | '/messages/$listingId'
+    | '/messages/$conversationId'
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -482,7 +482,6 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
-    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -495,12 +494,13 @@ export interface FileRouteTypes {
     | '/ambassador/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
-    | '/messages/$listingId'
+    | '/messages/$conversationId'
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages'
     | '/saved'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -528,7 +528,6 @@ export interface FileRouteTypes {
     | '/lease-analysis'
     | '/looking-for'
     | '/market'
-    | '/messages'
     | '/my-listings'
     | '/notifications'
     | '/onboarding'
@@ -541,12 +540,13 @@ export interface FileRouteTypes {
     | '/ambassador_/dashboard'
     | '/email/unsubscribe'
     | '/listing/$id'
-    | '/messages/$listingId'
+    | '/messages/$conversationId'
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
+    | '/messages/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/lovable/email/suppression'
@@ -575,7 +575,6 @@ export interface RootRouteChildren {
   LeaseAnalysisRoute: typeof LeaseAnalysisRoute
   LookingForRoute: typeof LookingForRoute
   MarketRoute: typeof MarketRoute
-  MessagesRoute: typeof MessagesRouteWithChildren
   MyListingsRoute: typeof MyListingsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -588,8 +587,10 @@ export interface RootRouteChildren {
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
+  MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
   SavedIndexRoute: typeof SavedIndexRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -664,13 +665,6 @@ declare module '@tanstack/react-router' {
       path: '/my-listings'
       fullPath: '/my-listings'
       preLoaderRoute: typeof MyListingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/messages': {
-      id: '/messages'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/market': {
@@ -778,6 +772,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sublease/$slug': {
       id: '/sublease/$slug'
       path: '/sublease/$slug'
@@ -813,12 +814,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileUserIdRouteImport
       parentRoute: typeof ProfileRoute
     }
-    '/messages/$listingId': {
-      id: '/messages/$listingId'
-      path: '/$listingId'
-      fullPath: '/messages/$listingId'
-      preLoaderRoute: typeof MessagesListingIdRouteImport
-      parentRoute: typeof MessagesRoute
+    '/messages/$conversationId': {
+      id: '/messages/$conversationId'
+      path: '/messages/$conversationId'
+      fullPath: '/messages/$conversationId'
+      preLoaderRoute: typeof MessagesConversationIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/listing/$id': {
       id: '/listing/$id'
@@ -914,18 +915,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface MessagesRouteChildren {
-  MessagesListingIdRoute: typeof MessagesListingIdRoute
-}
-
-const MessagesRouteChildren: MessagesRouteChildren = {
-  MessagesListingIdRoute: MessagesListingIdRoute,
-}
-
-const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
-  MessagesRouteChildren,
-)
-
 interface MyListingsRouteChildren {
   MyListingsListingIdAnalyticsRoute: typeof MyListingsListingIdAnalyticsRoute
 }
@@ -988,7 +977,6 @@ const rootRouteChildren: RootRouteChildren = {
   LeaseAnalysisRoute: LeaseAnalysisRoute,
   LookingForRoute: LookingForRoute,
   MarketRoute: MarketRoute,
-  MessagesRoute: MessagesRouteWithChildren,
   MyListingsRoute: MyListingsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
@@ -1001,8 +989,10 @@ const rootRouteChildren: RootRouteChildren = {
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
+  MessagesConversationIdRoute: MessagesConversationIdRoute,
   SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
   SavedIndexRoute: SavedIndexRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchSavedIds } from "@/lib/leaseup/queries";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
 import { SignInModal } from "@/components/leaseup/SignInModal";
+import { useUnreadCount } from "@/hooks/use-unread";
 
 type LegacyProps = { onOpenMessages?: () => void; transparent?: boolean };
 
@@ -28,6 +29,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
     enabled: !!user?.id,
   });
   const { data: profile } = useMyProfile();
+  const unread = useUnreadCount();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isHome = path === "/";
@@ -140,10 +142,23 @@ export function TopBar(_legacy: LegacyProps = {}) {
               </Link>
             )}
 
+            {user && (
+              <Link
+                to="/messages"
+                className="relative hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+              >
+                Messages
+                {unread > 0 && (
+                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#FF5A5F]" />
+                )}
+              </Link>
+            )}
+
             <Link
               to="/roommates"
               className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
             >Roommates</Link>
+
 
             <button
               onClick={handlePost}

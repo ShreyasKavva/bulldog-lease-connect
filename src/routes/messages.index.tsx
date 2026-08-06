@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { useSession } from "@/lib/leaseup/use-session";
-import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
+import { TopBar } from "@/components/leaseup/TopBar";
+import { BottomNav } from "@/components/leaseup/BottomNav";
+import { Inbox } from "@/components/leaseup/Inbox";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 
-export const Route = createFileRoute("/messages")({
+export const Route = createFileRoute("/messages/")({
   head: () => ({
     meta: [
       { title: "Messages — LeaseUp" },
@@ -12,17 +13,11 @@ export const Route = createFileRoute("/messages")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (s?: Record<string, unknown>) => ({
-    conversation: typeof s?.conversation === "string" ? s.conversation : undefined,
-  }),
   component: MessagesInboxPage,
 });
 
 function MessagesInboxPage() {
   const { user, loading } = useSession();
-  const navigate = useNavigate();
-  const search = Route.useSearch();
-  const [open, setOpen] = useState(true);
 
   if (loading) return <div className="min-h-[60vh]" />;
   if (!user) {
@@ -36,17 +31,10 @@ function MessagesInboxPage() {
   }
 
   return (
-    <div className="min-h-[60vh]">
-      <MessagesSheet
-        open={open}
-        onOpenChange={(o) => {
-          setOpen(o);
-          if (!o) navigate({ to: "/" });
-        }}
-        initialConversationId={search.conversation ?? null}
-      />
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
+      <TopBar />
+      <Inbox conversationId={null} />
+      <BottomNav />
     </div>
   );
 }
-
-
