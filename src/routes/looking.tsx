@@ -178,6 +178,60 @@ function LookingForPage() {
           </Link>
         </div>
 
+        {/* Filters */}
+        <div className="mb-5 flex flex-wrap items-end gap-3">
+          <label className="text-xs font-semibold text-muted-foreground">
+            Campus
+            <select
+              value={campusFilter}
+              onChange={(e) => setCampusFilter(e.target.value)}
+              className="mt-1 block h-10 w-56 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+            >
+              <option value="mine">My campus</option>
+              <option value="all">All campuses</option>
+              {campuses.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            Budget up to
+            <select
+              value={budgetFilter}
+              onChange={(e) => setBudgetFilter(e.target.value)}
+              className="mt-1 block h-10 w-36 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+            >
+              <option value="">Any</option>
+              {[600, 800, 1000, 1200, 1500, 2000].map((v) => (
+                <option key={v} value={v}>${v}/mo</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            Moving in by
+            <input
+              type="date"
+              value={moveInBy}
+              onChange={(e) => setMoveInBy(e.target.value)}
+              className="mt-1 block h-10 w-44 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+            />
+          </label>
+          {(budgetFilter || moveInBy || campusFilter !== "mine") && (
+            <button
+              type="button"
+              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("mine"); }}
+              className="h-10 rounded-md px-3 text-sm font-semibold text-primary hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
+          </span>
+        </div>
+
+
+
         {isLoading ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />)}
