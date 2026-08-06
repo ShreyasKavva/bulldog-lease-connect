@@ -221,13 +221,23 @@ export function ListingCard({
           </span>
         </p>
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <span className="truncate">
-            {listing.profile?.name || listing.profile?.email?.split("@")[0] || "Student"}
-          </span>
+          {listing.user_id ? (
+            <Link
+              to="/profile/$userId"
+              params={{ userId: listing.user_id }}
+              onClick={(e) => e.stopPropagation()}
+              className="truncate hover:underline"
+            >
+              {listing.profile?.name || "Student"}
+            </Link>
+          ) : (
+            <span className="truncate">{listing.profile?.name || "Student"}</span>
+          )}
           {listing.profile?.verified_email && (
             <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />
           )}
         </p>
+
       </div>
     </article>
   );
