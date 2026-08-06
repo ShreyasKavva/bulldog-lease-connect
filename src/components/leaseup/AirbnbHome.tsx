@@ -14,7 +14,8 @@
  * for save / message / post — those actions call the callbacks passed in
  * from src/routes/index.tsx which route to /auth?next=... .
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
@@ -227,8 +228,11 @@ export function AirbnbHome({
           <Link to="/" className="inline-block text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
             LeaseUp
           </Link>
-          <p className="mt-1 text-base text-gray-500 dark:text-muted-foreground">
-            Find a sublease. Move in easy.
+          <h1 className="mt-4 text-4xl font-bold text-gray-900 dark:text-foreground">
+            Sublease near your campus.
+          </h1>
+          <p className="mt-3 text-xl text-gray-500 dark:text-muted-foreground">
+            Verified students. Semester-ready dates. No Craigslist drama.
           </p>
         </div>
 
@@ -263,6 +267,8 @@ export function AirbnbHome({
             </button>
           )}
         </div>
+
+        <LiveCounter />
       </section>
 
       {/* CATEGORY PILLS */}
@@ -492,6 +498,42 @@ function LatestFeedSection({
     </section>
   );
 }
+
+/**
+ * Q104 — live supply counter under the hero search.
+ * Fire-and-forget: renders nothing while loading or on any failure.
+ */
+function LiveCounter() {
+  const [stats, setStats] = useState<{ listings: number; campuses: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("campus_id")
+          .eq("is_active", true)
+          .eq("status", "active");
+        if (error || !data || cancelled) return;
+        setStats({
+          listings: data.length,
+          campuses: new Set(data.map((r) => r.campus_id)).size,
+        });
+      } catch { /* noop */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!stats || stats.listings === 0) return null;
+  return (
+    <p className="mt-4 text-center text-sm text-gray-400 dark:text-muted-foreground">
+      {stats.listings.toLocaleString()} active sublease{stats.listings === 1 ? "" : "s"} across{" "}
+      {stats.campuses} campus{stats.campuses === 1 ? "" : "es"}
+    </p>
+  );
+}
+
 
 function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   if (!posts || posts.length === 0) return null;

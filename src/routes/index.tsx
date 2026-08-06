@@ -29,11 +29,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LeaseUp — Student subleases at your campus" },
-      { name: "description", content: "Browse verified student subleases at campuses nationwide. Find your perfect place — no sign-up required." },
+      { title: "LeaseUp — Student subleases near your campus" },
+      { name: "description", content: "Find verified student subleases near your campus. Browse active listings, message hosts for free." },
       { name: "theme-color", content: "#111827" },
-      { property: "og:title", content: "LeaseUp — Student subleases" },
-      { property: "og:description", content: "Student subleases at your campus. Verified .edu emails, real listings, no fees." },
+      { property: "og:title", content: "LeaseUp — Student subleases near your campus" },
+      { property: "og:description", content: "Find verified student subleases near your campus. Browse active listings, message hosts for free." },
       { property: "og:type", content: "website" },
     ],
   }),

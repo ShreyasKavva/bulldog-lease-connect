@@ -314,7 +314,13 @@ export function PostWizard({ userId }: { userId: string }) {
                 </button>
               ))}
             </div>
+            {d.placeType === "private" && (
+              <p className="mt-2 text-xs text-gray-400">
+                Renters will want to know about your existing roommates — mention them in your description!
+              </p>
+            )}
           </>
+
         )}
 
         {d.step === 2 && (
