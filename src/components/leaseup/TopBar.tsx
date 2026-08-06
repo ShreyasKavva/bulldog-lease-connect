@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchSavedIds } from "@/lib/leaseup/queries";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
 import { SignInModal } from "@/components/leaseup/SignInModal";
+import { useUnreadCount } from "@/hooks/use-unread";
 
 type LegacyProps = { onOpenMessages?: () => void; transparent?: boolean };
 
@@ -28,6 +29,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
     enabled: !!user?.id,
   });
   const { data: profile } = useMyProfile();
+  const unread = useUnreadCount();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isHome = path === "/";
