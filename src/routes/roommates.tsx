@@ -103,7 +103,7 @@ function RoommatesPage() {
     if (!user) { openSignIn("/roommates"); return; }
     try {
       const convId = await getOrCreateConversation(user.id, target.user_id, null);
-      navigate({ to: "/messages", search: { conversation: convId } as any });
+      navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch (e: any) {
       toast.error(e?.message ?? "Couldn't open chat");
     }

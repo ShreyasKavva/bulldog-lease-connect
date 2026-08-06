@@ -303,7 +303,7 @@ function ListingDetailPage() {
     if (otherId === user.id) return;
     try {
       const convId = await getOrCreateConversation(user.id, otherId, listing.id);
-      navigate({ to: "/messages" as any, search: { c: convId } as any });
+      navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch (e: any) { toast.error(e.message ?? "Could not open conversation"); }
   }
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
