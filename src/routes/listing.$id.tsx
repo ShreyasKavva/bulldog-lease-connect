@@ -15,7 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { openSaveToCollection } from "@/components/leaseup/SaveToCollectionModal";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,7 +112,6 @@ export const Route = createFileRoute("/listing/$id")({
           };
     return (
       <div className="min-h-screen bg-background">
-        <TopBar />
         <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-6 py-16">
           <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-card">
             <h1 className="text-2xl font-black leading-tight">{copy.title}</h1>
@@ -131,7 +129,6 @@ export const Route = createFileRoute("/listing/$id")({
   },
   errorComponent: ({ error, reset }) => (
     <div className="min-h-screen bg-background">
-      <TopBar />
       <div className="mx-auto max-w-md px-6 py-24 text-center">
         <h1 className="mb-2 text-2xl font-black">Couldn't load this listing</h1>
         <p className="mb-6 text-sm text-muted-foreground">{error.message}</p>
@@ -443,7 +440,6 @@ function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
-      <TopBar />
 
       <DeepLinkBackLink />
 

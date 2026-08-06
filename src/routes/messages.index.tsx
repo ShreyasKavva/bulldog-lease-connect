@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSession } from "@/lib/leaseup/use-session";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { Inbox } from "@/components/leaseup/Inbox";
 import { SignInGate } from "@/components/leaseup/SignInGate";
@@ -32,7 +31,6 @@ function MessagesInboxPage() {
 
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
-      <TopBar />
       <Inbox conversationId={null} />
       <BottomNav />
     </div>

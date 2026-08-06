@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { Inbox } from "@/components/leaseup/Inbox";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 import { toast } from "sonner";
@@ -72,7 +71,6 @@ function ThreadPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopBar />
       <Inbox conversationId={resolved} />
     </div>
   );

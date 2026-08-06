@@ -2,7 +2,6 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { TopBar } from "@/components/leaseup/TopBar";
 import { submitAmbassadorApplication } from "@/lib/leaseup/ambassador-apply.functions";
 import { Sparkles, Megaphone, MessageSquare, CheckCircle2 } from "lucide-react";
 
@@ -45,7 +44,6 @@ function AmbassadorLandingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <TopBar onOpenMessages={() => {}} />
       <main className="mx-auto max-w-2xl px-4 pt-20">
         <div className="inline-flex items-center gap-2 rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-primary-dark">
           <Sparkles className="h-3.5 w-3.5" /> Campus Ambassador Program
