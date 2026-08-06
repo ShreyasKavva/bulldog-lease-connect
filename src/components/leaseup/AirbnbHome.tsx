@@ -279,7 +279,7 @@ export function AirbnbHome({
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
                   active
-                    ? "border-gray-900 bg-gray-50 font-semibold text-gray-900 dark:border-foreground dark:bg-background dark:text-foreground"
+                    ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
                     : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >
