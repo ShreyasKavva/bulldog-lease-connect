@@ -202,11 +202,28 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
     } catch { /* noop */ }
   }, [conversationId]);
 
-  const { data: messages = [] } = useQuery({
+  const { data: serverMessages = [] } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: () => fetchMessages(conversationId),
     enabled: !!conversationId,
   });
+
+  // Q105 — optimistic sends: the bubble shows instantly, then the row from the
+  // server replaces it (matched on body + sender) once the query refetches.
+  const [pending, setPending] = useState<Message[]>([]);
+  useEffect(() => { setPending([]); }, [conversationId]);
+  const messages = useMemo(() => {
+    const live = pending.filter(
+      (p) => !serverMessages.some((m) => m.sender_id === p.sender_id && m.content === p.content),
+    );
+    return [...serverMessages, ...live];
+  }, [serverMessages, pending]);
+  useEffect(() => {
+    setPending((prev) =>
+      prev.filter((p) => !serverMessages.some((m) => m.sender_id === p.sender_id && m.content === p.content)),
+    );
+  }, [serverMessages]);
+
 
   // Realtime: new messages in this thread
   useEffect(() => {
