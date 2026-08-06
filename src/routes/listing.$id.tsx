@@ -36,7 +36,7 @@ import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
   Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon, X as XIcon,
   ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
-  MoreHorizontal, Flag, Grid2x2,
+  MoreHorizontal, Flag, Grid2x2, Loader2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
@@ -450,22 +450,45 @@ function ListingDetailPage() {
   }, [user?.id]);
 
 
+  const [messaging, setMessaging] = useState(false);
   const firstName = (poster?.name ?? "").split(" ")[0] || "the host";
+
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
     ? new Date(poster.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : null;
 
-  function handleMessage() {
+  /**
+   * Q106 Part B — resolve (or create) the conversation with this host about
+   * this listing, then deep-link straight into that thread.
+   */
+  async function handleMessage() {
     if (!user) {
-      openSignIn(`/messages/${listing.id}`);
+      openSignIn(`/listing/${listing.id}`);
       return;
     }
     if (isOwner) {
       navigate({ to: "/my-listings" });
       return;
     }
-    navigate({ to: "/messages/$conversationId", params: { conversationId: listing.id } });
+    if (messaging) return;
+    setMessaging(true);
+    try {
+      try {
+        if (!sessionStorage.getItem("leaseup-msg-draft")) {
+          sessionStorage.setItem(
+            "leaseup-msg-draft",
+            "Hi, I'm interested in your listing — is it still available?",
+          );
+        }
+      } catch { /* noop */ }
+      const convId = await getOrCreateConversation(user.id, listing.user_id, listing.id);
+      navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't open the conversation");
+    } finally {
+      setMessaging(false);
+    }
   }
 
   /** Q104 — open the thread with a suggested opener about the household. */
@@ -478,6 +501,7 @@ function ListingDetailPage() {
     } catch { /* noop */ }
     handleMessage();
   }
+
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
@@ -721,6 +745,7 @@ function ListingDetailPage() {
                 isOwner={isOwner}
                 firstName={firstName}
                 onMessage={handleMessage}
+                messaging={messaging}
               />
               {/* Q103 Part B — host profile card */}
               <HostProfileCard hostId={listing.user_id} poster={poster} />
@@ -928,6 +953,7 @@ function ListingDetailPage() {
         firstName={firstName}
         isOwner={isOwner}
         onMessage={handleMessage}
+        messaging={messaging}
       />
 
       {/* Lightbox */}
@@ -1200,12 +1226,13 @@ function HostCard({
 // ---------------- sticky price sidebar ----------------
 
 function PriceSidebar({
-  listing, isOwner, firstName, onMessage,
+  listing, isOwner, firstName, onMessage, messaging,
 }: {
   listing: Listing;
   isOwner: boolean;
   firstName: string;
   onMessage: () => void;
+  messaging?: boolean;
 }) {
   const months = (() => {
     if (!listing.available_from || !listing.available_to) return 0;
@@ -1241,11 +1268,16 @@ function PriceSidebar({
       <Button
         onClick={onMessage}
         size="lg"
+        disabled={messaging}
         className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#E14E52]"
       >
         {isOwner ? (
           <>
             <Pencil className="mr-2 h-4 w-4" /> Edit listing
+          </>
+        ) : messaging ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
           </>
         ) : (
           <>
@@ -1277,12 +1309,13 @@ function PriceSidebar({
 // ---------------- mobile sticky CTA ----------------
 
 function MobileStickyCTA({
-  listing, firstName, isOwner, onMessage,
+  listing, firstName, isOwner, onMessage, messaging,
 }: {
   listing: Listing;
   firstName: string;
   isOwner: boolean;
   onMessage: () => void;
+  messaging?: boolean;
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
@@ -1291,8 +1324,12 @@ function MobileStickyCTA({
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
           <div className="text-[11px] text-muted-foreground">per month</div>
         </div>
-        <Button onClick={onMessage} className="ml-auto flex-1" size="lg">
-          {isOwner ? "Edit listing" : (
+        <Button onClick={onMessage} disabled={messaging} className="ml-auto flex-1" size="lg">
+          {isOwner ? "Edit listing" : messaging ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
+            </>
+          ) : (
             <>
               Message {firstName}
               <ArrowRight className="ml-2 h-4 w-4" />

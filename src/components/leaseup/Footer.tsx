@@ -1,17 +1,13 @@
 /**
- * Q101 C6 — global footer. Minimal by design: wordmark + two link columns.
- * Hidden on full-screen flows (/post wizard, a single message thread) — the
- * same hide logic as the mobile bottom nav.
+ * Q106 Part C — global footer. 4 columns on desktop, 2 on tablet, stacked on
+ * mobile. Campus column is data-driven: top 6 campuses by active listings.
+ * Hidden on full-screen flows (/post wizard, a single message thread).
  */
 import { Link, useRouterState } from "@tanstack/react-router";
-
-const CAMPUSES: { label: string; slug: string }[] = [
-  { label: "UGA", slug: "uga" },
-  { label: "OSU", slug: "osu" },
-  { label: "UT Austin", slug: "ut-austin" },
-  { label: "Michigan", slug: "michigan" },
-  { label: "USC", slug: "usc" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight } from "lucide-react";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 
 const headingCls = "mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 const linkCls = "block py-1 text-sm text-muted-foreground transition-colors hover:text-foreground";
@@ -22,32 +18,79 @@ export function Footer() {
     path === "/post" ||
     path.startsWith("/post/") ||
     (path.startsWith("/messages/") && path !== "/messages");
+
+  const { data: campuses = [] } = useQuery({
+    queryKey: ["campuses"],
+    queryFn: fetchCampuses,
+    staleTime: Infinity,
+    enabled: !hidden,
+  });
+  const { data: counts } = useQuery({
+    queryKey: ["campus-listing-counts"],
+    queryFn: fetchCampusListingCounts,
+    staleTime: 5 * 60 * 1000,
+    enabled: !hidden,
+  });
+
   if (hidden) return null;
 
+  const topCampuses = campuses
+    .map((c) => ({ ...c, n: counts?.get(c.id) ?? 0 }))
+    .filter((c) => c.n > 0)
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
+
   return (
-    <footer className="mt-16 border-t border-border bg-surface px-6 py-10">
-      <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3">
+    <footer className="mt-16 border-t border-gray-100 bg-gray-50 px-6 py-12 dark:border-border dark:bg-surface">
+      <div className="mx-auto grid max-w-7xl gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Brand */}
         <div>
-          <p className="text-lg font-bold text-foreground">LeaseUp</p>
-          <p className="mt-1 text-sm text-muted-foreground">Find a sublease. Move in easy.</p>
-          <p className="mt-4 text-xs text-muted-foreground/80">© 2026 LeaseUp</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-foreground">LeaseUp</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-muted-foreground">Sublease near your campus.</p>
+          <p className="mt-4 text-xs text-gray-400">© 2025 LeaseUp</p>
         </div>
 
+        {/* For Students */}
         <div>
-          <h2 className={headingCls}>Explore</h2>
+          <h2 className={headingCls}>For Students</h2>
           <Link to="/browse" className={linkCls}>Browse subleases</Link>
           <Link to="/post" className={linkCls}>Post a sublease</Link>
-          <Link to="/saved" className={linkCls}>Saved</Link>
-          <Link to="/my-listings" className={linkCls}>My listings</Link>
+          <Link to="/looking" className={linkCls}>Looking for a place?</Link>
+          <Link to="/roommates" className={linkCls}>Rooms &amp; Roommates</Link>
         </div>
 
+        {/* Top Campuses */}
         <div>
-          <h2 className={headingCls}>Campuses</h2>
-          {CAMPUSES.map((c) => (
-            <Link key={c.slug} to="/campus/$slug" params={{ slug: c.slug }} className={linkCls}>
-              {c.label}
-            </Link>
-          ))}
+          <h2 className={headingCls}>Top Campuses</h2>
+          {topCampuses.length === 0 ? (
+            <Link to="/campuses" className={linkCls}>All campuses</Link>
+          ) : (
+            topCampuses.map((c) => (
+              <Link
+                key={c.id}
+                to="/browse"
+                search={{ campus: c.slug }}
+                className={linkCls}
+              >
+                {c.name}
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Company */}
+        <div>
+          <h2 className={headingCls}>Company</h2>
+          <Link to="/about" className={linkCls}>About</Link>
+          <a href="mailto:hi@leasup.co" className={linkCls}>hi@leasup.co</a>
+          <a
+            href="https://leasup.co"
+            target="_blank"
+            rel="noreferrer"
+            className={`${linkCls} inline-flex items-center gap-1`}
+          >
+            leasup.co <ArrowUpRight className="h-3 w-3" />
+          </a>
         </div>
       </div>
     </footer>

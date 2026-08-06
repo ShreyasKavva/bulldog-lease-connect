@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -61,6 +61,7 @@ type BrowseSearch = {
   nearCampus?: 1;
   openFilters?: 1;
   hostId?: string;
+  page?: number;
 };
 
 
@@ -119,6 +120,7 @@ export const Route = createFileRoute("/browse")({
     nearCampus: parseFlag(raw.nearCampus),
     openFilters: parseFlag(raw.openFilters),
     hostId: parseStr(raw.hostId),
+    page: parseInt2(raw.page),
   }),
   head: () => ({
     meta: [
@@ -200,7 +202,7 @@ function Browse() {
       if ((searchInput || "") === (s.q ?? "")) return;
       navigate({
         to: "/browse",
-        search: (prev: BrowseSearch) => ({ ...prev, q: searchInput.trim() || undefined }),
+        search: (prev: BrowseSearch) => ({ ...prev, q: searchInput.trim() || undefined, page: undefined }),
         replace: true,
       });
     }, 300);
@@ -209,7 +211,10 @@ function Browse() {
   }, [searchInput]);
 
   function patchSearch(patch: Partial<BrowseSearch>) {
-    navigate({ to: "/browse", search: (prev: BrowseSearch) => ({ ...prev, ...patch }) });
+    navigate({
+      to: "/browse",
+      search: (prev: BrowseSearch) => ({ ...prev, ...patch, page: "page" in patch ? patch.page : undefined }),
+    });
   }
 
   const [view, setView] = useState<View>("grid");
@@ -332,6 +337,27 @@ function Browse() {
   function clearFilters() {
     navigate({ to: "/browse", search: {} });
     setSearchInput("");
+  }
+
+  // Q106 Part A — pagination (12 per page), URL-synced via ?page=
+  const PAGE_SIZE = 12;
+  const gridTopRef = useRef<HTMLDivElement>(null);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(Math.max(s.page ?? 1, 1), totalPages);
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page],
+  );
+  function goToPage(next: number) {
+    const target = Math.min(Math.max(next, 1), totalPages);
+    if (target === page) return;
+    navigate({
+      to: "/browse",
+      search: (prev: BrowseSearch) => ({ ...prev, page: target === 1 ? undefined : target }),
+    });
+    requestAnimationFrame(() => {
+      gridTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
 
@@ -499,9 +525,9 @@ function Browse() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
               <div className="text-5xl">🔍</div>
-              <h3 className="mt-4 text-xl font-semibold">No subleases match your search</h3>
+              <h3 className="mt-4 text-xl font-semibold">No subleases match your filters</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Try adjusting your filters or searching a different campus.
+                Try adjusting your search.
               </p>
               <button
                 onClick={clearFilters}
@@ -511,8 +537,9 @@ function Browse() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
-              {filtered.map((l) => (
+            <>
+            <div ref={gridTopRef} className="grid scroll-mt-32 grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
+              {paged.map((l) => (
                 <ListingCard
                   key={l.id}
                   listing={l}
@@ -525,6 +552,26 @@ function Browse() {
                 />
               ))}
             </div>
+            {totalPages > 1 && (
+              <nav className="mt-10 flex items-center justify-center" aria-label="Pagination">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent dark:border-border dark:hover:bg-white/5"
+                >
+                  ← Previous
+                </button>
+                <span className="mx-4 text-sm text-gray-500">Page {page} of {totalPages}</span>
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent dark:border-border dark:hover:bg-white/5"
+                >
+                  Next →
+                </button>
+              </nav>
+            )}
+            </>
           )}
         </main>
         )}

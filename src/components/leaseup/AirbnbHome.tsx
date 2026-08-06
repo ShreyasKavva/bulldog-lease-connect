@@ -415,22 +415,8 @@ export function AirbnbHome({
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mx-auto mt-10 max-w-7xl border-t px-4 py-8 sm:px-6">
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-muted-foreground">
-          <span>© {new Date().getFullYear()} LeaseUp</span>
-          <span aria-hidden>·</span>
-          <Link to="/about" className="hover:text-foreground">About</Link>
-          <span aria-hidden>·</span>
-          <Link to="/about" hash="how-it-works" className="hover:text-foreground">How it works</Link>
-          <span aria-hidden>·</span>
-          <Link to="/ambassador" className="hover:text-foreground">Ambassador</Link>
-          <span aria-hidden>·</span>
-          <Link to="/looking" className="hover:text-foreground">Looking For board</Link>
-          <span aria-hidden>·</span>
-          <a href="mailto:hello@leasup.co" className="hover:text-foreground">Contact</a>
-        </div>
-      </footer>
+      {/* Q106 — footer now lives globally in src/components/leaseup/Footer.tsx */}
+
     </div>
   );
 }
