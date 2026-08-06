@@ -42,6 +42,7 @@ import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesConversationIdRouteImport } from './routes/messages.$conversationId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as CampusSlugRouteImport } from './routes/campus.$slug'
 import { Route as AmbassadorDashboardRouteImport } from './routes/ambassador_.dashboard'
 import { Route as PostEditIdRouteImport } from './routes/post.edit.$id'
 import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-listings.$listingId.analytics'
@@ -220,6 +221,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampusSlugRoute = CampusSlugRouteImport.update({
+  id: '/campus/$slug',
+  path: '/campus/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AmbassadorDashboardRoute = AmbassadorDashboardRouteImport.update({
   id: '/ambassador_/dashboard',
   path: '/ambassador/dashboard',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
+  '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
@@ -358,6 +365,7 @@ export interface FileRoutesByTo {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
+  '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
@@ -406,6 +414,7 @@ export interface FileRoutesById {
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
+  '/campus/$slug': typeof CampusSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/listing/$id': typeof ListingIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
@@ -455,6 +464,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
+    | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$conversationId'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
+    | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$conversationId'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/tours'
     | '/unsubscribe'
     | '/ambassador_/dashboard'
+    | '/campus/$slug'
     | '/email/unsubscribe'
     | '/listing/$id'
     | '/messages/$conversationId'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
+  CampusSlugRoute: typeof CampusSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
@@ -848,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campus/$slug': {
+      id: '/campus/$slug'
+      path: '/campus/$slug'
+      fullPath: '/campus/$slug'
+      preLoaderRoute: typeof CampusSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ambassador_/dashboard': {
       id: '/ambassador_/dashboard'
       path: '/ambassador/dashboard'
@@ -1007,6 +1027,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
+  CampusSlugRoute: CampusSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,

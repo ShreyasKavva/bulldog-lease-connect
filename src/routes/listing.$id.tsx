@@ -25,6 +25,7 @@ import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesFo
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ListingRatingSummary, ListingReviewsSection } from "@/components/leaseup/ListingReviews";
 import { timeAgo } from "@/lib/leaseup/constants";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
@@ -512,6 +513,8 @@ function ListingDetailPage() {
               </span>
             </p>
 
+            <ListingRatingSummary listingId={listing.id} />
+
             {/* PART C — host card */}
             <div className="mt-6 border-y border-border py-5">
               <HostCard poster={poster} listing={listing} isEdu={isEdu} memberSince={memberSince} />
@@ -538,6 +541,12 @@ function ListingDetailPage() {
                 <Description text={listing.description} />
               </section>
             )}
+
+            <ListingReviewsSection
+              listingId={listing.id}
+              listingTitle={listing.title}
+              ownerId={listing.user_id}
+            />
 
             <p className="mt-8 text-sm text-muted-foreground">
               Posted {timeAgo(listing.created_at)}

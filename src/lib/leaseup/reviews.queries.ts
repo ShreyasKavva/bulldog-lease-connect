@@ -139,3 +139,20 @@ export async function fetchVerifiedSubleaseCount(posterId: string): Promise<numb
   }
   return count;
 }
+
+/** Q99: reviews left about a specific listing (any direction), newest first. */
+export async function fetchListingReviews(listingId: string): Promise<Review[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("listing_id", listingId)
+    .eq("is_removed", false)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const rows = (data ?? []) as Review[];
+  if (rows.length === 0) return rows;
+  const ids = Array.from(new Set(rows.map((r) => r.reviewer_id)));
+  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
+  return rows.map((r) => ({ ...r, reviewer: map.get(r.reviewer_id) ?? null }));
+}

@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/campuses";
 import { ArrowRight } from "lucide-react";
 
-export function CampusPills() {
+export function CampusPills({ title }: { title?: string } = {}) {
   const campusesQ = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
@@ -48,7 +48,7 @@ export function CampusPills() {
     <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="text-lg font-black sm:text-xl">
-          LeaseUp is live at {campuses.length} schools
+          {title ?? `LeaseUp is live at ${campuses.length} schools`}
         </h2>
         <Link
           to="/campuses"
@@ -64,7 +64,7 @@ export function CampusPills() {
           return (
             <Link
               key={c.id}
-              to="/sublease/$slug"
+              to="/campus/$slug"
               params={{ slug: c.slug }}
               className="group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
             >
