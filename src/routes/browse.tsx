@@ -176,7 +176,10 @@ function Browse() {
   const fromDate = s.from ? new Date(s.from) : null;
   const toDate = s.to ? new Date(s.to) : null;
   const campusSlug = s.campus ?? null;
-  const campusId = campusSlug ? campuses.find(c => c.slug === campusSlug)?.id ?? null : null;
+  // Accepts either a campus slug (shareable links) or a raw campus id (search bar).
+  const campusId = campusSlug
+    ? campuses.find((c) => c.slug === campusSlug)?.id ?? (campuses.some((c) => c.id === campusSlug) ? campusSlug : null)
+    : null;
 
   // Debounced text search — local state, flushes to URL after 300ms.
   const [searchInput, setSearchInput] = useState(s.q ?? "");
