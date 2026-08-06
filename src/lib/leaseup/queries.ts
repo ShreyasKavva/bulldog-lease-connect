@@ -521,6 +521,20 @@ export async function fetchSavedListings(userId: string): Promise<Listing[]> {
   return attachSignedUrls(withProfiles);
 }
 
+/** Hydrate a set of listing ids (used by saved collections). */
+export async function fetchListingsByIds(ids: string[]): Promise<Listing[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase
+    .from("listings").select("*")
+    .in("id", ids)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const withProfiles = await attachProfiles(data ?? []);
+  return attachSignedUrls(withProfiles);
+}
+
+
+
 export async function fetchMyListings(userId: string): Promise<Listing[]> {
   const { data, error } = await supabase
     .from("listings").select("*").eq("user_id", userId)
