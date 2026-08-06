@@ -12,6 +12,9 @@ import { timeAgo } from "@/lib/leaseup/constants";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
+import { useSession } from "@/lib/leaseup/use-session";
+import { openSignIn } from "./SignInModal";
+import { openSaveToCollection } from "./SaveToCollectionModal";
 
 function fmtDate(iso: string | null) {
   if (!iso) return null;
@@ -48,12 +51,14 @@ function PhotoDots({ count, index }: { count: number; index: number }) {
 }
 
 export function ListingCard({
-  listing, saved, onSave, onOpen,
+  listing, saved, onSave, onOpen, onHeart,
 }: {
   listing: Listing;
   saved: boolean;
   onSave: () => void;
   onOpen: () => void;
+  /** Q91: overrides the default "Save to collection" modal (e.g. remove-from-collection). */
+  onHeart?: () => void;
   pinned?: boolean;
   onPin?: () => void;
   isHotDeal?: boolean;
@@ -64,6 +69,7 @@ export function ListingCard({
   const picker = useReactionPicker(listing.id);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
+  const { user } = useSession();
 
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
@@ -78,8 +84,14 @@ export function ListingCard({
   function handleSave(e: React.MouseEvent) {
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
-    onSave();
+    if (onHeart) { onHeart(); return; }
+    if (!user) {
+      openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
+      return;
+    }
+    openSaveToCollection(listing.id);
   }
+
 
   function step(e: React.MouseEvent, dir: 1 | -1) {
     e.stopPropagation();
