@@ -1273,6 +1273,7 @@ export type Database = {
           is_active: boolean
           move_in_date: string | null
           move_out_date: string | null
+          num_people: number
           pets_ok: boolean | null
           title: string
           updated_at: string
@@ -1291,6 +1292,7 @@ export type Database = {
           is_active?: boolean
           move_in_date?: string | null
           move_out_date?: string | null
+          num_people?: number
           pets_ok?: boolean | null
           title: string
           updated_at?: string
@@ -1309,6 +1311,7 @@ export type Database = {
           is_active?: boolean
           move_in_date?: string | null
           move_out_date?: string | null
+          num_people?: number
           pets_ok?: boolean | null
           title?: string
           updated_at?: string
@@ -3004,6 +3007,7 @@ export type Database = {
         Args: { bed_count: number; campus: string }
         Returns: Json
       }
+      get_host_stats: { Args: { host_id: string }; Returns: Json }
       get_listing_benchmark: { Args: { _listing_id: string }; Returns: Json }
       get_neighborhood_price_breakdown: {
         Args: { campus: string }
