@@ -101,7 +101,7 @@ export function ListingReviewsSection({
   if (count === 0 && !canReview) return null;
 
   return (
-    <section className="mt-10">
+    <section id="reviews" className="mt-10 scroll-mt-24">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Reviews</h2>
         {count > 0 && (
