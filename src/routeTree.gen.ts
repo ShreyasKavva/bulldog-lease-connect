@@ -37,6 +37,7 @@ import { Route as SavedIndexRouteImport } from './routes/saved.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
+import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as MessagesListingIdRouteImport } from './routes/messages.$listingId'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
@@ -193,6 +194,11 @@ const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => RoommatesRoute,
 } as any)
+const ProfileEditRoute = ProfileEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
   id: '/$userId',
   path: '/$userId',
@@ -304,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -349,6 +356,7 @@ export interface FileRoutesByTo {
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -395,6 +403,7 @@ export interface FileRoutesById {
   '/listing/$id': typeof ListingIdRoute
   '/messages/$listingId': typeof MessagesListingIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
@@ -442,6 +451,7 @@ export interface FileRouteTypes {
     | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
+    | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
@@ -487,6 +497,7 @@ export interface FileRouteTypes {
     | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
+    | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
@@ -532,6 +543,7 @@ export interface FileRouteTypes {
     | '/listing/$id'
     | '/messages/$listingId'
     | '/profile/$userId'
+    | '/profile/edit'
     | '/roommates/create'
     | '/saved/$collection'
     | '/sublease/$slug'
@@ -787,6 +799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoommatesCreateRouteImport
       parentRoute: typeof RoommatesRoute
     }
+    '/profile/edit': {
+      id: '/profile/edit'
+      path: '/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof ProfileEditRouteImport
+      parentRoute: typeof ProfileRoute
+    }
     '/profile/$userId': {
       id: '/profile/$userId'
       path: '/$userId'
@@ -931,10 +950,12 @@ const PostRouteWithChildren = PostRoute._addFileChildren(PostRouteChildren)
 
 interface ProfileRouteChildren {
   ProfileUserIdRoute: typeof ProfileUserIdRoute
+  ProfileEditRoute: typeof ProfileEditRoute
 }
 
 const ProfileRouteChildren: ProfileRouteChildren = {
   ProfileUserIdRoute: ProfileUserIdRoute,
+  ProfileEditRoute: ProfileEditRoute,
 }
 
 const ProfileRouteWithChildren =
