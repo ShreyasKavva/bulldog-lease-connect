@@ -354,17 +354,42 @@ function Browse() {
           <span className="text-xs text-muted-foreground">
             {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
           </span>
+          {/* Q90 — grid / map toggle */}
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => patchSearch({ view: undefined })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                mapView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />Grid
+            </button>
+            <button
+              onClick={() => patchSearch({ view: "map" })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                mapView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
+              )}
+            >
+              <MapIcon className="h-3.5 w-3.5" />Map
+            </button>
+          </div>
           <button
             onClick={() => setSaveSearchOpen(true)}
-            className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
+            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
           >
             <Bell className="h-3.5 w-3.5" />Save search
           </button>
         </div>
 
-
-
+        {mapView ? (
+          <div className="mt-3">
+            <BrowseMapView listings={filtered} />
+          </div>
+        ) : (
         <main className="mx-auto max-w-7xl px-4 py-5">
+
           {user && <RenterFeedbackPrompt userId={user.id} />}
           {view === "grid" && (
             <TrendingCarousel
