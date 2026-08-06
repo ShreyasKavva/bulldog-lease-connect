@@ -345,7 +345,7 @@ function Browse() {
         />
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
-          <div className="flex rounded-lg bg-background p-1">
+          <div className={cn("flex rounded-lg bg-background p-1", mapView && "hidden")}>
             <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
               <LayoutGrid className="h-3.5 w-3.5" />Grid
             </button>
