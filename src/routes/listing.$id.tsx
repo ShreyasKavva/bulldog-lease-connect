@@ -277,30 +277,15 @@ function ListingDetailPage() {
     - dailyStats.slice(-14, -7).reduce((s, d) => s + (d.views ?? 0), 0);
   const unanswered = msgStats ? Math.max(0, msgStats.inbound - msgStats.replies) : 0;
 
-  async function handleToggleSave() {
+  function handleToggleSave() {
     if (!user) {
       openSignIn(`/listing/${listing.id}?save=1`);
       return;
     }
     // Q91: hearts open the "Save to collection" modal.
     openSaveToCollection(listing.id);
-    if (true) return;
-    const wasSaved = isSaved;
-    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
-      const s = new Set(prev ?? []);
-      if (wasSaved) s.delete(listing.id); else s.add(listing.id);
-      return s;
-    });
-    qc.setQueryData(["listing-saved-count", listing.id], (prev: number | undefined) =>
-      Math.max(0, (prev ?? 0) + (wasSaved ? -1 : 1))
-    );
-    try {
-      await toggleSaved(user.id, listing.id, wasSaved);
-    } catch {
-      qc.invalidateQueries({ queryKey: ["saved", user.id] });
-      qc.invalidateQueries({ queryKey: ["listing-saved-count", listing.id] });
-    }
   }
+
 
   const { data: similar = [] } = useQuery({
     queryKey: ["listing-similar", listing.id],
