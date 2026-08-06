@@ -176,12 +176,40 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
     return [l.id, { ...l, photo_url }];
   }));
 
-  return visible.map((c) => ({
+  // Q108 — inbox previews need who sent the last message ("You: …") and the
+  // per-conversation unread count. One extra read covers both.
+  const convIds = visible.map((c) => c.id);
+  const lastSender = new Map<string, string>();
+  const unread = new Map<string, number>();
+  if (convIds.length) {
+    const { data: msgs } = await supabase
+      .from("messages")
+      .select("conversation_id,sender_id,recipient_id,read_at,created_at")
+      .in("conversation_id", convIds)
+      .order("created_at", { ascending: false });
+    (msgs ?? []).forEach((m: any) => {
+      if (!lastSender.has(m.conversation_id)) lastSender.set(m.conversation_id, m.sender_id);
+      if (m.recipient_id === userId && !m.read_at) {
+        unread.set(m.conversation_id, (unread.get(m.conversation_id) ?? 0) + 1);
+      }
+    });
+  }
+
+  const enriched = visible.map((c) => ({
     ...c,
     other: pMap.get(c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id),
     listing: c.listing_id ? lMap.get(c.listing_id) ?? null : null,
+    last_message_sender_id: lastSender.get(c.id) ?? null,
+    unread_count: unread.get(c.id) ?? 0,
   }));
+  // Most recent activity first (falls back to created_at for empty threads).
+  return enriched.sort(
+    (a, b) =>
+      new Date(b.last_message_at ?? b.created_at).getTime() -
+      new Date(a.last_message_at ?? a.created_at).getTime(),
+  );
 }
+
 
 export async function fetchMessages(conversationId: string): Promise<Message[]> {
   const { data, error } = await supabase
