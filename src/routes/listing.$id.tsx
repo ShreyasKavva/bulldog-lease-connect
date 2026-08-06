@@ -172,13 +172,17 @@ async function fetchListingDetail(id: string): Promise<ListingLoadResult | null>
   const today = new Date().toISOString().slice(0, 10);
   if (row.available_to && row.available_to < today) return { reason: "expired" };
   if (row.is_active === false) return null;
-  const paths: string[] = row.photos ?? [];
+  const all: string[] = row.photos ?? [];
+  const isUrl = (p: string) => /^https?:\/\//i.test(p);
+  const paths = all.filter((p) => !isUrl(p));
   let photo_urls: string[] = [];
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    photo_urls = paths.map((p) => signed?.find((s) => s.path === p)?.signedUrl ?? "").filter(Boolean);
+  if (all.length) {
+    const { data: signed } = paths.length
+      ? await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7)
+      : { data: null };
+    photo_urls = all
+      .map((p) => (isUrl(p) ? p : signed?.find((sg) => sg.path === p)?.signedUrl ?? ""))
+      .filter(Boolean);
   }
   const { data: campus } = await supabase
     .from("campuses")
@@ -245,7 +249,9 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
     }
     return trimmed.map((r) => ({
       ...r,
-      photo_urls: (r.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
+      photo_urls: (r.photos ?? [])
+        .map((p: string) => (/^https?:\/\//i.test(p) ? p : urlMap.get(p) ?? ""))
+        .filter(Boolean),
     })) as Listing[];
   } catch {
     return [];
