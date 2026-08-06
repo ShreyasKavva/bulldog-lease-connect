@@ -16,7 +16,8 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Bell } from "lucide-react";
+import { LayoutGrid, Flame, Bell, Map as MapIcon } from "lucide-react";
+import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
@@ -48,6 +49,7 @@ type BrowseSearch = {
   wifi?: 1;
   laundry?: 1;
   sort?: Sort;
+  view?: "grid" | "map";
 };
 
 
@@ -85,6 +87,7 @@ export const Route = createFileRoute("/browse")({
     wifi: raw.wifi === 1 || raw.wifi === "1" ? 1 : undefined,
     laundry: raw.laundry === 1 || raw.laundry === "1" ? 1 : undefined,
     sort: parseSort(raw.sort),
+    view: raw.view === "map" ? "map" : undefined,
 
   }),
   head: () => ({
