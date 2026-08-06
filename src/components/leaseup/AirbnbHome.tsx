@@ -333,6 +333,14 @@ export function AirbnbHome({
       </div>
 
 
+      {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
+      <NewThisWeekSection
+        listings={listings}
+        savedIds={savedIds}
+        onSave={onSave}
+        onOpen={onOpen}
+      />
+
       {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
       <div ref={railsRef} className="scroll-mt-20">
         <SmartSections
@@ -634,5 +642,57 @@ function GuestWelcomeStrip() {
         </button>
       </div>
     </div>
+  );
+}
+
+/* ---------------- Q111 — New this week ---------------- */
+
+function NewThisWeekSection({
+  listings, savedIds, onSave, onOpen,
+}: {
+  listings: Listing[];
+  savedIds: Set<string>;
+  onSave: (l: Listing) => void;
+  onOpen: (l: Listing) => void;
+}) {
+  const fresh = useMemo(() => {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return listings
+      .filter(
+        (l) =>
+          (l.status ?? "active") === "active" &&
+          new Date(l.created_at).getTime() >= cutoff,
+      )
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 6);
+  }, [listings]);
+
+  if (fresh.length < 3) return null;
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">New this week</h2>
+        <Link
+          to="/browse"
+          search={{ sort: "newest" } as any}
+          className="text-sm font-semibold text-primary hover:underline"
+        >
+          Just listed →
+        </Link>
+      </div>
+      <ScrollRow>
+        {fresh.map((l) => (
+          <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+            <ListingCard
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onSave={() => onSave(l)}
+              onOpen={() => onOpen(l)}
+            />
+          </div>
+        ))}
+      </ScrollRow>
+    </section>
   );
 }
