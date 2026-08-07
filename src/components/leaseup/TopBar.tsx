@@ -128,6 +128,10 @@ export function TopBar(_legacy: LegacyProps = {}) {
               to="/browse"
               className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
             >Subleases</Link>
+            <Link
+              to="/looking"
+              className="hidden rounded-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900 md:inline-flex dark:text-foreground/70 dark:hover:text-foreground"
+            >Looking for a place?</Link>
             {user && (
               <Link
                 to="/saved"
