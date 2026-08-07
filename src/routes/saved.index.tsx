@@ -8,7 +8,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { DEFAULT_COLLECTION, fetchCollections } from "@/lib/leaseup/collections";
 import type { Listing } from "@/lib/leaseup/types";
@@ -56,7 +55,6 @@ function SavedPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <Heart className="mx-auto h-12 w-12 text-muted-foreground" />
           <h2 className="mt-4 text-xl font-bold">Sign in to see saved subleases</h2>
@@ -79,7 +77,6 @@ function SavedPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <h1 className="text-2xl font-bold">Saved subleases</h1>
         <p className="mt-1 text-sm text-muted-foreground">
