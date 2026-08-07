@@ -16,7 +16,7 @@ import { PostWizard } from "@/components/leaseup/PostWizard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/post")({
-  validateSearch: (search?: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>) => ({
     relist: typeof search?.relist === "string" ? search.relist : undefined,
   }),
   head: () => ({

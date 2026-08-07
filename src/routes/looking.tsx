@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
+import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
   Plus, Trash2, Pencil, Check, MessageSquare, BadgeCheck, Calendar, DollarSign,
   MapPin, Bell, BellOff, Users, Bed,
@@ -113,7 +114,7 @@ function LookingForPage() {
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
 
   async function startConv(otherId: string) {
-    if (!user) return toast.error("Sign in to message");
+    if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
     const id = await getOrCreateConversation(user.id, otherId, null);
     setActiveConv(id);
@@ -121,7 +122,7 @@ function LookingForPage() {
   }
 
   function openPost() {
-    if (!user) return toast.error("Sign in first");
+    if (!user) return openSignIn("/looking");
     setEditing(null);
     setFormOpen(true);
   }
@@ -132,7 +133,7 @@ function LookingForPage() {
   }
 
   async function onToggleInterest(p: LookingForPost) {
-    if (!user) return toast.error("Sign in first");
+    if (!user) return openSignIn("/looking");
     const interested = !interestSet.has(p.id);
     try {
       await toggleLookingForInterest(user.id, p.id, interested);
@@ -154,16 +155,20 @@ function LookingForPage() {
 
 
       <header className="border-b bg-surface">
-        <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-4">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 py-6">
           <div>
-            <h1 className="text-2xl font-black">Looking For</h1>
-            <p className="text-sm text-muted-foreground">Post what you need — let other students bring listings to you.</p>
+            <h1 className="text-2xl font-bold">Students looking for subleases</h1>
+            <p className="text-sm text-muted-foreground">Post what you need — let hosts bring listings to you.</p>
           </div>
           <div className="ml-auto flex gap-2">
-            <Link to="/" className="rounded-md border px-3 py-2 text-sm font-semibold hover:bg-background">Browse listings</Link>
-            <Button onClick={openPost} className="bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
-              <Plus className="h-4 w-4" />New post
-            </Button>
+            <Link to="/browse" className="rounded-full border px-4 py-2.5 text-sm font-medium hover:bg-background">Browse subleases</Link>
+            <button
+              type="button"
+              onClick={openPost}
+              className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
+            >
+              Post your search →
+            </button>
           </div>
         </div>
       </header>
@@ -237,13 +242,18 @@ function LookingForPage() {
             {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />)}
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-xl bg-surface p-12 text-center shadow-card">
+          <div className="rounded-2xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🔎</div>
-            <h3 className="mt-3 text-lg font-bold">No one's searching here yet.</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Post your search and let hosts find you.</p>
-            <Button onClick={openPost} className="mt-4 gap-1 bg-[#FF5A5F] font-bold text-white hover:bg-[#e14e53]">
-              <Plus className="h-4 w-4" />Post my search →
-            </Button>
+            <h3 className="mt-3 text-lg font-semibold">
+              No searches posted here yet — be the first to let hosts know you're looking!
+            </h3>
+            <button
+              type="button"
+              onClick={openPost}
+              className="mt-4 inline-block rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
+            >
+              Post your search →
+            </button>
           </div>
 
         ) : (
@@ -419,9 +429,14 @@ function LookingForCard({
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {!isMine && (
               <>
-                <Button size="sm" onClick={onReply} className="h-8 gap-1 bg-primary hover:bg-primary-dark text-primary-foreground">
-                  <MessageSquare className="h-3.5 w-3.5" />Reply
-                </Button>
+                <button
+                  type="button"
+                  onClick={onReply}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#FF5A5F] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e14e53]"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Message {(profile?.name ?? "student").split(" ")[0]} →
+                </button>
                 <button
                   onClick={onNotifyMe}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${

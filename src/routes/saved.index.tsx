@@ -96,15 +96,17 @@ function SavedPage() {
             ))}
           </div>
         ) : total === 0 ? (
-          <div className="mx-auto max-w-md py-20 text-center">
-            <div className="text-6xl">🏠</div>
-            <h2 className="mt-4 text-xl font-bold">Start saving subleases</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Tap the heart on any listing.</p>
+          <div className="mx-auto max-w-md py-16 text-center">
+            <Heart className="mx-auto h-12 w-12 text-gray-300" strokeWidth={1.5} />
+            <h2 className="mt-3 text-lg font-semibold text-gray-900 dark:text-foreground">Nothing saved yet</h2>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500">
+              Tap the ♡ on any listing to save it for later.
+            </p>
             <Link
               to="/browse"
-              className="mt-5 inline-block rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background"
+              className="mt-4 inline-block rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
             >
-              Browse subleases
+              Browse subleases →
             </Link>
           </div>
         ) : (

@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { X, Minus, Plus, ImagePlus, Loader2 } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, ImageOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
@@ -46,6 +46,7 @@ type Draft = {
   beds: number;
   baths: number;
   photos: Photo[];
+  photoUrls: string[];
   amenities: string[];
   furnished: boolean;
   price: string;
@@ -63,6 +64,7 @@ const EMPTY: Draft = {
   beds: 1,
   baths: 1,
   photos: [],
+  photoUrls: [""],
   amenities: [],
   furnished: false,
   price: "",
@@ -70,6 +72,79 @@ const EMPTY: Draft = {
   availableTo: "",
   description: "",
 };
+
+/**
+ * One "paste a photo URL" row. After a 600ms debounce the URL is loaded into
+ * an offscreen Image; a thumbnail shows on success, a broken-image box on
+ * failure. SSR-safe: the Image is only constructed inside the effect.
+ */
+function PhotoUrlRow({
+  value, onChange, onRemove, onStatus, canRemove,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onRemove: () => void;
+  onStatus: (ok: boolean) => void;
+  canRemove: boolean;
+}) {
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+
+  useEffect(() => {
+    const url = value.trim();
+    if (!url) { setStatus("idle"); onStatus(false); return; }
+    setStatus("loading");
+    let cancelled = false;
+    const t = setTimeout(() => {
+      const img = new Image();
+      img.onload = () => { if (!cancelled) { setStatus("ok"); onStatus(true); } };
+      img.onerror = () => { if (!cancelled) { setStatus("error"); onStatus(false); } };
+      img.src = url;
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        className={inputCls("py-2.5 text-sm")}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://example.com/room.jpg"
+      />
+      {status === "ok" ? (
+        <img
+          src={value.trim()}
+          alt="Photo preview"
+          className="h-12 w-16 shrink-0 rounded-lg object-cover"
+        />
+      ) : status === "error" ? (
+        <span
+          title="URL didn't load — try a direct image link"
+          className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10"
+        >
+          <ImageOff className="h-5 w-5 text-gray-300" />
+        </span>
+      ) : (
+        <span className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10">
+          {status === "loading" ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : null}
+        </span>
+      )}
+      {canRemove ? (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remove photo URL"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      ) : (
+        <span className="h-8 w-8 shrink-0" />
+      )}
+    </div>
+  );
+}
 
 function inputCls(extra?: string) {
   return cn(
@@ -112,6 +187,7 @@ export function PostWizard({ userId }: { userId: string }) {
   const [publishing, setPublishing] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [urlOk, setUrlOk] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
@@ -163,7 +239,11 @@ export function PostWizard({ userId }: { userId: string }) {
 
   async function publish() {
     if (publishing) return;
-    if (d.photos.length === 0) { setPhotoError("Add at least 1 photo"); return; }
+    const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
+    if (d.photos.length === 0 && validUrls.length === 0) {
+      setPhotoError("Add at least 1 photo");
+      return;
+    }
     setPublishing(true);
     try {
       const a = new Set(d.amenities);
@@ -190,7 +270,7 @@ export function PostWizard({ userId }: { userId: string }) {
           pet_friendly: a.has("pet_friendly"),
           laundry: a.has("laundry") ? "in-unit" : null,
           amenities: extras,
-          photos: d.photos.map((p) => p.path),
+          photos: [...d.photos.map((p) => p.path), ...validUrls],
           available_from: d.availableFrom || null,
           available_to: d.availableTo || null,
           is_active: true,
@@ -377,6 +457,35 @@ export function PostWizard({ userId }: { userId: string }) {
                     ))}
                   </div>
                 )}
+
+                {/* Or paste direct image links */}
+                <div className="mt-5 space-y-3 border-t border-gray-100 pt-5 dark:border-border">
+                  <p className="text-sm font-medium">Or paste a photo URL</p>
+                  {d.photoUrls.map((u, i) => (
+                    <PhotoUrlRow
+                      key={i}
+                      value={u}
+                      canRemove={i > 0}
+                      onChange={(v) => set({ photoUrls: d.photoUrls.map((x, j) => (j === i ? v : x)) })}
+                      onRemove={() => set({ photoUrls: d.photoUrls.filter((_, j) => j !== i) })}
+                      onStatus={(ok) =>
+                        setUrlOk((prev) => {
+                          const nextMap = { ...prev, [u.trim()]: ok };
+                          return nextMap;
+                        })
+                      }
+                    />
+                  ))}
+                  {d.photoUrls[d.photoUrls.length - 1]?.trim() && d.photoUrls.length < MAX_PHOTOS && (
+                    <button
+                      type="button"
+                      onClick={() => set({ photoUrls: [...d.photoUrls, ""] })}
+                      className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
+                    >
+                      Add another photo +
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-100 pt-5 dark:border-border">
