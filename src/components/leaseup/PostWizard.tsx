@@ -239,7 +239,11 @@ export function PostWizard({ userId }: { userId: string }) {
 
   async function publish() {
     if (publishing) return;
-    if (d.photos.length === 0) { setPhotoError("Add at least 1 photo"); return; }
+    const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
+    if (d.photos.length === 0 && validUrls.length === 0) {
+      setPhotoError("Add at least 1 photo");
+      return;
+    }
     setPublishing(true);
     try {
       const a = new Set(d.amenities);
