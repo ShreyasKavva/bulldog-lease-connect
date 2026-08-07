@@ -5,6 +5,7 @@ import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } fr
 import { useSession } from "@/lib/leaseup/use-session";
 import { RenterFeedbackPrompt } from "@/components/leaseup/RenterFeedbackPrompt";
 import { ListingCard } from "@/components/leaseup/ListingCard";
+import { ListingCardSkeletonGrid } from "@/components/leaseup/ListingCardSkeleton";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
