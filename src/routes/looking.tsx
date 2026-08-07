@@ -241,13 +241,18 @@ function LookingForPage() {
             {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />)}
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-xl bg-surface p-12 text-center shadow-card">
+          <div className="rounded-2xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🔎</div>
-            <h3 className="mt-3 text-lg font-bold">No one's searching here yet.</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Post your search and let hosts find you.</p>
-            <Button onClick={openPost} className="mt-4 gap-1 bg-[#FF5A5F] font-bold text-white hover:bg-[#e14e53]">
-              <Plus className="h-4 w-4" />Post my search →
-            </Button>
+            <h3 className="mt-3 text-lg font-semibold">
+              No searches posted here yet — be the first to let hosts know you're looking!
+            </h3>
+            <button
+              type="button"
+              onClick={openPost}
+              className="mt-4 inline-block rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
+            >
+              Post your search →
+            </button>
           </div>
 
         ) : (
