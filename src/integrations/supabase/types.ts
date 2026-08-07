@@ -1267,6 +1267,7 @@ export type Database = {
           campus_id: string | null
           created_at: string
           description: string
+          display_name: string | null
           expiry_notified_at: string | null
           furnished: boolean | null
           id: string
@@ -1286,6 +1287,7 @@ export type Database = {
           campus_id?: string | null
           created_at?: string
           description: string
+          display_name?: string | null
           expiry_notified_at?: string | null
           furnished?: boolean | null
           id?: string
@@ -1305,6 +1307,7 @@ export type Database = {
           campus_id?: string | null
           created_at?: string
           description?: string
+          display_name?: string | null
           expiry_notified_at?: string | null
           furnished?: boolean | null
           id?: string

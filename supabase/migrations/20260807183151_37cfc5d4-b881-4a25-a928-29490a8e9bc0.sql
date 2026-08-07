@@ -1,0 +1,1 @@
+ALTER TABLE public.looking_for_posts ADD COLUMN IF NOT EXISTS display_name text;
