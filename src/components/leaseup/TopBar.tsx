@@ -196,7 +196,6 @@ export function TopBar(_legacy: LegacyProps = {}) {
                 <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl dark:border-border dark:bg-surface">
                   <MenuItem to="/browse" onClick={() => setMobileOpen(false)}>Subleases</MenuItem>
                   <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Looking for a place?</MenuItem>
-                  <MenuItem to="/roommates" onClick={() => setMobileOpen(false)}>Rooms &amp; Roommates</MenuItem>
 
                   <div className="my-1 border-t border-gray-100 dark:border-border" />
                   <div className="px-3 pb-1 pt-1">

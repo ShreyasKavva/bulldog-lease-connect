@@ -716,13 +716,12 @@ export async function bumpListing(listingId: string): Promise<string> {
  * homepage "Explore campuses" grid never shows a stale/partial number.
  */
 export async function fetchCampusListingCounts(): Promise<Map<string, number>> {
-  const today = new Date().toISOString().slice(0, 10);
+  // Must match the campus pill counts (fetchActiveListingCountsByCampus):
+  // simply every active listing for the campus.
   const { data, error } = await supabase
     .from("listings")
     .select("campus_id")
-    .eq("is_active", true)
-    .eq("status", "active")
-    .or(`available_to.is.null,available_to.gte.${today}`);
+    .eq("is_active", true);
   if (error) return new Map();
   const m = new Map<string, number>();
   for (const r of (data ?? []) as { campus_id: string }[]) {

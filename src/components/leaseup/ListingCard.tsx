@@ -26,6 +26,17 @@ function fmtDate(iso: string | null) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+/** Cross-year ranges append the end year so "Aug 31 – Aug 30" reads correctly. */
+function fmtDateRange(fromIso: string | null, toIso: string | null) {
+  const from = fmtDate(fromIso);
+  if (!from) return null;
+  const to = fmtDate(toIso);
+  if (!to) return from;
+  const startYear = new Date(fromIso as string).getFullYear();
+  const endYear = new Date(toIso as string).getFullYear();
+  return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
+}
+
 /** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
 function PhotoDots({ count, index }: { count: number; index: number }) {
   const max = 5;
@@ -78,9 +89,7 @@ export function ListingCard({
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
 
-  const from = fmtDate(listing.available_from);
-  const to = fmtDate(listing.available_to);
-  const dates = from ? (to ? `${from} – ${to}` : from) : null;
+  const dates = fmtDateRange(listing.available_from, listing.available_to);
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
   const views = listing.view_count ?? 0;

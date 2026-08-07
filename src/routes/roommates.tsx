@@ -115,7 +115,7 @@ function RoommatesPage() {
     <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 md:pb-16 md:pt-6">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold md:text-3xl">Rooms &amp; Roommates</h1>
+          <h1 className="text-2xl font-extrabold md:text-3xl">Roommates</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Browse students at your campus. Message anyone directly — always free.
           </p>
