@@ -90,8 +90,17 @@ export function SearchPill({
 
   const anyActive = openField !== null;
 
+  const canSearch = value.where.trim().length > 0;
+
   return (
     <div
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && canSearch) {
+          e.preventDefault();
+          setOpenField(null);
+          onSearch?.();
+        }
+      }}
       className={cn(
         "mx-auto flex w-full max-w-3xl items-stretch rounded-full border transition-shadow",
         anyActive
