@@ -157,6 +157,7 @@ export type LookingForPost = {
   area: string | null;
   furnished: boolean | null;
   pets_ok: boolean | null;
+  display_name?: string | null;
   is_active: boolean;
   expiry_notified_at: string | null;
   created_at: string;
