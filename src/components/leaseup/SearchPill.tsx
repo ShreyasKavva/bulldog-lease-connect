@@ -90,8 +90,17 @@ export function SearchPill({
 
   const anyActive = openField !== null;
 
+  const canSearch = value.where.trim().length > 0;
+
   return (
     <div
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && canSearch) {
+          e.preventDefault();
+          setOpenField(null);
+          onSearch?.();
+        }
+      }}
       className={cn(
         "mx-auto flex w-full max-w-3xl items-stretch rounded-full border transition-shadow",
         anyActive
@@ -205,8 +214,9 @@ export function SearchPill({
       {/* SEARCH — floats over the WHO segment, expands when a field is open */}
       <button
         onClick={() => { setOpenField(null); onSearch?.(); }}
+        disabled={!canSearch}
         className={cn(
-          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark",
+          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary",
           anyActive ? "h-12 px-5" : "h-12 w-12 justify-center",
         )}
         aria-label="Search"

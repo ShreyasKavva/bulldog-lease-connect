@@ -73,6 +73,16 @@ export function TopBar(_legacy: LegacyProps = {}) {
     return () => document.removeEventListener("mousedown", onDown);
   }, [menuOpen]);
 
+  // Close menus on Escape.
+  useEffect(() => {
+    if (!menuOpen && !mobileOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setMenuOpen(false); setMobileOpen(false); }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen, mobileOpen]);
+
   // Close the mobile menu on outside click.
   useEffect(() => {
     if (!mobileOpen) return;
@@ -187,36 +197,47 @@ export function TopBar(_legacy: LegacyProps = {}) {
                   <MenuItem to="/browse" onClick={() => setMobileOpen(false)}>Subleases</MenuItem>
                   <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Looking for a place?</MenuItem>
                   <MenuItem to="/roommates" onClick={() => setMobileOpen(false)}>Rooms &amp; Roommates</MenuItem>
-                  {user && <MenuItem to="/saved" onClick={() => setMobileOpen(false)}>Saved</MenuItem>}
-                  {user && (
-                    <Link
-                      to="/messages"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-background dark:text-foreground/80"
-                    >
-                      Messages
-                      {unread > 0 && (
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5A5F] text-[10px] font-bold text-white">
-                          {unread > 9 ? "9+" : unread}
-                        </span>
-                      )}
-                    </Link>
-                  )}
 
-                  {user && <MenuItem to="/my-listings" onClick={() => setMobileOpen(false)}>My Listings</MenuItem>}
-                  {user && <MenuItem to="/profile" onClick={() => setMobileOpen(false)}>Profile</MenuItem>}
-                  <div className="my-1 h-px bg-gray-100 dark:bg-border" />
+                  <div className="my-1 border-t border-gray-100 dark:border-border" />
                   <div className="px-3 pb-1 pt-1">
                     <button
                       onClick={(e) => { setMobileOpen(false); handlePost(e); }}
-                      className="w-full rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+                      className="w-full rounded-full bg-gray-900 px-4 py-2 text-center text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
                     >Post a sublease →</button>
                   </div>
+                  <div className="my-1 border-t border-gray-100 dark:border-border" />
+
                   {user ? (
-                    <button
-                      onClick={() => { setMobileOpen(false); signOut(); }}
-                      className="mt-1 w-full px-4 py-2 text-left text-sm font-medium text-red-600"
-                    >Sign Out</button>
+                    <>
+                      <div className="flex items-center gap-2 px-4 py-2">
+                        <span
+                          className="grid h-8 w-8 place-items-center rounded-full text-sm"
+                          style={{ background: avatarBg }}
+                        >{avatarChar}</span>
+                        <span className="truncate text-sm font-semibold">
+                          {profile?.name ?? user.email}
+                        </span>
+                      </div>
+                      <MenuItem to="/profile" onClick={() => setMobileOpen(false)}>Profile</MenuItem>
+                      <Link
+                        to="/messages"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-background dark:text-foreground/80"
+                      >
+                        Messages
+                        {unread > 0 && (
+                          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5A5F] text-[10px] font-bold text-white">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </Link>
+                      <MenuItem to="/my-listings" onClick={() => setMobileOpen(false)}>My Listings</MenuItem>
+                      <MenuItem to="/saved" onClick={() => setMobileOpen(false)}>Saved</MenuItem>
+                      <button
+                        onClick={() => { setMobileOpen(false); signOut(); }}
+                        className="mt-1 w-full px-4 py-2 text-left text-sm font-medium text-red-600"
+                      >Sign Out</button>
+                    </>
                   ) : (
                     <button
                       onClick={() => { setMobileOpen(false); openSignIn(); }}

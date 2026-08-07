@@ -5,6 +5,7 @@ import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } fr
 import { useSession } from "@/lib/leaseup/use-session";
 import { RenterFeedbackPrompt } from "@/components/leaseup/RenterFeedbackPrompt";
 import { ListingCard } from "@/components/leaseup/ListingCard";
+import { ListingCardSkeletonGrid } from "@/components/leaseup/ListingCardSkeleton";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
@@ -114,7 +115,7 @@ export const Route = createFileRoute("/browse")({
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     view: raw.view === "map" ? "map" : undefined,
-    tenants: parseInt2(raw.tenants),
+    tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
     maxDuration: parseInt2(raw.maxDuration),
     availableSoon: parseFlag(raw.availableSoon),
@@ -155,7 +156,7 @@ function Browse() {
     }
   }, []);
 
-  const { data: listings = [], isLoading } = useQuery({
+  const { data: listings = [], isLoading, isError } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
   });
@@ -522,20 +523,12 @@ function Browse() {
               pinnedIds={pinnedSet}
               onPin={togglePin}
             />
+          ) : isError ? (
+            <p className="py-16 text-center text-sm text-gray-500 dark:text-muted-foreground">
+              Something went wrong loading listings. Try refreshing.
+            </p>
           ) : isLoading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
-
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="overflow-hidden rounded-xl bg-surface shadow-card">
-                  <div className="lu-shimmer aspect-[4/3] w-full" />
-                  <div className="space-y-2 p-3">
-                    <div className="lu-shimmer h-5 w-24 rounded" />
-                    <div className="lu-shimmer h-4 w-3/4 rounded" />
-                    <div className="lu-shimmer h-3 w-1/2 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ListingCardSkeletonGrid count={12} />
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
               <div className="text-5xl">🔍</div>

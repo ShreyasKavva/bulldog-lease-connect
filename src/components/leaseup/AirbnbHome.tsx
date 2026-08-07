@@ -26,6 +26,7 @@ import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
 import { ListingRail } from "./ListingRail";
 import { ListingCard } from "./ListingCard";
+import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
 import { openSignIn } from "./SignInModal";
@@ -87,7 +88,7 @@ function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string,
 
 export function AirbnbHome({
   listings, campuses, savedIds, onSave, onOpen, onPost,
-  userCampusId, feedCampusId, lookingForPosts, recentFilledCount,
+  userCampusId, feedCampusId, lookingForPosts, recentFilledCount, loading,
 }: {
   listings: Listing[];
   campuses: Campus[];
@@ -100,6 +101,7 @@ export function AirbnbHome({
   feedCampusId?: string | null;
   lookingForPosts?: LookingForPost[];
   recentFilledCount?: number;
+  loading?: boolean;
 }) {
   const navigate = useNavigate();
   const railsRef = useRef<HTMLDivElement>(null);
@@ -333,26 +335,40 @@ export function AirbnbHome({
       </div>
 
 
-      {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
-      <NewThisWeekSection
-        listings={listings}
-        savedIds={savedIds}
-        onSave={onSave}
-        onOpen={onOpen}
-      />
-
-      {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
-      <div ref={railsRef} className="scroll-mt-20">
-        <SmartSections
-          campuses={campuses}
-          userCampusId={search.campusId ?? userCampusId ?? feedCampusId ?? null}
+      {/* Q114 — skeleton rails while the listings query is loading */}
+      {loading ? (
+        <>
+          {["New this week", "Just listed"].map((heading) => (
+            <section key={heading} className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">{heading}</h2>
+              <ListingCardSkeletonRow count={4} />
+            </section>
+          ))}
+        </>
+      ) : (
+        /* Q111 — "New this week" (hidden unless 3+ fresh listings) */
+        <NewThisWeekSection
+          listings={listings}
           savedIds={savedIds}
           onSave={onSave}
           onOpen={onOpen}
-          filter={(l: Listing) => matchesCategory(l, cat, medianFor)}
         />
+      )}
 
-        {inCat.length === 0 && (
+      {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
+      <div ref={railsRef} className="scroll-mt-20">
+        {!loading && (
+          <SmartSections
+            campuses={campuses}
+            userCampusId={search.campusId ?? userCampusId ?? feedCampusId ?? null}
+            savedIds={savedIds}
+            onSave={onSave}
+            onOpen={onOpen}
+            filter={(l: Listing) => matchesCategory(l, cat, medianFor)}
+          />
+        )}
+
+        {!loading && inCat.length === 0 && (
           <div className="mx-auto max-w-md px-6 py-16 text-center">
             <div className="text-6xl">🏠</div>
             <h2 className="mt-4 text-xl font-bold">No subleases here yet</h2>
