@@ -270,7 +270,7 @@ export function PostWizard({ userId }: { userId: string }) {
           pet_friendly: a.has("pet_friendly"),
           laundry: a.has("laundry") ? "in-unit" : null,
           amenities: extras,
-          photos: d.photos.map((p) => p.path),
+          photos: [...d.photos.map((p) => p.path), ...validUrls],
           available_from: d.availableFrom || null,
           available_to: d.availableTo || null,
           is_active: true,
