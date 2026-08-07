@@ -26,6 +26,7 @@ import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
 import { ListingRail } from "./ListingRail";
 import { ListingCard } from "./ListingCard";
+import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
 import { openSignIn } from "./SignInModal";
