@@ -680,11 +680,11 @@ function useRiskScores() {
   return useQuery({ queryKey: ["admin", "risk-scores"], queryFn: fetchUserRiskScores, staleTime: 60_000 });
 }
 
-function RiskBadge({ userId, banned, verified, trustSignal }: { userId: string; banned: boolean; verified: boolean; trustSignal: number | null }) {
+function RiskBadge({ userId, banned, verified }: { userId: string; banned: boolean; verified: boolean }) {
   const { data: rows } = useRiskScores();
   const row = rows?.find(r => r.id === userId);
   const level = row?.risk_level
-    ?? (banned ? "banned" : !verified ? "unverified" : (trustSignal != null && trustSignal < 3) ? "low_trust" : "good_standing");
+    ?? (banned ? "banned" : !verified ? "unverified" : "good_standing");
   const map: Record<string, { label: string; cls: string }> = {
     banned: { label: "BANNED", cls: "bg-red-600 text-white" },
     high_risk: { label: "HIGH RISK", cls: "bg-red-100 text-red-700" },
