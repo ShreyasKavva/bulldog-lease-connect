@@ -368,7 +368,7 @@ export function ProfileView({ userId }: { userId: string }) {
                           to="/post"
                           className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
                         >
-                          Post a sublease →
+                          Post your first sublease →
                         </Link>
                       </div>
                     )}
