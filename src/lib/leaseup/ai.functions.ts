@@ -234,7 +234,7 @@ export const findMyMatch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: listings, error } = await context.supabase
       .from("listings")
-      .select("id,title,description,price,beds,baths,area,furnished,utilities_included,pet_friendly,available_from,available_to,safe_score")
+      .select("id,title,description,price,beds,baths,area,furnished,utilities_included,pet_friendly,available_from,available_to")
       .eq("is_active", true)
       .limit(60);
     if (error) throw error;
