@@ -23,6 +23,7 @@ function ThreadPage() {
   const { user, loading } = useSession();
   const navigate = useNavigate();
   const [resolved, setResolved] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   // The param is normally a conversation id. Legacy links (and the old
   // /messages/[listingId] shape) pass a listing id — resolve those into a
@@ -30,14 +31,23 @@ function ThreadPage() {
   useEffect(() => {
     if (loading || !user) return;
     let cancelled = false;
+    setNotFound(false);
     (async () => {
       const { data: conv } = await supabase
         .from("conversations")
-        .select("id")
+        .select("id,participant_1_id,participant_2_id")
         .eq("id", conversationId)
         .maybeSingle();
       if (cancelled) return;
-      if (conv) { setResolved(conv.id); return; }
+      if (conv) {
+        // Only participants may open a thread.
+        if (conv.participant_1_id !== user.id && conv.participant_2_id !== user.id) {
+          setNotFound(true);
+          return;
+        }
+        setResolved(conv.id);
+        return;
+      }
 
       const { data: listing } = await supabase
         .from("listings")
@@ -45,14 +55,14 @@ function ThreadPage() {
         .eq("id", conversationId)
         .maybeSingle();
       if (cancelled) return;
-      if (!listing) { toast.error("Conversation not found"); navigate({ to: "/messages" }); return; }
+      if (!listing) { setNotFound(true); return; }
       if (listing.user_id === user.id) { navigate({ to: "/messages" }); return; }
       try {
         const id = await getOrCreateConversation(user.id, listing.user_id, listing.id);
         if (!cancelled) navigate({ to: "/messages/$conversationId", params: { conversationId: id }, replace: true });
       } catch {
         toast.error("Couldn't open conversation");
-        navigate({ to: "/messages" });
+        if (!cancelled) setNotFound(true);
       }
     })();
     return () => { cancelled = true; };
@@ -66,6 +76,22 @@ function ThreadPage() {
         body="You need to sign in to open this conversation."
         next={`/messages/${conversationId}`}
       />
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-md px-6 py-24 text-center">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-foreground">Conversation not found</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            This conversation doesn't exist, or you're not part of it.
+          </p>
+          <Link to="/messages" className="mt-4 inline-block text-sm text-[#FF5A5F] hover:underline">
+            ← Back to inbox
+          </Link>
+        </div>
+      </div>
     );
   }
 
