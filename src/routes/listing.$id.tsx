@@ -110,22 +110,30 @@ export const Route = createFileRoute("/listing/$id")({
             body: "The lister found a renter. Browse other available subleases.",
           }
         : {
-            title: "This listing is no longer available.",
-            body: "It may have been removed, or the link is broken.",
+            title: "This listing isn't available",
+            body: "It may have been removed or the link might be wrong.",
           };
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-6 py-16">
-          <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-card">
-            <h1 className="text-2xl font-black leading-tight">{copy.title}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{copy.body}</p>
-            <Link
-              to="/browse"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary-dark"
-            >
-              Browse active subleases →
-            </Link>
-          </div>
+        <div className="mx-auto max-w-md px-6 py-24 text-center">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            className="mx-auto h-12 w-12 text-gray-300"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75" />
+          </svg>
+          <h1 className="mt-4 text-xl font-semibold text-gray-900 dark:text-foreground">{copy.title}</h1>
+          <p className="mt-2 text-sm text-gray-500 dark:text-muted-foreground">{copy.body}</p>
+          <Link
+            to="/browse"
+            className="mt-6 inline-block rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+          >
+            Browse subleases →
+          </Link>
         </div>
       </div>
     );
