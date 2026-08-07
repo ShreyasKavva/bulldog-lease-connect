@@ -459,7 +459,7 @@ function ListingDetailPage() {
 
 
   const [messaging, setMessaging] = useState(false);
-  const firstName = (poster?.name ?? "").split(" ")[0] || "the host";
+  const firstName = (poster?.name ?? "").trim() || "Host";
 
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at

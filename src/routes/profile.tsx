@@ -32,7 +32,7 @@ function ProfilePage() {
           <div className="text-5xl">👤</div>
           <h1 className="mt-4 text-2xl font-extrabold">Your Profile</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to manage your listings, see your matches, and build your LeaseUp profile.
+            Sign in to manage your listings, track your saved subleases, and build your LeaseUp profile.
           </p>
           <Button
             onClick={() => openSignIn("/profile")}

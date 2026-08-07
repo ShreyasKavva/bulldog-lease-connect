@@ -47,7 +47,7 @@ export function Footer() {
         <div>
           <p className="text-lg font-bold text-gray-900 dark:text-foreground">LeaseUp</p>
           <p className="mt-1 text-sm text-gray-500 dark:text-muted-foreground">Sublease near your campus.</p>
-          <p className="mt-4 text-xs text-gray-400">© 2025 LeaseUp</p>
+          <p className="mt-4 text-xs text-gray-400">© 2026 LeaseUp</p>
         </div>
 
         {/* For Students */}
@@ -56,7 +56,7 @@ export function Footer() {
           <Link to="/browse" className={linkCls}>Browse subleases</Link>
           <Link to="/post" className={linkCls}>Post a sublease</Link>
           <Link to="/looking" className={linkCls}>Looking for a place?</Link>
-          <Link to="/roommates" className={linkCls}>Rooms &amp; Roommates</Link>
+          
         </div>
 
         {/* Top Campuses */}
