@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { X, Minus, Plus, ImagePlus, Loader2 } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, ImageOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
