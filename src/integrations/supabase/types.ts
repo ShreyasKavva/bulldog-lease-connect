@@ -2981,10 +2981,6 @@ export type Database = {
     Functions: {
       auto_approve_pending_listings: { Args: never; Returns: undefined }
       bump_listing: { Args: { _listing_id: string }; Returns: string }
-      compute_listing_safe_score: {
-        Args: { _listing_id: string }
-        Returns: number
-      }
       compute_verification_tier: {
         Args: { _listing_id: string }
         Returns: string

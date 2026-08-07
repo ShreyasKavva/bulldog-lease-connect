@@ -63,7 +63,6 @@ export type Listing = {
   photos: string[] | null;
   is_active: boolean;
   flagged?: boolean;
-  safe_score: number | null;
   view_count?: number;
   status?: "active" | "filled" | "inactive";
   filled_at?: string | null;

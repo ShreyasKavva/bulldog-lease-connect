@@ -198,9 +198,11 @@ export function PostWizard({ userId }: { userId: string }) {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Draft;
-        if (parsed && (parsed.title || parsed.photos?.length)) setD({ ...EMPTY, ...parsed });
+        if (parsed && (parsed.title || parsed.photos?.length)) setD({ ...EMPTY, ...parsed, step: 1 });
       }
     } catch { /* ignore bad draft */ }
+    // Always start fresh at step 1 on mount (SPA navigation keeps state otherwise).
+    setD((p) => ({ ...p, step: 1 }));
   }, []);
 
   useEffect(() => {

@@ -95,7 +95,6 @@ export type UserRiskRow = {
   id: string;
   name: string | null;
   email: string | null;
-  safe_score: number | null;
   reports_received: number;
   reports_filed: number;
   risk_level: "banned" | "high_risk" | "low_trust" | "unverified" | "good_standing";
