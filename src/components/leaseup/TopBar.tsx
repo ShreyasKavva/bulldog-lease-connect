@@ -97,8 +97,8 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
   function handlePost(e: React.MouseEvent) {
     e.preventDefault();
-    if (user) navigate({ to: "/", search: { post: "1" } as any });
-    else { setSignInNext("/?post=1"); setSignInOpen(true); }
+    if (user) navigate({ to: "/post" });
+    else { setSignInNext("/post"); setSignInOpen(true); }
   }
 
   function openSignIn() {
