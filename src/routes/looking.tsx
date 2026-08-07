@@ -133,7 +133,7 @@ function LookingForPage() {
   }
 
   async function onToggleInterest(p: LookingForPost) {
-    if (!user) return toast.error("Sign in first");
+    if (!user) return openSignIn("/looking");
     const interested = !interestSet.has(p.id);
     try {
       await toggleLookingForInterest(user.id, p.id, interested);
