@@ -254,7 +254,6 @@ export const findMyMatch = createServerFn({ method: "POST" })
       from: l.available_from,
       to: l.available_to,
       desc: (l.description ?? "").slice(0, 280),
-      safe: l.safe_score,
     }));
 
     const prompt = `Match a student to the best sublease listings based on their preferences.
