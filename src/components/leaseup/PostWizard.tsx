@@ -46,6 +46,7 @@ type Draft = {
   beds: number;
   baths: number;
   photos: Photo[];
+  photoUrls: string[];
   amenities: string[];
   furnished: boolean;
   price: string;
@@ -63,6 +64,7 @@ const EMPTY: Draft = {
   beds: 1,
   baths: 1,
   photos: [],
+  photoUrls: [""],
   amenities: [],
   furnished: false,
   price: "",
@@ -70,6 +72,79 @@ const EMPTY: Draft = {
   availableTo: "",
   description: "",
 };
+
+/**
+ * One "paste a photo URL" row. After a 600ms debounce the URL is loaded into
+ * an offscreen Image; a thumbnail shows on success, a broken-image box on
+ * failure. SSR-safe: the Image is only constructed inside the effect.
+ */
+function PhotoUrlRow({
+  value, onChange, onRemove, onStatus, canRemove,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onRemove: () => void;
+  onStatus: (ok: boolean) => void;
+  canRemove: boolean;
+}) {
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+
+  useEffect(() => {
+    const url = value.trim();
+    if (!url) { setStatus("idle"); onStatus(false); return; }
+    setStatus("loading");
+    let cancelled = false;
+    const t = setTimeout(() => {
+      const img = new Image();
+      img.onload = () => { if (!cancelled) { setStatus("ok"); onStatus(true); } };
+      img.onerror = () => { if (!cancelled) { setStatus("error"); onStatus(false); } };
+      img.src = url;
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        className={inputCls("py-2.5 text-sm")}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://example.com/room.jpg"
+      />
+      {status === "ok" ? (
+        <img
+          src={value.trim()}
+          alt="Photo preview"
+          className="h-12 w-16 shrink-0 rounded-lg object-cover"
+        />
+      ) : status === "error" ? (
+        <span
+          title="URL didn't load — try a direct image link"
+          className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10"
+        >
+          <ImageOff className="h-5 w-5 text-gray-300" />
+        </span>
+      ) : (
+        <span className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-gray-100 dark:bg-white/10">
+          {status === "loading" ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : null}
+        </span>
+      )}
+      {canRemove ? (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remove photo URL"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      ) : (
+        <span className="h-8 w-8 shrink-0" />
+      )}
+    </div>
+  );
+}
 
 function inputCls(extra?: string) {
   return cn(
