@@ -334,6 +334,7 @@ function LookingForCard({
   onRenew: () => void;
 }) {
   const profile = p.profile;
+  const displayName = p.display_name ?? profile?.name ?? "Student";
   const dateRange = fmtDateRange(p.move_in_date, p.move_out_date);
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
   const expiringSoon = ageDays >= 55 && ageDays < 60;
@@ -374,7 +375,7 @@ function LookingForCard({
         <div className="min-w-0 flex-1 pr-14">
           <div className="flex flex-wrap items-center gap-1.5">
             <button onClick={onOpenProfile} className="truncate text-sm font-bold hover:underline">
-              {profile?.name ?? "Student"}
+              {displayName}
             </button>
             {profile?.verified_email && (
               <span title="Verified .edu" className="inline-flex">
@@ -435,7 +436,7 @@ function LookingForCard({
                   className="inline-flex items-center gap-1 rounded-full bg-[#FF5A5F] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e14e53]"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
-                  Message {(profile?.name ?? "student").split(" ")[0]} →
+                  Message {displayName.split(" ")[0]} →
                 </button>
                 <button
                   onClick={onNotifyMe}

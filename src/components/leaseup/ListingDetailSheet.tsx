@@ -418,7 +418,7 @@ export function ListingDetailSheet({
           >
             <Button
               onClick={() => onMessage(listing)}
-              className="h-12 w-full gap-2 bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-dark"
+              className="h-12 w-full gap-2 bg-[#FF5A5F] text-white font-bold text-sm hover:bg-[#e04e53]"
             >
               <MessageSquare className="h-4 w-4" />
               Message {listing.profile?.name?.split(" ")[0] ?? "the poster"} about this listing →
