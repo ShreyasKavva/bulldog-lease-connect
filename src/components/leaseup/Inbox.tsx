@@ -94,10 +94,18 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-              <span className="text-4xl">📭</span>
-              <p className="font-medium text-gray-600 dark:text-foreground/70">No messages yet</p>
-              <Link to="/browse" className="text-sm font-medium underline">Browse subleases</Link>
+            <div className="px-4 py-16 text-center">
+              <MessageSquare className="mx-auto h-12 w-12 text-gray-300" strokeWidth={1.5} />
+              <h2 className="mt-3 text-lg font-semibold text-gray-900 dark:text-foreground">No messages yet</h2>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500">
+                When you message a host or someone messages you, it'll show up here.
+              </p>
+              <Link
+                to="/browse"
+                className="mt-4 inline-block rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
+              >
+                Browse subleases →
+              </Link>
             </div>
           ) : (
             <ul className="divide-y divide-gray-100 dark:divide-border">
