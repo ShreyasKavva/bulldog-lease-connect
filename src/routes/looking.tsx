@@ -429,9 +429,14 @@ function LookingForCard({
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {!isMine && (
               <>
-                <Button size="sm" onClick={onReply} className="h-8 gap-1 bg-primary hover:bg-primary-dark text-primary-foreground">
-                  <MessageSquare className="h-3.5 w-3.5" />Reply
-                </Button>
+                <button
+                  type="button"
+                  onClick={onReply}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#FF5A5F] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e14e53]"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Message {(profile?.name ?? "student").split(" ")[0]} →
+                </button>
                 <button
                   onClick={onNotifyMe}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
