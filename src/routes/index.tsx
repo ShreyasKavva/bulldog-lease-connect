@@ -65,7 +65,7 @@ function Home() {
     queryFn: () => fetchSavedIds(user!.id),
     enabled: !!user?.id,
   });
-  const { data: listings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
+  const { data: listings = [], isLoading: listingsLoading } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
 
   // "Latest subleases" feed scope: user's campus, else most active campus.
@@ -202,6 +202,7 @@ function Home() {
         feedCampusId={topCampusId}
         lookingForPosts={lookingFor}
         recentFilledCount={filledCount}
+        loading={listingsLoading}
       />
 
       <CampusPills title="Popular campuses" />
