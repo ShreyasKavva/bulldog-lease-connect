@@ -377,7 +377,7 @@ export function AirbnbHome({
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <button
-                onClick={() => navigate({ to: "/", search: { post: 1 } as any })}
+                onClick={() => navigate({ to: "/post" })}
                 className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
               >Post a sublease →</button>
               <button
