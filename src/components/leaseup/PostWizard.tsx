@@ -452,6 +452,35 @@ export function PostWizard({ userId }: { userId: string }) {
                     ))}
                   </div>
                 )}
+
+                {/* Or paste direct image links */}
+                <div className="mt-5 space-y-3 border-t border-gray-100 pt-5 dark:border-border">
+                  <p className="text-sm font-medium">Or paste a photo URL</p>
+                  {d.photoUrls.map((u, i) => (
+                    <PhotoUrlRow
+                      key={i}
+                      value={u}
+                      canRemove={i > 0}
+                      onChange={(v) => set({ photoUrls: d.photoUrls.map((x, j) => (j === i ? v : x)) })}
+                      onRemove={() => set({ photoUrls: d.photoUrls.filter((_, j) => j !== i) })}
+                      onStatus={(ok) =>
+                        setUrlOk((prev) => {
+                          const nextMap = { ...prev, [u.trim()]: ok };
+                          return nextMap;
+                        })
+                      }
+                    />
+                  ))}
+                  {d.photoUrls[d.photoUrls.length - 1]?.trim() && d.photoUrls.length < MAX_PHOTOS && (
+                    <button
+                      type="button"
+                      onClick={() => set({ photoUrls: [...d.photoUrls, ""] })}
+                      className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
+                    >
+                      Add another photo +
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-100 pt-5 dark:border-border">
