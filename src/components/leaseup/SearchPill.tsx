@@ -214,8 +214,9 @@ export function SearchPill({
       {/* SEARCH — floats over the WHO segment, expands when a field is open */}
       <button
         onClick={() => { setOpenField(null); onSearch?.(); }}
+        disabled={!canSearch}
         className={cn(
-          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark",
+          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary",
           anyActive ? "h-12 px-5" : "h-12 w-12 justify-center",
         )}
         aria-label="Search"
