@@ -73,6 +73,16 @@ export function TopBar(_legacy: LegacyProps = {}) {
     return () => document.removeEventListener("mousedown", onDown);
   }, [menuOpen]);
 
+  // Close menus on Escape.
+  useEffect(() => {
+    if (!menuOpen && !mobileOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setMenuOpen(false); setMobileOpen(false); }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen, mobileOpen]);
+
   // Close the mobile menu on outside click.
   useEffect(() => {
     if (!mobileOpen) return;
