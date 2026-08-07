@@ -113,7 +113,7 @@ function LookingForPage() {
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
 
   async function startConv(otherId: string) {
-    if (!user) return toast.error("Sign in to message");
+    if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
     const id = await getOrCreateConversation(user.id, otherId, null);
     setActiveConv(id);
@@ -121,7 +121,7 @@ function LookingForPage() {
   }
 
   function openPost() {
-    if (!user) return toast.error("Sign in first");
+    if (!user) return openSignIn("/looking");
     setEditing(null);
     setFormOpen(true);
   }
