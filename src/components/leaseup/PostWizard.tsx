@@ -187,6 +187,7 @@ export function PostWizard({ userId }: { userId: string }) {
   const [publishing, setPublishing] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [urlOk, setUrlOk] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
