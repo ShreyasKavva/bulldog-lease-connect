@@ -17,7 +17,7 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Flame, Bell, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Bell, Map as MapIcon } from "lucide-react";
 import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -220,7 +220,7 @@ function Browse() {
     });
   }
 
-  const [view, setView] = useState<View>("grid");
+  const [view] = useState<View>("grid");
   const mapView = s.view === "map";
 
   const [selected, setSelected] = useState<Listing | null>(null);
