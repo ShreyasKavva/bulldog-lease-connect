@@ -154,16 +154,20 @@ function LookingForPage() {
 
 
       <header className="border-b bg-surface">
-        <div className="mx-auto max-w-5xl px-4 py-6 flex items-center gap-4">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 py-6">
           <div>
-            <h1 className="text-2xl font-black">Looking For</h1>
-            <p className="text-sm text-muted-foreground">Post what you need — let other students bring listings to you.</p>
+            <h1 className="text-2xl font-bold">Students looking for subleases</h1>
+            <p className="text-sm text-muted-foreground">Post what you need — let hosts bring listings to you.</p>
           </div>
           <div className="ml-auto flex gap-2">
-            <Link to="/" className="rounded-md border px-3 py-2 text-sm font-semibold hover:bg-background">Browse listings</Link>
-            <Button onClick={openPost} className="bg-primary hover:bg-primary-dark text-primary-foreground font-bold gap-1">
-              <Plus className="h-4 w-4" />New post
-            </Button>
+            <Link to="/browse" className="rounded-full border px-4 py-2.5 text-sm font-medium hover:bg-background">Browse subleases</Link>
+            <button
+              type="button"
+              onClick={openPost}
+              className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
+            >
+              Post your search →
+            </button>
           </div>
         </div>
       </header>
