@@ -447,17 +447,7 @@ function Browse() {
         </div>
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
-          <div className={cn("flex rounded-lg bg-background p-1", mapView && "hidden")}>
-            <button onClick={() => setView("grid")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "grid" && "bg-surface shadow")}>
-              <LayoutGrid className="h-3.5 w-3.5" />Grid
-            </button>
-            <button onClick={() => setView("scroll")} className={cn("flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold", view === "scroll" && "bg-surface shadow")}>
-              <Flame className="h-3.5 w-3.5" />Scroll
-            </button>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {isLoading ? "Loading listings…" : `${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
-          </span>
+
           {/* Q90 — grid / map toggle */}
           <div className="ml-auto flex items-center gap-1">
             <button

@@ -89,9 +89,7 @@ export function ListingCard({
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
 
-  const from = fmtDate(listing.available_from);
-  const to = fmtDate(listing.available_to);
-  const dates = from ? (to ? `${from} – ${to}` : from) : null;
+  const dates = fmtDateRange(listing.available_from, listing.available_to);
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
   const views = listing.view_count ?? 0;
