@@ -52,6 +52,7 @@ type Form = {
   placeType: string;
   campusId: string;
   area: string;
+  address: string;
   beds: number;
   baths: number;
   occupants: number;
@@ -150,6 +151,7 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
       placeType: extras.find((a) => PLACE_TYPES.some((p) => p.id === a)) ?? "entire",
       campusId: listing.campus_id ?? "",
       area: listing.area ?? "",
+      address: listing.address ?? "",
       beds: listing.beds ?? 1,
       baths: Number(listing.baths ?? 1),
       occupants: extras.includes("occupants:2") ? 2 : Math.max(1, listing.beds ?? 1),
@@ -206,6 +208,7 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
         title: form.title.trim(),
         campus_id: form.campusId,
         area: form.area.trim() || null,
+        address: form.address.trim() || null,
         beds: form.beds,
         baths: form.baths,
         price,
@@ -231,7 +234,7 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
     qc.invalidateQueries({ queryKey: ["listing"] });
     qc.invalidateQueries({ queryKey: ["listings"] });
     qc.invalidateQueries({ queryKey: ["my-listings"] });
-    toast.success("Listing updated");
+    toast.success("Listing updated! ✅");
     navigate({ to: "/listing/$id", params: { id: listingId } });
   }
 
@@ -259,7 +262,16 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
 
         <div className="mt-3 flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Edit sublease</h1>
-          <div className="hidden sm:block">{saveBtn}</div>
+          <div className="hidden items-center gap-3 sm:flex">
+            <Link
+              to="/listing/$id"
+              params={{ id: listingId }}
+              className="rounded-full border border-border px-6 py-3 text-sm font-semibold hover:bg-muted"
+            >
+              Cancel
+            </Link>
+            {saveBtn}
+          </div>
         </div>
 
         <div className="mt-8 space-y-8">
@@ -312,6 +324,15 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
               />
             </Field>
           </div>
+
+          <Field label="Address">
+            <input
+              value={form.address}
+              onChange={(e) => set({ address: e.target.value })}
+              placeholder="e.g. 120 Baxter St"
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground"
+            />
+          </Field>
 
           <div className="grid gap-6 sm:grid-cols-3">
             <Stepper label="Bedrooms" value={form.beds} min={0} onChange={(v) => set({ beds: v })} />
@@ -438,12 +459,19 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
       </main>
 
       {/* Sticky mobile save bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface p-3 sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface p-3 sm:hidden">
+        <Link
+          to="/listing/$id"
+          params={{ id: listingId }}
+          className="rounded-full border border-border px-5 py-3 text-sm font-semibold"
+        >
+          Cancel
+        </Link>
         <button
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold text-white disabled:opacity-60 dark:bg-foreground dark:text-background"
+          className="flex-1 rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold text-white disabled:opacity-60 dark:bg-foreground dark:text-background"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>
