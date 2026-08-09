@@ -93,6 +93,9 @@ export function ListingDetailSheet({
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
+  const host = hostProfile;
+  const hostName = host?.name || hostDisplayName || "Host";
+  const otherActive = Math.max(0, (host?.active_listing_count ?? 0) - 1);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
