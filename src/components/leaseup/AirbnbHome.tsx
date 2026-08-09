@@ -190,6 +190,8 @@ export function AirbnbHome({
 
   const spotlightCampuses = useMemo(() => {
     // Only ever show campuses that actually have active listings (Q117).
+    // Q123 verified: Georgia Tech (10 active) clears the >0 filter and ranks
+    // 4th by count, so it appears in the "Explore campuses" grid.
     return [...campuses]
       .filter((c) => (campusCounts.get(c.id) ?? 0) > 0)
       .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))

@@ -52,6 +52,14 @@ const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: str
 const BEDS = ["0", "1", "2", "3+"] as const;
 const PRICE_MAX = 3000;
 
+/** Q123 — browse price presets. `max: undefined` means "no upper bound". */
+const PRICE_PRESETS: Array<{ label: string; min?: number; max?: number }> = [
+  { label: "Under $700/mo", max: 700 },
+  { label: "$700–$1,000/mo", min: 700, max: 1000 },
+  { label: "$1,000–$1,500/mo", min: 1000, max: 1500 },
+  { label: "$1,500+/mo", min: 1500 },
+];
+
 function bedLabel(b: string) {
   return b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`;
 }
@@ -86,6 +94,16 @@ export function BrowseFilterBar({
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+
+  const activePricePreset = PRICE_PRESETS.find(
+    (p) => values.min_price === p.min && values.max_price === p.max,
+  );
+  const priceButtonLabel = activePricePreset
+    ? `Price: ${activePricePreset.label.replace("/mo", "")}`
+    : values.min_price != null || values.max_price != null
+      ? `Price: $${values.min_price ?? 0}–$${values.max_price ?? PRICE_MAX}`
+      : "Price";
 
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
@@ -283,6 +301,69 @@ export function BrowseFilterBar({
               {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
             </button>
           ))}
+          {/* Q123 — price preset dropdown (combinable with beds/verified) */}
+          <div className="relative">
+            <button
+              onClick={() => setPriceOpen((o) => !o)}
+              aria-expanded={priceOpen}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
+                activePricePreset || values.min_price != null || values.max_price != null
+                  ? "border-foreground bg-foreground text-background"
+                  : "hover:border-foreground",
+              )}
+            >
+              {priceButtonLabel}
+              {values.min_price != null || values.max_price != null ? (
+                <XIcon
+                  className="h-3 w-3"
+                  role="button"
+                  aria-label="Clear price filter"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPriceOpen(false);
+                    onPatch({ min_price: undefined, max_price: undefined });
+                  }}
+                />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" />
+              )}
+            </button>
+            {priceOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-40 cursor-default"
+                  aria-label="Close price menu"
+                  onClick={() => setPriceOpen(false)}
+                />
+                <div className="absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
+                  {PRICE_PRESETS.map((p) => {
+                    const active =
+                      values.min_price === p.min && values.max_price === p.max;
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => {
+                          onPatch(
+                            active
+                              ? { min_price: undefined, max_price: undefined }
+                              : { min_price: p.min, max_price: p.max },
+                          );
+                          setPriceOpen(false);
+                        }}
+                        className={cn(
+                          "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-background",
+                          active && "bg-background text-foreground",
+                        )}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Q109 — verified-host quick filter */}
           <button

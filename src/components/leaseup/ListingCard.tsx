@@ -37,6 +37,18 @@ function fmtDateRange(fromIso: string | null, toIso: string | null) {
   return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
 }
 
+/** Q123 — "Available Jan 15" / "Available now" badge. Null when no date. */
+function availableBadge(iso: string | null | undefined) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (d.getTime() <= today.getTime()) return "Available now";
+  return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
+
+
 /** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
 function PhotoDots({ count, index }: { count: number; index: number }) {
   const max = 5;
@@ -90,6 +102,7 @@ export function ListingCard({
   const multi = photos.length > 1;
 
   const dates = fmtDateRange(listing.available_from, listing.available_to);
+  const availableLabel = availableBadge(listing.available_from);
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
   const views = listing.view_count ?? 0;
@@ -203,7 +216,15 @@ export function ListingCard({
           </>
         )}
 
-        <CardPriceBadge price={listing.price} campusId={listing.campus_id} />
+        {/* Q123 — price tier + move-in date badges share the bottom-left row */}
+        <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-1">
+          <CardPriceBadge price={listing.price} campusId={listing.campus_id} className="static bottom-auto left-auto" />
+          {availableLabel && (
+            <span className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-gray-700 shadow-sm">
+              {availableLabel}
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleSave}
