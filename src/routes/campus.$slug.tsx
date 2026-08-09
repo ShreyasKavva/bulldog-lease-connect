@@ -101,14 +101,25 @@ function CampusLandingPage() {
   const stats = useMemo(() => {
     const prices = listings.map((l) => l.price).filter((p) => typeof p === "number");
     const monthAgo = Date.now() - 30 * 86400000;
+    const bedCounts = new Map<number, number>();
+    for (const l of listings) {
+      const b = Number(l.beds);
+      if (!Number.isFinite(b)) continue;
+      bedCounts.set(b, (bedCounts.get(b) ?? 0) + 1);
+    }
+    let topBeds: number | null = null;
+    let topN = 0;
+    for (const [b, n] of bedCounts) if (n > topN) { topN = n; topBeds = b; }
     return {
       count: listings.length,
       avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
       thisMonth: listings.filter((l) => new Date(l.created_at).getTime() >= monthAgo).length,
+      popular: topBeds == null ? null : topBeds === 0 ? "Studio" : `${topBeds}BR`,
     };
   }, [listings]);
 
   const visible = listings.slice(0, 6);
+
 
   async function handleSave(l: Listing) {
     if (!user) {
@@ -144,11 +155,29 @@ function CampusLandingPage() {
       <section className="w-full bg-gray-50 px-6 py-16 dark:bg-surface">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-foreground sm:text-4xl">
-            {campus.name} Subleases
+            {campus.name}
           </h1>
           <p className="mt-2 text-lg text-gray-500">
-            Find verified student subleases near {campus.city}.
+            {campus.city}, {campus.state}
           </p>
+          {(stats.count > 0 || stats.avg > 0) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                {stats.count} active listing{stats.count === 1 ? "" : "s"}
+              </span>
+              {stats.avg > 0 && (
+                <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                  Avg ${stats.avg.toLocaleString()}/mo
+                </span>
+              )}
+              {stats.popular && (
+                <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                  Most popular: {stats.popular}
+                </span>
+              )}
+            </div>
+          )}
+
           <Link
             to="/browse"
             search={{ campus: campus.slug } as any}
