@@ -209,14 +209,16 @@ export function BrowseFilterBar({
 
             {/* PART E — sort dropdown */}
             <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-            <div className="relative hidden shrink-0 sm:block">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setSortOpen((o) => !o)}
                 className="flex items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"
               >
-                Sort: <span className="font-semibold text-foreground">{SORT_LABELS[sort]}</span>
-                <ChevronDown className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sort:</span>{" "}
+                <span className="max-w-[6rem] truncate font-semibold text-foreground sm:max-w-none">{SORT_LABELS[sort]}</span>
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
               </button>
+
               {sortOpen && (
                 <>
                   <button
