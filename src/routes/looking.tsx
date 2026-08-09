@@ -348,7 +348,8 @@ function LookingForCard({
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
   const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
-  const hasAvatar = !!profile?.avatar_url || !!profile?.avatar_emoji;
+  const avatarUrl = (profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null;
+  const hasAvatar = !!avatarUrl || !!profile?.avatar_emoji;
   const initial = displayName.trim().charAt(0).toUpperCase() || "S";
 
   return (
