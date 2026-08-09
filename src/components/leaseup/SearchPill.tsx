@@ -11,12 +11,19 @@
  */
 import { useEffect, useState } from "react";
 import { Search, X, Minus, Plus } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "./CampusAutocomplete";
 import { cn } from "@/lib/utils";
+
+const QUICK_PICKS = [
+  { emoji: "🐾", name: "University of Georgia", slug: "university-of-georgia" },
+  { emoji: "🌰", name: "Ohio State University", slug: "ohio-state" },
+  { emoji: "🤘", name: "University of Texas at Austin", slug: "ut-austin" },
+];
 
 export type SearchState = {
   where: string;
@@ -131,6 +138,23 @@ export function SearchPill({
               onSelect={pickCampus}
               onClear={() => onChange({ ...value, where: "", campusId: null })}
             />
+          </div>
+          {/* Q120 — quick-picks: jump straight to a campus landing page. */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {QUICK_PICKS.map((p) => (
+              <button
+                key={p.slug}
+                type="button"
+                onClick={() => {
+                  onChange({ ...value, where: p.name, campusId: null });
+                  setOpenField(null);
+                  navigate({ to: "/campus/$slug", params: { slug: p.slug } });
+                }}
+                className="rounded-full border border-border bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-background dark:bg-surface"
+              >
+                {p.emoji} {p.name}
+              </button>
+            ))}
           </div>
         </PopoverContent>
 
