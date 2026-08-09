@@ -649,7 +649,13 @@ function ListingDetailPage() {
 
             <p className="mt-8 text-sm text-muted-foreground">
               Posted {timeAgo(listing.created_at)}
-              {viewCount >= 1 && <> · 👁 {viewCount.toLocaleString()} views</>}
+              {viewCount >= 1 && (
+                <>
+                  {" · "}
+                  <Eye className="inline h-3.5 w-3.5 align-[-2px]" />{" "}
+                  {viewCount.toLocaleString()} {viewCount === 1 ? "view" : "views"}
+                </>
+              )}
 
               {poster?.name && (
                 <>
@@ -1128,12 +1134,19 @@ function AmenityChips({ listing }: { listing: Listing }) {
     const Icon = EXTRA_ICONS[k.toLowerCase()] ?? BadgeCheck;
     chips.push({ label: k, Icon });
   }
-  if (chips.length === 0) return null;
+  const seen = new Set<string>();
+  const unique = chips.filter(({ label }) => {
+    const k = label.trim().toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  if (unique.length === 0) return null;
   return (
     <section className="mt-8">
       <h2 className="mb-4 text-lg font-bold">What this place offers</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {chips.map(({ label, Icon }, i) => (
+        {unique.map(({ label, Icon }, i) => (
           <div
             key={i}
             className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm font-medium"
