@@ -38,7 +38,8 @@ export function Footer() {
     .map((c) => ({ ...c, n: counts?.get(c.id) ?? 0 }))
     .filter((c) => c.n > 0)
     .sort((a, b) => b.n - a.n)
-    .slice(0, 6);
+    .slice(0, 12);
+
 
   return (
     <footer className="mt-16 border-t border-gray-100 bg-gray-50 px-6 py-12 dark:border-border dark:bg-surface">
