@@ -162,16 +162,20 @@ export function ListingDetailSheet({
               type="button"
               onClick={async (e) => {
                 e.stopPropagation();
-                const url = typeof window !== "undefined" ? window.location.href : "";
+                // Q135 — always copy the canonical listing URL, not the current page.
+                const origin =
+                  typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
+                const url = `${origin}/listing/${listing.id}`;
                 try {
-                  if (typeof navigator !== "undefined" && (navigator as any).share) {
-                    await (navigator as any).share({ title: listing.title, url });
-                  } else if (navigator?.clipboard) {
+                  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
                     await navigator.clipboard.writeText(url);
-                    toast.success("Link copied! ✓");
+                    toast.success("Link copied! 🔗");
+                  } else if (typeof navigator !== "undefined" && (navigator as any).share) {
+                    await (navigator as any).share({ title: listing.title, url });
                   }
-                } catch { /* user cancelled */ }
+                } catch { /* user cancelled or clipboard blocked */ }
               }}
+
               aria-label="Share listing"
               className="grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
             >

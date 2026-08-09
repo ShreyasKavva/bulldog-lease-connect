@@ -33,12 +33,21 @@ export const Route = createFileRoute("/campus/$slug")({
   loader: async ({ params }) => {
     const campus = await fetchCampusBySlugOrAlias(params.slug);
     if (!campus) throw notFound();
-    return { campus };
+    // Q135 — active listing count powers the meta description.
+    const { count } = await supabase
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("campus_id", campus.id)
+      .eq("status", "active");
+    return { campus, listingCount: count ?? 0 };
   },
   head: ({ loaderData, params }) => {
-    const name = loaderData?.campus?.name ?? "your campus";
-    const title = `${name} Subleases | LeaseUp`;
-    const description = `Browse verified student subleases near ${name}. Semester-ready dates, real photos, message hosts directly.`;
+    const campus = loaderData?.campus;
+    const name = campus?.name ?? "your campus";
+    const place = [campus?.city, campus?.state].filter(Boolean).join(", ");
+    const n = loaderData?.listingCount ?? 0;
+    const title = `${name} Subleases${place ? ` — ${place}` : ""} | LeaseUp`;
+    const description = `Browse ${n} verified subleases near ${name}. Find semester-length apartments, private rooms, and studios posted by students.`;
     const url = `https://leasup.co/campus/${params.slug}`;
     return {
       meta: [
@@ -48,10 +57,14 @@ export const Route = createFileRoute("/campus/$slug")({
         { property: "og:description", content: description },
         { property: "og:url", content: url },
         { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
       ],
       links: [{ rel: "canonical", href: url }],
     };
   },
+
   notFoundComponent: () => (
     <div className="mx-auto max-w-md px-6 py-24 text-center">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">Campus not found</h1>

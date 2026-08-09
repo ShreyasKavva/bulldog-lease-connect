@@ -28,22 +28,29 @@ import type { Listing } from "@/lib/leaseup/types";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "LeaseUp — Student subleases near your campus" },
-      { name: "description", content: "Find verified student subleases near your campus. Browse active listings, message hosts for free." },
-      { name: "theme-color", content: "#111827" },
-      { property: "og:title", content: "LeaseUp — Sublease near your campus" },
-      { property: "og:description", content: "Browse verified student subleases near your campus. Semester-ready dates. No Craigslist drama." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://leasup.co/" },
-      { property: "og:image", content: "https://leasup.co/og-image.png" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "LeaseUp — Sublease near your campus" },
-      { name: "twitter:description", content: "Browse verified student subleases near your campus. Semester-ready dates. No Craigslist drama." },
-      { name: "twitter:image", content: "https://leasup.co/og-image.png" },
-    ],
-  }),
+  head: () => {
+    const title = "LeaseUp — Student Subleases Near Your Campus";
+    const description =
+      "Find or post a semester sublease near your college campus. Verified students, direct messages, no fees. UGA, Ohio State, UT Austin, Georgia Tech, and more.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { name: "theme-color", content: "#111827" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://leasup.co/" },
+        { property: "og:image", content: "https://leasup.co/og-image.png" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: "https://leasup.co/og-image.png" },
+      ],
+      links: [{ rel: "canonical", href: "https://leasup.co/" }],
+    };
+  },
+
   component: Home,
 });
 
