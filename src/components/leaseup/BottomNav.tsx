@@ -84,7 +84,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     <nav
       data-kbd={kbdOpen ? "1" : undefined}
       className="fixed inset-x-0 bottom-0 z-50 flex h-16 w-full items-center border-t border-gray-100 bg-white shadow-lg touch-manipulation md:hidden dark:border-border dark:bg-surface"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
@@ -154,11 +154,10 @@ function Tab({
       title={label}
       className={cn(
         "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 transition-transform active:scale-90",
-        accent
-          ? "text-[#FF385C]"
-          : active
-            ? "font-semibold text-gray-900 dark:text-foreground"
-            : "text-gray-400",
+        accent || active
+          ? "text-[#FF5A5F]"
+          : "text-gray-400",
+        active && "font-semibold",
       )}
     >
       {avatarUrl ? (

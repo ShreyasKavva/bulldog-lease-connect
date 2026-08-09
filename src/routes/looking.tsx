@@ -262,6 +262,7 @@ function LookingForPage() {
               <LookingForCard
                 key={p.id}
                 p={p}
+                campusName={campuses.find((c) => c.id === p.campus_id)?.name ?? null}
                 isMine={user?.id === p.user_id}
                 interested={interestSet.has(p.id)}
                 onOpenProfile={() => setProfileId(p.user_id)}
@@ -317,11 +318,19 @@ function LookingForPage() {
   );
 }
 
+const INITIAL_BGS = ["#DBEAFE", "#DCFCE7", "#FEF3C7", "#FCE7F3", "#E0E7FF", "#FFE4E6", "#CCFBF1"];
+function initialBg(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return INITIAL_BGS[h % INITIAL_BGS.length];
+}
+
 function LookingForCard({
-  p, isMine, interested,
+  p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
 }: {
   p: LookingForPost;
+  campusName?: string | null;
   isMine: boolean;
   interested: boolean;
   onOpenProfile: () => void;
@@ -339,6 +348,9 @@ function LookingForCard({
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
   const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
+  const avatarUrl = (profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null;
+  const hasAvatar = !!avatarUrl || !!profile?.avatar_emoji;
+  const initial = displayName.trim().charAt(0).toUpperCase() || "S";
 
   return (
     <article className="relative rounded-xl bg-surface p-4 shadow-card transition hover:shadow-md">
@@ -365,11 +377,19 @@ function LookingForCard({
       <div className="flex items-start gap-3">
         <button
           onClick={onOpenProfile}
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl ring-2 ring-white"
-          style={{ background: profile?.banner_color ?? "#2563EB" }}
+          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full text-xl ring-2 ring-white"
+          style={{
+            background: hasAvatar ? profile?.banner_color ?? "#2563EB" : initialBg(displayName),
+          }}
           aria-label="View profile"
         >
-          {profile?.avatar_emoji ?? "🙂"}
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : profile?.avatar_emoji ? (
+            profile.avatar_emoji
+          ) : (
+            <span className="text-base font-bold text-gray-700">{initial}</span>
+          )}
         </button>
 
         <div className="min-w-0 flex-1 pr-14">
@@ -385,6 +405,8 @@ function LookingForCard({
             {last && <span className="text-[11px] text-muted-foreground">· {last}</span>}
             <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
           </div>
+          {campusName && <p className="text-xs text-muted-foreground">{campusName}</p>}
+
 
           <h3 className="mt-1 font-bold leading-tight">{p.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
