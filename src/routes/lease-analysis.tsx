@@ -7,7 +7,7 @@ export const Route = createFileRoute("/lease-analysis")({
   beforeLoad: () => {
     throw redirect({
       to: "/browse",
-      search: { notice: "lease-analysis-gone" },
+      search: { notice: "lease-analysis-gone" } as any,
       statusCode: 301,
     });
   },
