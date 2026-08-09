@@ -86,11 +86,12 @@ export function SearchPill({
   const focused = (f: Field) => openField === f || hoverField === f;
   const segmentClass = (f: Field) =>
     cn(
-      "group relative flex flex-col items-start px-6 py-3.5 text-left transition-colors rounded-full",
+      "group relative flex w-full flex-col items-start rounded-2xl px-4 py-3 text-left transition-colors sm:w-auto sm:rounded-full sm:px-6 sm:py-3.5",
       active(f)
         ? "bg-surface shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
         : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
     );
+
   // Left divider is hidden when this segment OR the one to its left is focused.
   const showDivider = (leftOf: Field) => {
     const rightOf: Field = leftOf === "when" ? "where" : "when";
