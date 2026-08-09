@@ -180,14 +180,15 @@ export function SearchPill({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="center" sideOffset={12} className="w-auto rounded-3xl p-4 shadow-2xl border">
+        <PopoverContent align="center" sideOffset={12} className="w-auto max-w-[calc(100vw-2rem)] rounded-3xl p-4 shadow-2xl border">
           <Calendar
             mode="range"
             selected={{ from: value.from ?? undefined, to: value.to ?? undefined }}
             onSelect={(r: any) => onChange({ ...value, from: r?.from ?? null, to: r?.to ?? null })}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             className="pointer-events-auto"
           />
+
           <div className="mt-2 flex justify-between px-2">
             <button
               onClick={() => onChange({ ...value, from: null, to: null })}
