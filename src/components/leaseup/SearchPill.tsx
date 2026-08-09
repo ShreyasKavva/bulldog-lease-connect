@@ -240,19 +240,20 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      {/* SEARCH — floats over the WHO segment, expands when a field is open */}
+      {/* SEARCH — full-width row on mobile; floats over the WHO segment on desktop */}
       <button
         onClick={() => { setOpenField(null); onSearch?.(); }}
         disabled={!canSearch}
         className={cn(
-          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary",
-          anyActive ? "h-12 px-5" : "h-12 w-12 justify-center",
+          "mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:-ml-14 sm:self-center",
+          anyActive ? "sm:w-auto sm:px-5" : "sm:w-12 sm:justify-center",
         )}
         aria-label="Search"
       >
         <Search className="h-4 w-4" />
-        {anyActive && <span className="text-sm font-semibold">Search</span>}
+        <span className={cn("text-sm font-semibold", anyActive ? "" : "sm:hidden")}>Search</span>
       </button>
+
     </div>
   );
 }
