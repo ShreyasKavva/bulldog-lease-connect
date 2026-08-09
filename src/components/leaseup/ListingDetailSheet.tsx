@@ -90,6 +90,16 @@ export function ListingDetailSheet({
       .slice(0, 6);
   }, [allListings, listing]);
 
+  /** Q140 — up to 3 newest other active listings at the same campus. */
+  const moreAtCampus = useMemo(() => {
+    if (!listing) return [] as Listing[];
+    return allListings
+      .filter((l) => l.id !== listing.id && l.campus_id === listing.campus_id)
+      .sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
+      .slice(0, 3);
+  }, [allListings, listing]);
+
+
   const { data: hostProfile } = useQuery({
     queryKey: ["public-profile", listing?.user_id],
     enabled: open && !!listing?.user_id,
