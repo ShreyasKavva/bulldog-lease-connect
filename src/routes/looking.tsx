@@ -377,11 +377,19 @@ function LookingForCard({
       <div className="flex items-start gap-3">
         <button
           onClick={onOpenProfile}
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl ring-2 ring-white"
-          style={{ background: profile?.banner_color ?? "#2563EB" }}
+          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full text-xl ring-2 ring-white"
+          style={{
+            background: hasAvatar ? profile?.banner_color ?? "#2563EB" : initialBg(displayName),
+          }}
           aria-label="View profile"
         >
-          {profile?.avatar_emoji ?? "🙂"}
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : profile?.avatar_emoji ? (
+            profile.avatar_emoji
+          ) : (
+            <span className="text-base font-bold text-gray-700">{initial}</span>
+          )}
         </button>
 
         <div className="min-w-0 flex-1 pr-14">
@@ -397,6 +405,8 @@ function LookingForCard({
             {last && <span className="text-[11px] text-muted-foreground">· {last}</span>}
             <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
           </div>
+          {campusName && <p className="text-xs text-muted-foreground">{campusName}</p>}
+
 
           <h3 className="mt-1 font-bold leading-tight">{p.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
