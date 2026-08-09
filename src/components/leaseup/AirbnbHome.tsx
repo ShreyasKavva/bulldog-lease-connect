@@ -52,7 +52,17 @@ const CAMPUS_EMOJI: Record<string, string> = {
   uf: "🐊", "university-of-florida": "🐊",
   alabama: "🐘", "university-of-alabama": "🐘",
   auburn: "🐯", "auburn-university": "🐯",
+  "clemson-university": "🐅",
+  "duke-university": "😈",
+  "florida-state-university": "🍢",
+  "georgia-tech": "🐝",
+  "ohio-state-university": "🌰",
+  "university-of-texas-at-austin": "🤘",
+  "university-of-michigan": "〽️",
+  "penn-state-university": "🦁",
+  "vanderbilt-university": "⭐",
 };
+
 function campusEmoji(c: Campus) {
   return CAMPUS_EMOJI[c.slug] ?? CAMPUS_EMOJI[c.short_name?.toLowerCase() ?? ""] ?? "🎓";
 }
