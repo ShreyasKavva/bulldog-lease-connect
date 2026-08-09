@@ -11,7 +11,14 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/campuses";
 import { ArrowRight } from "lucide-react";
 
-export function CampusPills({ title }: { title?: string } = {}) {
+export function CampusPills({
+  title,
+  slugs,
+}: {
+  title?: string;
+  /** Q140 — explicit campus slug order (overrides count sort, no cap). */
+  slugs?: string[];
+} = {}) {
   const campusesQ = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
