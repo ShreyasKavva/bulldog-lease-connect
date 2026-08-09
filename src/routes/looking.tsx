@@ -262,6 +262,7 @@ function LookingForPage() {
               <LookingForCard
                 key={p.id}
                 p={p}
+                campusName={campuses.find((c) => c.id === p.campus_id)?.name ?? null}
                 isMine={user?.id === p.user_id}
                 interested={interestSet.has(p.id)}
                 onOpenProfile={() => setProfileId(p.user_id)}
@@ -317,11 +318,19 @@ function LookingForPage() {
   );
 }
 
+const INITIAL_BGS = ["#DBEAFE", "#DCFCE7", "#FEF3C7", "#FCE7F3", "#E0E7FF", "#FFE4E6", "#CCFBF1"];
+function initialBg(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return INITIAL_BGS[h % INITIAL_BGS.length];
+}
+
 function LookingForCard({
-  p, isMine, interested,
+  p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
 }: {
   p: LookingForPost;
+  campusName?: string | null;
   isMine: boolean;
   interested: boolean;
   onOpenProfile: () => void;
@@ -339,6 +348,8 @@ function LookingForCard({
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
   const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
+  const hasAvatar = !!profile?.avatar_url || !!profile?.avatar_emoji;
+  const initial = displayName.trim().charAt(0).toUpperCase() || "S";
 
   return (
     <article className="relative rounded-xl bg-surface p-4 shadow-card transition hover:shadow-md">
