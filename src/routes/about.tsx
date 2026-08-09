@@ -1,7 +1,7 @@
 /**
  * /about — plain-spoken story of why LeaseUp exists. Public, no auth.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 const TITLE = "About LeaseUp — Student Sublease Marketplace";
 const DESC =
