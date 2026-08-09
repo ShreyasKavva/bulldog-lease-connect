@@ -112,11 +112,12 @@ export function SearchPill({
         }
       }}
       className={cn(
-        "mx-auto flex w-full max-w-3xl items-stretch rounded-full border transition-shadow",
+        "mx-auto flex w-full max-w-3xl flex-col items-stretch rounded-3xl border p-2 transition-shadow sm:flex-row sm:items-stretch sm:rounded-full sm:p-0",
         anyActive
           ? "bg-black/[0.04] dark:bg-white/[0.04] border-transparent shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
           : "bg-surface border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)]",
       )}
+
     >
       {/* WHERE */}
       <Popover open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
