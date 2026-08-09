@@ -90,6 +90,19 @@ export function ListingDetailSheet({
       .slice(0, 6);
   }, [allListings, listing]);
 
+  const { data: hostProfile } = useQuery({
+    queryKey: ["public-profile", listing?.user_id],
+    enabled: open && !!listing?.user_id,
+    staleTime: 300_000,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_public_profile" as any, { _uid: listing!.user_id });
+      return (data ?? null) as {
+        name?: string | null; avatar_url?: string | null; verified_email?: boolean | null;
+        created_at?: string | null; campus_name?: string | null; active_listing_count?: number | null;
+      } | null;
+    },
+  });
+
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
