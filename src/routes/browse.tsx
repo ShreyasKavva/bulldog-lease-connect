@@ -107,8 +107,8 @@ function parsePriceAlias(v: unknown): { min?: number; max?: number } {
 /** Accepts internal values plus the friendly aliases used by search links. */
 function parseSort(v: unknown): Sort | undefined {
   if (typeof v !== "string") return undefined;
-  if (v === "lowest") return "price_asc";
-  if (v === "highest") return "price_desc";
+  if (v === "lowest" || v === "price-asc") return "price_asc";
+  if (v === "highest" || v === "price-desc") return "price_desc";
   if (v === "trending") return "popular";
   return (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
 }
