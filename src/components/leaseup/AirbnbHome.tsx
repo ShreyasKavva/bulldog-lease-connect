@@ -574,7 +574,7 @@ function LiveCounter() {
 
   if (!stats || stats.listings === 0) return null;
   return (
-    <p className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm text-gray-500 dark:text-muted-foreground">
+    <p className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 text-center text-xs text-gray-500 dark:text-muted-foreground sm:text-sm">
       <span>✓ {stats.listings.toLocaleString()} verified sublease{stats.listings === 1 ? "" : "s"}</span>
       <span aria-hidden>·</span>
       <span>✓ {stats.campuses} campus{stats.campuses === 1 ? "" : "es"}</span>
