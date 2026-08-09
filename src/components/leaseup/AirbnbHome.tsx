@@ -189,14 +189,18 @@ export function AirbnbHome({
   }, [dbCampusCounts, listings]);
 
   const spotlightCampuses = useMemo(() => {
-    // Only ever show campuses that actually have active listings (Q117).
-    // Q123 verified: Georgia Tech (10 active) clears the >0 filter and ranks
-    // 4th by count, so it appears in the "Explore campuses" grid.
+    // Q136 — show up to 8 campuses (4x2 on desktop). Campuses with live
+    // listings rank first by count; the rest fill the grid and render "New".
     return [...campuses]
-      .filter((c) => (campusCounts.get(c.id) ?? 0) > 0)
-      .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))
-      .slice(0, 4);
+      .sort((a, b) => {
+        const ca = campusCounts.get(a.id) ?? 0;
+        const cb = campusCounts.get(b.id) ?? 0;
+        if (cb !== ca) return cb - ca;
+        return (a.name ?? "").localeCompare(b.name ?? "");
+      })
+      .slice(0, 8);
   }, [campuses, campusCounts]);
+
 
 
   function runSearch() {
@@ -406,7 +410,7 @@ export function AirbnbHome({
       {/* CAMPUS SPOTLIGHTS */}
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
         <h2 className="mb-4 text-xl font-extrabold sm:text-2xl">Explore campuses</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {spotlightCampuses.map((c) => {
             const count = campusCounts.get(c.id) ?? 0;
             return (
@@ -414,19 +418,20 @@ export function AirbnbHome({
                 key={c.id}
                 to="/sublease/$slug"
                 params={{ slug: c.slug }}
-                className="group flex items-center gap-4 rounded-2xl bg-gray-50 p-5 transition hover:bg-gray-100 dark:bg-background dark:hover:bg-background/70"
+                className="group flex items-center gap-3 rounded-2xl bg-gray-50 p-4 transition hover:bg-gray-100 sm:gap-4 sm:p-5 dark:bg-background dark:hover:bg-background/70"
               >
-                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-border">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-border sm:h-14 sm:w-14 sm:text-3xl">
                   {campusEmoji(c)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-base font-bold">{c.short_name ?? c.name}</div>
+                  <div className="truncate text-sm font-bold sm:text-base">{c.short_name ?? c.name}</div>
                   <div className="truncate text-xs text-muted-foreground">{c.city}, {c.state}</div>
-                  <div className="mt-1 text-xs font-semibold text-primary">
-                    {count} active {count === 1 ? "listing" : "listings"}
+                  <div className={`mt-1 text-xs font-semibold ${count > 0 ? "text-primary" : "text-muted-foreground"}`}>
+                    {count > 0 ? `${count} active ${count === 1 ? "listing" : "listings"}` : "New"}
                   </div>
                 </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+                <ArrowRight className="hidden h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground sm:block" />
+
               </Link>
             );
           })}

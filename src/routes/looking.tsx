@@ -78,8 +78,17 @@ function LookingForPage() {
     staleTime: Infinity,
   });
 
-  // Filters — campus scope defaults to the student's own campus.
-  const [campusFilter, setCampusFilter] = useState<string>("mine");
+  // Filters — campus scope. Q136: "All" is the default so the pill strip matches.
+  const [campusFilter, setCampusFilter] = useState<string>("all");
+
+  // Q136 — campus pills: UGA, Ohio State, UT Austin, Georgia Tech (if present).
+  const PILL_NAMES = ["university of georgia", "ohio state", "ut austin", "the university of texas at austin", "georgia tech"];
+  const pillCampuses = campuses.filter((c) => {
+    const n = (c.name ?? "").toLowerCase();
+    const s = (c.short_name ?? "").toLowerCase();
+    return PILL_NAMES.some((p) => n.includes(p) || s.includes(p));
+  });
+
   const [budgetFilter, setBudgetFilter] = useState<string>("");
   const [moveInBy, setMoveInBy] = useState<string>("");
 
@@ -183,8 +192,33 @@ function LookingForPage() {
           </Link>
         </div>
 
+        {/* Q136 — campus filter pills (same chip style as browse) */}
+        <div className="-mx-4 mb-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { key: "all", label: "All" },
+            ...pillCampuses.map((c) => ({ key: c.id, label: c.short_name || c.name })),
+          ].map((t) => {
+            const active = campusFilter === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setCampusFilter(t.key)}
+                className={`shrink-0 snap-start rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  active
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-surface text-foreground hover:border-primary hover:text-primary"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Filters */}
         <div className="mb-5 flex flex-wrap items-end gap-3">
+
           <label className="text-xs font-semibold text-muted-foreground">
             Campus
             <select
@@ -221,10 +255,10 @@ function LookingForPage() {
               className="mt-1 block h-10 w-44 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
             />
           </label>
-          {(budgetFilter || moveInBy || campusFilter !== "mine") && (
+          {(budgetFilter || moveInBy || campusFilter !== "all") && (
             <button
               type="button"
-              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("mine"); }}
+              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("all"); }}
               className="h-10 rounded-md px-3 text-sm font-semibold text-primary hover:underline"
             >
               Clear filters
