@@ -155,11 +155,29 @@ function CampusLandingPage() {
       <section className="w-full bg-gray-50 px-6 py-16 dark:bg-surface">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-foreground sm:text-4xl">
-            {campus.name} Subleases
+            {campus.name}
           </h1>
           <p className="mt-2 text-lg text-gray-500">
-            Find verified student subleases near {campus.city}.
+            {campus.city}, {campus.state}
           </p>
+          {(stats.count > 0 || stats.avg > 0) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                {stats.count} active listing{stats.count === 1 ? "" : "s"}
+              </span>
+              {stats.avg > 0 && (
+                <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                  Avg ${stats.avg.toLocaleString()}/mo
+                </span>
+              )}
+              {stats.popular && (
+                <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold dark:bg-background">
+                  Most popular: {stats.popular}
+                </span>
+              )}
+            </div>
+          )}
+
           <Link
             to="/browse"
             search={{ campus: campus.slug } as any}
