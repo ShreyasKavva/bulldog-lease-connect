@@ -156,6 +156,13 @@ function CampusLandingPage() {
           >
             Browse {stats.count} active listing{stats.count === 1 ? "" : "s"} →
           </Link>
+          {lookingCount > 0 && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {lookingCount} student{lookingCount === 1 ? "" : "s"} actively looking
+            </p>
+          )}
+
+
 
           <form
             onSubmit={submitSearch}
