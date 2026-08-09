@@ -17,7 +17,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "./CampusAutocomplete";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+
 
 const QUICK_PICKS = [
   { emoji: "🐾", name: "University of Georgia", slug: "university-of-georgia" },
