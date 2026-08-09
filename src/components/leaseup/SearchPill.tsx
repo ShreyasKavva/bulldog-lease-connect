@@ -164,7 +164,7 @@ export function SearchPill({
 
       </Popover>
 
-      <span className={cn("my-2.5 w-px bg-border transition-opacity", showDivider("where") ? "opacity-100" : "opacity-0")} />
+      <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("where") ? "opacity-100" : "opacity-0")} />
 
       {/* WHEN */}
       <Popover open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
