@@ -23,6 +23,7 @@ const QUICK_PICKS = [
   { emoji: "🐾", name: "University of Georgia", slug: "university-of-georgia" },
   { emoji: "🌰", name: "Ohio State University", slug: "ohio-state" },
   { emoji: "🤘", name: "University of Texas at Austin", slug: "ut-austin" },
+  { emoji: "🐝", name: "Georgia Tech", slug: "georgia-tech" },
 ];
 
 export type SearchState = {
