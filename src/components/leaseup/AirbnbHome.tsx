@@ -334,6 +334,8 @@ export function AirbnbHome({
         </div>
       </div>
 
+      {/* Q130 — how it works */}
+      <HowItWorks />
 
       {/* Q114 — skeleton rails while the listings query is loading */}
       {loading ? (
@@ -553,15 +555,17 @@ function LiveCounter() {
     let cancelled = false;
     (async () => {
       try {
+        const today = new Date().toISOString().slice(0, 10);
         const { data, error } = await supabase
           .from("listings")
-          .select("campus_id")
+          .select("campus_id,available_to")
           .eq("is_active", true)
           .eq("status", "active");
         if (error || !data || cancelled) return;
+        const live = data.filter((r) => !r.available_to || r.available_to >= today);
         setStats({
-          listings: data.length,
-          campuses: new Set(data.map((r) => r.campus_id)).size,
+          listings: live.length,
+          campuses: new Set(live.map((r) => r.campus_id)).size,
         });
       } catch { /* noop */ }
     })();
@@ -570,10 +574,40 @@ function LiveCounter() {
 
   if (!stats || stats.listings === 0) return null;
   return (
-    <p className="mt-4 text-center text-sm text-gray-400 dark:text-muted-foreground">
-      {stats.listings.toLocaleString()} active sublease{stats.listings === 1 ? "" : "s"} across{" "}
-      {stats.campuses} campus{stats.campuses === 1 ? "" : "es"}
+    <p className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm text-gray-500 dark:text-muted-foreground">
+      <span>✓ {stats.listings.toLocaleString()} verified sublease{stats.listings === 1 ? "" : "s"}</span>
+      <span aria-hidden>·</span>
+      <span>✓ {stats.campuses} campus{stats.campuses === 1 ? "" : "es"}</span>
+      <span aria-hidden>·</span>
+      <span>✓ Free to post</span>
     </p>
+  );
+}
+
+/** Q130 — three-step explainer between the hero and the listing rails. */
+const HOW_IT_WORKS = [
+  { emoji: "🏠", title: "Post your sublease", body: "Takes 2 minutes. Free always." },
+  { emoji: "🔍", title: "Students find you", body: "Verified students browse by campus." },
+  { emoji: "💬", title: "Connect directly", body: "Message the host. No middleman." },
+];
+
+function HowItWorks() {
+  return (
+    <section className="mx-auto mt-12 max-w-5xl px-4 sm:px-6">
+      <h2 className="mb-6 text-center text-xl font-extrabold sm:text-2xl">How LeaseUp works</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {HOW_IT_WORKS.map((s) => (
+          <div
+            key={s.title}
+            className="rounded-2xl bg-gray-50 p-6 text-center dark:bg-surface"
+          >
+            <div className="text-3xl" aria-hidden>{s.emoji}</div>
+            <h3 className="mt-3 text-base font-bold">{s.title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
