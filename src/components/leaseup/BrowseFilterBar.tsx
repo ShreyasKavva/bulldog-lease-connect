@@ -94,6 +94,16 @@ export function BrowseFilterBar({
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+
+  const activePricePreset = PRICE_PRESETS.find(
+    (p) => values.min_price === p.min && values.max_price === p.max,
+  );
+  const priceButtonLabel = activePricePreset
+    ? `Price: ${activePricePreset.label.replace("/mo", "")}`
+    : values.min_price != null || values.max_price != null
+      ? `Price: $${values.min_price ?? 0}–$${values.max_price ?? PRICE_MAX}`
+      : "Price";
 
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
