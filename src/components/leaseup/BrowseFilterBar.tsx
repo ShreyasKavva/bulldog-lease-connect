@@ -108,6 +108,14 @@ export function BrowseFilterBar({
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
 
+  /** Q124 — any quick filter (bedroom / price / verified) active. */
+  const quickActive =
+    bedSet.size > 0 ||
+    values.min_price != null ||
+    values.max_price != null ||
+    values.verified === 1;
+
+
   const activeCount =
     (values.q ? 1 : 0) +
     (values.area ? 1 : 0) +
