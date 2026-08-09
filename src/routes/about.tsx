@@ -1,7 +1,7 @@
 /**
  * /about — plain-spoken story of why LeaseUp exists. Public, no auth.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 const TITLE = "About LeaseUp — Student Sublease Marketplace";
 const DESC =
@@ -25,58 +25,61 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
-const STATS = [
-  { value: "55+", label: "active subleases" },
-  { value: "3", label: "campuses" },
-  { value: "2025", label: "founded" },
-];
-
 function AboutPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-foreground">
-        We're making student subleasing less terrible.
+    <div className="mx-auto max-w-3xl px-5 py-14 sm:px-6 sm:py-16">
+      <h1 className="mb-8 text-3xl font-bold text-gray-900 dark:text-foreground sm:text-4xl">
+        Why we built LeaseUp
       </h1>
 
-      <div className="space-y-6 text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
-        <p>
-          Every semester, thousands of college students need to sublease their apartment — maybe
-          they're studying abroad, going home for the summer, or found somewhere better. And
-          thousands more need a place near campus on a semester timeline.
-        </p>
-        <p>
-          The problem? Craigslist is sketchy. Facebook Marketplace is chaotic. Property management
-          companies don't do short-term. Students end up paying two rents or scrambling last minute.
-        </p>
-        <p>
-          LeaseUp is the sublease marketplace built specifically for college students. Verified .edu
-          accounts. Semester-ready dates. Direct messaging — no middleman, no application fee, no BS.
-        </p>
+      <div className="space-y-10">
+        <section>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-foreground">
+            The problem
+          </h2>
+          <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
+            Every year, thousands of college students scramble to sublet their apartments before
+            leaving for the summer or semester abroad — and thousands more desperately search for
+            short-term housing near campus. They end up on Craigslist, Facebook groups, or random
+            Reddit threads. It's chaotic, sketchy, and slow.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-foreground">
+            Our solution
+          </h2>
+          <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
+            LeaseUp is the student sublease marketplace built for how college housing actually
+            works. Semester-length stays. Verified .edu emails. Direct messages to real hosts — no
+            agents, no middlemen, no fees. Post your sublease in 2 minutes. Find one in seconds.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-foreground">
+            Who we are
+          </h2>
+          <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
+            We're students who lived this problem. LeaseUp started at the University of Georgia and
+            is now live at Ohio State, UT Austin, Georgia Tech, and growing. We're expanding to new
+            campuses every semester.
+          </p>
+        </section>
       </div>
 
-      <p className="mt-10 text-xl font-semibold text-gray-900 dark:text-foreground">
-        Our mission: make it as easy to sublease your apartment as it is to post a photo.
-      </p>
-
-      <div className="mt-8 border-t border-gray-100 pt-8 dark:border-border">
-        <div className="grid grid-cols-3 gap-4">
-          {STATS.map((s) => (
-            <div key={s.label}>
-              <div className="text-2xl font-bold text-gray-900 dark:text-foreground">{s.value}</div>
-              <div className="text-sm text-gray-500 dark:text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <Link
-          to="/browse"
-          className="inline-block rounded-full bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-black dark:bg-foreground dark:text-background"
+      <div className="mt-12 border-t border-gray-100 pt-8 dark:border-border">
+        <p className="text-lg font-semibold text-gray-900 dark:text-foreground">
+          Want LeaseUp at your campus?
+        </p>
+        <a
+          href="mailto:hi@leasup.co"
+          className="mt-4 inline-block rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-black dark:bg-foreground dark:text-background"
         >
-          Find a sublease near you →
-        </Link>
+          Email us at hi@leasup.co →
+        </a>
       </div>
     </div>
   );
 }
+

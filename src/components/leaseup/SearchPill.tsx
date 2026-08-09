@@ -17,7 +17,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "./CampusAutocomplete";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+
 
 const QUICK_PICKS = [
   { emoji: "🐾", name: "University of Georgia", slug: "university-of-georgia" },
@@ -53,6 +55,8 @@ export function SearchPill({
   onSearch?: () => void;
 }) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   const [openField, setOpenField] = useState<null | Field>(null);
   const [hoverField, setHoverField] = useState<null | Field>(null);
   const { data: campuses = [] } = useQuery({
@@ -86,11 +90,12 @@ export function SearchPill({
   const focused = (f: Field) => openField === f || hoverField === f;
   const segmentClass = (f: Field) =>
     cn(
-      "group relative flex flex-col items-start px-6 py-3.5 text-left transition-colors rounded-full",
+      "group relative flex w-full flex-col items-start rounded-2xl px-4 py-3 text-left transition-colors sm:w-auto sm:rounded-full sm:px-6 sm:py-3.5",
       active(f)
         ? "bg-surface shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
         : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
     );
+
   // Left divider is hidden when this segment OR the one to its left is focused.
   const showDivider = (leftOf: Field) => {
     const rightOf: Field = leftOf === "when" ? "where" : "when";
@@ -111,11 +116,12 @@ export function SearchPill({
         }
       }}
       className={cn(
-        "mx-auto flex w-full max-w-3xl items-stretch rounded-full border transition-shadow",
+        "mx-auto flex w-full max-w-3xl flex-col items-stretch rounded-3xl border p-2 transition-shadow sm:flex-row sm:items-stretch sm:rounded-full sm:p-0",
         anyActive
           ? "bg-black/[0.04] dark:bg-white/[0.04] border-transparent shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
           : "bg-surface border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)]",
       )}
+
     >
       {/* WHERE */}
       <Popover open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
@@ -131,7 +137,7 @@ export function SearchPill({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={12} className="w-[420px] rounded-3xl p-4 shadow-2xl border">
+        <PopoverContent align="start" sideOffset={12} className="w-[min(420px,calc(100vw-2rem))] rounded-3xl p-4 shadow-2xl border">
           <div className="rounded-full bg-background px-4 py-2.5 ring-1 ring-border">
             <CampusAutocomplete
               autoFocus
@@ -162,7 +168,7 @@ export function SearchPill({
 
       </Popover>
 
-      <span className={cn("my-2.5 w-px bg-border transition-opacity", showDivider("where") ? "opacity-100" : "opacity-0")} />
+      <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("where") ? "opacity-100" : "opacity-0")} />
 
       {/* WHEN */}
       <Popover open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
@@ -178,14 +184,15 @@ export function SearchPill({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="center" sideOffset={12} className="w-auto rounded-3xl p-4 shadow-2xl border">
+        <PopoverContent align="center" sideOffset={12} className="w-auto max-w-[calc(100vw-2rem)] rounded-3xl p-4 shadow-2xl border">
           <Calendar
             mode="range"
             selected={{ from: value.from ?? undefined, to: value.to ?? undefined }}
             onSelect={(r: any) => onChange({ ...value, from: r?.from ?? null, to: r?.to ?? null })}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             className="pointer-events-auto"
           />
+
           <div className="mt-2 flex justify-between px-2">
             <button
               onClick={() => onChange({ ...value, from: null, to: null })}
@@ -199,7 +206,7 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      <span className={cn("my-2.5 w-px bg-border transition-opacity", showDivider("when") ? "opacity-100" : "opacity-0")} />
+      <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("when") ? "opacity-100" : "opacity-0")} />
 
       {/* WHO */}
       <Popover open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
@@ -207,7 +214,8 @@ export function SearchPill({
           <button
             onMouseEnter={() => setHoverField("who")}
             onMouseLeave={() => setHoverField(null)}
-            className={cn(segmentClass("who"), "flex-1 pr-20")}
+            className={cn(segmentClass("who"), "flex-1 sm:pr-20")}
+
           >
             <span className="text-[12px] font-semibold text-foreground">Who</span>
             <span className={cn("mt-0.5 text-sm truncate w-full", value.guests > 1 ? "font-medium text-foreground" : "text-muted-foreground")}>
@@ -237,19 +245,20 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      {/* SEARCH — floats over the WHO segment, expands when a field is open */}
+      {/* SEARCH — full-width row on mobile; floats over the WHO segment on desktop */}
       <button
         onClick={() => { setOpenField(null); onSearch?.(); }}
         disabled={!canSearch}
         className={cn(
-          "absolute-none my-2 mr-2 -ml-14 flex items-center gap-2 self-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary",
-          anyActive ? "h-12 px-5" : "h-12 w-12 justify-center",
+          "mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:-ml-14 sm:self-center",
+          anyActive ? "sm:w-auto sm:px-5" : "sm:w-12 sm:justify-center",
         )}
         aria-label="Search"
       >
         <Search className="h-4 w-4" />
-        {anyActive && <span className="text-sm font-semibold">Search</span>}
+        <span className={cn("text-sm font-semibold", anyActive ? "" : "sm:hidden")}>Search</span>
       </button>
+
     </div>
   );
 }
