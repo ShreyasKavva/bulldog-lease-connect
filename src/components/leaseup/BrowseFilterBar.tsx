@@ -378,8 +378,26 @@ export function BrowseFilterBar({
           >
             ✓ Verified
           </button>
+
+          {/* Q124 — clear all (only when a quick filter is active) */}
+          {quickActive && (
+            <button
+              onClick={onClearAll}
+              className="ml-auto cursor-pointer text-sm text-[#FF5A5F] hover:underline"
+            >
+              Clear all
+            </button>
+          )}
         </div>
+
+        {/* Q124 — result count line, only while filtering */}
+        {quickActive && (
+          <p className="mt-2 hidden text-sm text-muted-foreground sm:block">
+            Showing {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+          </p>
+        )}
       </div>
+
 
       {/* PART B — bottom-sheet filter modal */}
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
