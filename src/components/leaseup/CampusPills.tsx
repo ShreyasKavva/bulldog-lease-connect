@@ -40,15 +40,18 @@ export function CampusPills({
 
   if (campuses.length === 0) return null;
 
-  const ordered = [...campuses]
-    .filter((c) => c && typeof c.id === "string" && typeof c.slug === "string")
-    .sort((a, b) => {
-      const ca = counts[a.id] ?? 0;
-      const cb = counts[b.id] ?? 0;
-      if (cb !== ca) return cb - ca;
-      return (a.name ?? "").localeCompare(b.name ?? "");
-    });
-  const visible = ordered.slice(0, 8);
+  const valid = [...campuses].filter(
+    (c) => c && typeof c.id === "string" && typeof c.slug === "string",
+  );
+  const ordered = slugs
+    ? slugs.map((s) => valid.find((c) => c.slug === s)).filter(Boolean) as typeof valid
+    : valid.sort((a, b) => {
+        const ca = counts[a.id] ?? 0;
+        const cb = counts[b.id] ?? 0;
+        if (cb !== ca) return cb - ca;
+        return (a.name ?? "").localeCompare(b.name ?? "");
+      });
+  const visible = slugs ? ordered : ordered.slice(0, 8);
   if (visible.length === 0) return null;
 
   return (
