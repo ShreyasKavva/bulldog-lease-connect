@@ -66,7 +66,9 @@ export function CampusPills({ title }: { title?: string } = {}) {
               key={c.id}
               to="/campus/$slug"
               params={{ slug: c.slug }}
-              className="group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+              aria-disabled={n === 0 || undefined}
+              tabIndex={n === 0 ? -1 : undefined}
+              className={`group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary ${n === 0 ? "pointer-events-none opacity-60" : ""}`}
             >
               <span>{label}</span>
               <span

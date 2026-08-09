@@ -1279,7 +1279,7 @@ function PriceSidebar({
         onClick={onMessage}
         size="lg"
         disabled={messaging}
-        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#E14E52]"
+        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#e04e53]"
       >
         {isOwner ? (
           <>
@@ -1334,7 +1334,7 @@ function MobileStickyCTA({
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
           <div className="text-[11px] text-muted-foreground">per month</div>
         </div>
-        <Button onClick={onMessage} disabled={messaging} className="ml-auto flex-1" size="lg">
+        <Button onClick={onMessage} disabled={messaging} className="ml-auto flex-1 bg-[#FF5A5F] text-white hover:bg-[#e04e53]" size="lg">
           {isOwner ? "Edit listing" : messaging ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
