@@ -79,6 +79,19 @@ function CampusLandingPage() {
     queryKey: ["campus-listings", campus.id],
     queryFn: () => fetchCampusListings(campus.id),
   });
+  // Q119 — how many students are actively looking near this campus.
+  const { data: lookingCount = 0 } = useQuery({
+    queryKey: ["campus-looking-count", campus.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("looking_for_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("campus_id", campus.id)
+        .eq("is_active", true);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
   const { data: savedIds = new Set<string>() } = useQuery({
     queryKey: ["saved", user?.id],
     queryFn: () => fetchSavedIds(user!.id),
