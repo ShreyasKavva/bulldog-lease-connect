@@ -8,14 +8,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { X, Minus, Plus, ImagePlus, ImageOff, Loader2 } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 
 const DRAFT_KEY = "leaseup-post-draft";
-const MAX_PHOTOS = 5;
+const MAX_PHOTOS = 10;
+
+const SEMESTER_PRESETS = [
+  { label: "Fall 2026", from: "2026-08-20", to: "2026-12-20" },
+  { label: "Spring 2027", from: "2027-01-10", to: "2027-05-10" },
+  { label: "Full Year", from: "2026-08-20", to: "2027-05-10" },
+];
 
 const PLACE_TYPES = [
   { id: "entire", label: "Entire Place" },
@@ -282,7 +288,7 @@ export function PostWizard({ userId }: { userId: string }) {
         .single();
       if (err) throw err;
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
-      toast.success("Listing posted! 🎉");
+      toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not publish listing");
@@ -372,14 +378,36 @@ export function PostWizard({ userId }: { userId: string }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Available from</label>
-                  <input type="date" className={inputCls()} value={d.availableFrom} onChange={(e) => set({ availableFrom: e.target.value })} />
+              <div>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {SEMESTER_PRESETS.map((p) => {
+                    const active = d.availableFrom === p.from && d.availableTo === p.to;
+                    return (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => set({ availableFrom: p.from, availableTo: p.to })}
+                        className={cn(
+                          "rounded-full border px-3.5 py-1.5 text-sm font-medium transition",
+                          active
+                            ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"
+                            : "border-gray-300 hover:border-gray-500 dark:border-border",
+                        )}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Available until</label>
-                  <input type="date" className={inputCls()} value={d.availableTo} onChange={(e) => set({ availableTo: e.target.value })} />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Available from</label>
+                    <input type="date" className={inputCls()} value={d.availableFrom} onChange={(e) => set({ availableFrom: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Available until</label>
+                    <input type="date" className={inputCls()} value={d.availableTo} onChange={(e) => set({ availableTo: e.target.value })} />
+                  </div>
                 </div>
               </div>
 
@@ -409,7 +437,13 @@ export function PostWizard({ userId }: { userId: string }) {
             <p className="mb-6 text-xs text-gray-400">Step 2 of 2 — Photos &amp; details</p>
             <div className="space-y-8">
               <div>
-                <label className="mb-1 block text-sm font-medium">Photos (up to {MAX_PHOTOS})</label>
+                <div className="mb-1 flex items-baseline justify-between gap-3">
+                  <label className="block text-sm font-medium">Photos (up to {MAX_PHOTOS})</label>
+                  <span className="text-xs text-gray-500">{d.photos.length} / {MAX_PHOTOS} photos added</span>
+                </div>
+                <p className="mb-3 text-xs text-gray-500">
+                  Add at least 3 photos — listings with photos get 5× more views
+                </p>
                 <input
                   ref={fileRef}
                   type="file"
@@ -445,9 +479,15 @@ export function PostWizard({ userId }: { userId: string }) {
                 {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
                 {d.photos.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    {d.photos.map((p) => (
+                    {d.photos.map((p, i) => (
                       <div key={p.path} className="relative overflow-hidden rounded-xl bg-muted">
                         <img src={p.url} alt="" className="h-32 w-full object-cover" />
+                        {i === 0 && (
+                          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-gray-900/85 px-2 py-1 text-[11px] font-medium text-white">
+                            <Star className="h-3 w-3 fill-current" />
+                            Cover photo
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
