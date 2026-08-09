@@ -396,12 +396,48 @@ export function ListingDetailSheet({
           <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
+
+          {/* Host profile card */}
+          <button
+            type="button"
+            onClick={() => onViewProfile(listing.user_id)}
+            className="flex w-full items-center gap-3 rounded-xl border bg-muted/40 p-3 text-left transition hover:bg-muted/60"
+          >
+            {host?.avatar_url ? (
+              <img src={host.avatar_url} alt={hostName} className="h-12 w-12 rounded-full object-cover" />
+            ) : (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+                {hostName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="truncate font-bold text-foreground">{hostName}</span>
+                {(host?.verified_email ?? listing.profile?.verified_email) && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                    <BadgeCheck className="h-3 w-3" /> Verified student
+                  </span>
+                )}
+              </div>
+              {host?.created_at && (
+                <div className="text-[11px] text-muted-foreground">
+                  Member since {new Date(host.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                </div>
+              )}
+              {otherActive > 0 && (
+                <div className="text-[11px] text-muted-foreground">
+                  {otherActive} other listing{otherActive === 1 ? "" : "s"}
+                  {host?.campus_name ? ` near ${host.campus_name}` : ""}
+                </div>
+              )}
+            </div>
+          </button>
         </div>
 
         {/* Sticky message-poster footer — the primary conversion action */}
         {user?.id !== listing.user_id && (
           <div
-            className="sticky bottom-0 left-0 right-0 z-10 border-t bg-surface/95 p-3 backdrop-blur"
+            className="sticky bottom-0 left-0 right-0 z-10 border-t bg-surface/95 p-3 backdrop-blur md:relative md:bottom-auto"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
           >
             <Button
