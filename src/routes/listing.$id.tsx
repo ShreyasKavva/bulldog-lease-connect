@@ -413,7 +413,7 @@ function ListingDetailPage() {
     const clipUrl = withUtm(baseListingUrl(), "clipboard");
     const ok = await copyToClipboard(clipUrl);
     if (ok) {
-      toast.success("Link copied!");
+      toast.success("Link copied! 🔗");
       recordShare(listing.id);
     }
   }
