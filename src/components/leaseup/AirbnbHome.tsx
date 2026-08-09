@@ -52,7 +52,17 @@ const CAMPUS_EMOJI: Record<string, string> = {
   uf: "🐊", "university-of-florida": "🐊",
   alabama: "🐘", "university-of-alabama": "🐘",
   auburn: "🐯", "auburn-university": "🐯",
+  "clemson-university": "🐅",
+  "duke-university": "😈",
+  "florida-state-university": "🍢",
+  "georgia-tech": "🐝",
+  "ohio-state-university": "🌰",
+  "university-of-texas-at-austin": "🤘",
+  "university-of-michigan": "〽️",
+  "penn-state-university": "🦁",
+  "vanderbilt-university": "⭐",
 };
+
 function campusEmoji(c: Campus) {
   return CAMPUS_EMOJI[c.slug] ?? CAMPUS_EMOJI[c.short_name?.toLowerCase() ?? ""] ?? "🎓";
 }
@@ -189,8 +199,8 @@ export function AirbnbHome({
   }, [dbCampusCounts, listings]);
 
   const spotlightCampuses = useMemo(() => {
-    // Q136 — show up to 8 campuses (4x2 on desktop). Campuses with live
-    // listings rank first by count; the rest fill the grid and render "New".
+    // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
+    // with live listings rank first by count; the rest render "New".
     return [...campuses]
       .sort((a, b) => {
         const ca = campusCounts.get(a.id) ?? 0;
@@ -198,8 +208,9 @@ export function AirbnbHome({
         if (cb !== ca) return cb - ca;
         return (a.name ?? "").localeCompare(b.name ?? "");
       })
-      .slice(0, 8);
+      .slice(0, 12);
   }, [campuses, campusCounts]);
+
 
 
 
@@ -410,7 +421,7 @@ export function AirbnbHome({
       {/* CAMPUS SPOTLIGHTS */}
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
         <h2 className="mb-4 text-xl font-extrabold sm:text-2xl">Explore campuses</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {spotlightCampuses.map((c) => {
             const count = campusCounts.get(c.id) ?? 0;
             return (
