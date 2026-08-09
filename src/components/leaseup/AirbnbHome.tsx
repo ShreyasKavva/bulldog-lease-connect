@@ -199,8 +199,8 @@ export function AirbnbHome({
   }, [dbCampusCounts, listings]);
 
   const spotlightCampuses = useMemo(() => {
-    // Q136 — show up to 8 campuses (4x2 on desktop). Campuses with live
-    // listings rank first by count; the rest fill the grid and render "New".
+    // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
+    // with live listings rank first by count; the rest render "New".
     return [...campuses]
       .sort((a, b) => {
         const ca = campusCounts.get(a.id) ?? 0;
@@ -208,8 +208,9 @@ export function AirbnbHome({
         if (cb !== ca) return cb - ca;
         return (a.name ?? "").localeCompare(b.name ?? "");
       })
-      .slice(0, 8);
+      .slice(0, 12);
   }, [campuses, campusCounts]);
+
 
 
 
