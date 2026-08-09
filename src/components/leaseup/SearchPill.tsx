@@ -133,7 +133,7 @@ export function SearchPill({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={12} className="w-[420px] rounded-3xl p-4 shadow-2xl border">
+        <PopoverContent align="start" sideOffset={12} className="w-[min(420px,calc(100vw-2rem))] rounded-3xl p-4 shadow-2xl border">
           <div className="rounded-full bg-background px-4 py-2.5 ring-1 ring-border">
             <CampusAutocomplete
               autoFocus
