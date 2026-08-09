@@ -52,6 +52,14 @@ const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: str
 const BEDS = ["0", "1", "2", "3+"] as const;
 const PRICE_MAX = 3000;
 
+/** Q123 — browse price presets. `max: undefined` means "no upper bound". */
+const PRICE_PRESETS: Array<{ label: string; min?: number; max?: number }> = [
+  { label: "Under $700/mo", max: 700 },
+  { label: "$700–$1,000/mo", min: 700, max: 1000 },
+  { label: "$1,000–$1,500/mo", min: 1000, max: 1500 },
+  { label: "$1,500+/mo", min: 1500 },
+];
+
 function bedLabel(b: string) {
   return b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`;
 }
