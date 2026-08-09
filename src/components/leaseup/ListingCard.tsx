@@ -46,6 +46,8 @@ function availableBadge(iso: string | null | undefined) {
   today.setHours(0, 0, 0, 0);
   if (d.getTime() <= today.getTime()) return "Available now";
   return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
+
 
 /** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
 function PhotoDots({ count, index }: { count: number; index: number }) {
