@@ -82,6 +82,28 @@ function parseBeds(v: unknown): string | undefined {
   const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
   return parts.length ? parts.join(",") : undefined;
 }
+/** Q124 — shareable alias: ?bed=studio|1br|2br|3plus */
+const BED_ALIASES: Record<string, string> = {
+  studio: "0",
+  "1br": "1",
+  "2br": "2",
+  "3plus": "3+",
+};
+function parseBedAlias(v: unknown): string | undefined {
+  const t = parseStr(v)?.toLowerCase();
+  return t ? BED_ALIASES[t] : undefined;
+}
+/** Q124 — shareable alias: ?price=under700|700-1000|1000-1500|1500plus */
+const PRICE_ALIASES: Record<string, { min?: number; max?: number }> = {
+  under700: { max: 700 },
+  "700-1000": { min: 700, max: 1000 },
+  "1000-1500": { min: 1000, max: 1500 },
+  "1500plus": { min: 1500 },
+};
+function parsePriceAlias(v: unknown): { min?: number; max?: number } {
+  const t = parseStr(v)?.toLowerCase();
+  return (t && PRICE_ALIASES[t]) || {};
+}
 /** Accepts internal values plus the friendly aliases used by search links. */
 function parseSort(v: unknown): Sort | undefined {
   if (typeof v !== "string") return undefined;
