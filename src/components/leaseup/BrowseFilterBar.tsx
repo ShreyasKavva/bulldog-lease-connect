@@ -251,10 +251,19 @@ export function BrowseFilterBar({
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden xs:inline sm:inline">Filters</span>
-              {activeCount > 0 && <span className="text-primary">· {activeCount}</span>}
+              {activeCount > 0 && <span className="text-primary">({activeCount})</span>}
             </button>
+            {activeCount > 0 && (
+              <button
+                onClick={onClearAll}
+                className="ml-2 hidden shrink-0 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline sm:inline"
+              >
+                Clear all
+              </button>
+            )}
           </div>
         </div>
+
 
         {/* PART C — active filter pills */}
         {pills.length > 0 && (
