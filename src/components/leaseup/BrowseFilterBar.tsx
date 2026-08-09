@@ -258,11 +258,12 @@ export function BrowseFilterBar({
             {activeCount > 0 && (
               <button
                 onClick={onClearAll}
-                className="ml-2 hidden shrink-0 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline sm:inline"
+                className="ml-2 inline shrink-0 whitespace-nowrap text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
               >
                 Clear all
               </button>
             )}
+
           </div>
         </div>
 
