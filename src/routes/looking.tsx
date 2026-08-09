@@ -255,10 +255,10 @@ function LookingForPage() {
               className="mt-1 block h-10 w-44 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
             />
           </label>
-          {(budgetFilter || moveInBy || campusFilter !== "mine") && (
+          {(budgetFilter || moveInBy || campusFilter !== "all") && (
             <button
               type="button"
-              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("mine"); }}
+              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("all"); }}
               className="h-10 rounded-md px-3 text-sm font-semibold text-primary hover:underline"
             >
               Clear filters
