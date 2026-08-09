@@ -203,7 +203,15 @@ export function ListingCard({
           </>
         )}
 
-        <CardPriceBadge price={listing.price} campusId={listing.campus_id} />
+        {/* Q123 — price tier + move-in date badges share the bottom-left row */}
+        <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-1">
+          <CardPriceBadge price={listing.price} campusId={listing.campus_id} className="static bottom-auto left-auto" />
+          {availableLabel && (
+            <span className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-gray-700 shadow-sm">
+              {availableLabel}
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleSave}
