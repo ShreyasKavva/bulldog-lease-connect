@@ -108,6 +108,14 @@ export function BrowseFilterBar({
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
 
+  /** Q124 — any quick filter (bedroom / price / verified) active. */
+  const quickActive =
+    bedSet.size > 0 ||
+    values.min_price != null ||
+    values.max_price != null ||
+    values.verified === 1;
+
+
   const activeCount =
     (values.q ? 1 : 0) +
     (values.area ? 1 : 0) +
@@ -378,8 +386,26 @@ export function BrowseFilterBar({
           >
             ✓ Verified
           </button>
+
+          {/* Q124 — clear all (only when a quick filter is active) */}
+          {quickActive && (
+            <button
+              onClick={onClearAll}
+              className="ml-auto cursor-pointer text-sm text-[#FF5A5F] hover:underline"
+            >
+              Clear all
+            </button>
+          )}
         </div>
+
+        {/* Q124 — result count line, only while filtering */}
+        {quickActive && (
+          <p className="mt-2 hidden text-sm text-muted-foreground sm:block">
+            Showing {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+          </p>
+        )}
       </div>
+
 
       {/* PART B — bottom-sheet filter modal */}
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
