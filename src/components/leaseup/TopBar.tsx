@@ -179,7 +179,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
             {/* Mobile Post pill (kept from previous minimal header) */}
             <button
               onClick={handlePost}
-              className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white md:hidden dark:bg-white dark:text-gray-900"
+              className="hidden items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white sm:inline-flex md:hidden dark:bg-white dark:text-gray-900"
             >Post</button>
 
             {/* Q105 — mobile hamburger menu */}
