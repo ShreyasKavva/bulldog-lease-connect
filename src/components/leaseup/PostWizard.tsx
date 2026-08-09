@@ -249,7 +249,7 @@ export function PostWizard({ userId }: { userId: string }) {
     if (publishing) return;
     const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
     if (d.photos.length === 0 && validUrls.length === 0) {
-      setPhotoError("Add at least 1 photo");
+      setPhotoError("Please add at least 1 photo");
       return;
     }
     setPublishing(true);
