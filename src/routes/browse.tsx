@@ -147,16 +147,26 @@ export const Route = createFileRoute("/browse")({
     hostId: parseStr(raw.hostId),
     page: parseInt2(raw.page),
   }),
-  head: () => ({
-    meta: [
-      { title: "Browse subleases — LeaseUp" },
-      { name: "description", content: "Browse student subleases at any campus. Verified .edu emails, real listings, no fees." },
-      { property: "og:title", content: "Browse subleases — LeaseUp" },
-      { property: "og:description", content: "Browse student subleases at any campus. Verified .edu emails, real listings, no fees." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () => {
+    const title = "Browse Subleases Near Campus | LeaseUp";
+    const description =
+      "Filter by campus, price, size, and dates. Find your next sublease in seconds.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://leasup.co/browse" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+      links: [{ rel: "canonical", href: "https://leasup.co/browse" }],
+    };
+  },
+
   component: Browse,
 });
 
