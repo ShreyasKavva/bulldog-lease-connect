@@ -651,7 +651,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Which campuses is LeaseUp available at?",
-    a: "We're currently live at University of Georgia, Ohio State, UT Austin, Georgia Tech, Auburn, Clemson, Duke, and FSU — and adding new campuses every semester.",
+    a: "We're currently live at University of Georgia, Ohio State, UT Austin, Georgia Tech, Auburn, Clemson, Duke, FSU, Florida, Michigan, Penn State, and Vanderbilt — and adding new campuses every semester.",
   },
   {
     q: "I need housing — how do I post a \u201CLooking For\u201D request?",

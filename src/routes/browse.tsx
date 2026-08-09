@@ -475,7 +475,23 @@ function Browse() {
         />
 
         <div className="mx-auto max-w-7xl">
-          <CampusPills title="Browse by campus" />
+          <CampusPills
+            title="Browse by campus"
+            slugs={[
+              "university-of-georgia",
+              "ohio-state-university",
+              "university-of-texas-at-austin",
+              "georgia-tech",
+              "auburn-university",
+              "clemson-university",
+              "duke-university",
+              "florida-state-university",
+              "university-of-florida",
+              "university-of-michigan",
+              "penn-state-university",
+              "vanderbilt-university",
+            ]}
+          />
         </div>
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
