@@ -79,14 +79,21 @@ export function PriceBadgePill({
 export function CardPriceBadge({
   price,
   campusId,
+  className,
 }: {
   price: number;
   campusId: string | null | undefined;
+  className?: string;
 }) {
   const { data: avg } = useCampusAverage(campusId);
   const tier = priceTier(price, avg);
   if (!tier) return null;
-  return <PriceBadgePill tier={tier} className="pointer-events-none absolute bottom-2 left-2 shadow-sm" />;
+  return (
+    <PriceBadgePill
+      tier={tier}
+      className={cn("pointer-events-none absolute bottom-2 left-2 shadow-sm", className)}
+    />
+  );
 }
 
 /** Inline badge for the listing detail page, shown next to the price. */
