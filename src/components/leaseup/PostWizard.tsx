@@ -317,7 +317,7 @@ export function PostWizard({ userId }: { userId: string }) {
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-xl flex-1 px-6 py-10 pb-24">
+      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-10 pb-24 sm:px-6">
         {d.step === 1 ? (
           <>
             <p className="mb-6 text-xs text-gray-400">Step 1 of 2 — Basic details</p>
