@@ -157,8 +157,10 @@ function CampusLandingPage() {
             Browse {stats.count} active listing{stats.count === 1 ? "" : "s"} →
           </Link>
           {lookingCount > 0 && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {lookingCount} student{lookingCount === 1 ? "" : "s"} actively looking
+            <p className="mt-3">
+              <Link to="/looking" className="text-sm text-[#FF5A5F] hover:underline cursor-pointer">
+                {lookingCount} student{lookingCount === 1 ? "" : "s"} actively looking
+              </Link>
             </p>
           )}
 
@@ -217,7 +219,9 @@ function CampusLandingPage() {
 
       {/* Stats bar */}
       <div className="border-y border-gray-100 bg-white py-4 dark:border-border dark:bg-surface">
-        <div className="mx-auto grid max-w-5xl grid-cols-3 gap-4 px-6">
+        <div
+          className={`mx-auto grid max-w-5xl gap-4 px-6 ${stats.thisMonth > 0 ? "grid-cols-3" : "grid-cols-2"}`}
+        >
           <div className="text-center">
             <div className="text-lg font-bold">{stats.count}</div>
             <div className="text-xs text-muted-foreground">active subleases</div>
@@ -226,10 +230,12 @@ function CampusLandingPage() {
             <div className="text-lg font-bold">{stats.avg ? `$${stats.avg.toLocaleString()}/mo` : "—"}</div>
             <div className="text-xs text-muted-foreground">average price</div>
           </div>
-          <div className="text-center">
-            <div className="text-lg font-bold">{stats.thisMonth}</div>
-            <div className="text-xs text-muted-foreground">added this month</div>
-          </div>
+          {stats.thisMonth > 0 && (
+            <div className="text-center">
+              <div className="text-lg font-bold">{stats.thisMonth}</div>
+              <div className="text-xs text-muted-foreground">added this month</div>
+            </div>
+          )}
         </div>
       </div>
 
