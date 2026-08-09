@@ -101,14 +101,25 @@ function CampusLandingPage() {
   const stats = useMemo(() => {
     const prices = listings.map((l) => l.price).filter((p) => typeof p === "number");
     const monthAgo = Date.now() - 30 * 86400000;
+    const bedCounts = new Map<number, number>();
+    for (const l of listings) {
+      const b = Number(l.beds);
+      if (!Number.isFinite(b)) continue;
+      bedCounts.set(b, (bedCounts.get(b) ?? 0) + 1);
+    }
+    let topBeds: number | null = null;
+    let topN = 0;
+    for (const [b, n] of bedCounts) if (n > topN) { topN = n; topBeds = b; }
     return {
       count: listings.length,
       avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
       thisMonth: listings.filter((l) => new Date(l.created_at).getTime() >= monthAgo).length,
+      popular: topBeds == null ? null : topBeds === 0 ? "Studio" : `${topBeds}BR`,
     };
   }, [listings]);
 
   const visible = listings.slice(0, 6);
+
 
   async function handleSave(l: Listing) {
     if (!user) {
