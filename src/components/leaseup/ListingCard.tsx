@@ -37,6 +37,16 @@ function fmtDateRange(fromIso: string | null, toIso: string | null) {
   return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
 }
 
+/** Q123 — "Available Jan 15" / "Available now" badge. Null when no date. */
+function availableBadge(iso: string | null | undefined) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (d.getTime() <= today.getTime()) return "Available now";
+  return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+
 /** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
 function PhotoDots({ count, index }: { count: number; index: number }) {
   const max = 5;
