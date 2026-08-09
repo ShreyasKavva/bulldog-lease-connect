@@ -24,7 +24,9 @@ const CAMPUS_EMOJI: Record<string, string> = {
   "ohio-state-university": "🌰",
   "university-of-north-carolina": "🐏",
   "university-of-south-carolina": "🐓",
-  "vanderbilt-university": "⚓️",
+  "penn-state-university": "🦁",
+  "vanderbilt-university": "⭐",
+
   "university-of-tennessee": "🍊",
 };
 
