@@ -189,19 +189,11 @@ export function AirbnbHome({
   }, [dbCampusCounts, listings]);
 
   const spotlightCampuses = useMemo(() => {
-    const ranked = [...campuses].sort(
-      (a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0),
-    );
-    const withListings = ranked.filter((c) => (campusCounts.get(c.id) ?? 0) > 0);
-    if (withListings.length >= 4) return withListings.slice(0, 4);
-    // Top-up with preferred launch campuses so the grid is never half-empty.
-    const preferred = ["university-of-georgia", "university-of-florida", "university-of-alabama", "auburn-university"];
-    const extras = preferred
-      .map((s) => campuses.find((c) => c.slug === s))
-      .filter((c): c is Campus => !!c && !withListings.some((w) => w.id === c.id));
-    return [...withListings, ...extras, ...ranked].filter(
-      (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i,
-    ).slice(0, 4);
+    // Only ever show campuses that actually have active listings (Q117).
+    return [...campuses]
+      .filter((c) => (campusCounts.get(c.id) ?? 0) > 0)
+      .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))
+      .slice(0, 4);
   }, [campuses, campusCounts]);
 
 
