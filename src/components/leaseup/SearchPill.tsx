@@ -201,7 +201,7 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      <span className={cn("my-2.5 w-px bg-border transition-opacity", showDivider("when") ? "opacity-100" : "opacity-0")} />
+      <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("when") ? "opacity-100" : "opacity-0")} />
 
       {/* WHO */}
       <Popover open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
@@ -209,7 +209,8 @@ export function SearchPill({
           <button
             onMouseEnter={() => setHoverField("who")}
             onMouseLeave={() => setHoverField(null)}
-            className={cn(segmentClass("who"), "flex-1 pr-20")}
+            className={cn(segmentClass("who"), "flex-1 sm:pr-20")}
+
           >
             <span className="text-[12px] font-semibold text-foreground">Who</span>
             <span className={cn("mt-0.5 text-sm truncate w-full", value.guests > 1 ? "font-medium text-foreground" : "text-muted-foreground")}>
