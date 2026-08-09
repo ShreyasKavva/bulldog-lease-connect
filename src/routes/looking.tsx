@@ -81,13 +81,22 @@ function LookingForPage() {
   // Filters — campus scope. Q136: "All" is the default so the pill strip matches.
   const [campusFilter, setCampusFilter] = useState<string>("all");
 
-  // Q136 — campus pills: UGA, Ohio State, UT Austin, Georgia Tech (if present).
-  const PILL_NAMES = ["university of georgia", "ohio state", "ut austin", "the university of texas at austin", "georgia tech"];
-  const pillCampuses = campuses.filter((c) => {
-    const n = (c.name ?? "").toLowerCase();
-    const s = (c.short_name ?? "").toLowerCase();
-    return PILL_NAMES.some((p) => n.includes(p) || s.includes(p));
-  });
+  // Q138 — campus pills, fixed order: UGA, GT, Ohio State, UT Austin, Auburn, Clemson, Duke, FSU.
+  const PILL_SLUGS = [
+    "university-of-georgia",
+    "georgia-tech",
+    "ohio-state-university",
+    "university-of-texas-at-austin",
+    "ut-austin",
+    "auburn-university",
+    "clemson-university",
+    "duke-university",
+    "florida-state-university",
+  ];
+  const pillCampuses = PILL_SLUGS.map((slug) => campuses.find((c) => c.slug === slug)).filter(
+    (c, i, arr): c is NonNullable<typeof c> => !!c && arr.findIndex((x) => x?.id === c.id) === i,
+  );
+
 
   const [budgetFilter, setBudgetFilter] = useState<string>("");
   const [moveInBy, setMoveInBy] = useState<string>("");
