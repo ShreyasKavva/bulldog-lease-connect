@@ -82,17 +82,6 @@ export function ListingDetailSheet({
     );
   }, [allListings, listing]);
 
-  const priceBar = useMemo(() => {
-    if (!listing || comps.length < 3) return null;
-    const prices = comps.map(c => c.price).concat(listing.price);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const pct = max === min ? 50 : ((listing.price - min) / (max - min)) * 100;
-    const below = ((avg - listing.price) / avg) * 100;
-    return { min, max, avg, pct, below };
-  }, [comps, listing]);
-
   const alsoSaved = useMemo(() => {
     if (!listing) return [] as Listing[];
     return allListings
@@ -103,6 +92,7 @@ export function ListingDetailSheet({
 
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
+  const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -238,9 +228,9 @@ export function ListingDetailSheet({
 
           {/* Social-proof stats row */}
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
-            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label="views" />
-            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label="saves" />
-            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label="messages" />
+            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
+            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label={saveCount === 1 ? "save" : "saves"} />
+            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label={msgCount === 1 ? "message" : "messages"} />
             <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
           </div>
 
@@ -415,7 +405,7 @@ export function ListingDetailSheet({
               className="h-12 w-full gap-2 bg-[#FF5A5F] text-white font-bold text-sm hover:bg-[#e04e53]"
             >
               <MessageSquare className="h-4 w-4" />
-              Message {listing.profile?.name?.split(" ")[0] ?? "Host"} →
+              Message {hostDisplayName || "Host"} →
             </Button>
           </div>
         )}
