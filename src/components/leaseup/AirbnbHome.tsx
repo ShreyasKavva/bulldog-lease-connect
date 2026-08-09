@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search, ChevronDown } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -337,6 +337,10 @@ export function AirbnbHome({
       {/* Q130 — how it works */}
       <HowItWorks />
 
+      {/* Q134 — FAQ accordion */}
+      <HomeFaq />
+
+
       {/* Q114 — skeleton rails while the listings query is loading */}
       {loading ? (
         <>
@@ -610,6 +614,73 @@ function HowItWorks() {
     </section>
   );
 }
+
+// Q134 — homepage FAQ
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "Is LeaseUp free to use?",
+    a: "Yes — completely free to post a sublease and free to browse. No subscription, no listing fees, no middlemen taking a cut.",
+  },
+  {
+    q: "How are listings verified?",
+    a: "Every user signs up with a .edu email address, so you know you're talking to a real student. Verified listings show a ✓ Verified badge.",
+  },
+  {
+    q: "How do I contact a host?",
+    a: "Click \u201CMessage Host \u2192\u201D on any listing to start a direct conversation. No phone number required — messages stay within LeaseUp until you're ready to connect.",
+  },
+  {
+    q: "What lease lengths are available?",
+    a: "Most subleases are one semester (Fall or Spring). Full-year and summer subleases are also supported — filter by dates on the browse page.",
+  },
+  {
+    q: "Which campuses is LeaseUp available at?",
+    a: "We're currently live at University of Georgia, Ohio State, UT Austin, Georgia Tech, Auburn, Clemson, Duke, and FSU — and adding new campuses every semester.",
+  },
+  {
+    q: "I need housing — how do I post a \u201CLooking For\u201D request?",
+    a: "Click \u201CLooking for a place?\u201D in the nav. Post your budget, move-in dates, and preferences. Hosts with available subleases can message you directly.",
+  },
+];
+
+function HomeFaq() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className="mx-auto mt-14 max-w-3xl px-4 sm:px-6">
+      <h2 className="mb-6 text-center text-xl font-extrabold sm:text-2xl">
+        Frequently asked questions
+      </h2>
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        {FAQS.map((f, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={f.q} className={i > 0 ? "border-t border-border" : undefined}>
+              <button
+                type="button"
+                onClick={() => setOpen(isOpen ? null : i)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+              >
+                <span className="text-sm font-semibold sm:text-base">{f.q}</span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {isOpen && (
+                <p className="px-5 pb-5 -mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {f.a}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 
 
 function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
