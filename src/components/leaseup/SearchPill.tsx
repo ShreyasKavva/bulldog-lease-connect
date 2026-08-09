@@ -55,6 +55,8 @@ export function SearchPill({
   onSearch?: () => void;
 }) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   const [openField, setOpenField] = useState<null | Field>(null);
   const [hoverField, setHoverField] = useState<null | Field>(null);
   const { data: campuses = [] } = useQuery({
