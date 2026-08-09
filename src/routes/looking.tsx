@@ -183,8 +183,33 @@ function LookingForPage() {
           </Link>
         </div>
 
+        {/* Q136 — campus filter pills (same chip style as browse) */}
+        <div className="-mx-4 mb-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { key: "all", label: "All" },
+            ...pillCampuses.map((c) => ({ key: c.id, label: c.short_name || c.name })),
+          ].map((t) => {
+            const active = campusFilter === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setCampusFilter(t.key)}
+                className={`shrink-0 snap-start rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  active
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-surface text-foreground hover:border-primary hover:text-primary"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Filters */}
         <div className="mb-5 flex flex-wrap items-end gap-3">
+
           <label className="text-xs font-semibold text-muted-foreground">
             Campus
             <select
