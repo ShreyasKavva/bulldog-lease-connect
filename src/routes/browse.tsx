@@ -543,18 +543,24 @@ function Browse() {
             <ListingCardSkeletonGrid count={12} />
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-              <div className="text-5xl">🔍</div>
-              <h3 className="mt-4 text-xl font-semibold">No subleases match your filters</h3>
+              <div className="relative rounded-full bg-muted p-5">
+                <Home className="h-9 w-9 text-muted-foreground" />
+                <span className="absolute -bottom-1 -right-1 rounded-full bg-surface p-1.5 shadow-sm">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </span>
+              </div>
+              <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Try adjusting your search.
+                Try adjusting your dates, size, or price range
               </p>
               <button
                 onClick={clearFilters}
                 className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
               >
-                Clear filters
+                Clear all filters
               </button>
             </div>
+
           ) : (
             <>
             <div ref={gridTopRef} className="grid scroll-mt-32 grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
