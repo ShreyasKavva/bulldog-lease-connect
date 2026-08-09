@@ -58,16 +58,17 @@ export const Route = createFileRoute("/listing/$id")({
         meta: [{ title: "Listing — LeaseUp" }, { name: "robots", content: "noindex" }],
       };
     }
-    const bedStr = l.beds === 0 ? "Studio" : `${l.beds}BR`;
-    const baStr = `${Number(l.baths)}BA`;
-    const where = [l.area, (l as any).campus?.short_name].filter(Boolean).join(", ");
+    const bedStr = l.beds === 0 ? "Studio" : `${l.beds}bd`;
+    const baStr = `${Number(l.baths)}ba`;
+    const campusName = (l as any).campus?.short_name ?? (l as any).campus?.name ?? "campus";
     const fmtDate = (iso: string | null) =>
       iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
     const range = l.available_from && l.available_to
       ? ` · Available ${fmtDate(l.available_from)}–${fmtDate(l.available_to)}`
       : "";
-    const desc = `${bedStr}/${baStr}${where ? ` in ${where}` : ""} · $${l.price}/mo${range}`;
-    const title = `${l.title} — LeaseUp`;
+    const desc = `${bedStr}/${baStr} · $${l.price}/mo${range}. Message the host directly on LeaseUp.`;
+    const title = `${l.title}${l.area ? ` — ${l.area}` : ""} near ${campusName} | LeaseUp`;
+
     const img = l.photo_urls?.[0];
     const meta: Array<Record<string, string>> = [
       { title },
