@@ -140,7 +140,7 @@ export function ListingCard({
   }
 
   return (
-    <article className="lu-card-hover group cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none">
+    <article className="lu-card-hover group cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md">
       <div
         ref={picker.containerRef}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
