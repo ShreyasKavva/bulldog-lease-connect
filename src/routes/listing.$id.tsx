@@ -1279,7 +1279,7 @@ function PriceSidebar({
         onClick={onMessage}
         size="lg"
         disabled={messaging}
-        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#E14E52]"
+        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#e04e53]"
       >
         {isOwner ? (
           <>
