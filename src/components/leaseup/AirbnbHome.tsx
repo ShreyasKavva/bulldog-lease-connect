@@ -337,6 +337,10 @@ export function AirbnbHome({
       {/* Q130 — how it works */}
       <HowItWorks />
 
+      {/* Q134 — FAQ accordion */}
+      <HomeFaq />
+
+
       {/* Q114 — skeleton rails while the listings query is loading */}
       {loading ? (
         <>
