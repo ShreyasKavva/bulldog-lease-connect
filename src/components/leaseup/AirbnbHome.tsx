@@ -189,14 +189,18 @@ export function AirbnbHome({
   }, [dbCampusCounts, listings]);
 
   const spotlightCampuses = useMemo(() => {
-    // Only ever show campuses that actually have active listings (Q117).
-    // Q123 verified: Georgia Tech (10 active) clears the >0 filter and ranks
-    // 4th by count, so it appears in the "Explore campuses" grid.
+    // Q136 — show up to 8 campuses (4x2 on desktop). Campuses with live
+    // listings rank first by count; the rest fill the grid and render "New".
     return [...campuses]
-      .filter((c) => (campusCounts.get(c.id) ?? 0) > 0)
-      .sort((a, b) => (campusCounts.get(b.id) ?? 0) - (campusCounts.get(a.id) ?? 0))
-      .slice(0, 4);
+      .sort((a, b) => {
+        const ca = campusCounts.get(a.id) ?? 0;
+        const cb = campusCounts.get(b.id) ?? 0;
+        if (cb !== ca) return cb - ca;
+        return (a.name ?? "").localeCompare(b.name ?? "");
+      })
+      .slice(0, 8);
   }, [campuses, campusCounts]);
+
 
 
   function runSearch() {
