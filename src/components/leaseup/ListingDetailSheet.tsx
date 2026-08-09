@@ -448,6 +448,37 @@ export function ListingDetailSheet({
               )}
             </div>
           </button>
+
+          {/* Q140 — More at this campus */}
+          {moreAtCampus.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-bold">More at this campus</h3>
+              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+                {moreAtCampus.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
+                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border bg-surface text-left transition hover:shadow-card"
+                  >
+                    <div className="h-24 w-full bg-muted">
+                      {l.photo_urls?.[0] ? (
+                        <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
+                      )}
+                    </div>
+                    <div className="p-2">
+                      <div className="truncate text-xs font-bold text-foreground">{l.title}</div>
+                      <div className="text-sm font-extrabold text-foreground">
+                        ${l.price.toLocaleString()}<span className="text-[10px] font-medium text-muted-foreground">/mo</span>
+                      </div>
+                      <div className="truncate text-[11px] text-muted-foreground">{l.area ?? "Near campus"}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sticky message-poster footer — the primary conversion action */}
