@@ -214,6 +214,12 @@ export function AirbnbHome({
         );
       if (hit) state = { ...state, campusId: hit.id, where: hit.short_name ?? hit.name };
     }
+    // Q119 — a picked campus goes straight to its landing page.
+    const picked = state.campusId ? campuses.find((c) => c.id === state.campusId) : null;
+    if (picked?.slug) {
+      navigate({ to: "/campus/$slug", params: { slug: picked.slug } });
+      return;
+    }
     navigate({ to: "/browse", search: buildBrowseSearch(state) as any });
   }
 
