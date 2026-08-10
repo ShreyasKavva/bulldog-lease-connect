@@ -240,7 +240,7 @@ export function BrowseFilterBar({
                 aria-label="Clear search"
                 className="mr-1 grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                <X className="h-3.5 w-3.5" />
+                <XIcon className="h-3.5 w-3.5" />
               </button>
             )}
 
