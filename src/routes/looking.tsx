@@ -172,10 +172,6 @@ function LookingForPage() {
   }
 
 
-  function openEdit(p: LookingForPost) {
-    setEditing(p);
-    setFormOpen(true);
-  }
 
   async function onToggleInterest(p: LookingForPost) {
     if (!user) return openSignIn("/looking");
