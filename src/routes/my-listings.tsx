@@ -78,7 +78,21 @@ function MyListingsPage() {
     rented: listings.filter(isRented),
     expired: listings.filter(isExpired),
   };
-  const visibleListings = groups[tab];
+  /** Q151 — client-side performance sort, remembered across visits. */
+  const [sort, setSort] = useState<"newest" | "views" | "saves">("newest");
+  useEffect(() => {
+    const s = typeof window !== "undefined" ? localStorage.getItem("leasup_my_listings_sort") : null;
+    if (s === "newest" || s === "views" || s === "saves") setSort(s);
+  }, []);
+  function changeSort(next: "newest" | "views" | "saves") {
+    setSort(next);
+    try { localStorage.setItem("leasup_my_listings_sort", next); } catch { /* ignore */ }
+  }
+  const visibleListings = [...groups[tab]].sort((a, b) => {
+    if (sort === "views") return (b.view_count ?? 0) - (a.view_count ?? 0);
+    if (sort === "saves") return (b.saves_count ?? 0) - (a.saves_count ?? 0);
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const totals = {
     views: listings.reduce((s, l) => s + (l.view_count ?? 0), 0),
@@ -304,7 +318,8 @@ function MyListingsPage() {
           </div>
         )}
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
           {(["active", "rented", "expired"] as const).map((t) => (
             <button
               key={t}
@@ -319,6 +334,19 @@ function MyListingsPage() {
               {t}{groups[t].length > 0 ? ` (${groups[t].length})` : ""}
             </button>
           ))}
+          </div>
+          <label className="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-foreground">
+            Sort:
+            <select
+              value={sort}
+              onChange={(e) => changeSort(e.target.value as "newest" | "views" | "saves")}
+              className="rounded-full border border-border bg-surface px-2 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-primary"
+            >
+              <option value="newest">Newest</option>
+              <option value="views">Most viewed</option>
+              <option value="saves">Most saved</option>
+            </select>
+          </label>
         </div>
 
         {isLoading ? (

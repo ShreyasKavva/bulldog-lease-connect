@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,6 +110,13 @@ export function SaveSearchAlertPopover({
         >
           {busy ? "Saving…" : "Save alert"}
         </button>
+        <Link
+          to="/saved-alerts"
+          onClick={() => setOpen(false)}
+          className="mt-2 block text-center text-xs font-semibold text-primary hover:underline"
+        >
+          Manage your alerts →
+        </Link>
       </PopoverContent>
     </Popover>
   );

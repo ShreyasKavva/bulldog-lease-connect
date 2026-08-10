@@ -126,6 +126,13 @@ export function ListingCard({
   const availableLabel = availableBadge(listing.available_from);
   const daysLeft =
     (listing.status ?? "active") === "active" ? daysLeftBadge(listing.available_to) : null;
+  /** Q151 — "just posted" freshness badge; never stacks with an urgency badge. */
+  const justPosted =
+    (listing.status ?? "active") === "active" &&
+    !daysLeft &&
+    !availableLabel &&
+    !!listing.created_at &&
+    Date.now() - new Date(listing.created_at).getTime() < 86_400_000;
 
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
@@ -212,6 +219,12 @@ export function ListingCard({
         )}
 
         {picker.overlay}
+
+        {justPosted && (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+            ✨ Just posted
+          </span>
+        )}
 
         {multi && !imgError && (
           <>
