@@ -156,10 +156,34 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
 
         {tab === "notifications" ? (
           <ScrollArea className="max-h-[480px]">
-            {notifications.length === 0 ? (
+            {unreadMessages.length === 0 && notifications.length === 0 ? (
               <EmptyState />
             ) : (
               <ul className="divide-y">
+                {/* Q153 — unread messages first */}
+                {unreadMessages.map((m) => (
+                  <li key={m.id}>
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        if (onOpenMessages) onOpenMessages();
+                        else navigate({ to: "/messages" });
+                      }}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-background"
+                    >
+                      <InitialAvatar name={m.senderName} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold leading-tight">
+                          💬 {m.senderName} sent you a message
+                        </div>
+                        <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {timeAgo(m.created_at)} ago
+                        </div>
+                      </div>
+                      <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    </button>
+                  </li>
+                ))}
                 {notifications.map((n) => (
                   <NotificationRow
                     key={n.id}
@@ -172,6 +196,13 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
             )}
             <div className="border-t p-2">
               <Link
+                to="/messages"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-1 rounded-md py-2 text-xs font-bold text-primary hover:bg-background"
+              >
+                See all messages <ArrowRight className="h-3 w-3" />
+              </Link>
+              <Link
                 to="/notifications"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 rounded-md py-2 text-xs font-bold text-primary hover:bg-background"
@@ -180,6 +211,7 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
               </Link>
             </div>
           </ScrollArea>
+
         ) : (
           <ActivityTab />
         )}
