@@ -593,12 +593,14 @@ function LookingForCard({
 }
 
 function LookingForFormDialog({
-  open, onOpenChange, editing, onSaved,
+  open, onOpenChange, editing, onSaved, prefill,
 }: {
   open: boolean;
   onOpenChange: (b: boolean) => void;
   editing: LookingForPost | null;
   onSaved: () => void;
+  /** Q150 — text typed in the homepage quick-post widget. */
+  prefill?: string;
 }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
@@ -628,10 +630,14 @@ function LookingForFormDialog({
       setFurnished(!!editing.furnished);
       setPets(!!editing.pets_ok);
     } else {
-      setTitle(""); setDescription(""); setBudget(""); setBeds(""); setPeople("1");
+      const seed = prefill?.trim().slice(0, 300) ?? "";
+      setTitle(seed ? seed.slice(0, 60) : "");
+      setDescription(seed);
+      setBudget(""); setBeds(""); setPeople("1");
       setArea(""); setFrom(""); setTo(""); setFurnished(false); setPets(false);
     }
-  }, [open, editing]);
+  }, [open, editing, prefill]);
+
 
   async function submit() {
     if (!user) return;
