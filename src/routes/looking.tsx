@@ -38,6 +38,12 @@ import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 
 export const Route = createFileRoute("/looking")({
+  // Q150 — ?prefill= carries the homepage quick-post text into the form.
+  validateSearch: (search: Record<string, unknown>): { prefill?: string } => ({
+    prefill: typeof search.prefill === "string" && search.prefill.trim()
+      ? search.prefill.slice(0, 300)
+      : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Looking For a Sublease? Post Here. — LeaseUp" },
@@ -51,6 +57,7 @@ export const Route = createFileRoute("/looking")({
   }),
   component: LookingForPage,
 });
+
 
 function activeAgo(iso?: string | null) {
   if (!iso) return null;
