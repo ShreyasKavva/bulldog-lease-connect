@@ -66,6 +66,54 @@ export function ListingDetailSheet({
     })();
   }, [open, listing]);
 
+  /** Q141 — dynamic tab title + share meta while the slide-out is open. */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const DEFAULT_TITLE = "LeaseUp — Student Subleases Near Your Campus";
+    const setMeta = (sel: string, attr: string, name: string, content: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(sel);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+    const prevTitle = document.title;
+    const prevDesc =
+      document.head.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ?? "";
+
+    if (!open || !listing) {
+      document.title = DEFAULT_TITLE;
+      setMeta('meta[name="description"]', "name", "description", DEFAULT_TITLE);
+      setMeta('meta[property="og:title"]', "property", "og:title", DEFAULT_TITLE);
+      setMeta('meta[property="og:description"]', "property", "og:description", DEFAULT_TITLE);
+      return;
+    }
+
+    const bedLabel = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
+    const where = listing.area ?? "";
+    const avail = listing.available_from
+      ? new Date(listing.available_from).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+      : "";
+    const title = `${listing.title} — $${listing.price}/mo · LeaseUp`;
+    const desc = [bedLabel, where, avail && `Available ${avail}`, "LeaseUp"]
+      .filter(Boolean)
+      .join(" · ");
+
+    document.title = title;
+    setMeta('meta[name="description"]', "name", "description", desc);
+    setMeta('meta[property="og:title"]', "property", "og:title", title);
+    setMeta('meta[property="og:description"]', "property", "og:description", desc);
+
+    return () => {
+      document.title = prevTitle || DEFAULT_TITLE;
+      setMeta('meta[name="description"]', "name", "description", prevDesc || DEFAULT_TITLE);
+      setMeta('meta[property="og:title"]', "property", "og:title", prevTitle || DEFAULT_TITLE);
+      setMeta('meta[property="og:description"]', "property", "og:description", prevDesc || DEFAULT_TITLE);
+    };
+  }, [open, listing]);
+
 
   // Comp listings (same campus, ±1 bed)
   const { data: allListings = [] } = useQuery({
