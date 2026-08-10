@@ -636,8 +636,12 @@ function LiveCounter() {
       <span>🏠 <Num>{stats.listings.toLocaleString()}</Num> active sublease{stats.listings === 1 ? "" : "s"}</span>
       <span aria-hidden>·</span>
       <span>🏫 <Num>{stats.campuses}</Num> campus{stats.campuses === 1 ? "" : "es"}</span>
-      <span aria-hidden>·</span>
-      <span>💬 <Num>{stats.inquiries.toLocaleString()}</Num> student inquir{stats.inquiries === 1 ? "y" : "ies"}</span>
+      {stats.inquiries > 0 && (
+        <>
+          <span aria-hidden>·</span>
+          <span>💬 <Num>{stats.inquiries.toLocaleString()}</Num> student inquir{stats.inquiries === 1 ? "y" : "ies"}</span>
+        </>
+      )}
     </p>
   );
 }
