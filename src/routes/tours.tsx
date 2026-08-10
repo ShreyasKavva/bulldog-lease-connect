@@ -11,7 +11,7 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 
 export const Route = createFileRoute("/tours")({
   head: () => ({ meta: [{ title: "My tours — LeaseUp" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { survey?: string } => ({
     survey: typeof s.survey === "string" ? s.survey : undefined,
   }),
   component: ToursPage,
