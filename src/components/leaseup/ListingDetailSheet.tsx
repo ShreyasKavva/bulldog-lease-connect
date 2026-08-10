@@ -507,6 +507,22 @@ export function ListingDetailSheet({
             </div>
           </button>
 
+          {/* Q145 — roommate preferences */}
+          {prefChips.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Roommate preferences</h3>
+              <div className="flex flex-wrap gap-2">
+                {prefChips.map((c) => (
+                  <span key={c} className="rounded-full bg-gray-50 px-3 py-1 text-sm text-gray-600 dark:bg-muted dark:text-muted-foreground">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+
+
           {/* Q140 — More at this campus */}
           {moreAtCampus.length > 0 && (
             <div>
