@@ -92,6 +92,11 @@ function LookingForPage() {
     "clemson-university",
     "duke-university",
     "florida-state-university",
+    // Q141 — remaining four campuses from Q139
+    "university-of-florida",
+    "university-of-michigan",
+    "penn-state-university",
+    "vanderbilt-university",
   ];
   const pillCampuses = PILL_SLUGS.map((slug) => campuses.find((c) => c.slug === slug)).filter(
     (c, i, arr): c is NonNullable<typeof c> => !!c && arr.findIndex((x) => x?.id === c.id) === i,
