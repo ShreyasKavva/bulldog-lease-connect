@@ -53,8 +53,9 @@ function availableBadge(iso: string | null | undefined) {
 }
 
 /**
- * Q149 — days-remaining urgency: only for active listings whose lease ends
- * within 21 days. Today/tomorrow reads "Last day!".
+ * Q149 — days-remaining urgency: leases ending within 21 days.
+ * Q154 — the last 3 days are handled by the dedicated expiry badge below,
+ * so this one starts at 4 days to avoid stacking two urgency pills.
  */
 function daysLeftBadge(iso: string | null | undefined): { label: string; tone: "red" | "amber" } | null {
   if (!iso) return null;
@@ -63,10 +64,24 @@ function daysLeftBadge(iso: string | null | undefined): { label: string; tone: "
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
-  if (days < 0 || days > 21) return null;
-  if (days <= 1) return { label: "Last day!", tone: "red" };
+  if (days < 4 || days > 21) return null;
   return { label: `${days} days left`, tone: "amber" };
 }
+
+/** Q154 — expiry countdown split into a critical badge (≤3d) and a soft line (4–14d). */
+function expiryInfo(iso: string | null | undefined): { kind: "critical" } | { kind: "soft"; days: number } | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0) return null;
+  if (days <= 3) return { kind: "critical" };
+  if (days <= 14) return { kind: "soft", days };
+  return null;
+}
+
 
 
 
@@ -124,15 +139,18 @@ export function ListingCard({
 
   const dates = fmtDateRange(listing.available_from, listing.available_to);
   const availableLabel = availableBadge(listing.available_from);
-  const daysLeft =
-    (listing.status ?? "active") === "active" ? daysLeftBadge(listing.available_to) : null;
+  const isActive = (listing.status ?? "active") === "active";
+  const daysLeft = isActive ? daysLeftBadge(listing.available_to) : null;
+  const expiry = isActive ? expiryInfo(listing.available_to) : null;
   /** Q151 — "just posted" freshness badge; never stacks with an urgency badge. */
   const justPosted =
-    (listing.status ?? "active") === "active" &&
+    isActive &&
     !daysLeft &&
+    !expiry &&
     !availableLabel &&
     !!listing.created_at &&
     Date.now() - new Date(listing.created_at).getTime() < 86_400_000;
+
 
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
@@ -275,12 +293,19 @@ export function ListingCard({
               {daysLeft.label}
             </span>
           )}
+          {/* Q154 — final-days countdown outranks the saves badge */}
+          {expiry?.kind === "critical" && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow-sm">
+              ⏰ Last 3 days!
+            </span>
+          )}
           {/* Q153 — social proof once a listing has real traction */}
-          {savesCount >= 3 && (
+          {savesCount >= 3 && expiry?.kind !== "critical" && (
             <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-rose-600 shadow-sm">
               ❤️ {savesCount} saves
             </span>
           )}
+
         </div>
 
 
@@ -337,6 +362,13 @@ export function ListingCard({
             </span>
           )}
         </p>
+        {/* Q154 — soft expiry nudge for listings ending in 4–14 days */}
+        {expiry?.kind === "soft" && (
+          <p className="mt-0.5 text-xs text-amber-600">
+            Available for {expiry.days} more days
+          </p>
+        )}
+
         {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
         {listing.profile?.verified_email && (
           <span className="mt-1 inline-flex items-center gap-0.5 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
