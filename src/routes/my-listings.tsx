@@ -85,24 +85,43 @@ function MyListingsPage() {
     active: groups.active.length,
   };
 
-  const { data: aggCounts = { saves: 0, messages: 0 } } = useQuery({
+  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> } } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
     queryFn: async () => {
       const ids = listings.map((l) => l.id);
+      const byListing: Record<string, { saves: number; messages: number }> = {};
+      for (const id of ids) byListing[id] = { saves: 0, messages: 0 };
       const [sav, convs] = await Promise.all([
-        supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).in("listing_id", ids),
+        supabase.from("saved_listings").select("listing_id").in("listing_id", ids),
         supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
       ]);
-      const convIds = (convs.data ?? []).map((c: any) => c.id);
+      for (const r of (sav.data ?? []) as { listing_id: string }[]) {
+        const e = byListing[r.listing_id];
+        if (e) e.saves += 1;
+      }
+      const convToListing = new Map<string, string>(
+        (convs.data ?? []).map((c: any) => [c.id, c.listing_id as string]),
+      );
+      const convIds = [...convToListing.keys()];
       let msgCount = 0;
       if (convIds.length) {
-        const m = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds).neq("sender_id", user!.id);
-        msgCount = m.count ?? 0;
+        const m = await supabase
+          .from("messages")
+          .select("id, conversation_id")
+          .in("conversation_id", convIds)
+          .neq("sender_id", user!.id);
+        for (const row of (m.data ?? []) as { conversation_id: string }[]) {
+          msgCount += 1;
+          const lid = convToListing.get(row.conversation_id);
+          const e = lid ? byListing[lid] : undefined;
+          if (e) e.messages += 1;
+        }
       }
-      return { saves: sav.count ?? 0, messages: msgCount };
+      return { saves: sav.data?.length ?? 0, messages: msgCount, byListing };
     },
   });
+
 
   // Celebration on return from Stripe Checkout
   useEffect(() => {
