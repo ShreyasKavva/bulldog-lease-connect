@@ -38,6 +38,12 @@ import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 
 export const Route = createFileRoute("/looking")({
+  // Q150 — ?prefill= carries the homepage quick-post text into the form.
+  validateSearch: (search: Record<string, unknown>): { prefill?: string } => ({
+    prefill: typeof search.prefill === "string" && search.prefill.trim()
+      ? search.prefill.slice(0, 300)
+      : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Looking For a Sublease? Post Here. — LeaseUp" },
@@ -51,6 +57,7 @@ export const Route = createFileRoute("/looking")({
   }),
   component: LookingForPage,
 });
+
 
 function activeAgo(iso?: string | null) {
   if (!iso) return null;
@@ -136,6 +143,15 @@ function LookingForPage() {
   const [foundFor, setFoundFor] = useState<LookingForPost | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
 
+  // Q150 — arriving from the homepage quick-post widget opens the form pre-filled.
+  const { prefill } = Route.useSearch();
+  useEffect(() => {
+    if (!prefill) return;
+    if (!user) { openSignIn(`/looking?prefill=${encodeURIComponent(prefill)}`); return; }
+    setEditing(null);
+    setFormOpen(true);
+  }, [prefill, user]);
+
   async function startConv(otherId: string) {
     if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
@@ -154,6 +170,8 @@ function LookingForPage() {
     setEditing(p);
     setFormOpen(true);
   }
+
+
 
   async function onToggleInterest(p: LookingForPost) {
     if (!user) return openSignIn("/looking");
@@ -344,8 +362,10 @@ function LookingForPage() {
         open={formOpen}
         onOpenChange={(o) => { setFormOpen(o); if (!o) setEditing(null); }}
         editing={editing}
+        prefill={prefill}
         onSaved={() => qc.invalidateQueries({ queryKey: ["looking-for"] })}
       />
+
 
       <FoundDialog
         post={foundFor}
@@ -575,12 +595,14 @@ function LookingForCard({
 }
 
 function LookingForFormDialog({
-  open, onOpenChange, editing, onSaved,
+  open, onOpenChange, editing, onSaved, prefill,
 }: {
   open: boolean;
   onOpenChange: (b: boolean) => void;
   editing: LookingForPost | null;
   onSaved: () => void;
+  /** Q150 — text typed in the homepage quick-post widget. */
+  prefill?: string;
 }) {
   const { user } = useSession();
   const { data: profile } = useMyProfile();
@@ -610,10 +632,14 @@ function LookingForFormDialog({
       setFurnished(!!editing.furnished);
       setPets(!!editing.pets_ok);
     } else {
-      setTitle(""); setDescription(""); setBudget(""); setBeds(""); setPeople("1");
+      const seed = prefill?.trim().slice(0, 300) ?? "";
+      setTitle(seed ? seed.slice(0, 60) : "");
+      setDescription(seed);
+      setBudget(""); setBeds(""); setPeople("1");
       setArea(""); setFrom(""); setTo(""); setFurnished(false); setPets(false);
     }
-  }, [open, editing]);
+  }, [open, editing, prefill]);
+
 
   async function submit() {
     if (!user) return;

@@ -264,11 +264,20 @@ export function ListingCard({
           )}
         </div>
 
+        {/* Q150 — hover/long-press hint reinforces what the heart does */}
         <button
           onClick={handleSave}
           aria-label={saved ? "Unsave" : "Save"}
-          className="absolute right-3 top-3 flex h-8 items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
+          title={saved ? "Remove from Saved" : "Save to see it in Saved"}
+          className="group/save absolute right-3 top-3 flex h-8 items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
         >
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute right-0 top-9 z-10 whitespace-nowrap rounded-md bg-gray-900/90 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/save:opacity-100 group-focus/save:opacity-100 group-active/save:opacity-100"
+          >
+            {saved ? "Remove from Saved" : "Save to see it in Saved"}
+          </span>
+
           <Heart
             className={cn(
               "h-6 w-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]",

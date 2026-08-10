@@ -319,8 +319,12 @@ export function AirbnbHome({
           )}
         </div>
 
+        {/* Q150 — quick-post a "Looking For" request without finding the board first */}
+        <QuickLookingPost />
+
         <LiveCounter />
       </section>
+
 
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />
@@ -992,5 +996,41 @@ function RecentlyViewedSection({
         ))}
       </ScrollRow>
     </section>
+  );
+}
+
+/* ---------------- Q150 — homepage quick-post to the Looking Board ---------------- */
+
+function QuickLookingPost() {
+  const navigate = useNavigate();
+  const [text, setText] = useState("");
+
+  function post() {
+    const v = text.trim();
+    if (!v) return;
+    navigate({ to: "/looking", search: { prefill: v.slice(0, 300) } });
+  }
+
+  return (
+    <div className="mx-auto mt-5 max-w-3xl px-4 sm:px-6">
+      <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm dark:border-border dark:bg-surface">
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value.slice(0, 300))}
+          onKeyDown={(e) => { if (e.key === "Enter") post(); }}
+          placeholder="What are you looking for? (e.g. 'UGA studio Aug–Dec under $700')"
+          aria-label="Post a looking-for request"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <button
+          onClick={post}
+          disabled={!text.trim()}
+          className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark disabled:opacity-50"
+        >
+          Post →
+        </button>
+      </div>
+    </div>
   );
 }

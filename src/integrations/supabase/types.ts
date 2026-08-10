@@ -2235,6 +2235,8 @@ export type Database = {
           area: string | null
           campus_id: string | null
           created_at: string
+          email: string | null
+          filters: Json
           furnished_only: boolean
           id: string
           keyword: string | null
@@ -2245,28 +2247,14 @@ export type Database = {
           notify: boolean
           pet_friendly_only: boolean
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           area?: string | null
           campus_id?: string | null
           created_at?: string
-          furnished_only?: boolean
-          id?: string
-          keyword?: string | null
-          last_notified_at?: string | null
-          max_price?: number | null
-          min_beds?: number | null
-          name: string
-          notify?: boolean
-          pet_friendly_only?: boolean
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          area?: string | null
-          campus_id?: string | null
-          created_at?: string
+          email?: string | null
+          filters?: Json
           furnished_only?: boolean
           id?: string
           keyword?: string | null
@@ -2277,7 +2265,25 @@ export type Database = {
           notify?: boolean
           pet_friendly_only?: boolean
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          campus_id?: string | null
+          created_at?: string
+          email?: string | null
+          filters?: Json
+          furnished_only?: boolean
+          id?: string
+          keyword?: string | null
+          last_notified_at?: string | null
+          max_price?: number | null
+          min_beds?: number | null
+          name?: string
+          notify?: boolean
+          pet_friendly_only?: boolean
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
