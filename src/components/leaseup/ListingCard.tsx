@@ -110,6 +110,7 @@ export function ListingCard({
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
   const views = listing.view_count ?? 0;
+  const savesCount = listing.saves_count ?? 0;
 
   function handleSave(e: React.MouseEvent) {
     e.stopPropagation();
