@@ -396,34 +396,56 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
 
       {/* Input */}
       <div
-        className="sticky bottom-0 flex items-end gap-2 border-t border-gray-100 bg-white px-3 py-3 dark:border-border dark:bg-surface"
+        className="sticky bottom-0 border-t border-gray-100 bg-white px-3 py-3 dark:border-border dark:bg-surface"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
-        <textarea
-          ref={taRef}
-          rows={1}
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            const el = e.target;
-            el.style.height = "auto";
-            el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-          }}
-          placeholder="Write a message…"
-          className="max-h-24 flex-1 resize-none rounded-3xl border border-gray-200 px-4 py-3 text-sm outline-none ring-0 focus:border-gray-900 dark:border-border dark:bg-background dark:focus:border-white"
-        />
-        <button
-          onClick={handleSend}
-          disabled={!text.trim() || sending}
-          aria-label="Send message"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gray-900 text-white disabled:opacity-40 dark:bg-white dark:text-gray-900"
-        >
-          <ArrowUp className="h-5 w-5" />
-        </button>
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={taRef}
+            rows={1}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              const el = e.target;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+            }}
+            placeholder="Write a message…"
+            className="max-h-24 flex-1 resize-none rounded-3xl border border-gray-200 px-4 py-3 text-sm outline-none ring-0 focus:border-gray-900 dark:border-border dark:bg-background dark:focus:border-white"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!text.trim() || sending}
+            aria-label="Send message"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gray-900 text-white disabled:opacity-40 dark:bg-white dark:text-gray-900"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Q154 — one-tap openers; they disappear as soon as the student types */}
+        {text.trim().length === 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {QUICK_REPLIES.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => {
+                  setText(q);
+                  taRef.current?.focus();
+                }}
+                className="rounded-full border border-gray-200 bg-gray-100 px-3 py-1 text-sm text-gray-700 transition hover:bg-gray-200 dark:border-border dark:bg-background dark:text-foreground"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
