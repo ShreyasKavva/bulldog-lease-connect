@@ -357,7 +357,7 @@ export async function sendMessage(conversationId: string, senderId: string, reci
         // One email per (conversation, recipient) — first message only.
         idempotencyKey: `msg-first-${conversationId}-${recipientId}`,
         templateData: {
-          senderName: sender?.name || (sender?.email ? sender.email.split("@")[0] : "Someone"),
+          senderName: sender?.name || "Someone",
           preview: content.slice(0, 150),
           listingTitle: listing?.title ?? null,
           listingPrice: listing?.price ?? null,
