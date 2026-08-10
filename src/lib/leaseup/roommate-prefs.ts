@@ -68,3 +68,31 @@ export function roommatePrefChips(prefs: unknown): string[] {
 export function hasRoommatePrefs(prefs: unknown): boolean {
   return roommatePrefChips(prefs).length > 0;
 }
+
+/**
+ * Q147 — browse filtering. Each group is a set of selected ids; a listing
+ * matches when its stored value is in the set, or when the listing left the
+ * field unset / marked "any" (never hide flexible hosts).
+ */
+export type RoommateFilterSets = {
+  looking_for?: string[];
+  study_style?: string[];
+  pets?: string[];
+  smoking?: string[];
+};
+
+function groupMatches(selected: string[] | undefined, values: string[]): boolean {
+  if (!selected || selected.length === 0) return true;
+  if (values.length === 0 || values.includes("any")) return true;
+  return values.some((v) => selected.includes(v));
+}
+
+export function matchesRoommateFilters(prefs: unknown, f: RoommateFilterSets): boolean {
+  const p = (prefs && typeof prefs === "object" ? prefs : {}) as RoommatePrefs;
+  return (
+    groupMatches(f.looking_for, p.looking_for ?? []) &&
+    groupMatches(f.study_style, p.study_style ? [p.study_style] : []) &&
+    groupMatches(f.pets, p.pets ? [p.pets] : []) &&
+    groupMatches(f.smoking, p.smoking ? [p.smoking] : [])
+  );
+}
