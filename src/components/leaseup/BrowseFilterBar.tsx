@@ -520,7 +520,51 @@ export function BrowseFilterBar({
                 </label>
               </div>
             </section>
+
+            {/* Q147 — roommate preferences */}
+            <section>
+              <h3 className="text-sm font-bold">Roommate preferences</h3>
+              <div className="mt-3 space-y-4">
+                {ROOMMATE_GROUPS.map((g) => {
+                  const selected = new Set((values[g.key] ?? "").split(",").filter(Boolean));
+                  return (
+                    <div key={g.key}>
+                      <p className="text-xs font-semibold text-muted-foreground">{g.label}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {g.options.map((o) => {
+                          const on = selected.has(o.id);
+                          return (
+                            <button
+                              key={o.id}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => {
+                                const next = new Set(selected);
+                                if (on) next.delete(o.id);
+                                else next.add(o.id);
+                                onPatch({
+                                  [g.key]: next.size ? Array.from(next).join(",") : undefined,
+                                } as Partial<BrowseFilterValues>);
+                              }}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                                on
+                                  ? "border-[#FF5A5F] bg-[#FF5A5F]/10 font-medium text-[#FF5A5F]"
+                                  : "border-border text-muted-foreground hover:border-foreground",
+                              )}
+                            >
+                              {o.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
           </div>
+
 
           <div
             className="flex items-center justify-between gap-3 border-t border-border px-6 py-3"
