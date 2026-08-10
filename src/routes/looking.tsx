@@ -461,6 +461,7 @@ function initialBg(name: string) {
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
+  upvotes, upvoted, onUpvote,
 }: {
   p: LookingForPost;
   campusName?: string | null;
@@ -474,6 +475,9 @@ function LookingForCard({
   onSeeMatches: () => void;
   onNotifyMe: () => void;
   onRenew: () => void;
+  upvotes: number;
+  upvoted: boolean;
+  onUpvote: () => void;
 }) {
   const profile = p.profile;
   const displayName = p.display_name ?? profile?.name ?? "Student";
