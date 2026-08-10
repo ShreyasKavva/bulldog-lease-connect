@@ -78,7 +78,21 @@ function MyListingsPage() {
     rented: listings.filter(isRented),
     expired: listings.filter(isExpired),
   };
-  const visibleListings = groups[tab];
+  /** Q151 — client-side performance sort, remembered across visits. */
+  const [sort, setSort] = useState<"newest" | "views" | "saves">("newest");
+  useEffect(() => {
+    const s = typeof window !== "undefined" ? localStorage.getItem("leasup_my_listings_sort") : null;
+    if (s === "newest" || s === "views" || s === "saves") setSort(s);
+  }, []);
+  function changeSort(next: "newest" | "views" | "saves") {
+    setSort(next);
+    try { localStorage.setItem("leasup_my_listings_sort", next); } catch { /* ignore */ }
+  }
+  const visibleListings = [...groups[tab]].sort((a, b) => {
+    if (sort === "views") return (b.view_count ?? 0) - (a.view_count ?? 0);
+    if (sort === "saves") return (b.saves_count ?? 0) - (a.saves_count ?? 0);
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const totals = {
     views: listings.reduce((s, l) => s + (l.view_count ?? 0), 0),
