@@ -319,8 +319,12 @@ export function AirbnbHome({
           )}
         </div>
 
+        {/* Q150 — quick-post a "Looking For" request without finding the board first */}
+        <QuickLookingPost />
+
         <LiveCounter />
       </section>
+
 
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />
