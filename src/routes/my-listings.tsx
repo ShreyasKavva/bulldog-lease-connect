@@ -234,6 +234,24 @@ function MyListingsPage() {
     navigate({ to: "/post", search: { relist: l.id } as any });
   }
 
+  /** Q149 — clone an expired listing and jump straight into editing the copy. */
+  const [reposting, setReposting] = useState<string | null>(null);
+  async function repost(l: Listing) {
+    if (!user) return;
+    setReposting(l.id);
+    try {
+      const newId = await relistListing(l.id, user.id);
+      await qc.invalidateQueries({ queryKey: ["my-listings", user.id] });
+      toast.success("Reposted — update the dates and save.");
+      navigate({ to: "/listing/$id/edit", params: { id: newId } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't repost that listing");
+    } finally {
+      setReposting(null);
+    }
+  }
+
+
 
 
 
