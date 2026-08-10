@@ -220,6 +220,12 @@ export function ListingCard({
 
         {picker.overlay}
 
+        {justPosted && (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+            ✨ Just posted
+          </span>
+        )}
+
         {multi && !imgError && (
           <>
             {idx > 0 && (
