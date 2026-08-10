@@ -9,16 +9,22 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/campuses";
+import { setLastCampusSlug, useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { ArrowRight } from "lucide-react";
 
 export function CampusPills({
   title,
   slugs,
+  highlightLast,
 }: {
   title?: string;
   /** Q140 — explicit campus slug order (overrides count sort, no cap). */
   slugs?: string[];
+  /** Q148 — visually mark the campus remembered in localStorage. */
+  highlightLast?: boolean;
 } = {}) {
+  const lastSlug = useLastCampusSlug();
+
   const campusesQ = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
