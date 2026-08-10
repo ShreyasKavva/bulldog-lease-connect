@@ -31,7 +31,57 @@ export type BrowseFilterValues = {
   laundry?: 1;
   verified?: 1;
   sort?: Sort;
+  /** Q147 — roommate preference filters (csv of option ids). */
+  rm_looking?: string;
+  rm_study?: string;
+  rm_pets?: string;
+  rm_smoking?: string;
 };
+
+type RoommateGroupKey = "rm_looking" | "rm_study" | "rm_pets" | "rm_smoking";
+
+const ROOMMATE_GROUPS: Array<{
+  key: RoommateGroupKey;
+  label: string;
+  options: ReadonlyArray<{ id: string; label: string }>;
+}> = [
+  {
+    key: "rm_looking",
+    label: "Looking for",
+    options: [
+      { id: "undergrad", label: "🎓 Undergrad" },
+      { id: "grad_student", label: "🎓 Grad student" },
+      { id: "young_professional", label: "💼 Young professional" },
+      { id: "any", label: "🙌 Any" },
+    ],
+  },
+  {
+    key: "rm_study",
+    label: "Study style",
+    options: [
+      { id: "early_bird", label: "🌅 Early bird" },
+      { id: "night_owl", label: "🌙 Night owl" },
+      { id: "flexible", label: "🔀 Flexible" },
+    ],
+  },
+  {
+    key: "rm_pets",
+    label: "Pets",
+    options: [
+      { id: "ok", label: "🐾 Pets OK" },
+      { id: "no", label: "🚫 No pets" },
+    ],
+  },
+  {
+    key: "rm_smoking",
+    label: "Smoking",
+    options: [
+      { id: "no", label: "✅ Non-smoking" },
+      { id: "ok", label: "🚬 Smoking OK" },
+    ],
+  },
+];
+
 
 const SORT_LABELS: Record<Sort, string> = {
   newest: "Newest",
