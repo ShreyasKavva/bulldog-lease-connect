@@ -10,7 +10,7 @@ import { CountUp } from "./CountUp";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings } from "@/lib/leaseup/queries";
 import { cn } from "@/lib/utils";
 import { SecureDepositDialog } from "./SecureDepositDialog";
