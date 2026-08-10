@@ -639,11 +639,27 @@ function LookingForCard({
             )}
 
             {(p.interest_count ?? 0) > 0 && (
-              <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground" title="People watching for your matches">
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground" title="People watching for your matches">
                 <Users className="h-3 w-3" />{p.interest_count} watching
               </span>
             )}
+
+            {/* Q152 — upvote / bump */}
+            <button
+              type="button"
+              onClick={onUpvote}
+              disabled={upvoted}
+              title={upvoted ? "You already upvoted this" : "Upvote this search"}
+              className={`ml-auto inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
+                upvoted
+                  ? "cursor-default border-border bg-background text-muted-foreground"
+                  : "border-border text-foreground hover:border-primary hover:text-primary"
+              }`}
+            >
+              🔼 {upvotes}
+            </button>
           </div>
+
         </div>
       </div>
     </article>
