@@ -15,6 +15,10 @@ import { useActivity, activityTimeAgo } from "@/lib/leaseup/activity";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { notificationMeta } from "@/lib/leaseup/notification-meta";
 
+import { useUnreadMessages, markMessagesRead } from "@/hooks/use-unread-messages";
+import { useSession } from "@/lib/leaseup/use-session";
+import { useQueryClient } from "@tanstack/react-query";
+
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return `${s}s`;
@@ -27,6 +31,25 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+const AVATAR_TONES = [
+  "bg-rose-100 text-rose-700",
+  "bg-blue-100 text-blue-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-800",
+  "bg-violet-100 text-violet-700",
+];
+
+function InitialAvatar({ name }: { name: string }) {
+  const initial = (name.trim()[0] || "?").toUpperCase();
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return (
+    <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold", AVATAR_TONES[hash % AVATAR_TONES.length])}>
+      {initial}
+    </div>
+  );
+}
+
 export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => void }) {
   const { data: notifications = [] } = useNotifications();
   const markAll = useMarkAllNotificationsRead();
@@ -34,9 +57,25 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
   const del = useDeleteNotification();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useSession();
+  const qc = useQueryClient();
+  const unreadMessages = useUnreadMessages();
   const [tab, setTab] = useState<"notifications" | "activity">("notifications");
   const [open, setOpen] = useState(false);
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = notifications.filter((n) => !n.read).length + unreadMessages.length;
+
+  // Q153 — opening the popover clears the message side of the badge.
+  useEffect(() => {
+    if (!open || !user?.id || unreadMessages.length === 0) return;
+    const ids = unreadMessages.map((m) => m.id);
+    const t = setTimeout(() => {
+      markMessagesRead(ids, user.id).then(() => {
+        qc.invalidateQueries({ queryKey: ["unread-messages", user.id] });
+        qc.invalidateQueries({ queryKey: ["unread", user.id] });
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [open, user?.id, unreadMessages, qc]);
 
   // Pulse badge briefly when unread count grows
   const prevUnread = useRef(unread);
@@ -49,6 +88,7 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
     }
     prevUnread.current = unread;
   }, [unread]);
+
 
   function handleClick(n: Notification) {
     if (!n.read) markOne.mutate(n.id);
