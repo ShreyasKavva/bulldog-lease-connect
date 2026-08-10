@@ -249,6 +249,19 @@ export function ListingCard({
               {availableLabel}
             </span>
           )}
+          {/* Q149 — lease ending soon */}
+          {daysLeft && (
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm",
+                daysLeft.tone === "red"
+                  ? "bg-red-600 text-white"
+                  : "bg-amber-100 text-amber-900",
+              )}
+            >
+              {daysLeft.label}
+            </span>
+          )}
         </div>
 
         <button
