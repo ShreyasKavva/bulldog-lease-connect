@@ -52,6 +52,23 @@ function availableBadge(iso: string | null | undefined) {
   return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
+/**
+ * Q149 — days-remaining urgency: only for active listings whose lease ends
+ * within 21 days. Today/tomorrow reads "Last day!".
+ */
+function daysLeftBadge(iso: string | null | undefined): { label: string; tone: "red" | "amber" } | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0 || days > 21) return null;
+  if (days <= 1) return { label: "Last day!", tone: "red" };
+  return { label: `${days} days left`, tone: "amber" };
+}
+
+
 
 /** Airbnb-style dot strip: max 5 dots, active one kept centered when possible. */
 function PhotoDots({ count, index }: { count: number; index: number }) {
