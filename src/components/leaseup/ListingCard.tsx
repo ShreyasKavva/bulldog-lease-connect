@@ -37,14 +37,18 @@ function fmtDateRange(fromIso: string | null, toIso: string | null) {
   return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
 }
 
-/** Q123 — "Available Jan 15" / "Available now" badge. Null when no date. */
+/**
+ * Q143 — urgency badge: only when move-in is between today and 45 days out.
+ * Anything in the past or further away shows nothing.
+ */
 function availableBadge(iso: string | null | undefined) {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  if (d.getTime() <= today.getTime()) return "Available now";
+  const days = (d.getTime() - today.getTime()) / 86_400_000;
+  if (days < 0 || days > 45) return null;
   return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
