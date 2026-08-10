@@ -53,8 +53,9 @@ function availableBadge(iso: string | null | undefined) {
 }
 
 /**
- * Q149 — days-remaining urgency: only for active listings whose lease ends
- * within 21 days. Today/tomorrow reads "Last day!".
+ * Q149 — days-remaining urgency: leases ending within 21 days.
+ * Q154 — the last 3 days are handled by the dedicated expiry badge below,
+ * so this one starts at 4 days to avoid stacking two urgency pills.
  */
 function daysLeftBadge(iso: string | null | undefined): { label: string; tone: "red" | "amber" } | null {
   if (!iso) return null;
@@ -63,10 +64,24 @@ function daysLeftBadge(iso: string | null | undefined): { label: string; tone: "
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
-  if (days < 0 || days > 21) return null;
-  if (days <= 1) return { label: "Last day!", tone: "red" };
+  if (days < 4 || days > 21) return null;
   return { label: `${days} days left`, tone: "amber" };
 }
+
+/** Q154 — expiry countdown split into a critical badge (≤3d) and a soft line (4–14d). */
+function expiryInfo(iso: string | null | undefined): { kind: "critical" } | { kind: "soft"; days: number } | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0) return null;
+  if (days <= 3) return { kind: "critical" };
+  if (days <= 14) return { kind: "soft", days };
+  return null;
+}
+
 
 
 
