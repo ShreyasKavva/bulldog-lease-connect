@@ -293,12 +293,19 @@ export function ListingCard({
               {daysLeft.label}
             </span>
           )}
+          {/* Q154 — final-days countdown outranks the saves badge */}
+          {expiry?.kind === "critical" && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow-sm">
+              ⏰ Last 3 days!
+            </span>
+          )}
           {/* Q153 — social proof once a listing has real traction */}
-          {savesCount >= 3 && (
+          {savesCount >= 3 && expiry?.kind !== "critical" && (
             <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-rose-600 shadow-sm">
               ❤️ {savesCount} saves
             </span>
           )}
+
         </div>
 
 
