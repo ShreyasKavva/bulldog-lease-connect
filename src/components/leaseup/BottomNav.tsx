@@ -6,12 +6,12 @@
  * Legacy props (onPost, onChat, onProfile) are accepted-but-ignored so older
  * call sites keep compiling.
  */
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Plus, Heart, User } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Home, Search, Bookmark, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
+import { useSession } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { LucideIcon } from "lucide-react";
@@ -21,8 +21,6 @@ type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () =>
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
-  const { data: profile } = useMyProfile();
-  const navigate = useNavigate();
 
   // Hide when the soft keyboard is open so it doesn't cover inputs.
   const [kbdOpen, setKbdOpen] = useState(false);
