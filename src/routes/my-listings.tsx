@@ -234,6 +234,24 @@ function MyListingsPage() {
     navigate({ to: "/post", search: { relist: l.id } as any });
   }
 
+  /** Q149 — clone an expired listing and jump straight into editing the copy. */
+  const [reposting, setReposting] = useState<string | null>(null);
+  async function repost(l: Listing) {
+    if (!user) return;
+    setReposting(l.id);
+    try {
+      const newId = await relistListing(l.id, user.id);
+      await qc.invalidateQueries({ queryKey: ["my-listings", user.id] });
+      toast.success("Reposted — update the dates and save.");
+      navigate({ to: "/listing/$id/edit", params: { id: newId } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't repost that listing");
+    } finally {
+      setReposting(null);
+    }
+  }
+
+
 
 
 
@@ -337,6 +355,13 @@ function MyListingsPage() {
                     <span className="opacity-80">Did you find someone?</span>
                     <button onClick={() => markFilled(l)} className="ml-auto rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Mark as rented</button>
                     <button onClick={() => relist(l)} className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary-dark">Relist →</button>
+                    <button
+                      onClick={() => repost(l)}
+                      disabled={reposting === l.id}
+                      className="rounded-full border border-primary px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-60"
+                    >
+                      {reposting === l.id ? "Reposting…" : "Repost"}
+                    </button>
                   </div>
                 )}
                 <div className="flex items-center gap-4">

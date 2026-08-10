@@ -91,10 +91,10 @@ export const Route = createFileRoute("/listing/$id")({
     };
   },
 
-  loader: async ({ params }) => {
+  loader: async ({ params }): Promise<{ listing: ListingWithCampus }> => {
     const result = await fetchListingDetail(params.id);
     if (!result) throw notFound({ data: { reason: "deleted" } });
-    if (result.reason) throw notFound({ data: { reason: result.reason } });
+    if (!result.listing) throw notFound({ data: { reason: result.reason } });
     return { listing: result.listing };
   },
   notFoundComponent: ({ data }) => {

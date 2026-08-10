@@ -224,21 +224,23 @@ export function BrowseFilterBar({
           <div className="flex h-12 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-4 pr-1.5 shadow-sm">
             <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
 
-            {searchOpen ? (
-              <input
-                autoFocus
-                value={searchInput}
-                onChange={(e) => onSearchInput(e.target.value)}
-                onBlur={() => setSearchOpen(false)}
-                placeholder="Search subleases, neighborhoods…"
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-              />
-            ) : (
+            {/* Q149 — always-on keyword search with clear button */}
+            <input
+              value={searchInput}
+              onChange={(e) => onSearchInput(e.target.value)}
+              onFocus={() => setSearchOpen(true)}
+              placeholder={placeLabel === "Search subleases" ? "Search by title or description…" : `Search ${placeLabel}…`}
+              aria-label="Search subleases"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+            {searchInput && (
               <button
-                onClick={() => setSearchOpen(true)}
-                className="min-w-0 flex-1 truncate text-left text-sm font-semibold"
+                type="button"
+                onClick={() => onSearchInput("")}
+                aria-label="Clear search"
+                className="mr-1 grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                {values.q || placeLabel}
+                <XIcon className="h-3.5 w-3.5" />
               </button>
             )}
 

@@ -30,6 +30,7 @@ import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
+import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
 
 
@@ -369,14 +370,18 @@ export function AirbnbHome({
           ))}
         </>
       ) : (
-        /* Q111 — "New this week" (hidden unless 3+ fresh listings) */
-        <NewThisWeekSection
-          listings={listings}
-          campuses={campuses}
-          savedIds={savedIds}
-          onSave={onSave}
-          onOpen={onOpen}
-        />
+        <>
+          {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
+          <NewThisWeekSection
+            listings={listings}
+            campuses={campuses}
+            savedIds={savedIds}
+            onSave={onSave}
+            onOpen={onOpen}
+          />
+          {/* Q149 — recently viewed */}
+          <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+        </>
       )}
 
       {/* Q148 — featured listing hero card */}
@@ -944,3 +949,48 @@ function NewThisWeekSection({
   );
 }
 
+
+/* ---------------- Q149 — Recently viewed ---------------- */
+
+function RecentlyViewedSection({
+  savedIds, onSave, onOpen,
+}: {
+  savedIds: Set<string>;
+  onSave: (l: Listing) => void;
+  onOpen: (l: Listing) => void;
+}) {
+  const recentIds = useRecentViews();
+
+  const { data: recent = [] } = useQuery({
+    queryKey: ["home-recently-viewed", recentIds.join(",")],
+    enabled: recentIds.length >= 2,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("listings").select("*").in("id", recentIds);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as Listing[];
+      // Preserve newest-first order from localStorage.
+      return recentIds.map((id) => rows.find((r) => r.id === id)).filter(Boolean) as Listing[];
+    },
+  });
+
+  if (recentIds.length < 2 || recent.length < 2) return null;
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">Recently viewed</h2>
+      <ScrollRow>
+        {recent.map((l) => (
+          <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+            <ListingCard
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onSave={() => onSave(l)}
+              onOpen={() => onOpen(l)}
+            />
+          </div>
+        ))}
+      </ScrollRow>
+    </section>
+  );
+}
