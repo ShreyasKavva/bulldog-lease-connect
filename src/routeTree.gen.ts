@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ToursRouteImport } from './routes/tours'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SavedAlertsRouteImport } from './routes/saved-alerts'
 import { Route as RoommatesRouteImport } from './routes/roommates'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PostRouteImport } from './routes/post'
@@ -71,6 +72,11 @@ const ToursRoute = ToursRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedAlertsRoute = SavedAlertsRouteImport.update({
+  id: '/saved-alerts',
+  path: '/saved-alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoommatesRoute = RoommatesRouteImport.update({
@@ -326,6 +332,7 @@ export interface FileRoutesByFullPath {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
+  '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -376,6 +383,7 @@ export interface FileRoutesByTo {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
+  '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -427,6 +435,7 @@ export interface FileRoutesById {
   '/post': typeof PostRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
+  '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
+    | '/saved-alerts'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
+    | '/saved-alerts'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -579,6 +590,7 @@ export interface FileRouteTypes {
     | '/post'
     | '/profile'
     | '/roommates'
+    | '/saved-alerts'
     | '/sitemap.xml'
     | '/tours'
     | '/unsubscribe'
@@ -630,6 +642,7 @@ export interface RootRouteChildren {
   PostRoute: typeof PostRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
+  SavedAlertsRoute: typeof SavedAlertsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -675,6 +688,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved-alerts': {
+      id: '/saved-alerts'
+      path: '/saved-alerts'
+      fullPath: '/saved-alerts'
+      preLoaderRoute: typeof SavedAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roommates': {
@@ -1064,6 +1084,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostRoute: PostRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
+  SavedAlertsRoute: SavedAlertsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
@@ -1091,3 +1112,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

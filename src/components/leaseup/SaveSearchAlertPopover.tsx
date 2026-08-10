@@ -109,6 +109,13 @@ export function SaveSearchAlertPopover({
         >
           {busy ? "Saving…" : "Save alert"}
         </button>
+        <Link
+          to="/saved-alerts"
+          onClick={() => setOpen(false)}
+          className="mt-2 block text-center text-xs font-semibold text-primary hover:underline"
+        >
+          Manage your alerts →
+        </Link>
       </PopoverContent>
     </Popover>
   );
