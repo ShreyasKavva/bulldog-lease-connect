@@ -2639,6 +2639,7 @@ export type Database = {
       profiles_public: {
         Row: {
           avatar_emoji: string | null
+          avatar_url: string | null
           banner_color: string | null
           bio: string | null
           campus_id: string | null
@@ -2647,9 +2648,13 @@ export type Database = {
           currently_status: string | null
           currently_updated_at: string | null
           id: string | null
+          instagram_handle: string | null
           is_ambassador: boolean | null
+          last_seen: string | null
           major: string | null
           name: string | null
+          referral_count: number | null
+          response_rate: number | null
           updated_at: string | null
           verified_email: boolean | null
           vibe_tags: string[] | null
@@ -2657,6 +2662,7 @@ export type Database = {
         }
         Insert: {
           avatar_emoji?: string | null
+          avatar_url?: string | null
           banner_color?: string | null
           bio?: string | null
           campus_id?: string | null
@@ -2665,9 +2671,13 @@ export type Database = {
           currently_status?: string | null
           currently_updated_at?: string | null
           id?: string | null
+          instagram_handle?: string | null
           is_ambassador?: boolean | null
+          last_seen?: string | null
           major?: string | null
           name?: string | null
+          referral_count?: number | null
+          response_rate?: number | null
           updated_at?: string | null
           verified_email?: boolean | null
           vibe_tags?: string[] | null
@@ -2675,6 +2685,7 @@ export type Database = {
         }
         Update: {
           avatar_emoji?: string | null
+          avatar_url?: string | null
           banner_color?: string | null
           bio?: string | null
           campus_id?: string | null
@@ -2683,9 +2694,13 @@ export type Database = {
           currently_status?: string | null
           currently_updated_at?: string | null
           id?: string | null
+          instagram_handle?: string | null
           is_ambassador?: boolean | null
+          last_seen?: string | null
           major?: string | null
           name?: string | null
+          referral_count?: number | null
+          response_rate?: number | null
           updated_at?: string | null
           verified_email?: boolean | null
           vibe_tags?: string[] | null
@@ -3008,6 +3023,10 @@ export type Database = {
       get_campus_price_stats: {
         Args: { bed_count: number; campus: string }
         Returns: Json
+      }
+      get_conversation_participant_email: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: string
       }
       get_host_stats: { Args: { host_id: string }; Returns: Json }
       get_listing_benchmark: { Args: { _listing_id: string }; Returns: Json }
