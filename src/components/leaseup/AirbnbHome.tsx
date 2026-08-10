@@ -372,11 +372,16 @@ export function AirbnbHome({
         /* Q111 — "New this week" (hidden unless 3+ fresh listings) */
         <NewThisWeekSection
           listings={listings}
+          campuses={campuses}
           savedIds={savedIds}
           onSave={onSave}
           onOpen={onOpen}
         />
       )}
+
+      {/* Q148 — featured listing hero card */}
+      {!loading && <FeaturedListingCard listings={listings} campuses={campuses} onOpen={onOpen} />}
+
 
       {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
       <div ref={railsRef} className="scroll-mt-20">
