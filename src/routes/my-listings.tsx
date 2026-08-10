@@ -318,7 +318,8 @@ function MyListingsPage() {
           </div>
         )}
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
           {(["active", "rented", "expired"] as const).map((t) => (
             <button
               key={t}
