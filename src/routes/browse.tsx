@@ -28,6 +28,7 @@ import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { CampusPills } from "@/components/leaseup/CampusPills";
+import { matchesRoommateFilters } from "@/lib/leaseup/roommate-prefs";
 
 type Sort = "newest" | "price_asc" | "price_desc" | "popular";
 
@@ -64,6 +65,11 @@ type BrowseSearch = {
   openFilters?: 1;
   hostId?: string;
   page?: number;
+  // Q147 — roommate preference filters (csv of option ids)
+  rm_looking?: string;
+  rm_study?: string;
+  rm_pets?: string;
+  rm_smoking?: string;
 };
 
 
@@ -146,6 +152,10 @@ export const Route = createFileRoute("/browse")({
     openFilters: parseFlag(raw.openFilters),
     hostId: parseStr(raw.hostId),
     page: parseInt2(raw.page),
+    rm_looking: parseStr(raw.rm_looking),
+    rm_study: parseStr(raw.rm_study),
+    rm_pets: parseStr(raw.rm_pets),
+    rm_smoking: parseStr(raw.rm_smoking),
   }),
   head: () => {
     const title = "Browse Subleases Near Campus | LeaseUp";
@@ -304,6 +314,19 @@ function Browse() {
     return bedSet.has(String(b) as BedKey);
   }
 
+  const rmFilters = useMemo(() => {
+    const csv = (v?: string) => {
+      const parts = (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+      return parts.length ? parts : undefined;
+    };
+    return {
+      looking_for: csv(s.rm_looking),
+      study_style: csv(s.rm_study),
+      pets: csv(s.rm_pets),
+      smoking: csv(s.rm_smoking),
+    };
+  }, [s.rm_looking, s.rm_study, s.rm_pets, s.rm_smoking]);
+
   const filtered = useMemo(() => {
     const qLower = (s.q ?? "").toLowerCase();
     let r = listings.filter((l) => {
@@ -345,6 +368,7 @@ function Browse() {
       }
       if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
       if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+      if (!matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
 
       return true;
     });
@@ -356,7 +380,7 @@ function Browse() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
-      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus]);
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, rmFilters]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
