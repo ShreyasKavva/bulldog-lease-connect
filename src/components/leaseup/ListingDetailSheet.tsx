@@ -559,12 +559,39 @@ export function ListingDetailSheet({
           )}
         </div>
 
-        {/* Sticky message-poster footer — the primary conversion action */}
-        {user?.id !== listing.user_id && (
-          <div
-            className="sticky bottom-0 left-0 right-0 z-10 border-t bg-surface/95 p-3 backdrop-blur md:relative md:bottom-auto"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-          >
+        {/* Sticky action footer — Q152 save/copy row above the primary CTA */}
+        <div
+          className="sticky bottom-0 left-0 right-0 z-10 space-y-2 border-t bg-surface/95 p-3 backdrop-blur md:relative md:bottom-auto"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+        >
+          <div className="flex gap-2">
+            {onSave && (
+              <button
+                type="button"
+                onClick={() => { haptic("light"); onSave(listing); }}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 text-sm font-semibold transition hover:bg-background dark:border-border"
+              >
+                <HeartIcon className={cn("h-4 w-4", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")} />
+                {isSaved ? "Saved" : "Save"}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={async () => {
+                const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
+                try {
+                  await navigator.clipboard.writeText(`${origin}/listing/${listing.id}`);
+                  toast.success("Link copied!");
+                } catch { toast.error("Couldn't copy link"); }
+              }}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 text-sm font-semibold transition hover:bg-background dark:border-border"
+            >
+              <Share2 className="h-4 w-4 text-foreground/70" />
+              Copy link
+            </button>
+          </div>
+
+          {user?.id !== listing.user_id && (
             <Button
               onClick={() => onMessage(listing)}
               className="h-12 w-full gap-2 bg-[#FF5A5F] text-white font-bold text-sm hover:bg-[#e04e53]"
@@ -572,8 +599,9 @@ export function ListingDetailSheet({
               <MessageSquare className="h-4 w-4" />
               Message {hostDisplayName || "Host"} →
             </Button>
-          </div>
-        )}
+          )}
+        </div>
+
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
       <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />

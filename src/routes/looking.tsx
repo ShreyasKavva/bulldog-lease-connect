@@ -34,8 +34,12 @@ import {
   MapPin, Bell, BellOff, Users, Bed,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
+
+// Q152 — local memory of which Looking Board posts this device already upvoted.
+const UPVOTED_KEY = "leasup_upvoted_posts";
 
 export const Route = createFileRoute("/looking")({
   // Q150 — ?prefill= carries the homepage quick-post text into the form.
@@ -121,11 +125,38 @@ function LookingForPage() {
     queryFn: () => fetchLookingFor(campusId),
   });
 
-  const posts = allPosts.filter((p) => {
-    if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
-    if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
-    return true;
-  });
+  // Q152 — sort toggle + local upvote memory
+  const [sort, setSort] = useState<"recent" | "upvoted">("recent");
+  const [upvoted, setUpvoted] = useState<string[]>([]);
+  const [bumped, setBumped] = useState<Record<string, number>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(UPVOTED_KEY);
+      if (raw) setUpvoted(JSON.parse(raw) as string[]);
+    } catch { /* ignore */ }
+  }, []);
+
+  async function onUpvote(p: LookingForPost) {
+    if (upvoted.includes(p.id)) return;
+    const next = [...upvoted, p.id];
+    setUpvoted(next);
+    setBumped((b) => ({ ...b, [p.id]: (b[p.id] ?? p.upvotes ?? 0) + 1 }));
+    try { localStorage.setItem(UPVOTED_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    const { error } = await supabase.rpc("upvote_looking_for_post", { _post_id: p.id });
+    if (error) toast.error("Couldn't upvote — try again");
+  }
+
+  const posts = allPosts
+    .filter((p) => {
+      if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
+      if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
+      return true;
+    })
+    .sort((a, b) =>
+      sort === "upvoted"
+        ? (bumped[b.id] ?? b.upvotes ?? 0) - (bumped[a.id] ?? a.upvotes ?? 0)
+        : 0,
+    );
   const { data: myInterests = [] } = useQuery({
     queryKey: ["looking-for-interests", user?.id],
     queryFn: () => (user ? fetchMyLookingForInterests(user.id) : Promise.resolve([])),
@@ -296,10 +327,28 @@ function LookingForPage() {
               Clear filters
             </button>
           )}
-          <span className="ml-auto text-xs text-muted-foreground">
-            {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
-          </span>
+          <div className="ml-auto flex items-center gap-3">
+            {/* Q152 — sort toggle */}
+            <div className="inline-flex rounded-full border border-border p-0.5">
+              {([["recent", "Recent"], ["upvoted", "Most upvoted"]] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSort(key)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                    sort === key ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
+            </span>
+          </div>
         </div>
+
 
 
 
@@ -352,6 +401,9 @@ function LookingForPage() {
                 onSeeMatches={() => setMatchesFor(p)}
                 onNotifyMe={() => onToggleInterest(p)}
                 onRenew={() => onRenew(p)}
+                upvotes={bumped[p.id] ?? p.upvotes ?? 0}
+                upvoted={upvoted.includes(p.id)}
+                onUpvote={() => onUpvote(p)}
               />
             ))}
           </div>
@@ -409,6 +461,7 @@ function initialBg(name: string) {
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
+  upvotes, upvoted, onUpvote,
 }: {
   p: LookingForPost;
   campusName?: string | null;
@@ -422,6 +475,9 @@ function LookingForCard({
   onSeeMatches: () => void;
   onNotifyMe: () => void;
   onRenew: () => void;
+  upvotes: number;
+  upvoted: boolean;
+  onUpvote: () => void;
 }) {
   const profile = p.profile;
   const displayName = p.display_name ?? profile?.name ?? "Student";
@@ -583,11 +639,27 @@ function LookingForCard({
             )}
 
             {(p.interest_count ?? 0) > 0 && (
-              <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground" title="People watching for your matches">
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground" title="People watching for your matches">
                 <Users className="h-3 w-3" />{p.interest_count} watching
               </span>
             )}
+
+            {/* Q152 — upvote / bump */}
+            <button
+              type="button"
+              onClick={onUpvote}
+              disabled={upvoted}
+              title={upvoted ? "You already upvoted this" : "Upvote this search"}
+              className={`ml-auto inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
+                upvoted
+                  ? "cursor-default border-border bg-background text-muted-foreground"
+                  : "border-border text-foreground hover:border-primary hover:text-primary"
+              }`}
+            >
+              🔼 {upvotes}
+            </button>
           </div>
+
         </div>
       </div>
     </article>

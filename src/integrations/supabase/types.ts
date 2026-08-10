@@ -1284,6 +1284,7 @@ export type Database = {
           pets_ok: boolean | null
           title: string
           updated_at: string
+          upvotes: number
           user_id: string
         }
         Insert: {
@@ -1304,6 +1305,7 @@ export type Database = {
           pets_ok?: boolean | null
           title: string
           updated_at?: string
+          upvotes?: number
           user_id: string
         }
         Update: {
@@ -1324,6 +1326,7 @@ export type Database = {
           pets_ok?: boolean | null
           title?: string
           updated_at?: string
+          upvotes?: number
           user_id?: string
         }
         Relationships: [
@@ -3096,6 +3099,7 @@ export type Database = {
         }[]
       }
       snapshot_listing_stats: { Args: never; Returns: undefined }
+      upvote_looking_for_post: { Args: { _post_id: string }; Returns: number }
       user_in_message_convo: {
         Args: { _message: string; _user: string }
         Returns: boolean
