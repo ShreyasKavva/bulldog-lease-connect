@@ -334,6 +334,19 @@ function MyListingsPage() {
               {t}{groups[t].length > 0 ? ` (${groups[t].length})` : ""}
             </button>
           ))}
+          </div>
+          <label className="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-foreground">
+            Sort:
+            <select
+              value={sort}
+              onChange={(e) => changeSort(e.target.value as "newest" | "views" | "saves")}
+              className="rounded-full border border-border bg-surface px-2 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-primary"
+            >
+              <option value="newest">Newest</option>
+              <option value="views">Most viewed</option>
+              <option value="saves">Most saved</option>
+            </select>
+          </label>
         </div>
 
         {isLoading ? (
