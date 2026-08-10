@@ -163,6 +163,7 @@ export type LookingForPost = {
   is_active: boolean;
   expiry_notified_at: string | null;
   created_at: string;
+  upvotes?: number | null;
   profile?: Profile;
   interest_count?: number;
 };
