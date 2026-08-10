@@ -139,15 +139,18 @@ export function ListingCard({
 
   const dates = fmtDateRange(listing.available_from, listing.available_to);
   const availableLabel = availableBadge(listing.available_from);
-  const daysLeft =
-    (listing.status ?? "active") === "active" ? daysLeftBadge(listing.available_to) : null;
+  const isActive = (listing.status ?? "active") === "active";
+  const daysLeft = isActive ? daysLeftBadge(listing.available_to) : null;
+  const expiry = isActive ? expiryInfo(listing.available_to) : null;
   /** Q151 — "just posted" freshness badge; never stacks with an urgency badge. */
   const justPosted =
-    (listing.status ?? "active") === "active" &&
+    isActive &&
     !daysLeft &&
+    !expiry &&
     !availableLabel &&
     !!listing.created_at &&
     Date.now() - new Date(listing.created_at).getTime() < 86_400_000;
+
 
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
