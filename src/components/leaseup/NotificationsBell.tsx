@@ -224,11 +224,12 @@ function EmptyState() {
   return (
     <div className="px-4 py-10 text-center text-sm text-muted-foreground">
       <Bell className="mx-auto mb-3 h-8 w-8 opacity-40" />
-      <div className="font-semibold text-foreground">You're all caught up 👋</div>
+      <div className="font-semibold text-foreground">🔕 No new notifications</div>
       <div className="mt-1 text-xs">Notifications will appear here as students interact with your listings.</div>
     </div>
   );
 }
+
 
 function NotificationRow({
   n,
