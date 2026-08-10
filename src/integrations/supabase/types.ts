@@ -1087,6 +1087,7 @@ export type Database = {
           photos: string[] | null
           price: number
           safe_score: number | null
+          saves_count: number
           semester: string | null
           share_count: number
           sort_at: string | null
@@ -1136,6 +1137,7 @@ export type Database = {
           photos?: string[] | null
           price: number
           safe_score?: number | null
+          saves_count?: number
           semester?: string | null
           share_count?: number
           sort_at?: string | null
@@ -1185,6 +1187,7 @@ export type Database = {
           photos?: string[] | null
           price?: number
           safe_score?: number | null
+          saves_count?: number
           semester?: string | null
           share_count?: number
           sort_at?: string | null
