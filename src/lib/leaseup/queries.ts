@@ -43,8 +43,8 @@ async function attachProfiles(listings: any[]): Promise<Listing[]> {
   // Only project safe, public poster columns — RLS additionally scopes rows
   // to profiles that own an active listing for anonymous viewers.
   const { data } = await supabase
-    .from("profiles")
-    .select("id,name,email,avatar_emoji,banner_color,verified_email")
+    .from("profiles_public")
+    .select("id,name,avatar_emoji,banner_color,verified_email")
     .in("id", ids);
   const map = new Map<string, Profile>((data ?? []).map((p: any) => [p.id, p]));
   return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));
@@ -155,7 +155,7 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const otherIds = Array.from(new Set(visible.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
   const listingIds = Array.from(new Set(visible.map((c) => c.listing_id).filter(Boolean) as string[]));
   const [{ data: profs }, { data: lists }] = await Promise.all([
-    otherIds.length ? supabase.from("profiles").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
+    otherIds.length ? supabase.from("profiles_public").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
       ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),

@@ -34,7 +34,7 @@ export async function fetchCampusOverview(userId: string, campusId: string): Pro
   const [active, week, students, refs] = await Promise.all([
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("campus_id", campusId).eq("is_active", true),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("campus_id", campusId).eq("is_active", true).gte("created_at", weekAgo),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("campus_id", campusId),
+    supabase.from("profiles_public").select("id", { count: "exact", head: true }).eq("campus_id", campusId),
     supabase.from("referral_events").select("id", { count: "exact", head: true }).eq("referrer_id", userId),
   ]);
   return {
@@ -47,7 +47,7 @@ export async function fetchCampusOverview(userId: string, campusId: string): Pro
 
 export async function fetchCampusLeaderboard(campusId: string, meId: string): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from("profiles")
+    .from("profiles_public")
     .select("id, name, avatar_emoji, banner_color, referral_count")
     .eq("campus_id", campusId)
     .gt("referral_count", 0)

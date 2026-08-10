@@ -38,7 +38,7 @@ async function fetchStories(campusId: string | null, meId: string | undefined): 
   if (meId) map.delete(meId);
   const ids = Array.from(map.keys());
   if (!ids.length) return [];
-  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const { data: profs } = await supabase.from("profiles_public").select("*").in("id", ids);
   const pMap = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   return Array.from(map.entries())
     .map(([userId, s]) => ({ userId, ...s, profile: pMap.get(userId)! }))
