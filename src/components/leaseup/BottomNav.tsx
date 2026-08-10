@@ -48,11 +48,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   });
 
   // Full-screen routes own the whole viewport on mobile.
+  // Q142 — also hidden on any chat surface so it never covers the keyboard.
   const hidden =
     path === "/post" ||
     path.startsWith("/post/") ||
-    (path.startsWith("/messages/") && path !== "/messages");
+    path.includes("message") ||
+    path.includes("conversation");
   if (hidden) return null;
+
 
   const isHome = path === "/";
   const isBrowse =
