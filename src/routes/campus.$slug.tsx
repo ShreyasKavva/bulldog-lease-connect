@@ -5,7 +5,9 @@
  * from short_name / name ("uga", "osu"). Fully public — no auth required.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { setLastCampusSlug } from "@/lib/leaseup/last-campus";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampusBySlugOrAlias, type Campus } from "@/lib/leaseup/campuses";
