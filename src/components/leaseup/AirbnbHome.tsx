@@ -29,7 +29,9 @@ import { ListingCard } from "./ListingCard";
 import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
+import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { openSignIn } from "./SignInModal";
+
 
 type Cat =
   | "all" | "near-campus" | "furnished" | "studio"
