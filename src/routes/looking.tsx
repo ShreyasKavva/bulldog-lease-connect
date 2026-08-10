@@ -516,11 +516,12 @@ function LookingForCard({
                 <button
                   type="button"
                   onClick={onReply}
-                  className="inline-flex items-center gap-1 rounded-full bg-[#FF5A5F] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e14e53]"
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-surface"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   Message {displayName.split(" ")[0]} →
                 </button>
+
                 <button
                   onClick={onNotifyMe}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
