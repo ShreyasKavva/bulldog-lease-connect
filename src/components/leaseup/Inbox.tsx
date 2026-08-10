@@ -13,6 +13,13 @@ import { ArrowLeft, ArrowUp, Home, MessageCircle, MessageSquare } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
+
+/** Q154 — one-tap conversation openers shown while the composer is empty. */
+const QUICK_REPLIES = [
+  "Is this still available?",
+  "Can I schedule a viewing?",
+  "What's included?",
+] as const;
 import { markConversationRead } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import type { Conversation, Message } from "@/lib/leaseup/types";
