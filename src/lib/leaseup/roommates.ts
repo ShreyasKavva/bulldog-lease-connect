@@ -87,7 +87,7 @@ export async function fetchRoommateProfiles(opts: {
 }): Promise<RoommateProfileWithUser[]> {
   let q = supabase
     .from("roommate_profiles" as any)
-    .select(`*, profile:profiles!roommate_profiles_user_id_fkey(${PROFILE_FIELDS})`)
+    .select(`*, profile:profiles_public!roommate_profiles_user_id_fkey(${PROFILE_FIELDS})`)
     .eq("is_active", true)
     .order("updated_at", { ascending: false })
     .limit(120);

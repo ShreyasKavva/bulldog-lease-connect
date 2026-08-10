@@ -33,7 +33,7 @@ export async function fetchUserReviews(userId: string): Promise<Review[]> {
   const rows = (data ?? []) as Review[];
   if (rows.length === 0) return rows;
   const reviewerIds = Array.from(new Set(rows.map((r) => r.reviewer_id)));
-  const { data: profs } = await supabase.from("profiles").select("*").in("id", reviewerIds);
+  const { data: profs } = await supabase.from("profiles_public").select("*").in("id", reviewerIds);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   return rows.map((r) => ({ ...r, reviewer: map.get(r.reviewer_id) ?? null }));
 }
@@ -164,7 +164,7 @@ export async function fetchListingReviews(listingId: string): Promise<Review[]> 
   const rows = (data ?? []) as Review[];
   if (rows.length === 0) return rows;
   const ids = Array.from(new Set(rows.map((r) => r.reviewer_id)));
-  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const { data: profs } = await supabase.from("profiles_public").select("*").in("id", ids);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   return rows.map((r) => ({ ...r, reviewer: map.get(r.reviewer_id) ?? null }));
 }

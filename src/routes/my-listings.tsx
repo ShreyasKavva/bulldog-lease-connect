@@ -195,8 +195,8 @@ function MyListingsPage() {
         .maybeSingle();
       if (conv) {
         const otherId = conv.participant_1_id === user!.id ? conv.participant_2_id : conv.participant_1_id;
-        const { data: prof } = await supabase.from("profiles").select("name,email").eq("id", otherId).maybeSingle();
-        const name = (prof?.name || prof?.email?.split("@")[0]) ?? "your subletter";
+        const { data: prof } = await supabase.from("profiles_public").select("name").eq("id", otherId).maybeSingle();
+        const name = prof?.name ?? "your subletter";
         setReviewFor({ listing: l, userId: otherId, name });
       }
     } catch (e: any) { toast.error(e.message); }

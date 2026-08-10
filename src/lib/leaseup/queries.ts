@@ -43,8 +43,8 @@ async function attachProfiles(listings: any[]): Promise<Listing[]> {
   // Only project safe, public poster columns — RLS additionally scopes rows
   // to profiles that own an active listing for anonymous viewers.
   const { data } = await supabase
-    .from("profiles")
-    .select("id,name,email,avatar_emoji,banner_color,verified_email")
+    .from("profiles_public")
+    .select("id,name,avatar_emoji,banner_color,verified_email")
     .in("id", ids);
   const map = new Map<string, Profile>((data ?? []).map((p: any) => [p.id, p]));
   return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));
@@ -155,7 +155,7 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const otherIds = Array.from(new Set(visible.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
   const listingIds = Array.from(new Set(visible.map((c) => c.listing_id).filter(Boolean) as string[]));
   const [{ data: profs }, { data: lists }] = await Promise.all([
-    otherIds.length ? supabase.from("profiles").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
+    otherIds.length ? supabase.from("profiles_public").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
       ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),
@@ -333,24 +333,31 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     if ((count ?? 0) > 1) return; // not the first message — stay quiet
 
     const { sendTransactionalEmail } = await import("@/lib/email/send");
-    const [{ data: recipient }, { data: sender }, listingRes] = await Promise.all([
-      supabase.from("profiles").select("email,name").eq("id", recipientId).maybeSingle(),
-      supabase.from("profiles").select("name,email").eq("id", senderId).maybeSingle(),
+    // Recipient email comes from a security-definer RPC that only returns it
+    // to the other participant of that same conversation — profiles no longer
+    // exposes contact details to other users.
+    const [{ data: recipientEmail }, { data: sender }, listingRes] = await Promise.all([
+      supabase.rpc("get_conversation_participant_email", {
+        _conversation_id: conversationId,
+        _user_id: recipientId,
+      }),
+      supabase.from("profiles_public").select("name").eq("id", senderId).maybeSingle(),
       listingId
         ? supabase.from("listings").select("title,price,area").eq("id", listingId).maybeSingle()
         : Promise.resolve({ data: null } as any),
     ]);
-    if (recipient?.email) {
+    if (recipientEmail) {
       const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
       const listing = (listingRes as any)?.data ?? null;
       const replyUrl = `${origin}/messages/${conversationId}`;
       void sendTransactionalEmail({
         templateName: "new-message",
-        recipientEmail: recipient.email,
+        recipientEmail: recipientEmail as string,
+
         // One email per (conversation, recipient) — first message only.
         idempotencyKey: `msg-first-${conversationId}-${recipientId}`,
         templateData: {
-          senderName: sender?.name || (sender?.email ? sender.email.split("@")[0] : "Someone"),
+          senderName: sender?.name || "Someone",
           preview: content.slice(0, 150),
           listingTitle: listing?.title ?? null,
           listingPrice: listing?.price ?? null,
