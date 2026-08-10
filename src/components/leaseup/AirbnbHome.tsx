@@ -369,14 +369,18 @@ export function AirbnbHome({
           ))}
         </>
       ) : (
-        /* Q111 — "New this week" (hidden unless 3+ fresh listings) */
-        <NewThisWeekSection
-          listings={listings}
-          campuses={campuses}
-          savedIds={savedIds}
-          onSave={onSave}
-          onOpen={onOpen}
-        />
+        <>
+          {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
+          <NewThisWeekSection
+            listings={listings}
+            campuses={campuses}
+            savedIds={savedIds}
+            onSave={onSave}
+            onOpen={onOpen}
+          />
+          {/* Q149 — recently viewed */}
+          <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+        </>
       )}
 
       {/* Q148 — featured listing hero card */}
