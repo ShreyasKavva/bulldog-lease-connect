@@ -143,6 +143,15 @@ function LookingForPage() {
   const [foundFor, setFoundFor] = useState<LookingForPost | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
 
+  // Q150 — arriving from the homepage quick-post widget opens the form pre-filled.
+  const { prefill } = Route.useSearch();
+  useEffect(() => {
+    if (!prefill) return;
+    if (!user) { openSignIn(`/looking?prefill=${encodeURIComponent(prefill)}`); return; }
+    setEditing(null);
+    setFormOpen(true);
+  }, [prefill, user]);
+
   async function startConv(otherId: string) {
     if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
@@ -156,6 +165,12 @@ function LookingForPage() {
     setEditing(null);
     setFormOpen(true);
   }
+
+  function openEdit(p: LookingForPost) {
+    setEditing(p);
+    setFormOpen(true);
+  }
+
 
   function openEdit(p: LookingForPost) {
     setEditing(p);
