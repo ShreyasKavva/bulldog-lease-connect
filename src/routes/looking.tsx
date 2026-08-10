@@ -34,8 +34,12 @@ import {
   MapPin, Bell, BellOff, Users, Bed,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
+
+// Q152 — local memory of which Looking Board posts this device already upvoted.
+const UPVOTED_KEY = "leasup_upvoted_posts";
 
 export const Route = createFileRoute("/looking")({
   // Q150 — ?prefill= carries the homepage quick-post text into the form.
