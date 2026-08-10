@@ -220,11 +220,11 @@ export function ListingCard({
           </>
         )}
 
-        {/* Q123 — price tier + move-in date badges share the bottom-left row */}
+        {/* Q123/Q143 — price tier + urgency move-in badges share the bottom-left row */}
         <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-1">
           <CardPriceBadge price={listing.price} campusId={listing.campus_id} className="static bottom-auto left-auto" />
           {availableLabel && (
-            <span className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-gray-700 shadow-sm">
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-800 shadow-sm">
               {availableLabel}
             </span>
           )}
@@ -233,7 +233,7 @@ export function ListingCard({
         <button
           onClick={handleSave}
           aria-label={saved ? "Unsave" : "Save"}
-          className="absolute right-3 top-3 grid h-8 w-8 place-items-center transition-transform hover:scale-110 active:scale-95 touch-manipulation"
+          className="absolute right-3 top-3 flex h-8 items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
         >
           <Heart
             className={cn(
@@ -243,8 +243,15 @@ export function ListingCard({
                 : "fill-black/20 text-white transition-transform",
             )}
           />
+          {/* Q143 — save count, hidden at zero */}
+          {savesCount > 0 && (
+            <span className="text-xs font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+              {savesCount}
+            </span>
+          )}
         </button>
       </div>
+
 
 
       <div className="px-1 py-3" onClick={onOpen}>
