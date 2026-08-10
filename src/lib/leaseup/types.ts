@@ -64,6 +64,8 @@ export type Listing = {
   is_active: boolean;
   flagged?: boolean;
   view_count?: number;
+  /** Q143 — maintained by a DB trigger on saved_listings. */
+  saves_count?: number;
   status?: "active" | "filled" | "inactive";
   filled_at?: string | null;
   filled_with_user_id?: string | null;
