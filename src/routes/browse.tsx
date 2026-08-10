@@ -571,12 +571,18 @@ function Browse() {
               <MapIcon className="h-3.5 w-3.5" />Map
             </button>
           </div>
-          <button
-            onClick={() => setSaveSearchOpen(true)}
-            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
-          >
-            <Bell className="h-3.5 w-3.5" />Save search
-          </button>
+          {/* Q150 — email alert for the current filter set */}
+          {canSaveAlert ? (
+            <SaveSearchAlertPopover filters={alertFilters} campusId={campusId} label={alertLabel} />
+          ) : (
+            <button
+              onClick={() => setSaveSearchOpen(true)}
+              className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark"
+            >
+              <Bell className="h-3.5 w-3.5" />Save search
+            </button>
+          )}
+
         </div>
 
         {mapView ? (
