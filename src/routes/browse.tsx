@@ -22,6 +22,8 @@ import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
+import { SaveSearchAlertPopover } from "@/components/leaseup/SaveSearchAlertPopover";
+
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
