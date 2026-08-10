@@ -395,6 +395,36 @@ function Browse() {
     (furnishedOnly ? 1 : 0) +
     (s.verified === 1 ? 1 : 0);
 
+  /**
+   * Q150 — normalized snapshot of the filters that matter for an email alert
+   * (campus, price, keyword, beds and roommate prefs). Used for dedupe + storage.
+   */
+  const alertFilters = useMemo(() => {
+    const f: Record<string, string | number | boolean> = {};
+    if (s.q) f.q = s.q;
+    if (campusId) f.campus = campusId;
+    if (area) f.area = area;
+    if (minPrice != null) f.min_price = minPrice;
+    if (maxPrice != null) f.max_price = maxPrice;
+    if (bedSet.size) f.bedrooms = [...bedSet].sort().join(",");
+    if (furnishedOnly) f.furnished = true;
+    if (s.verified === 1) f.verified = true;
+    for (const k of ["rm_looking", "rm_study", "rm_pets", "rm_smoking"] as const) {
+      const v = s[k];
+      if (v) f[k] = v;
+    }
+    return f;
+  }, [s.q, campusId, area, minPrice, maxPrice, bedSet, furnishedOnly, s.verified,
+      s.rm_looking, s.rm_study, s.rm_pets, s.rm_smoking]);
+
+  const canSaveAlert = Object.keys(alertFilters).length > 0;
+  const alertLabel = [
+    campusId ? campuses.find((c) => c.id === campusId)?.short_name ?? "This campus" : null,
+    maxPrice != null ? `under $${maxPrice}/mo` : null,
+    s.q ? `"${s.q}"` : null,
+  ].filter(Boolean).join(" · ") || undefined;
+
+
   function clearFilters() {
     navigate({ to: "/browse", search: {} });
     setSearchInput("");
