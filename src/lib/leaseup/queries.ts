@@ -694,10 +694,14 @@ export async function relistListing(sourceId: string, userId: string): Promise<s
     parking: s.parking,
     semester: s.semester,
     amenities: s.amenities ?? [],
+    roommate_prefs: s.roommate_prefs ?? null,
     available_from: shift(s.available_from),
     available_to: shift(s.available_to),
     status: "active",
     is_active: true,
+    view_count: 0,
+    views: 0,
+    saves_count: 0,
   };
 
   const { data: created, error: e2 } = await supabase

@@ -355,6 +355,13 @@ function MyListingsPage() {
                     <span className="opacity-80">Did you find someone?</span>
                     <button onClick={() => markFilled(l)} className="ml-auto rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Mark as rented</button>
                     <button onClick={() => relist(l)} className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary-dark">Relist →</button>
+                    <button
+                      onClick={() => repost(l)}
+                      disabled={reposting === l.id}
+                      className="rounded-full border border-primary px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-60"
+                    >
+                      {reposting === l.id ? "Reposting…" : "Repost"}
+                    </button>
                   </div>
                 )}
                 <div className="flex items-center gap-4">
