@@ -327,10 +327,28 @@ function LookingForPage() {
               Clear filters
             </button>
           )}
-          <span className="ml-auto text-xs text-muted-foreground">
-            {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
-          </span>
+          <div className="ml-auto flex items-center gap-3">
+            {/* Q152 — sort toggle */}
+            <div className="inline-flex rounded-full border border-border p-0.5">
+              {([["recent", "Recent"], ["upvoted", "Most upvoted"]] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSort(key)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                    sort === key ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
+            </span>
+          </div>
         </div>
+
 
 
 
