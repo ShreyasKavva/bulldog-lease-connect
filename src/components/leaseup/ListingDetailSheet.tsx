@@ -42,6 +42,9 @@ export function ListingDetailSheet({
   const [depositOpen, setDepositOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { user } = useSession();
+  const [statusSaving, setStatusSaving] = useState(false);
+  const qc = useQueryClient();
+
 
   useEffect(() => {
     if (!open || !listing) return;
