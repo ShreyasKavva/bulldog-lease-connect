@@ -121,11 +121,38 @@ function LookingForPage() {
     queryFn: () => fetchLookingFor(campusId),
   });
 
-  const posts = allPosts.filter((p) => {
-    if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
-    if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
-    return true;
-  });
+  // Q152 — sort toggle + local upvote memory
+  const [sort, setSort] = useState<"recent" | "upvoted">("recent");
+  const [upvoted, setUpvoted] = useState<string[]>([]);
+  const [bumped, setBumped] = useState<Record<string, number>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(UPVOTED_KEY);
+      if (raw) setUpvoted(JSON.parse(raw) as string[]);
+    } catch { /* ignore */ }
+  }, []);
+
+  async function onUpvote(p: LookingForPost) {
+    if (upvoted.includes(p.id)) return;
+    const next = [...upvoted, p.id];
+    setUpvoted(next);
+    setBumped((b) => ({ ...b, [p.id]: (b[p.id] ?? p.upvotes ?? 0) + 1 }));
+    try { localStorage.setItem(UPVOTED_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    const { error } = await supabase.rpc("upvote_looking_for_post", { _post_id: p.id });
+    if (error) toast.error("Couldn't upvote — try again");
+  }
+
+  const posts = allPosts
+    .filter((p) => {
+      if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
+      if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
+      return true;
+    })
+    .sort((a, b) =>
+      sort === "upvoted"
+        ? (bumped[b.id] ?? b.upvotes ?? 0) - (bumped[a.id] ?? a.upvotes ?? 0)
+        : 0,
+    );
   const { data: myInterests = [] } = useQuery({
     queryKey: ["looking-for-interests", user?.id],
     queryFn: () => (user ? fetchMyLookingForInterests(user.id) : Promise.resolve([])),
