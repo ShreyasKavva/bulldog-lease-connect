@@ -26,7 +26,7 @@ import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import { BoostCard } from "@/components/leaseup/BoostListingButton";
 import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
-import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar, Pencil } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar, Pencil, Bookmark, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,24 +85,43 @@ function MyListingsPage() {
     active: groups.active.length,
   };
 
-  const { data: aggCounts = { saves: 0, messages: 0 } } = useQuery({
+  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> } } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
     queryFn: async () => {
       const ids = listings.map((l) => l.id);
+      const byListing: Record<string, { saves: number; messages: number }> = {};
+      for (const id of ids) byListing[id] = { saves: 0, messages: 0 };
       const [sav, convs] = await Promise.all([
-        supabase.from("saved_listings").select("listing_id", { count: "exact", head: true }).in("listing_id", ids),
+        supabase.from("saved_listings").select("listing_id").in("listing_id", ids),
         supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
       ]);
-      const convIds = (convs.data ?? []).map((c: any) => c.id);
+      for (const r of (sav.data ?? []) as { listing_id: string }[]) {
+        const e = byListing[r.listing_id];
+        if (e) e.saves += 1;
+      }
+      const convToListing = new Map<string, string>(
+        (convs.data ?? []).map((c: any) => [c.id, c.listing_id as string]),
+      );
+      const convIds = [...convToListing.keys()];
       let msgCount = 0;
       if (convIds.length) {
-        const m = await supabase.from("messages").select("id", { count: "exact", head: true }).in("conversation_id", convIds).neq("sender_id", user!.id);
-        msgCount = m.count ?? 0;
+        const m = await supabase
+          .from("messages")
+          .select("id, conversation_id")
+          .in("conversation_id", convIds)
+          .neq("sender_id", user!.id);
+        for (const row of (m.data ?? []) as { conversation_id: string }[]) {
+          msgCount += 1;
+          const lid = convToListing.get(row.conversation_id);
+          const e = lid ? byListing[lid] : undefined;
+          if (e) e.messages += 1;
+        }
       }
-      return { saves: sav.count ?? 0, messages: msgCount };
+      return { saves: sav.data?.length ?? 0, messages: msgCount, byListing };
     },
   });
+
 
   // Celebration on return from Stripe Checkout
   useEffect(() => {
@@ -304,6 +323,8 @@ function MyListingsPage() {
               const filled = isRented(l);
               const expired = isExpired(l);
               const stats = shareStats[l.id] ?? { count: 0, lastAt: null };
+              const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0 };
+
               const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
               const showNudge = !filled && !expired && l.is_active && (l.view_count ?? 0) < 50 && lastShareDays >= 7;
               return (
@@ -344,9 +365,15 @@ function MyListingsPage() {
                       </div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                      <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} views</span>
+                      <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} view{(l.view_count ?? 0) === 1 ? "" : "s"}</span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" />{perListing.saves} save{perListing.saves === 1 ? "" : "s"}</span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" />{perListing.messages} message{perListing.messages === 1 ? "" : "s"}</span>
+                      <span>·</span>
                       <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
                     </div>
+
                   </button>
 
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
