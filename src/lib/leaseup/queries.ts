@@ -333,20 +333,27 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     if ((count ?? 0) > 1) return; // not the first message — stay quiet
 
     const { sendTransactionalEmail } = await import("@/lib/email/send");
-    const [{ data: recipient }, { data: sender }, listingRes] = await Promise.all([
-      supabase.from("profiles").select("email,name").eq("id", recipientId).maybeSingle(),
-      supabase.from("profiles").select("name,email").eq("id", senderId).maybeSingle(),
+    // Recipient email comes from a security-definer RPC that only returns it
+    // to the other participant of that same conversation — profiles no longer
+    // exposes contact details to other users.
+    const [{ data: recipientEmail }, { data: sender }, listingRes] = await Promise.all([
+      supabase.rpc("get_conversation_participant_email", {
+        _conversation_id: conversationId,
+        _user_id: recipientId,
+      }),
+      supabase.from("profiles_public").select("name").eq("id", senderId).maybeSingle(),
       listingId
         ? supabase.from("listings").select("title,price,area").eq("id", listingId).maybeSingle()
         : Promise.resolve({ data: null } as any),
     ]);
-    if (recipient?.email) {
+    if (recipientEmail) {
       const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
       const listing = (listingRes as any)?.data ?? null;
       const replyUrl = `${origin}/messages/${conversationId}`;
       void sendTransactionalEmail({
         templateName: "new-message",
-        recipientEmail: recipient.email,
+        recipientEmail: recipientEmail as string,
+
         // One email per (conversation, recipient) — first message only.
         idempotencyKey: `msg-first-${conversationId}-${recipientId}`,
         templateData: {
