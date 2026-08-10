@@ -10,7 +10,7 @@ import { CountUp } from "./CountUp";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings } from "@/lib/leaseup/queries";
 import { cn } from "@/lib/utils";
 import { SecureDepositDialog } from "./SecureDepositDialog";
@@ -42,6 +42,9 @@ export function ListingDetailSheet({
   const [depositOpen, setDepositOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { user } = useSession();
+  const [statusSaving, setStatusSaving] = useState(false);
+  const qc = useQueryClient();
+
 
   useEffect(() => {
     if (!open || !listing) return;
@@ -600,7 +603,33 @@ export function ListingDetailSheet({
               Message {hostDisplayName || "Host"} →
             </Button>
           )}
+
+          {/* Q153 — host-only lifecycle control */}
+          {user?.id === listing.user_id && (
+            <Button
+              variant="outline"
+              disabled={statusSaving}
+              onClick={async () => {
+                const isActive = (listing.status ?? "active") === "active";
+                if (isActive && !window.confirm("Mark this listing as taken? It will be hidden from browse.")) return;
+                setStatusSaving(true);
+                const { error } = await supabase
+                  .from("listings")
+                  .update({ status: isActive ? "taken" : "active" })
+                  .eq("id", listing.id);
+                setStatusSaving(false);
+                if (error) { toast.error("Couldn't update listing"); return; }
+                toast.success(isActive ? "Listing marked as taken ✓" : "Listing reactivated ✓");
+                qc.invalidateQueries({ queryKey: ["listings"] });
+                onOpenChange(false);
+              }}
+              className="h-12 w-full font-bold text-sm"
+            >
+              {(listing.status ?? "active") === "active" ? "✅ Mark as taken" : "🔄 Reactivate listing"}
+            </Button>
+          )}
         </div>
+
 
       </SheetContent>
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />

@@ -15,6 +15,10 @@ import { useActivity, activityTimeAgo } from "@/lib/leaseup/activity";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { notificationMeta } from "@/lib/leaseup/notification-meta";
 
+import { useUnreadMessages, markMessagesRead } from "@/hooks/use-unread-messages";
+import { useSession } from "@/lib/leaseup/use-session";
+import { useQueryClient } from "@tanstack/react-query";
+
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return `${s}s`;
@@ -27,6 +31,25 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+const AVATAR_TONES = [
+  "bg-rose-100 text-rose-700",
+  "bg-blue-100 text-blue-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-800",
+  "bg-violet-100 text-violet-700",
+];
+
+function InitialAvatar({ name }: { name: string }) {
+  const initial = (name.trim()[0] || "?").toUpperCase();
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return (
+    <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold", AVATAR_TONES[hash % AVATAR_TONES.length])}>
+      {initial}
+    </div>
+  );
+}
+
 export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => void }) {
   const { data: notifications = [] } = useNotifications();
   const markAll = useMarkAllNotificationsRead();
@@ -34,9 +57,25 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
   const del = useDeleteNotification();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useSession();
+  const qc = useQueryClient();
+  const unreadMessages = useUnreadMessages();
   const [tab, setTab] = useState<"notifications" | "activity">("notifications");
   const [open, setOpen] = useState(false);
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = notifications.filter((n) => !n.read).length + unreadMessages.length;
+
+  // Q153 — opening the popover clears the message side of the badge.
+  useEffect(() => {
+    if (!open || !user?.id || unreadMessages.length === 0) return;
+    const ids = unreadMessages.map((m) => m.id);
+    const t = setTimeout(() => {
+      markMessagesRead(ids, user.id).then(() => {
+        qc.invalidateQueries({ queryKey: ["unread-messages", user.id] });
+        qc.invalidateQueries({ queryKey: ["unread", user.id] });
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [open, user?.id, unreadMessages, qc]);
 
   // Pulse badge briefly when unread count grows
   const prevUnread = useRef(unread);
@@ -49,6 +88,7 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
     }
     prevUnread.current = unread;
   }, [unread]);
+
 
   function handleClick(n: Notification) {
     if (!n.read) markOne.mutate(n.id);
@@ -116,10 +156,34 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
 
         {tab === "notifications" ? (
           <ScrollArea className="max-h-[480px]">
-            {notifications.length === 0 ? (
+            {unreadMessages.length === 0 && notifications.length === 0 ? (
               <EmptyState />
             ) : (
               <ul className="divide-y">
+                {/* Q153 — unread messages first */}
+                {unreadMessages.map((m) => (
+                  <li key={m.id}>
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        if (onOpenMessages) onOpenMessages();
+                        else navigate({ to: "/messages" });
+                      }}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-background"
+                    >
+                      <InitialAvatar name={m.senderName} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold leading-tight">
+                          💬 {m.senderName} sent you a message
+                        </div>
+                        <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {timeAgo(m.created_at)} ago
+                        </div>
+                      </div>
+                      <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    </button>
+                  </li>
+                ))}
                 {notifications.map((n) => (
                   <NotificationRow
                     key={n.id}
@@ -132,6 +196,13 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
             )}
             <div className="border-t p-2">
               <Link
+                to="/messages"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-1 rounded-md py-2 text-xs font-bold text-primary hover:bg-background"
+              >
+                See all messages <ArrowRight className="h-3 w-3" />
+              </Link>
+              <Link
                 to="/notifications"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 rounded-md py-2 text-xs font-bold text-primary hover:bg-background"
@@ -140,6 +211,7 @@ export function NotificationsBell({ onOpenMessages }: { onOpenMessages?: () => v
               </Link>
             </div>
           </ScrollArea>
+
         ) : (
           <ActivityTab />
         )}
@@ -152,11 +224,12 @@ function EmptyState() {
   return (
     <div className="px-4 py-10 text-center text-sm text-muted-foreground">
       <Bell className="mx-auto mb-3 h-8 w-8 opacity-40" />
-      <div className="font-semibold text-foreground">You're all caught up 👋</div>
+      <div className="font-semibold text-foreground">🔕 No new notifications</div>
       <div className="mt-1 text-xs">Notifications will appear here as students interact with your listings.</div>
     </div>
   );
 }
+
 
 function NotificationRow({
   n,

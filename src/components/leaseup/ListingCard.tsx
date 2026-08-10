@@ -275,7 +275,14 @@ export function ListingCard({
               {daysLeft.label}
             </span>
           )}
+          {/* Q153 — social proof once a listing has real traction */}
+          {savesCount >= 3 && (
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-rose-600 shadow-sm">
+              ❤️ {savesCount} saves
+            </span>
+          )}
         </div>
+
 
         {/* Q150 — hover/long-press hint reinforces what the heart does */}
         <button
