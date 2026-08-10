@@ -6,12 +6,12 @@
  * Legacy props (onPost, onChat, onProfile) are accepted-but-ignored so older
  * call sites keep compiling.
  */
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Plus, Heart, User } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Home, Search, Bookmark, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
+import { useSession } from "@/lib/leaseup/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { LucideIcon } from "lucide-react";
@@ -21,8 +21,6 @@ type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () =>
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
-  const { data: profile } = useMyProfile();
-  const navigate = useNavigate();
 
   // Hide when the soft keyboard is open so it doesn't cover inputs.
   const [kbdOpen, setKbdOpen] = useState(false);
@@ -48,11 +46,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   });
 
   // Full-screen routes own the whole viewport on mobile.
+  // Q142 — also hidden on any chat surface so it never covers the keyboard.
   const hidden =
     path === "/post" ||
     path.startsWith("/post/") ||
-    (path.startsWith("/messages/") && path !== "/messages");
+    path.includes("message") ||
+    path.includes("conversation");
   if (hidden) return null;
+
 
   const isHome = path === "/";
   const isBrowse =
@@ -62,12 +63,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/looking") ||
     path.startsWith("/map");
   const isSaved = path.startsWith("/saved");
-  const isAccount =
-    path === "/profile" ||
-    path.startsWith("/profile/") ||
-    path.startsWith("/my-listings") ||
-    path.startsWith("/settings") ||
-    path.startsWith("/messages");
+  const isPost = path.startsWith("/post");
 
   function gate(next: string) {
     return (e: React.MouseEvent) => {
@@ -83,55 +79,23 @@ export function BottomNav(_legacy: LegacyProps = {}) {
   return (
     <nav
       data-kbd={kbdOpen ? "1" : undefined}
-      className="fixed inset-x-0 bottom-0 z-50 flex h-16 w-full items-center border-t border-gray-100 bg-white shadow-lg touch-manipulation md:hidden dark:border-border dark:bg-surface"
+      className="fixed inset-x-0 bottom-0 z-40 flex h-16 w-full items-center border-t border-gray-200 bg-white shadow-lg touch-manipulation md:hidden dark:border-border dark:bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
     >
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
-
-      {/* Center hero: post a sublease */}
-      <div className="flex flex-1 items-center justify-center">
-        <Link
-          to="/post"
-          onClick={gate("/post")}
-          aria-label="Post a sublease"
-          className="-mt-5 grid h-[52px] w-[52px] place-items-center rounded-full bg-gray-900 text-white shadow-md transition-transform active:scale-90 dark:bg-foreground dark:text-background"
-        >
-          <Plus className="h-6 w-6" strokeWidth={2.5} />
-        </Link>
-      </div>
-
       <Tab
         to="/saved"
         active={isSaved}
         label="Saved"
-        Icon={Heart}
+        Icon={Bookmark}
         onClick={gate("/saved")}
         filled={hasSaves}
-        accent={hasSaves}
       />
-
-      {user ? (
-        <Tab
-          to="/profile"
-          active={isAccount}
-          label="Account"
-          Icon={User}
-          avatarUrl={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? undefined}
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => openSignIn("/profile")}
-          aria-label="Sign in"
-          className="flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 text-gray-400 transition-transform active:scale-90"
-        >
-          <User size={22} strokeWidth={2} />
-          <span className="text-xs">Sign in</span>
-        </button>
-      )}
+      <Tab to="/post" active={isPost} label="Post" Icon={Pencil} onClick={gate("/post")} />
     </nav>
   );
+
 }
 
 function Tab({
