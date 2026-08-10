@@ -362,8 +362,10 @@ function LookingForPage() {
         open={formOpen}
         onOpenChange={(o) => { setFormOpen(o); if (!o) setEditing(null); }}
         editing={editing}
+        prefill={prefill}
         onSaved={() => qc.invalidateQueries({ queryKey: ["looking-for"] })}
       />
+
 
       <FoundDialog
         post={foundFor}
