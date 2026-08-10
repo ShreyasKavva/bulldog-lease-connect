@@ -401,6 +401,9 @@ function LookingForPage() {
                 onSeeMatches={() => setMatchesFor(p)}
                 onNotifyMe={() => onToggleInterest(p)}
                 onRenew={() => onRenew(p)}
+                upvotes={bumped[p.id] ?? p.upvotes ?? 0}
+                upvoted={upvoted.includes(p.id)}
+                onUpvote={() => onUpvote(p)}
               />
             ))}
           </div>
