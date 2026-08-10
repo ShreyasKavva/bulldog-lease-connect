@@ -212,7 +212,7 @@ function Home() {
         loading={listingsLoading}
       />
 
-      <CampusPills title="Popular campuses" />
+      <CampusPills title="Popular campuses" highlightLast />
 
 
 

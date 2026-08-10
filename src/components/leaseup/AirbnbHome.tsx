@@ -29,7 +29,9 @@ import { ListingCard } from "./ListingCard";
 import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
+import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { openSignIn } from "./SignInModal";
+
 
 type Cat =
   | "all" | "near-campus" | "furnished" | "studio"
@@ -370,11 +372,16 @@ export function AirbnbHome({
         /* Q111 — "New this week" (hidden unless 3+ fresh listings) */
         <NewThisWeekSection
           listings={listings}
+          campuses={campuses}
           savedIds={savedIds}
           onSave={onSave}
           onOpen={onOpen}
         />
       )}
+
+      {/* Q148 — featured listing hero card */}
+      {!loading && <FeaturedListingCard listings={listings} campuses={campuses} onOpen={onOpen} />}
+
 
       {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
       <div ref={railsRef} className="scroll-mt-20">
@@ -782,16 +789,113 @@ function GuestWelcomeStrip() {
   );
 }
 
-/* ---------------- Q111 — New this week ---------------- */
+/* ---------------- Q148 — featured listing hero card ---------------- */
 
-function NewThisWeekSection({
-  listings, savedIds, onSave, onOpen,
+function FeaturedListingCard({
+  listings, campuses, onOpen,
 }: {
   listings: Listing[];
+  campuses: Campus[];
+  onOpen: (l: Listing) => void;
+}) {
+  const active = useMemo(
+    () => listings.filter((l) => (l.status ?? "active") === "active"),
+    [listings],
+  );
+  const featured = useMemo(() => {
+    if (active.length < 5) return null;
+    return [...active].sort(
+      (a, b) =>
+        ((b.view_count ?? 0) * 0.4 + (b.saves_count ?? 0) * 0.6) -
+        ((a.view_count ?? 0) * 0.4 + (a.saves_count ?? 0) * 0.6),
+    )[0];
+  }, [active]);
+
+  if (!featured) return null;
+  const campus = campuses.find((c) => c.id === featured.campus_id);
+  const photo = featured.photos?.[0];
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <button
+        type="button"
+        onClick={() => onOpen(featured)}
+        className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md"
+      >
+        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+          {photo ? (
+            <img
+              src={photo}
+              alt={featured.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+            />
+          ) : (
+            <div className="grid h-full w-full place-items-center text-5xl">🏠</div>
+          )}
+          <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-gray-900 shadow-sm">
+            ⭐ Featured
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              {campus && (
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  {campus.short_name || campus.name}
+                </span>
+              )}
+              <span className="text-xs font-medium text-muted-foreground">
+                {featured.beds === 0 ? "Studio" : `${featured.beds} bed`} · {featured.baths} bath
+              </span>
+            </div>
+            <h3 className="mt-1.5 truncate text-lg font-bold sm:text-xl">{featured.title}</h3>
+            <p className="text-sm font-semibold text-foreground">
+              ${featured.price.toLocaleString()}<span className="font-normal text-muted-foreground"> / month</span>
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition group-hover:opacity-90">
+            View listing <ArrowRight className="h-4 w-4" />
+          </span>
+        </div>
+      </button>
+    </section>
+  );
+}
+
+/* ---------------- Q111 / Q148 — New this week (campus-personalised) ---------------- */
+
+function NewThisWeekSection({
+  listings, campuses, savedIds, onSave, onOpen,
+}: {
+  listings: Listing[];
+  campuses: Campus[];
   savedIds: Set<string>;
   onSave: (l: Listing) => void;
   onOpen: (l: Listing) => void;
 }) {
+  const lastSlug = useLastCampusSlug();
+  const lastCampus = lastSlug ? campuses.find((c) => c.slug === lastSlug) ?? null : null;
+
+  // Q148 — when we know a campus, pull its 4 newest active listings directly.
+  const { data: campusFresh } = useQuery({
+    queryKey: ["home-near-you", lastCampus?.id],
+    enabled: !!lastCampus,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("campus_id", lastCampus!.id)
+        .eq("is_active", true)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return (data ?? []) as unknown as Listing[];
+    },
+  });
+
   const fresh = useMemo(() => {
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return listings
@@ -804,12 +908,18 @@ function NewThisWeekSection({
       .slice(0, 6);
   }, [listings]);
 
-  if (fresh.length < 3) return null;
+  const personalised = lastCampus && campusFresh && campusFresh.length > 0;
+  const items = personalised ? campusFresh! : fresh;
+  const label = lastCampus?.short_name || lastCampus?.name;
+
+  if (!personalised && fresh.length < 3) return null;
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">New this week</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">
+          {personalised ? `New near ${label}` : "New this week"}
+        </h2>
         <Link
           to="/browse"
           search={{ sort: "newest" } as any}
@@ -819,7 +929,7 @@ function NewThisWeekSection({
         </Link>
       </div>
       <ScrollRow>
-        {fresh.map((l) => (
+        {items.map((l) => (
           <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
             <ListingCard
               listing={l}
@@ -833,3 +943,4 @@ function NewThisWeekSection({
     </section>
   );
 }
+

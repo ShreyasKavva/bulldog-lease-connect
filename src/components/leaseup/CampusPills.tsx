@@ -9,16 +9,22 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus } from "@/lib/leaseup/campuses";
+import { setLastCampusSlug, useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { ArrowRight } from "lucide-react";
 
 export function CampusPills({
   title,
   slugs,
+  highlightLast,
 }: {
   title?: string;
   /** Q140 — explicit campus slug order (overrides count sort, no cap). */
   slugs?: string[];
+  /** Q148 — visually mark the campus remembered in localStorage. */
+  highlightLast?: boolean;
 } = {}) {
+  const lastSlug = useLastCampusSlug();
+
   const campusesQ = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
@@ -71,15 +77,23 @@ export function CampusPills({
         {visible.map((c) => {
           const n = counts[c.id] ?? 0;
           const label = c.short_name || c.name || "Campus";
+          const isLast = !!highlightLast && lastSlug === c.slug;
           return (
             <Link
               key={c.id}
               to="/campus/$slug"
               params={{ slug: c.slug }}
+              onClick={() => setLastCampusSlug(c.slug)}
               aria-disabled={n === 0 || undefined}
+              aria-current={isLast ? "true" : undefined}
               tabIndex={n === 0 ? -1 : undefined}
-              className={`group flex shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary ${n === 0 ? "pointer-events-none opacity-60" : ""}`}
+              className={`group flex shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary ${
+                isLast
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-surface text-foreground"
+              } ${n === 0 ? "pointer-events-none opacity-60" : ""}`}
             >
+
               <span>{label}</span>
               <span
                 className={`text-xs font-medium ${n > 0 ? "text-emerald-600" : "text-muted-foreground"}`}

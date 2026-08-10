@@ -5,7 +5,9 @@
  * from short_name / name ("uga", "osu"). Fully public — no auth required.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { setLastCampusSlug } from "@/lib/leaseup/last-campus";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampusBySlugOrAlias, type Campus } from "@/lib/leaseup/campuses";
@@ -87,6 +89,13 @@ function CampusLandingPage() {
   const [where, setWhere] = useState<{ name: string; slug: string }>({ name: campus.name, slug: campus.slug });
   const [when, setWhen] = useState("");
   const [who, setWho] = useState("");
+
+  // Q148 — remember this campus for homepage personalisation.
+  useEffect(() => {
+    setLastCampusSlug(campus.slug);
+  }, [campus.slug]);
+
+
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["campus-listings", campus.id],
