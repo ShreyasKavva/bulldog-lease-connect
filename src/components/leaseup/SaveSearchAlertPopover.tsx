@@ -67,7 +67,11 @@ export function SaveSearchAlertPopover({
         min_beds: typeof filters.min_beds === "number" ? filters.min_beds : null,
         notify: true,
       });
-      if (error) throw error;
+      if (error) {
+        // Unique index on (email, filters) — the alert already exists.
+        if (error.code === "23505") { toast("Alert already set"); setOpen(false); return; }
+        throw error;
+      }
       toast.success("Alert saved! We'll email you when new matches appear.");
       setOpen(false);
     } catch (e) {
@@ -75,6 +79,7 @@ export function SaveSearchAlertPopover({
     } finally {
       setBusy(false);
     }
+
   }
 
   return (
