@@ -362,6 +362,13 @@ export function ListingCard({
             </span>
           )}
         </p>
+        {/* Q154 — soft expiry nudge for listings ending in 4–14 days */}
+        {expiry?.kind === "soft" && (
+          <p className="mt-0.5 text-xs text-amber-600">
+            Available for {expiry.days} more days
+          </p>
+        )}
+
         {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
         {listing.profile?.verified_email && (
           <span className="mt-1 inline-flex items-center gap-0.5 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
