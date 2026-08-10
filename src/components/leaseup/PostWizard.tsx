@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
+import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection";
+import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
 const DRAFT_KEY = "leaseup-post-draft";
 const MAX_PHOTOS = 10;
@@ -59,6 +61,7 @@ type Draft = {
   availableFrom: string;
   availableTo: string;
   description: string;
+  roommatePrefs: RoommatePrefs;
 };
 
 const EMPTY: Draft = {
@@ -77,6 +80,7 @@ const EMPTY: Draft = {
   availableFrom: "",
   availableTo: "",
   description: "",
+  roommatePrefs: {},
 };
 
 /**
@@ -281,6 +285,7 @@ export function PostWizard({ userId }: { userId: string }) {
           photos: [...d.photos.map((p) => p.path), ...validUrls],
           available_from: d.availableFrom || null,
           available_to: d.availableTo || null,
+          roommate_prefs: hasRoommatePrefs(d.roommatePrefs) ? d.roommatePrefs : null,
           is_active: true,
           status: "active",
         })
@@ -572,6 +577,11 @@ export function PostWizard({ userId }: { userId: string }) {
                 />
                 <div className="mt-1 text-right text-xs text-gray-400">{d.description.length}/500</div>
               </div>
+
+              <RoommatePrefsSection
+                value={d.roommatePrefs ?? {}}
+                onChange={(roommatePrefs) => set({ roommatePrefs })}
+              />
 
               <div>
                 <label className="mb-2 block text-sm font-medium">Amenities</label>

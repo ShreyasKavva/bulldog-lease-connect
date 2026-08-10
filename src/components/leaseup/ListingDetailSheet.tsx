@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
+import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
 import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,7 @@ export function ListingDetailSheet({
   const photos = listing.photo_urls ?? [];
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
   const host = hostProfile;
+  const prefChips = roommatePrefChips((listing as Listing & { roommate_prefs?: unknown }).roommate_prefs);
   const hostName = host?.name || hostDisplayName || "Host";
   const otherActive = Math.max(0, (host?.active_listing_count ?? 0) - 1);
 
@@ -506,6 +508,22 @@ export function ListingDetailSheet({
               )}
             </div>
           </button>
+
+          {/* Q145 — roommate preferences */}
+          {prefChips.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Roommate preferences</h3>
+              <div className="flex flex-wrap gap-2">
+                {prefChips.map((c) => (
+                  <span key={c} className="rounded-full bg-gray-50 px-3 py-1 text-sm text-gray-600 dark:bg-muted dark:text-muted-foreground">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+
 
           {/* Q140 — More at this campus */}
           {moreAtCampus.length > 0 && (

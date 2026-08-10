@@ -1086,6 +1086,7 @@ export type Database = {
           pet_friendly: boolean
           photos: string[] | null
           price: number
+          roommate_prefs: Json | null
           safe_score: number | null
           saves_count: number
           semester: string | null
@@ -1136,6 +1137,7 @@ export type Database = {
           pet_friendly?: boolean
           photos?: string[] | null
           price: number
+          roommate_prefs?: Json | null
           safe_score?: number | null
           saves_count?: number
           semester?: string | null
@@ -1186,6 +1188,7 @@ export type Database = {
           pet_friendly?: boolean
           photos?: string[] | null
           price?: number
+          roommate_prefs?: Json | null
           safe_score?: number | null
           saves_count?: number
           semester?: string | null
