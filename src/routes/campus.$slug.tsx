@@ -88,6 +88,13 @@ function CampusLandingPage() {
   const [when, setWhen] = useState("");
   const [who, setWho] = useState("");
 
+  // Q148 — remember this campus for homepage personalisation.
+  useEffect(() => {
+    setLastCampusSlug(campus.slug);
+  }, [campus.slug]);
+
+
+
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["campus-listings", campus.id],
     queryFn: () => fetchCampusListings(campus.id),
