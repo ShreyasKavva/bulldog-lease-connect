@@ -386,7 +386,7 @@ export async function fetchLookingFor(campusId?: string | null): Promise<Looking
   const rows = (data ?? []) as LookingForPost[];
   if (rows.length === 0) return rows;
   const ids = Array.from(new Set(rows.map(r => r.user_id)));
-  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const { data: profs } = await supabase.from("profiles_public").select("*").in("id", ids);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   const { data: interests } = await supabase
     .from("looking_for_interests")
@@ -427,7 +427,7 @@ export async function fetchLookingForMatchesForListing(
   }).slice(0, limit);
   if (filtered.length === 0) return filtered;
   const ids = Array.from(new Set(filtered.map(r => r.user_id)));
-  const { data: profs } = await supabase.from("profiles").select("*").in("id", ids);
+  const { data: profs } = await supabase.from("profiles_public").select("*").in("id", ids);
   const map = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   return filtered.map(r => ({ ...r, profile: map.get(r.user_id) }));
 }
