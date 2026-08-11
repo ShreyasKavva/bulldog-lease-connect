@@ -311,6 +311,16 @@ export function ListingDetailSheet({
             </div>
           </div>
 
+          {/* Q155 — lease term pill */}
+          {leaseTermLabel(listing.available_from, listing.available_to) && (
+            <div>
+              <span className="inline-block rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700">
+                {leaseTermLabel(listing.available_from, listing.available_to)}
+              </span>
+            </div>
+          )}
+
+
           {/* Social-proof stats row */}
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
             <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
