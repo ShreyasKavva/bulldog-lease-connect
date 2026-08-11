@@ -155,6 +155,15 @@ export function ListingCard({
     !!listing.created_at &&
     Date.now() - new Date(listing.created_at).getTime() < 86_400_000;
 
+  /** Q159 — "NEW" badge for the first 48h; never stacks with the just-posted pill. */
+  const createdMs = listing?.created_at ? new Date(listing.created_at).getTime() : NaN;
+  const isNew =
+    !justPosted &&
+    Number.isFinite(createdMs) &&
+    Date.now() - createdMs < 48 * 3_600_000;
+
+
+
 
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
