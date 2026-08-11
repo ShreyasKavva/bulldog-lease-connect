@@ -453,7 +453,7 @@ function Browse() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
-      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, rmFilters]);
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
