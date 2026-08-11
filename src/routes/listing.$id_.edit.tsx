@@ -14,6 +14,7 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/listing/$id_/edit")({
@@ -352,6 +353,10 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
                   className="w-full bg-transparent py-3 pl-1 text-sm outline-none"
                 />
               </div>
+              <CampusAvgPriceHint
+                campusId={form.campusId}
+                campusName={campuses.find((c) => c.id === form.campusId)?.name}
+              />
             </Field>
             <Field label="Available from">
               <input
