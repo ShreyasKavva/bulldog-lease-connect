@@ -185,11 +185,8 @@ export function ListingCard({
   /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */
   function handleMessage(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!user) {
-      openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
-      return;
-    }
     if (onMessage) { onMessage(); return; }
+    // Signed-out users get the in-modal "Sign in to message" prompt (Q162).
     openQuickInquiry(listing);
   }
 
