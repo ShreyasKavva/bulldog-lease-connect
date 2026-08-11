@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { getOrCreateConversation, sendMessage } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
@@ -169,7 +168,3 @@ export function QuickInquiryModal() {
     </div>
   );
 }
-
-// Keeps the unused import warning away in strict builds where supabase is
-// only needed for future extensions of this modal.
-void supabase;
