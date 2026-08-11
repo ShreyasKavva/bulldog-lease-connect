@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
+import { CountUp } from "./CountUp";
 import { HomeSmartBanner } from "./HomeSmartBanner";
 
 
@@ -597,20 +598,16 @@ function LiveCounter() {
     (async () => {
       try {
         const today = new Date().toISOString().slice(0, 10);
+        void today;
         const [{ data, error }, { count: msgCount }] = await Promise.all([
-          supabase
-            .from("listings")
-            .select("campus_id,available_to")
-            .eq("is_active", true)
-            .eq("status", "active"),
+          supabase.from("listings").select("campus_id"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
         if (error || !data) { setLoading(false); return; }
-        const live = data.filter((r) => !r.available_to || r.available_to >= today);
         setStats({
-          listings: live.length,
-          campuses: new Set(live.map((r) => r.campus_id)).size,
+          listings: data.length,
+          campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: msgCount ?? 0,
         });
       } catch { /* noop */ }
@@ -621,9 +618,12 @@ function LiveCounter() {
 
   if (loading) {
     return (
-      <div className="mt-4 flex items-center justify-center gap-3" aria-hidden>
-        {[28, 20, 32].map((w, i) => (
-          <div key={i} className="h-4 animate-pulse rounded bg-gray-200 dark:bg-muted" style={{ width: `${w * 3}px` }} />
+      <div className="mt-6 flex divide-x divide-gray-200 dark:divide-border" aria-hidden>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex-1 px-2 text-center">
+            <div className="mx-auto h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+            <div className="mx-auto mt-2 h-3 w-24 animate-pulse rounded bg-gray-200 dark:bg-muted" />
+          </div>
         ))}
       </div>
     );
@@ -631,22 +631,23 @@ function LiveCounter() {
 
   if (!stats || (stats.listings === 0 && stats.campuses === 0 && stats.inquiries === 0)) return null;
 
-  const Num = ({ children }: { children: React.ReactNode }) => (
-    <span className="font-semibold text-gray-800 dark:text-foreground">{children}</span>
-  );
+  const blocks = [
+    { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted", plus: true },
+    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses", plus: false },
+    { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student connections", plus: true },
+  ];
 
   return (
-    <p className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 text-center text-sm text-gray-500 dark:text-muted-foreground">
-      <span>🏠 <Num>{stats.listings.toLocaleString()}</Num> active sublease{stats.listings === 1 ? "" : "s"}</span>
-      <span aria-hidden>·</span>
-      <span>🏫 <Num>{stats.campuses}</Num> campus{stats.campuses === 1 ? "" : "es"}</span>
-      {stats.inquiries > 0 && (
-        <>
-          <span aria-hidden>·</span>
-          <span>💬 <Num>{stats.inquiries.toLocaleString()}</Num> student inquir{stats.inquiries === 1 ? "y" : "ies"}</span>
-        </>
-      )}
-    </p>
+    <div className="mt-6 flex divide-x divide-gray-200 dark:divide-border">
+      {blocks.map((b) => (
+        <div key={b.label} className="flex-1 px-2 text-center">
+          <p className="text-2xl font-bold text-indigo-700 dark:text-primary">
+            {b.emoji} <CountUp value={b.value} duration={1500} />{b.plus && b.value > 0 ? "+" : ""}
+          </p>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-muted-foreground">{b.label}</p>
+        </div>
+      ))}
+    </div>
   );
 }
 
