@@ -352,6 +352,10 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
                   className="w-full bg-transparent py-3 pl-1 text-sm outline-none"
                 />
               </div>
+              <CampusAvgPriceHint
+                campusId={form.campusId}
+                campusName={campuses.find((c) => c.id === form.campusId)?.name}
+              />
             </Field>
             <Field label="Available from">
               <input
