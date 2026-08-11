@@ -123,6 +123,9 @@ function LookingForPage() {
   const [budgetFilter, setBudgetFilter] = useState<string>("");
   const [moveInBy, setMoveInBy] = useState<string>("");
 
+  // Q168 — budget band chips (parsed from post text, falls back to budget_max)
+  const [budgetBand, setBudgetBand] = useState<string>("any");
+
   const campusId =
     campusFilter === "all" ? null : campusFilter === "mine" ? myProfile?.campus_id ?? null : campusFilter;
 
