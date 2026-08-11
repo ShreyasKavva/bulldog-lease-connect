@@ -28,6 +28,7 @@ import { SecureDepositBadge } from "@/components/leaseup/SecureDepositBadge";
 import type { Listing } from "@/lib/leaseup/types";
 import { Eye, EyeOff, Trash2, Plus, Home as HomeIcon, CheckCircle2, Star, RotateCcw, Share2, BarChart3, Calendar, Pencil, Bookmark, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { listingCompleteness, completenessStyle } from "@/lib/leaseup/listing-completeness";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
@@ -407,6 +408,18 @@ function MyListingsPage() {
                         {filled ? "Rented" : expired ? "Expired" : !l.is_active ? "Hidden" : "Active"}
                       </span>
                     </div>
+                    {(() => {
+                      const pct = listingCompleteness(l);
+                      const c = completenessStyle(pct);
+                      return (
+                        <span
+                          title="Complete listings get 3x more messages"
+                          className={cn("mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold", c.className)}
+                        >
+                          {c.label}
+                        </span>
+                      );
+                    })()}
                     <div className="text-sm text-gray-500">
                       {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price}/mo
                     </div>

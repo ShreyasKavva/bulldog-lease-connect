@@ -7,11 +7,12 @@
  * call sites keep compiling.
  */
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Search, Bookmark, Pencil } from "lucide-react";
+import { Home, Search, Bookmark, Pencil, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/leaseup/use-session";
+import { useUnreadCount } from "@/hooks/use-unread";
 import { supabase } from "@/integrations/supabase/client";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { LucideIcon } from "lucide-react";
@@ -21,6 +22,7 @@ type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () =>
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
+  const unread = useUnreadCount();
 
   // Hide when the soft keyboard is open so it doesn't cover inputs.
   const [kbdOpen, setKbdOpen] = useState(false);
@@ -62,6 +64,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
     path.startsWith("/listing") ||
     path.startsWith("/looking") ||
     path.startsWith("/map");
+  const isMessages = path.startsWith("/messages");
   const isSaved = path.startsWith("/saved");
   const isPost = path.startsWith("/post");
 
@@ -85,6 +88,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
       <Tab
+        to="/messages"
+        active={isMessages}
+        label="Messages"
+        Icon={MessageSquare}
+        onClick={gate("/messages")}
+        badge={user ? unread : 0}
+      />
+      <Tab
         to="/saved"
         active={isSaved}
         label="Saved"
@@ -99,7 +110,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 }
 
 function Tab({
-  to, active, label, Icon, onClick, filled, accent, avatarUrl,
+  to, active, label, Icon, onClick, filled, accent, avatarUrl, badge,
 }: {
   to: string;
   active: boolean;
@@ -109,6 +120,7 @@ function Tab({
   filled?: boolean;
   accent?: boolean;
   avatarUrl?: string;
+  badge?: number;
 }) {
   return (
     <Link
@@ -124,15 +136,22 @@ function Tab({
         active && "font-semibold",
       )}
     >
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
-      ) : (
-        <Icon
-          size={22}
-          strokeWidth={active ? 2.5 : 2}
-          fill={filled ? "currentColor" : "none"}
-        />
-      )}
+      <span className="relative">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+        ) : (
+          <Icon
+            size={22}
+            strokeWidth={active ? 2.5 : 2}
+            fill={filled ? "currentColor" : "none"}
+          />
+        )}
+        {!!badge && badge > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            {badge > 9 ? "9+" : badge}
+          </span>
+        )}
+      </span>
       <span className={cn("text-xs", active && "font-semibold")}>{label}</span>
     </Link>
   );
