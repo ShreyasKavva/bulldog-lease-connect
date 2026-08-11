@@ -114,7 +114,7 @@ function PhotoDots({ count, index }: { count: number; index: number }) {
 }
 
 export function ListingCard({
-  listing, saved, onSave, onOpen, onHeart,
+  listing, saved, onSave, onOpen, onHeart, onMessage,
 }: {
   listing: Listing;
   saved: boolean;
@@ -122,10 +122,13 @@ export function ListingCard({
   onOpen: () => void;
   /** Q91: overrides the default "Save to collection" modal (e.g. remove-from-collection). */
   onHeart?: () => void;
+  /** Q159: quick-action message button; falls back to opening the listing. */
+  onMessage?: () => void;
   pinned?: boolean;
   onPin?: () => void;
   isHotDeal?: boolean;
 }) {
+
   const photos = (listing.photo_urls?.length ? listing.photo_urls : listing.photos) ?? [];
   const [idx, setIdx] = useState(0);
   const [imgError, setImgError] = useState(false);
@@ -152,6 +155,15 @@ export function ListingCard({
     !!listing.created_at &&
     Date.now() - new Date(listing.created_at).getTime() < 86_400_000;
 
+  /** Q159 — "NEW" badge for the first 48h; never stacks with the just-posted pill. */
+  const createdMs = listing?.created_at ? new Date(listing.created_at).getTime() : NaN;
+  const isNew =
+    !justPosted &&
+    Number.isFinite(createdMs) &&
+    Date.now() - createdMs < 48 * 3_600_000;
+
+
+
 
 
   const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
@@ -168,6 +180,19 @@ export function ListingCard({
     }
     openSaveToCollection(listing.id);
   }
+
+  /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */
+  function handleMessage(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!user) {
+      openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
+      return;
+    }
+    if (onMessage) { onMessage(); return; }
+    onOpen();
+  }
+
+
 
 
   function step(e: React.MouseEvent, dir: 1 | -1) {
@@ -244,6 +269,34 @@ export function ListingCard({
             ✨ Just posted
           </span>
         )}
+
+        {/* Q159 — first-48h NEW badge (suppressed while "Just posted" shows) */}
+        {isNew && (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+            NEW
+          </span>
+        )}
+
+        {/* Q159 — quick actions: always visible on mobile, hover-reveal on desktop */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex gap-2 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={handleSave}
+            aria-label={saved ? "Unsave listing" : "Save listing"}
+            className="rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
+          >
+            {saved ? "❤️" : "🤍"} Save
+          </button>
+          <button
+            type="button"
+            onClick={handleMessage}
+            aria-label="Message the host"
+            className="rounded-full bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+          >
+            💬 Message
+          </button>
+        </div>
+
 
         {/* Q158 — photo count hint */}
         {photos.length >= 2 && !imgError && (

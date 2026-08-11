@@ -438,6 +438,9 @@ function LookingForPage() {
                 upvotes={bumped[p.id] ?? p.upvotes ?? 0}
                 upvoted={upvoted.includes(p.id)}
                 onUpvote={() => onUpvote(p)}
+                browseCampusSlug={
+                  campuses.find((c) => c.id === (campusId ?? p.campus_id))?.slug ?? null
+                }
                 canBump={Date.now() - (bumpedAt[p.id] ?? 0) >= 24 * 60 * 60 * 1000}
                 onBump={() => onBump(p)}
               />
@@ -497,7 +500,7 @@ function initialBg(name: string) {
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
-  upvotes, upvoted, onUpvote, canBump, onBump,
+  upvotes, upvoted, onUpvote, canBump, onBump, browseCampusSlug,
 }: {
   p: LookingForPost;
   campusName?: string | null;
@@ -516,6 +519,8 @@ function LookingForCard({
   onBump: () => void;
   upvoted: boolean;
   onUpvote: () => void;
+  /** Q159 — campus slug used by the "browse matching subleases" link. */
+  browseCampusSlug?: string | null;
 }) {
   const profile = p.profile;
   const displayName = p.display_name ?? profile?.name ?? "Student";
@@ -526,6 +531,12 @@ function LookingForCard({
   const avatarUrl = (profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null;
   const hasAvatar = !!avatarUrl || !!profile?.avatar_emoji;
   const initial = displayName.trim().charAt(0).toUpperCase() || "S";
+  /** Q159 — pull a budget out of the post body ("$850", "under $1,200") for ?maxPrice. */
+  const budgetMatch = /\$\s?(\d[\d,]{1,6})/.exec(`${p.title ?? ""} ${p.description ?? ""}`);
+  const budgetFromBody = budgetMatch ? Number(budgetMatch[1].replace(/,/g, "")) : null;
+  const matchSearch: Record<string, string | number> = {};
+  if (browseCampusSlug) matchSearch.campus = browseCampusSlug;
+  if (budgetFromBody && Number.isFinite(budgetFromBody)) matchSearch.maxPrice = budgetFromBody;
 
   return (
     <article className="relative rounded-xl bg-surface p-4 shadow-card transition hover:shadow-md">
@@ -623,6 +634,16 @@ function LookingForCard({
               ))}
             </div>
           )}
+
+          {/* Q159 — jump straight to matching subleases */}
+          <Link
+            to="/browse"
+            search={matchSearch}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            className="mt-1 inline-block cursor-pointer text-xs text-indigo-600 hover:underline"
+          >
+            🔍 Browse matching subleases →
+          </Link>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {!isMine && (

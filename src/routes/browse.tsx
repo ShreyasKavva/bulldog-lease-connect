@@ -56,6 +56,8 @@ type BrowseSearch = {
   laundry?: 1;
   verified?: 1;
   sort?: Sort;
+  /** Q159 — only listings posted in the last 7 days. */
+  new?: true;
   view?: "grid" | "map";
   // Q96 — params emitted by hero/nav search + homepage category pills
   tenants?: number;
@@ -144,6 +146,7 @@ export const Route = createFileRoute("/browse")({
     laundry: parseFlag(raw.laundry),
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
+    new: parseFlag(raw.new) ? true : undefined,
     view: raw.view === "map" ? "map" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
@@ -368,6 +371,7 @@ function Browse() {
         if (!l.available_from) return false;
         if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
       }
+      if (s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
       if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
       if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
       if (!matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
@@ -390,7 +394,7 @@ function Browse() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
-      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, rmFilters]);
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, rmFilters]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -667,7 +671,9 @@ function Browse() {
                   saved={savedIds.has(l.id)}
                   onSave={() => handleSave(l)}
                   onOpen={() => setSelected(l)}
+                  onMessage={() => handleMessage(l)}
                   pinned={pinnedSet.has(l.id)}
+
                   onPin={() => togglePin(l)}
                   isHotDeal={hotIds.has(l.id)}
                 />

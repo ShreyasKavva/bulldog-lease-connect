@@ -32,6 +32,8 @@ export type BrowseFilterValues = {
   laundry?: 1;
   verified?: 1;
   sort?: Sort;
+  /** Q159 — "New" quick filter (last 7 days). */
+  new?: true;
   /** Q147 — roommate preference filters (csv of option ids). */
   rm_looking?: string;
   rm_study?: string;
@@ -234,6 +236,7 @@ export function BrowseFilterBar({
     if (values[a.key] === 1) pills.push({ label: a.label, clear: { [a.key]: undefined } });
   if (values.verified === 1)
     pills.push({ label: "✓ Verified", clear: { verified: undefined } });
+  if (values.new) pills.push({ label: "🆕 New", clear: { new: undefined } });
 
   return (
     <>
@@ -281,6 +284,16 @@ export function BrowseFilterBar({
               {bedLabel(b)}
             </button>
           ))}
+          <button
+            onClick={() => onPatch({ new: values.new ? undefined : true })}
+            aria-pressed={!!values.new}
+            className={cn(
+              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
+              values.new ? "border-green-600 bg-green-600 text-white" : "hover:border-foreground",
+            )}
+          >
+            🆕 New
+          </button>
         </div>
         <div className="relative shrink-0">
           <button
@@ -478,6 +491,19 @@ export function BrowseFilterBar({
               {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
             </button>
           ))}
+          {/* Q159 — new-in-the-last-7-days quick filter */}
+          <button
+            onClick={() => onPatch({ new: values.new ? undefined : true })}
+            aria-pressed={!!values.new}
+            className={cn(
+              "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
+              values.new
+                ? "border-green-600 bg-green-600 text-white"
+                : "hover:border-foreground",
+            )}
+          >
+            🆕 New
+          </button>
           {/* Q123 — price preset dropdown (combinable with beds/verified) */}
           <div className="relative">
             <button
