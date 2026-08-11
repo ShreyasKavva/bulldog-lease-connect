@@ -310,6 +310,34 @@ function Browse() {
     });
   }
 
+  /** Q164 — remember the last few searches so the search bar can re-run them. */
+  useEffect(() => {
+    const campusName = campusId ? campuses.find((c) => c.id === campusId)?.short_name
+      ?? campuses.find((c) => c.id === campusId)?.name ?? null : null;
+    const bedsLabel = (s.bedrooms ?? "")
+      .split(",")
+      .filter(Boolean)
+      .map((b) => (b === "0" ? "Studio" : `${b} bed`))
+      .join(", ");
+    const parts = [
+      bedsLabel || null,
+      s.q ? `"${s.q}"` : null,
+      campusName ? `in ${campusName}` : null,
+      s.max_price ? `$${s.max_price}/mo` : null,
+    ].filter(Boolean) as string[];
+    if (parts.length === 0) return;
+    pushRecentSearch({
+      campus: s.campus,
+      bedrooms: s.bedrooms,
+      maxPrice: s.max_price,
+      query: s.q,
+      movein: s.movein,
+      label: parts.join(" · ").slice(0, 80),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.q, s.campus, s.bedrooms, s.max_price, s.movein, campusId, campuses.length]);
+
+
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
   const listView = s.view === "list";
