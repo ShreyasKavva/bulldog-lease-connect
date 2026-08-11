@@ -14,6 +14,8 @@ export type UnreadMessagePreview = {
  * Q153 — the 8 most recent unread messages for the notification bell popover.
  * Shares the same realtime channel shape as useUnreadCount so both stay live.
  */
+let msgChanSeq = 0;
+
 export function useUnreadMessages() {
   const { user } = useSession();
   const qc = useQueryClient();
@@ -49,7 +51,7 @@ export function useUnreadMessages() {
   useEffect(() => {
     if (!user?.id) return;
     const ch = supabase
-      .channel(`unread-msgs:${user.id}`)
+      .channel(`unread-msgs:${user.id}:${++msgChanSeq}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` },
