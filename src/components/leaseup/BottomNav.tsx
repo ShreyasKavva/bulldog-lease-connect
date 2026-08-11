@@ -85,6 +85,14 @@ export function BottomNav(_legacy: LegacyProps = {}) {
       <Tab to="/" active={isHome} label="Home" Icon={Home} />
       <Tab to="/browse" active={isBrowse} label="Browse" Icon={Search} />
       <Tab
+        to="/messages"
+        active={isMessages}
+        label="Messages"
+        Icon={MessageSquare}
+        onClick={gate("/messages")}
+        badge={user ? unread : 0}
+      />
+      <Tab
         to="/saved"
         active={isSaved}
         label="Saved"
