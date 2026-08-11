@@ -147,7 +147,7 @@ export const Route = createFileRoute("/browse")({
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     new: parseFlag(raw.new) ? true : undefined,
-    view: raw.view === "map" ? "map" : undefined,
+    view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
     maxDuration: parseInt2(raw.maxDuration),
