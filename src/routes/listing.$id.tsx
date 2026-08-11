@@ -768,7 +768,7 @@ function ListingDetailPage() {
               <HostProfileCard hostId={listing.user_id} poster={poster} />
 
               {/* Q104 Part D — shared-home context for room listings */}
-              {(listing.type === "private_room" || listing.type === "shared_room") && (
+              {((listing.type as string) === "private_room" || (listing.type as string) === "shared_room") && (
                 <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
                   <h3 className="mb-3 text-lg font-semibold">About the household</h3>
                   <p className="text-sm text-gray-600 dark:text-muted-foreground">
