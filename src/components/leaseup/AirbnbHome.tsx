@@ -402,9 +402,14 @@ export function AirbnbHome({
 
 
       {/* Q165 — smart results summary (only with an active filter) */}
-      {!loading && inCat.length > 0 &&
+      {!loading &&
         (cat !== "all" || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            {inCat.length === 0 ? (
+              <p className="mb-2 px-1 text-sm text-gray-400">
+                No subleases found — try adjusting your filters
+              </p>
+            ) : (
             <p className="mb-2 px-1 text-sm text-gray-500">
               {`Showing ${inCat.length} sublease${inCat.length !== 1 ? "s" : ""}`}
               {inCat.length > 1
@@ -420,8 +425,10 @@ export function AirbnbHome({
                   }`
                 : ""}
             </p>
+            )}
           </div>
         )}
+
 
       {/* Q130 — how it works */}
       <HowItWorks />
