@@ -114,7 +114,7 @@ function PhotoDots({ count, index }: { count: number; index: number }) {
 }
 
 export function ListingCard({
-  listing, saved, onSave, onOpen, onHeart,
+  listing, saved, onSave, onOpen, onHeart, onMessage,
 }: {
   listing: Listing;
   saved: boolean;
@@ -122,10 +122,13 @@ export function ListingCard({
   onOpen: () => void;
   /** Q91: overrides the default "Save to collection" modal (e.g. remove-from-collection). */
   onHeart?: () => void;
+  /** Q159: quick-action message button; falls back to opening the listing. */
+  onMessage?: () => void;
   pinned?: boolean;
   onPin?: () => void;
   isHotDeal?: boolean;
 }) {
+
   const photos = (listing.photo_urls?.length ? listing.photo_urls : listing.photos) ?? [];
   const [idx, setIdx] = useState(0);
   const [imgError, setImgError] = useState(false);
