@@ -193,6 +193,16 @@ function LookingForPage() {
     .filter((p) => {
       if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
       if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
+      if (budgetBand !== "any") {
+        const m = /\$\s?(\d[\d,]*)/.exec(`${p.title ?? ""} ${p.description ?? ""}`);
+        const n = m ? Number(m[1]!.replace(/,/g, "")) : p.budget_max ?? null;
+        if (n != null) {
+          if (budgetBand === "under800" && !(n < 800)) return false;
+          if (budgetBand === "1000" && !(n >= 800 && n <= 1100)) return false;
+          if (budgetBand === "1200" && !(n >= 1100 && n <= 1350)) return false;
+          if (budgetBand === "1500plus" && !(n >= 1350)) return false;
+        }
+      }
       return true;
     })
     .sort((a, b) =>
