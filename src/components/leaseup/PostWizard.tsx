@@ -360,6 +360,31 @@ export function PostWizard({ userId }: { userId: string }) {
       </div>
 
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-10 pb-24 sm:px-6">
+        {/* Q157 — resume an unfinished draft */}
+        {recovered && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <span className="flex-1">
+              📝 Resume your draft from {relativeSince(recovered.savedAt)}?
+            </span>
+            <button
+              type="button"
+              onClick={() => { setD({ ...recovered.draft, step: 1 }); setRecovered(null); }}
+              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+            >
+              Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+                setRecovered(null);
+              }}
+              className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
+            >
+              Start fresh
+            </button>
+          </div>
+        )}
         {d.step === 1 ? (
           <>
             <p className="mb-6 text-xs text-gray-400">Step 1 of 2 — Basic details</p>
