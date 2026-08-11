@@ -93,7 +93,7 @@ const SORT_LABELS: Record<Sort, string> = {
   price_asc: "Lowest price",
   price_desc: "Highest price",
   popular: "Most popular",
-  ending_soon: "Ending soon",
+  ending_soon: "⏰ Ending soon",
 };
 
 const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: string }> = [
