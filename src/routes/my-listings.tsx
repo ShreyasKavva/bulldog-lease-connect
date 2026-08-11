@@ -99,7 +99,7 @@ function MyListingsPage() {
     active: groups.active.length,
   };
 
-  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> } } = useQuery({
+  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> }, isLoading: aggLoading } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
     queryFn: async () => {
@@ -372,6 +372,7 @@ function MyListingsPage() {
               const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0 };
 
               const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
+              const ageDays = (Date.now() - new Date(l.created_at as string).getTime()) / 86400000;
               const showNudge = !filled && !expired && l.is_active && (l.view_count ?? 0) < 50 && lastShareDays >= 7;
               return (
               <div key={l.id} className={cn("rounded-xl bg-surface p-3 shadow-card", ((!l.is_active && !filled) || expired) && "opacity-80")}>
@@ -417,15 +418,25 @@ function MyListingsPage() {
                           .join(" – ")}
                       </div>
                     )}
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                      <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.view_count ?? 0} view{(l.view_count ?? 0) === 1 ? "" : "s"}</span>
-                      <span>·</span>
-                      <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" />{perListing.saves} save{perListing.saves === 1 ? "" : "s"}</span>
-                      <span>·</span>
-                      <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" />{perListing.messages} message{perListing.messages === 1 ? "" : "s"}</span>
-                      <span>·</span>
-                      <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
-                    </div>
+                    {/* Q156 — host analytics row */}
+                    {aggLoading ? (
+                      <div className="mt-1 h-4 w-52 animate-pulse rounded bg-muted" aria-hidden />
+                    ) : (
+                      <>
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{l.view_count ?? 0}</span> view{(l.view_count ?? 0) === 1 ? "" : "s"}</span>
+                          <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.saves}</span> save{perListing.saves === 1 ? "" : "s"}</span>
+                          <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.messages}</span> message{perListing.messages === 1 ? "" : "s"}</span>
+                          <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
+                          {(l.view_count ?? 0) > 0 && ageDays < 7 && (
+                            <span className="rounded bg-green-50 px-1.5 text-xs font-semibold text-green-600">↗ Active</span>
+                          )}
+                        </div>
+                        {perListing.messages === 0 && ageDays > 3 && (
+                          <p className="mt-1 text-xs text-amber-600">💡 No inquiries yet — consider lowering price or adding photos.</p>
+                        )}
+                      </>
+                    )}
 
                   </button>
 
