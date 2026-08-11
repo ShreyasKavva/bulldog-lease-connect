@@ -17,6 +17,7 @@ import { useReactionPicker } from "./useReactionPicker";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
 import { openSaveToCollection } from "./SaveToCollectionModal";
+import { openQuickInquiry } from "./QuickInquiryModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 
