@@ -159,8 +159,16 @@ export function BrowseFilterBar({
     const onDoc = (e: MouseEvent) => {
       if (!searchWrapRef.current?.contains(e.target as Node)) setSearchOpen(false);
     };
+    /** Q170 — Escape closes the recent-searches dropdown. */
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
     document.addEventListener("click", onDoc);
-    return () => document.removeEventListener("click", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [searchOpen]);
 
   const [priceOpen, setPriceOpen] = useState(false);
