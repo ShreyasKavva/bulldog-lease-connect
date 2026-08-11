@@ -19,7 +19,21 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 
+/** Q163 — hard-coded insider neighborhoods, matched on campus name/short_name. */
+const NEIGHBORHOODS: Array<{ match: RegExp; areas: string }> = [
+  { match: /georgia tech|gatech|\bgt\b/i, areas: "Midtown, Old Fourth Ward, Home Park" },
+  { match: /georgia|\buga\b/i, areas: "Near Five Points, Normaltown, Milledge Ave" },
+  { match: /ohio state|\bosu\b/i, areas: "Short North, Victorian Village, OSU area" },
+  { match: /texas at austin|ut austin|\but\b/i, areas: "West Campus, Hyde Park, The Drag" },
+];
+
+function campusNeighborhoods(campus: { name?: string | null; short_name?: string | null }): string {
+  const key = `${campus?.name ?? ""} ${campus?.short_name ?? ""}`;
+  return NEIGHBORHOODS.find((n) => n.match.test(key))?.areas ?? "Near campus housing areas";
+}
+
 async function fetchCampusListings(campusId: string): Promise<Listing[]> {
+
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -170,6 +184,8 @@ function CampusLandingPage() {
   }
 
   const short = campus.short_name || campus.name;
+  const neighborhoods = campusNeighborhoods(campus);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -332,7 +348,37 @@ function CampusLandingPage() {
             </div>
           </>
         )}
+
+        {/* Q163 — Campus Insider */}
+        <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-border dark:bg-surface">
+          <h3 className="text-sm font-bold">📍 Campus Insider</h3>
+          {isLoading ? (
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Avg rent</div>
+                <div className="text-base font-semibold">
+                  {stats.avg > 0 ? `$${stats.avg.toLocaleString()}/mo` : "—"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Most common</div>
+                <div className="text-base font-semibold">{stats.popular ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Top neighborhoods</div>
+                <div className="text-sm font-medium">{neighborhoods}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </section>
+
     </div>
   );
 }
