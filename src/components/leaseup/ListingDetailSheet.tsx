@@ -22,6 +22,8 @@ import { haptic } from "@/lib/leaseup/haptics";
 import { pushRecentView } from "@/lib/leaseup/recent-views";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
+import { CostCalculator } from "@/components/leaseup/CostCalculator";
+
 
 
 export function ListingDetailSheet({
@@ -382,6 +384,14 @@ export function ListingDetailSheet({
             <Fact label="Pets" value={listing.pet_friendly ? "Allowed" : "No pets"} />
             <Fact label="Parking" value={listing.parking ? "Yes" : "No"} />
           </div>
+
+          {/* Q164 — cost estimator */}
+          <CostCalculator
+            price={listing.price}
+            availableFrom={listing.available_from}
+            availableTo={listing.available_to}
+          />
+
 
           {listing.description && (
             <div>
