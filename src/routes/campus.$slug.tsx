@@ -332,7 +332,37 @@ function CampusLandingPage() {
             </div>
           </>
         )}
+
+        {/* Q163 — Campus Insider */}
+        <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-border dark:bg-surface">
+          <h3 className="text-sm font-bold">📍 Campus Insider</h3>
+          {isLoading ? (
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Avg rent</div>
+                <div className="text-base font-semibold">
+                  {stats.avg > 0 ? `$${stats.avg.toLocaleString()}/mo` : "—"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Most common</div>
+                <div className="text-base font-semibold">{stats.popular ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Top neighborhoods</div>
+                <div className="text-sm font-medium">{neighborhoods}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </section>
+
     </div>
   );
 }
