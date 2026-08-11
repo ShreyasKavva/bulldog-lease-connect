@@ -7,6 +7,7 @@
  * component only calls `onPatch` / `onClearAll`.
  */
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
