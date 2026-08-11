@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
+import { HomeSmartBanner } from "./HomeSmartBanner";
 
 
 type Cat =
@@ -325,6 +326,9 @@ export function AirbnbHome({
         <LiveCounter />
       </section>
 
+
+      {/* Q160 — signed-in smart banner */}
+      <HomeSmartBanner onPost={onPost} />
 
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />

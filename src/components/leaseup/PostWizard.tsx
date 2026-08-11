@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
+import { EstimatedReach } from "@/components/leaseup/EstimatedReach";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
@@ -437,6 +438,10 @@ export function PostWizard({ userId }: { userId: string }) {
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+                <EstimatedReach
+                  campusId={d.campusId}
+                  campusName={campuses.find((c) => c.id === d.campusId)?.name}
+                />
               </div>
 
               <div>

@@ -17,8 +17,9 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Bell, Map as MapIcon, Home, Search } from "lucide-react";
+import { LayoutGrid, Bell, Map as MapIcon, Home, Search, List } from "lucide-react";
 import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
+import { ListingListRow } from "@/components/leaseup/ListingListRow";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
@@ -58,7 +59,7 @@ type BrowseSearch = {
   sort?: Sort;
   /** Q159 — only listings posted in the last 7 days. */
   new?: true;
-  view?: "grid" | "map";
+  view?: "grid" | "list" | "map";
   // Q96 — params emitted by hero/nav search + homepage category pills
   tenants?: number;
   type?: string;
@@ -147,7 +148,7 @@ export const Route = createFileRoute("/browse")({
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     new: parseFlag(raw.new) ? true : undefined,
-    view: raw.view === "map" ? "map" : undefined,
+    view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
     maxDuration: parseInt2(raw.maxDuration),
@@ -269,6 +270,20 @@ function Browse() {
 
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
+  const listView = s.view === "list";
+
+  /** Q160 — remember the last chosen browse layout. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (s.view) {
+      try { window.localStorage.setItem("leasup_browse_view", s.view); } catch { /* ignore */ }
+      return;
+    }
+    let stored: string | null = null;
+    try { stored = window.localStorage.getItem("leasup_browse_view"); } catch { /* ignore */ }
+    if (stored === "list" || stored === "map") patchSearch({ view: stored });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.view]);
 
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
@@ -564,16 +579,25 @@ function Browse() {
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
 
-          {/* Q90 — grid / map toggle */}
+          {/* Q90/Q160 — grid / list / map toggle */}
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => patchSearch({ view: undefined })}
+              onClick={() => patchSearch({ view: "grid" })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                mapView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
+                mapView || listView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" />Grid
+            </button>
+            <button
+              onClick={() => patchSearch({ view: "list" })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                listView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
+              )}
+            >
+              <List className="h-3.5 w-3.5" />List
             </button>
             <button
               onClick={() => patchSearch({ view: "map" })}
@@ -663,6 +687,20 @@ function Browse() {
 
           ) : (
             <>
+            {listView ? (
+              <div ref={gridTopRef} className="scroll-mt-32">
+                {paged.map((l) => (
+                  <ListingListRow
+                    key={l.id}
+                    listing={l}
+                    campusName={campuses.find((c) => c.id === l.campus_id)?.short_name}
+                    saved={savedIds.has(l.id)}
+                    onSave={() => handleSave(l)}
+                    onOpen={() => setSelected(l)}
+                  />
+                ))}
+              </div>
+            ) : (
             <div ref={gridTopRef} className="grid scroll-mt-32 grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
               {paged.map((l) => (
                 <ListingCard
@@ -679,6 +717,7 @@ function Browse() {
                 />
               ))}
             </div>
+            )}
             {totalPages > 1 && (
               <nav className="mt-10 flex items-center justify-center" aria-label="Pagination">
                 <button
