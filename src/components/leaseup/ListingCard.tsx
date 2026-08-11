@@ -245,6 +245,13 @@ export function ListingCard({
           </span>
         )}
 
+        {/* Q158 — photo count hint */}
+        {photos.length >= 2 && !imgError && (
+          <span className="pointer-events-none absolute bottom-2 right-2 z-10 rounded-full bg-black/60 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm">
+            📷 {photos.length}
+          </span>
+        )}
+
         {multi && !imgError && (
           <>
             {idx > 0 && (
