@@ -650,6 +650,8 @@ function Browse() {
               "arizona-state-university",
               "university-of-southern-california",
               "new-york-university",
+              "boston-university",
+              "university-of-washington",
             ]}
           />
         </div>
