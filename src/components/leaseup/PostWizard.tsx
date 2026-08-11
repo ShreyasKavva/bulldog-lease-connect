@@ -533,9 +533,10 @@ export function PostWizard({ userId }: { userId: string }) {
               </button>
             </div>
           </>
-        ) : (
+        ) : d.step === 2 ? (
           <>
-            <p className="mb-6 text-xs text-gray-400">Step 2 of 2 — Photos &amp; details</p>
+            <p className="mb-6 text-xs text-gray-400">Step 2 of 3 — Photos &amp; details</p>
+
             <div className="space-y-8">
               <div>
                 <div className="mb-1 flex items-baseline justify-between gap-3">
