@@ -309,7 +309,11 @@ export function ListingDetailSheet({
             <div className="text-right">
               <div className="text-2xl font-extrabold text-primary">${listing.price.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground">per month</div>
+              <div className="mt-1">
+                <PriceContextBadge price={listing.price} campusId={listing.campus_id} listingId={listing.id} />
+              </div>
             </div>
+
           </div>
 
           {/* Q155 — lease term pill */}
