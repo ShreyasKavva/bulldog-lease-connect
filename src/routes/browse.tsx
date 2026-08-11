@@ -687,6 +687,20 @@ function Browse() {
 
           ) : (
             <>
+            {listView ? (
+              <div ref={gridTopRef} className="scroll-mt-32">
+                {paged.map((l) => (
+                  <ListingListRow
+                    key={l.id}
+                    listing={l}
+                    campusName={campuses.find((c) => c.id === l.campus_id)?.short_name}
+                    saved={savedIds.has(l.id)}
+                    onSave={() => handleSave(l)}
+                    onOpen={() => setSelected(l)}
+                  />
+                ))}
+              </div>
+            ) : (
             <div ref={gridTopRef} className="grid scroll-mt-32 grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
               {paged.map((l) => (
                 <ListingCard
@@ -703,6 +717,7 @@ function Browse() {
                 />
               ))}
             </div>
+            )}
             {totalPages > 1 && (
               <nav className="mt-10 flex items-center justify-center" aria-label="Pagination">
                 <button
