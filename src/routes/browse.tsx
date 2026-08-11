@@ -160,6 +160,7 @@ function parseSort(v: unknown): Sort | undefined {
   if (v === "lowest" || v === "price-asc") return "price_asc";
   if (v === "highest" || v === "price-desc") return "price_desc";
   if (v === "trending") return "popular";
+  if (v === "ending") return "ending_soon";
   return (SORT_VALUES as string[]).includes(v) ? (v as Sort) : undefined;
 }
 function parseType(v: unknown): string | undefined {
