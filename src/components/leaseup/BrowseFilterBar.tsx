@@ -146,6 +146,21 @@ export function BrowseFilterBar({
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
+  /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
+  const barRef = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  const [stickySortOpen, setStickySortOpen] = useState(false);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0, rootMargin: "-56px 0px 0px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => { if (!stuck) setStickySortOpen(false); }, [stuck]);
 
   const activePricePreset = PRICE_PRESETS.find(
     (p) => values.min_price === p.min && values.max_price === p.max,
@@ -720,6 +735,7 @@ export function BrowseFilterBar({
         </SheetContent>
       </Sheet>
     </div>
+    </>
   );
 }
 
