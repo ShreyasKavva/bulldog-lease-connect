@@ -19,7 +19,21 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 
+/** Q163 — hard-coded insider neighborhoods, matched on campus name/short_name. */
+const NEIGHBORHOODS: Array<{ match: RegExp; areas: string }> = [
+  { match: /georgia tech|gatech|\bgt\b/i, areas: "Midtown, Old Fourth Ward, Home Park" },
+  { match: /georgia|\buga\b/i, areas: "Near Five Points, Normaltown, Milledge Ave" },
+  { match: /ohio state|\bosu\b/i, areas: "Short North, Victorian Village, OSU area" },
+  { match: /texas at austin|ut austin|\but\b/i, areas: "West Campus, Hyde Park, The Drag" },
+];
+
+function campusNeighborhoods(campus: { name?: string | null; short_name?: string | null }): string {
+  const key = `${campus?.name ?? ""} ${campus?.short_name ?? ""}`;
+  return NEIGHBORHOODS.find((n) => n.match.test(key))?.areas ?? "Near campus housing areas";
+}
+
 async function fetchCampusListings(campusId: string): Promise<Listing[]> {
+
   const { data, error } = await supabase
     .from("listings")
     .select("*")
