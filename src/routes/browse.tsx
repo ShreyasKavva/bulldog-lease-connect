@@ -17,8 +17,9 @@ import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/B
 
 
 import type { Listing } from "@/lib/leaseup/types";
-import { LayoutGrid, Bell, Map as MapIcon, Home, Search } from "lucide-react";
+import { LayoutGrid, Bell, Map as MapIcon, Home, Search, List } from "lucide-react";
 import { BrowseMapView } from "@/components/leaseup/BrowseMapView";
+import { ListingListRow } from "@/components/leaseup/ListingListRow";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SaveSearchDialog } from "@/components/leaseup/SaveSearchDialog";
