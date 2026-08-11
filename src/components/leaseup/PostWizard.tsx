@@ -437,6 +437,10 @@ export function PostWizard({ userId }: { userId: string }) {
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+                <EstimatedReach
+                  campusId={d.campusId}
+                  campusName={campuses.find((c) => c.id === d.campusId)?.name}
+                />
               </div>
 
               <div>
