@@ -314,10 +314,10 @@ export function BrowseFilterBar({
             </>
           )}
         </div>
+      </div>
     </div>,
     document.body)}
 
-    </div>
 
     <div ref={barRef} className="z-30 border-b border-border bg-surface py-3">
       <div className="mx-auto max-w-7xl px-4">
