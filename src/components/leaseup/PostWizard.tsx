@@ -349,9 +349,10 @@ export function PostWizard({ userId }: { userId: string }) {
         <div className="h-1 w-full bg-gray-200 dark:bg-muted">
           <div
             className="h-1 bg-gray-900 transition-all duration-300 ease-out dark:bg-white"
-            style={{ width: d.step === 1 ? "50%" : "100%" }}
+            style={{ width: d.step === 1 ? "33%" : d.step === 2 ? "66%" : "100%" }}
           />
         </div>
+
         <div className="flex items-center justify-between px-6 py-4">
           <Link to="/" className="text-xl font-bold">LeaseUp</Link>
           <button
