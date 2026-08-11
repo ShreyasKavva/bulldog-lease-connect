@@ -20,6 +20,16 @@ import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-pre
 const DRAFT_KEY = "leaseup-post-draft";
 const MAX_PHOTOS = 10;
 
+/** Q157 — "2h ago" style label for the draft-recovery banner. */
+function relativeSince(ts: number) {
+  const m = Math.max(1, Math.round((Date.now() - ts) / 60000));
+  if (m < 60) return `${m} minute${m === 1 ? "" : "s"} ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+  const day = Math.round(h / 24);
+  return `${day} day${day === 1 ? "" : "s"} ago`;
+}
+
 const SEMESTER_PRESETS = [
   { label: "Fall 2026", from: "2026-08-20", to: "2026-12-20" },
   { label: "Spring 2027", from: "2027-01-10", to: "2027-05-10" },
