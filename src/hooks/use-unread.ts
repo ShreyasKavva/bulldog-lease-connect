@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 
+let chanSeq = 0;
+
 export function useUnreadCount() {
   const { user } = useSession();
   const qc = useQueryClient();
@@ -40,7 +42,7 @@ export function useUnreadCount() {
   useEffect(() => {
     if (!user?.id) return;
     const ch = supabase
-      .channel(`unread:${user.id}:${channelId}`)
+      .channel(`unread:${user.id}:${channelId}:${++chanSeq}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` },
