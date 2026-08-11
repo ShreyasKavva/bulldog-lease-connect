@@ -190,7 +190,7 @@ export function ListingCard({
       return;
     }
     if (onMessage) { onMessage(); return; }
-    onOpen();
+    openQuickInquiry(listing);
   }
 
 
@@ -340,6 +340,12 @@ export function ListingCard({
           {availableLabel && (
             <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-800 shadow-sm">
               {availableLabel}
+            </span>
+          )}
+          {/* Q162 — activity pulse on listings with real engagement */}
+          {views >= 8 && !isNew && !justPosted && (
+            <span className="rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+              ⚡ {views} looking
             </span>
           )}
           {/* Q149 — lease ending soon */}
