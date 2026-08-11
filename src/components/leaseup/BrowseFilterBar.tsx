@@ -148,6 +148,19 @@ export function BrowseFilterBar({
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Q164 — recent search history shown when the input is focused and empty. */
+  const searchWrapRef = useRef<HTMLDivElement>(null);
+  const [recents, setRecents] = useState<RecentSearch[]>([]);
+  useEffect(() => { setRecents(getRecentSearches()); }, [values]);
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!searchWrapRef.current?.contains(e.target as Node)) setSearchOpen(false);
+    };
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, [searchOpen]);
+
   const [priceOpen, setPriceOpen] = useState(false);
   /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
   const barRef = useRef<HTMLDivElement>(null);
