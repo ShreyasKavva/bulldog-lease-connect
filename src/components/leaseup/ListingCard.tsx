@@ -270,6 +270,34 @@ export function ListingCard({
           </span>
         )}
 
+        {/* Q159 — first-48h NEW badge (suppressed while "Just posted" shows) */}
+        {isNew && (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+            NEW
+          </span>
+        )}
+
+        {/* Q159 — quick actions: always visible on mobile, hover-reveal on desktop */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex gap-2 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={handleSave}
+            aria-label={saved ? "Unsave listing" : "Save listing"}
+            className="rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
+          >
+            {saved ? "❤️" : "🤍"} Save
+          </button>
+          <button
+            type="button"
+            onClick={handleMessage}
+            aria-label="Message the host"
+            className="rounded-full bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+          >
+            💬 Message
+          </button>
+        </div>
+
+
         {/* Q158 — photo count hint */}
         {photos.length >= 2 && !imgError && (
           <span className="pointer-events-none absolute bottom-2 right-2 z-10 rounded-full bg-black/60 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm">
