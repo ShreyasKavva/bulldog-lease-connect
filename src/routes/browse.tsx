@@ -269,6 +269,20 @@ function Browse() {
 
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
+  const listView = s.view === "list";
+
+  /** Q160 — remember the last chosen browse layout. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (s.view) {
+      try { window.localStorage.setItem("leasup_browse_view", s.view); } catch { /* ignore */ }
+      return;
+    }
+    let stored: string | null = null;
+    try { stored = window.localStorage.getItem("leasup_browse_view"); } catch { /* ignore */ }
+    if (stored === "list" || stored === "map") patchSearch({ view: stored });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.view]);
 
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
