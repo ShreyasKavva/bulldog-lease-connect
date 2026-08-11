@@ -509,7 +509,27 @@ export function ListingDetailSheet({
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
 
+          {/* Q166 — social proof row */}
+          {((views ?? 0) > 0 || saveCount > 0 || msgCount > 0) && (() => {
+            const items = [
+              (views ?? 0) > 0 ? `👁 ${views} views` : null,
+              saveCount > 0 ? `❤️ ${saveCount} saves` : null,
+              msgCount > 0 ? `💬 ${msgCount} inquiries` : null,
+            ].filter(Boolean) as string[];
+            return (
+              <div className="mt-2 flex items-center gap-3 border-t border-gray-100 py-2.5 text-xs text-gray-500 dark:border-border dark:text-muted-foreground">
+                {items.map((t, i) => (
+                  <span key={t} className="flex items-center gap-1">
+                    {i > 0 && <span className="text-gray-300">·</span>}
+                    {t}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
+
           {/* Host profile card */}
+
           <button
             type="button"
             onClick={() => onViewProfile(listing.user_id)}
