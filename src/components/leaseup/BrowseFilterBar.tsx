@@ -6,13 +6,14 @@
  * desktop bedroom quick-filter row. All state lives in the URL — this
  * component only calls `onPatch` / `onClearAll`.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
-export type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+export type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
 
 export type BrowseFilterValues = {
   q?: string;
@@ -88,6 +89,7 @@ const SORT_LABELS: Record<Sort, string> = {
   price_asc: "Lowest price",
   price_desc: "Highest price",
   popular: "Most popular",
+  ending_soon: "Ending soon",
 };
 
 const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: string }> = [
@@ -145,6 +147,23 @@ export function BrowseFilterBar({
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
+  /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
+  const barRef = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const [stickySortOpen, setStickySortOpen] = useState(false);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0, rootMargin: "-56px 0px 0px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => { if (!stuck) setStickySortOpen(false); }, [stuck]);
 
   const activePricePreset = PRICE_PRESETS.find(
     (p) => values.min_price === p.min && values.max_price === p.max,
@@ -217,7 +236,93 @@ export function BrowseFilterBar({
     pills.push({ label: "✓ Verified", clear: { verified: undefined } });
 
   return (
-    <div className="sticky top-[6.5rem] z-30 border-b border-border bg-surface py-3">
+    <>
+    {/* Q155 — slim sticky bar that animates in once the filter row scrolls away.
+        Portaled to <body> so no transformed ancestor breaks position: fixed. */}
+    {mounted && createPortal(
+    <div
+
+      className={cn(
+        "fixed inset-x-0 top-14 z-40 h-14 border-b border-border bg-surface/95 shadow-sm backdrop-blur-sm transition-transform duration-300",
+        stuck ? "translate-y-0" : "pointer-events-none -translate-y-[150%]",
+      )}
+      aria-hidden={!stuck}
+    >
+      <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-4">
+        <div className="hidden h-9 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-3 pr-2 sm:flex">
+          <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+          <input
+            value={searchInput}
+            onChange={(e) => onSearchInput(e.target.value)}
+            placeholder="Search..."
+            aria-label="Search subleases"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto sm:flex-none">
+          <button
+            onClick={() => onPatch({ bedrooms: undefined })}
+            className={cn(
+              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
+              bedSet.size === 0 ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
+            )}
+          >
+            Any
+          </button>
+          {BEDS.map((b) => (
+            <button
+              key={b}
+              onClick={() => toggleBed(b)}
+              className={cn(
+                "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
+                bedSet.has(b) ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
+              )}
+            >
+              {bedLabel(b)}
+            </button>
+          ))}
+        </div>
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setStickySortOpen((o) => !o)}
+            className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-semibold"
+          >
+            {SORT_LABELS[sort]}
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          {stickySortOpen && (
+            <>
+              <button
+                className="fixed inset-0 z-40 cursor-default"
+                aria-label="Close sort menu"
+                onClick={() => setStickySortOpen(false)}
+              />
+              <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
+                {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => {
+                      onPatch({ sort: k === "newest" ? undefined : k });
+                      setStickySortOpen(false);
+                    }}
+                    className={cn(
+                      "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-background",
+                      sort === k && "bg-primary-light text-primary-dark",
+                    )}
+                  >
+                    {SORT_LABELS[k]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body)}
+
+
+    <div ref={barRef} className="z-30 border-b border-border bg-surface py-3">
       <div className="mx-auto max-w-7xl px-4">
         {/* PART A — compact pill search bar */}
         <div className="flex items-center gap-2">
@@ -638,6 +743,7 @@ export function BrowseFilterBar({
         </SheetContent>
       </Sheet>
     </div>
+    </>
   );
 }
 

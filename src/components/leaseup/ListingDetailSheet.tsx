@@ -20,6 +20,7 @@ import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
 import { pushRecentView } from "@/lib/leaseup/recent-views";
+import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 
 
 export function ListingDetailSheet({
@@ -310,6 +311,16 @@ export function ListingDetailSheet({
               <div className="text-xs text-muted-foreground">per month</div>
             </div>
           </div>
+
+          {/* Q155 — lease term pill */}
+          {leaseTermLabel(listing.available_from, listing.available_to) && (
+            <div>
+              <span className="inline-block rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700">
+                {leaseTermLabel(listing.available_from, listing.available_to)}
+              </span>
+            </div>
+          )}
+
 
           {/* Social-proof stats row */}
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">

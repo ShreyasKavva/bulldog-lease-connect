@@ -32,9 +32,9 @@ import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { CampusPills } from "@/components/leaseup/CampusPills";
 import { matchesRoommateFilters } from "@/lib/leaseup/roommate-prefs";
 
-type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
 
-const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular"];
+const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular", "ending_soon"];
 const BED_VALUES = ["0", "1", "2", "3+"] as const;
 type BedKey = (typeof BED_VALUES)[number];
 
@@ -377,6 +377,14 @@ function Browse() {
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    // Q155 — soonest-expiring first; listings without an end date sink to the bottom.
+    else if (sort === "ending_soon")
+      r = [...r].sort((a, b) => {
+        const ta = a.available_to ? new Date(a.available_to).getTime() : Infinity;
+        const tb = b.available_to ? new Date(b.available_to).getTime() : Infinity;
+        if (ta === tb) return 0;
+        return ta - tb;
+      });
     else r = [...r].sort((a, b) => new Date((b as any).bumped_at ?? b.created_at).getTime() - new Date((a as any).bumped_at ?? a.created_at).getTime());
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
