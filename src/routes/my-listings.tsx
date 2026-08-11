@@ -496,7 +496,15 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
+                {!filled && !expired && (
+                  <RenewalNudge
+                    listing={l}
+                    onExtended={() => qc.invalidateQueries({ queryKey: ["my-listings", user!.id] })}
+                    onMarkTaken={() => markFilled(l)}
+                  />
+                )}
                 {statsOpen[l.id] && <ListingStatsPanel listing={l} />}
+
                 {showNudge && (
                   <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="text-xl">📣</div>
