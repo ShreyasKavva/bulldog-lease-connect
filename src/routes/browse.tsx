@@ -621,6 +621,35 @@ function Browse() {
           />
         </div>
 
+        {/* Q161 — move-in date quick filters (hidden when explicit dates are set) */}
+        {!s.from && !s.to && (
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto pb-1">
+              {MOVEIN_PILLS.map((p) => {
+                const active = s.movein === p.key;
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => patchSearch({ movein: active ? undefined : p.key })}
+                    aria-pressed={active}
+                    className={cn(
+                      "whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                      active
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
+
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
 
           {/* Q90/Q160 — grid / list / map toggle */}
