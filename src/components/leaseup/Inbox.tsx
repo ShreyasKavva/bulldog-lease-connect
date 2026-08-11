@@ -101,18 +101,26 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="px-4 py-16 text-center">
-              <MessageSquare className="mx-auto h-12 w-12 text-gray-300" strokeWidth={1.5} />
-              <h2 className="mt-3 text-lg font-semibold text-gray-900 dark:text-foreground">No messages yet</h2>
-              <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500">
-                When you message a host or someone messages you, it'll show up here.
+            <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+              <div className="mb-3 text-5xl" aria-hidden>💬</div>
+              <h2 className="mb-1 text-xl font-semibold text-gray-700 dark:text-foreground">No messages yet</h2>
+              <p className="mb-5 text-sm text-gray-400">
+                Message a host about a sublease and it'll appear here.
               </p>
-              <Link
-                to="/browse"
-                className="mt-4 inline-block rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-gray-900"
-              >
-                Browse subleases →
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Link
+                  to="/browse"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-white/5"
+                >
+                  🔍 Browse subleases
+                </Link>
+                <Link
+                  to="/post"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-white/5"
+                >
+                  📝 Post a sublease
+                </Link>
+              </div>
             </div>
           ) : (
             <ul className="divide-y divide-gray-100 dark:divide-border">
