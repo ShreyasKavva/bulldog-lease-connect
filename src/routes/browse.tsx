@@ -39,6 +39,41 @@ const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular", "en
 const BED_VALUES = ["0", "1", "2", "3+"] as const;
 type BedKey = (typeof BED_VALUES)[number];
 
+/** Q161 — move-in quick filter values. */
+const MOVEIN_VALUES = ["now", "30d", "summer", "fall"] as const;
+type MoveIn = (typeof MOVEIN_VALUES)[number];
+const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
+  { key: "now", label: "🏃 Available now" },
+  { key: "30d", label: "📅 Next 30 days" },
+  { key: "summer", label: "☀️ Summer" },
+  { key: "fall", label: "🍂 Fall" },
+];
+
+/** Matches a listing's available_from against a move-in quick filter. */
+function matchesMoveIn(availableFrom: string | null | undefined, key: MoveIn): boolean {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const from = availableFrom ? new Date(availableFrom) : null;
+  const t = from && !Number.isNaN(from.getTime()) ? from.getTime() : null;
+
+  if (key === "now") return t === null || t <= today;
+  if (t === null) return false;
+  if (key === "30d") return t <= today + 30 * 86400000;
+
+  const y = now.getFullYear();
+  const inWindow = (startMonth: number, endMonth: number, endDay: number) => {
+    for (const year of [y, y + 1]) {
+      const start = new Date(year, startMonth, 1).getTime();
+      const end = new Date(year, endMonth, endDay, 23, 59, 59).getTime();
+      if (t >= start && t <= end) return true;
+    }
+    return false;
+  };
+  if (key === "summer") return inWindow(4, 7, 31); // May 1 – Aug 31
+  return inWindow(7, 11, 31); // Fall: Aug 1 – Dec 31
+}
+
+
 type BrowseSearch = {
   q?: string;
   campus?: string;
@@ -59,7 +94,10 @@ type BrowseSearch = {
   sort?: Sort;
   /** Q159 — only listings posted in the last 7 days. */
   new?: true;
+  /** Q161 — move-in quick filter. */
+  movein?: MoveIn;
   view?: "grid" | "list" | "map";
+
   // Q96 — params emitted by hero/nav search + homepage category pills
   tenants?: number;
   type?: string;
@@ -148,6 +186,10 @@ export const Route = createFileRoute("/browse")({
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     new: parseFlag(raw.new) ? true : undefined,
+    movein: (MOVEIN_VALUES as readonly string[]).includes(String(raw.movein))
+      ? (raw.movein as MoveIn)
+      : undefined,
+
     view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
@@ -387,6 +429,8 @@ function Browse() {
         if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
       }
       if (s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
+      if (s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
+
       if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
       if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
       if (!matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
@@ -409,7 +453,7 @@ function Browse() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
-      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, rmFilters]);
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -576,6 +620,35 @@ function Browse() {
             ]}
           />
         </div>
+
+        {/* Q161 — move-in date quick filters (hidden when explicit dates are set) */}
+        {!s.from && !s.to && (
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto pb-1">
+              {MOVEIN_PILLS.map((p) => {
+                const active = s.movein === p.key;
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => patchSearch({ movein: active ? undefined : p.key })}
+                    aria-pressed={active}
+                    className={cn(
+                      "whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                      active
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
 

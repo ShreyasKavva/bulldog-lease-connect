@@ -11,17 +11,19 @@ import type { Listing } from "@/lib/leaseup/types";
 
 export const DEFAULT_COLLECTION = "Saved";
 
-export type SavedRow = { listing_id: string; collection_name: string };
+export type SavedRow = { listing_id: string; collection_name: string; created_at?: string | null };
 
 export type Collection = {
   name: string;
   listings: Listing[];
+  /** Q161 — listing_id -> ISO timestamp the listing was saved. */
+  savedAt: Record<string, string>;
 };
 
 export async function fetchSavedRows(userId: string): Promise<SavedRow[]> {
   const { data, error } = await supabase
     .from("saved_listings")
-    .select("listing_id, collection_name")
+    .select("listing_id, collection_name, created_at")
     .eq("user_id", userId);
   if (error) throw error;
   return (data ?? []) as SavedRow[];
@@ -35,8 +37,13 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
   const byId = new Map(listings.map((l) => [l.id, l]));
 
   const grouped = new Map<string, Listing[]>();
+  const savedAt = new Map<string, Record<string, string>>();
   grouped.set(DEFAULT_COLLECTION, []);
+  savedAt.set(DEFAULT_COLLECTION, {});
   for (const r of rows) {
+    const stamps = savedAt.get(r.collection_name) ?? {};
+    if (r.created_at) stamps[r.listing_id] = r.created_at;
+    savedAt.set(r.collection_name, stamps);
     const arr = grouped.get(r.collection_name) ?? [];
     const l = byId.get(r.listing_id);
     if (l) arr.push(l);
@@ -45,7 +52,7 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
   const names = Array.from(grouped.keys()).sort((a, b) =>
     a === DEFAULT_COLLECTION ? -1 : b === DEFAULT_COLLECTION ? 1 : a.localeCompare(b),
   );
-  return names.map((name) => ({ name, listings: grouped.get(name) ?? [] }));
+  return names.map((name) => ({ name, listings: grouped.get(name) ?? [], savedAt: savedAt.get(name) ?? {} }));
 }
 
 export async function saveToCollection(userId: string, listingId: string, collection: string) {
