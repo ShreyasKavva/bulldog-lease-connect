@@ -361,6 +361,28 @@ export function AirbnbHome({
         </div>
       </div>
 
+      {/* Q165 — smart results summary (only with an active filter) */}
+      {!loading && inCat.length > 0 &&
+        (cat !== "all" || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <p className="mb-2 px-1 text-sm text-gray-500">
+              {`Showing ${inCat.length} sublease${inCat.length !== 1 ? "s" : ""}`}
+              {inCat.length > 1
+                ? ` · avg $${Math.round(
+                    inCat.reduce((s, l) => s + (l.price ?? 0), 0) / inCat.length,
+                  ).toLocaleString()}/mo`
+                : ""}
+              {search.campusId
+                ? ` near ${
+                    campuses.find((c) => c.id === search.campusId)?.short_name ??
+                    campuses.find((c) => c.id === search.campusId)?.name ??
+                    ""
+                  }`
+                : ""}
+            </p>
+          </div>
+        )}
+
       {/* Q130 — how it works */}
       <HowItWorks />
 

@@ -23,6 +23,7 @@ import { pushRecentView } from "@/lib/leaseup/recent-views";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
 import { CostCalculator } from "@/components/leaseup/CostCalculator";
+import { ExpiryChip } from "@/components/leaseup/ExpiryChip";
 
 
 
@@ -391,6 +392,9 @@ export function ListingDetailSheet({
             availableFrom={listing.available_from}
             availableTo={listing.available_to}
           />
+
+          {/* Q165 — availability urgency */}
+          <ExpiryChip availableTo={listing.available_to} price={listing.price} />
 
 
           {listing.description && (
