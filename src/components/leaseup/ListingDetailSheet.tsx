@@ -149,14 +149,15 @@ export function ListingDetailSheet({
       .slice(0, 6);
   }, [allListings, listing]);
 
-  /** Q140 — up to 3 newest other active listings at the same campus. */
+  /** Q166 — up to 4 other active listings at the same campus, most viewed first. */
   const moreAtCampus = useMemo(() => {
     if (!listing) return [] as Listing[];
     return allListings
-      .filter((l) => l.id !== listing.id && l.campus_id === listing.campus_id)
-      .sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
-      .slice(0, 3);
+      .filter((l) => l.id !== listing.id && l.campus_id === listing.campus_id && (l.status ?? "active") === "active")
+      .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+      .slice(0, 4);
   }, [allListings, listing]);
+
 
 
   const { data: hostProfile } = useQuery({
@@ -508,7 +509,27 @@ export function ListingDetailSheet({
             Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
           </p>
 
+          {/* Q166 — social proof row */}
+          {((views ?? 0) > 0 || saveCount > 0 || msgCount > 0) && (() => {
+            const items = [
+              (views ?? 0) > 0 ? `👁 ${views} views` : null,
+              saveCount > 0 ? `❤️ ${saveCount} saves` : null,
+              msgCount > 0 ? `💬 ${msgCount} inquiries` : null,
+            ].filter(Boolean) as string[];
+            return (
+              <div className="mt-2 flex items-center gap-3 border-t border-gray-100 py-2.5 text-xs text-gray-500 dark:border-border dark:text-muted-foreground">
+                {items.map((t, i) => (
+                  <span key={t} className="flex items-center gap-1">
+                    {i > 0 && <span className="text-gray-300">·</span>}
+                    {t}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
+
           {/* Host profile card */}
+
           <button
             type="button"
             onClick={() => onViewProfile(listing.user_id)}
@@ -560,36 +581,43 @@ export function ListingDetailSheet({
 
 
 
-          {/* Q140 — More at this campus */}
+          {/* Q166 — More near [campus] */}
           {moreAtCampus.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-bold">More at this campus</h3>
-              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+              <h3 className="mb-2 mt-4 text-sm font-semibold text-gray-700 dark:text-muted-foreground">
+                🏘 More near {host?.campus_name ?? "this campus"}
+              </h3>
+              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
                 {moreAtCampus.map((l) => (
                   <button
                     key={l.id}
                     onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
-                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border bg-surface text-left transition hover:shadow-card"
+                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
                   >
-                    <div className="h-24 w-full bg-muted">
+                    <div className="h-28 w-full bg-muted">
                       {l.photo_urls?.[0] ? (
-                        <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" />
+                        <img src={l.photo_urls[0]} alt="" className="h-28 w-full object-cover" />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
                       )}
                     </div>
                     <div className="p-2">
-                      <div className="truncate text-xs font-bold text-foreground">{l.title}</div>
                       <div className="text-sm font-extrabold text-foreground">
                         ${l.price.toLocaleString()}<span className="text-[10px] font-medium text-muted-foreground">/mo</span>
                       </div>
-                      <div className="truncate text-[11px] text-muted-foreground">{l.area ?? "Near campus"}</div>
+                      <div className="truncate text-xs font-semibold text-foreground">{l.title}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
+                        {l.available_from
+                          ? `From ${new Date(l.available_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                          : (l.area ?? "Near campus")}
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           )}
+
         </div>
 
         {/* Sticky action footer — Q152 save/copy row above the primary CTA */}

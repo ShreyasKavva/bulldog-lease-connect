@@ -424,7 +424,27 @@ export function PostWizard({ userId }: { userId: string }) {
                   onChange={(e) => set({ title: e.target.value })}
                   placeholder="e.g. Cozy 1BR in West Campus"
                 />
+                {(() => {
+                  if (d.title.trim().length > 0) return null;
+                  const campusName = campuses.find((c) => c.id === d.campusId)?.name;
+                  const price = Number(d.price);
+                  if (!campusName || !(price > 0)) return null;
+                  const beds = Number(d.beds ?? 0);
+                  const bedLabel = beds === 0 ? "Studio" : beds >= 4 ? "4BR+" : `${beds}BR`;
+                  const suggested = `${bedLabel} sublease near ${campusName} — $${price}/mo`;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => set({ title: suggested })}
+                      className="mt-1.5 flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-left text-xs text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300"
+                    >
+                      <span className="truncate">💡 Try: "{suggested}"</span>
+                      <span className="shrink-0 font-semibold">Use →</span>
+                    </button>
+                  );
+                })()}
               </div>
+
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Listing type</label>
