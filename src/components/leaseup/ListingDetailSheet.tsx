@@ -149,14 +149,15 @@ export function ListingDetailSheet({
       .slice(0, 6);
   }, [allListings, listing]);
 
-  /** Q140 — up to 3 newest other active listings at the same campus. */
+  /** Q166 — up to 4 other active listings at the same campus, most viewed first. */
   const moreAtCampus = useMemo(() => {
     if (!listing) return [] as Listing[];
     return allListings
-      .filter((l) => l.id !== listing.id && l.campus_id === listing.campus_id)
-      .sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
-      .slice(0, 3);
+      .filter((l) => l.id !== listing.id && l.campus_id === listing.campus_id && (l.status ?? "active") === "active")
+      .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+      .slice(0, 4);
   }, [allListings, listing]);
+
 
 
   const { data: hostProfile } = useQuery({
