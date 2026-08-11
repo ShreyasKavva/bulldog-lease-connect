@@ -65,6 +65,7 @@ function AppShell() {
       </PullToRefresh>
       <BottomNav />
       <SaveToCollectionModal />
+      <QuickInquiryModal />
     </>
   );
 }
