@@ -186,6 +186,10 @@ export const Route = createFileRoute("/browse")({
     verified: parseFlag(raw.verified),
     sort: parseSort(raw.sort),
     new: parseFlag(raw.new) ? true : undefined,
+    movein: (MOVEIN_VALUES as readonly string[]).includes(String(raw.movein))
+      ? (raw.movein as MoveIn)
+      : undefined,
+
     view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
