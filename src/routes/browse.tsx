@@ -667,7 +667,9 @@ function Browse() {
                   saved={savedIds.has(l.id)}
                   onSave={() => handleSave(l)}
                   onOpen={() => setSelected(l)}
+                  onMessage={() => handleMessage(l)}
                   pinned={pinnedSet.has(l.id)}
+
                   onPin={() => togglePin(l)}
                   isHotDeal={hotIds.has(l.id)}
                 />
