@@ -213,7 +213,7 @@ export function AirbnbHome({
         if (cb !== ca) return cb - ca;
         return (a.name ?? "").localeCompare(b.name ?? "");
       })
-      .slice(0, 12);
+      .slice(0, 14);
   }, [campuses, campusCounts]);
 
 

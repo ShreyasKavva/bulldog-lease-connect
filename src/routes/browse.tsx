@@ -646,6 +646,8 @@ function Browse() {
               "university-of-michigan",
               "penn-state-university",
               "vanderbilt-university",
+              "texas-a-m-university",
+              "arizona-state-university",
             ]}
           />
         </div>
