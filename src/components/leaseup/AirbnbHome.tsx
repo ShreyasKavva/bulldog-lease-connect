@@ -597,8 +597,6 @@ function LiveCounter() {
     let cancelled = false;
     (async () => {
       try {
-        const today = new Date().toISOString().slice(0, 10);
-        void today;
         const [{ data, error }, { count: msgCount }] = await Promise.all([
           supabase.from("listings").select("campus_id"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
