@@ -453,6 +453,7 @@ function MyListingsPage() {
 
                   </button>
 
+                  {(l.status ?? "active") === "active" && <BumpButton listing={l} />}
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
                   <button
                     onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
