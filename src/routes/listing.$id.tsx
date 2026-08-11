@@ -295,7 +295,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
 // ---------------- component ----------------
 
 function ListingDetailPage() {
-  const { listing } = Route.useLoaderData();
+  const { listing } = Route.useLoaderData() as { listing: ListingWithCampus };
   const { user } = useSession();
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -1639,7 +1639,7 @@ function abbrevCampus(name: string): string {
 }
 
 function MarkAsRentedButton({ listingId }: { listingId: string }) {
-  const { listing } = Route.useLoaderData();
+  const { listing } = Route.useLoaderData() as { listing: ListingWithCampus };
   const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
