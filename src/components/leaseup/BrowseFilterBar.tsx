@@ -593,7 +593,38 @@ export function BrowseFilterBar({
                   aria-label="Close price menu"
                   onClick={() => setPriceOpen(false)}
                 />
-                <div className="absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
+                <div className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
+                  {/* Q168 — explicit min / max inputs */}
+                  <div className="flex items-center gap-2 px-1.5 py-2">
+                    <input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      placeholder="Min $"
+                      aria-label="Minimum price"
+                      defaultValue={values.min_price ?? ""}
+                      onBlur={(e) => {
+                        const v = parseInt(e.target.value, 10);
+                        onPatch({ min_price: Number.isFinite(v) && v > 0 ? v : undefined });
+                      }}
+                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                    />
+                    <span className="text-sm text-muted-foreground">—</span>
+                    <input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      placeholder="Max $"
+                      aria-label="Maximum price"
+                      defaultValue={values.max_price ?? ""}
+                      onBlur={(e) => {
+                        const v = parseInt(e.target.value, 10);
+                        onPatch({ max_price: Number.isFinite(v) && v > 0 ? v : undefined });
+                      }}
+                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                    />
+                  </div>
+
                   {PRICE_PRESETS.map((p) => {
                     const active =
                       values.min_price === p.min && values.max_price === p.max;

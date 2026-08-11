@@ -111,6 +111,9 @@ function LookingForPage() {
     // Q167
     "texas-a-m-university",
     "arizona-state-university",
+    // Q168
+    "university-of-southern-california",
+    "new-york-university",
   ];
   const pillCampuses = PILL_SLUGS.map((slug) => campuses.find((c) => c.slug === slug)).filter(
     (c, i, arr): c is NonNullable<typeof c> => !!c && arr.findIndex((x) => x?.id === c.id) === i,
@@ -119,6 +122,9 @@ function LookingForPage() {
 
   const [budgetFilter, setBudgetFilter] = useState<string>("");
   const [moveInBy, setMoveInBy] = useState<string>("");
+
+  // Q168 — budget band chips (parsed from post text, falls back to budget_max)
+  const [budgetBand, setBudgetBand] = useState<string>("any");
 
   const campusId =
     campusFilter === "all" ? null : campusFilter === "mine" ? myProfile?.campus_id ?? null : campusFilter;
@@ -187,6 +193,16 @@ function LookingForPage() {
     .filter((p) => {
       if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
       if (moveInBy && (!p.move_in_date || p.move_in_date > moveInBy)) return false;
+      if (budgetBand !== "any") {
+        const m = /\$\s?(\d[\d,]*)/.exec(`${p.title ?? ""} ${p.description ?? ""}`);
+        const n = m ? Number(m[1]!.replace(/,/g, "")) : p.budget_max ?? null;
+        if (n != null) {
+          if (budgetBand === "under800" && !(n < 800)) return false;
+          if (budgetBand === "1000" && !(n >= 800 && n <= 1100)) return false;
+          if (budgetBand === "1200" && !(n >= 1100 && n <= 1350)) return false;
+          if (budgetBand === "1500plus" && !(n >= 1350)) return false;
+        }
+      }
       return true;
     })
     .sort((a, b) =>
@@ -385,6 +401,32 @@ function LookingForPage() {
             </span>
           </div>
         </div>
+
+        {/* Q168 — budget band chips */}
+        <div className="-mx-4 mb-2 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          {([
+            ["any", "Any budget"],
+            ["under800", "Under $800"],
+            ["1000", "~$1,000"],
+            ["1200", "~$1,200"],
+            ["1500plus", "$1,500+"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setBudgetBand(key)}
+              aria-pressed={budgetBand === key}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                budgetBand === key
+                  ? "bg-indigo-600 text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
 
 
 

@@ -648,6 +648,8 @@ function Browse() {
               "vanderbilt-university",
               "texas-a-m-university",
               "arizona-state-university",
+              "university-of-southern-california",
+              "new-york-university",
             ]}
           />
         </div>
