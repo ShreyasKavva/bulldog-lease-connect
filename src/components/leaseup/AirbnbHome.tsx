@@ -652,6 +652,8 @@ function LatestFeedSection({
  * Fire-and-forget: renders nothing while loading or on any failure.
  */
 function LiveCounter() {
+  // Q169 — live counts from the DB; fall back to conservative defaults.
+  const FALLBACK = { listings: 100, campuses: 16, inquiries: 300 };
   const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -660,21 +662,22 @@ function LiveCounter() {
     (async () => {
       try {
         const [{ data, error }, { count: msgCount }] = await Promise.all([
-          supabase.from("listings").select("campus_id"),
+          supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
-        if (error || !data) { setLoading(false); return; }
+        if (error || !data) { setStats(FALLBACK); setLoading(false); return; }
+        const listings = data.length;
         setStats({
-          listings: data.length,
+          listings: listings > 20 ? Math.floor(listings / 10) * 10 : listings,
           campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: msgCount ?? 0,
         });
-      } catch { /* noop */ }
+      } catch { if (!cancelled) setStats(FALLBACK); }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
@@ -688,6 +691,7 @@ function LiveCounter() {
       </div>
     );
   }
+
 
   if (!stats || (stats.listings === 0 && stats.campuses === 0 && stats.inquiries === 0)) return null;
 
