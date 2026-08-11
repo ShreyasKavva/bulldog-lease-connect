@@ -146,6 +146,40 @@ function LookingForPage() {
     if (error) toast.error("Couldn't upvote — try again");
   }
 
+  // Q157 — owner "Bump" moves a post back to the top of Recent, once per 24h.
+  const [bumpedAt, setBumpedAt] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const next: Record<string, number> = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k?.startsWith("leasup_bump_")) continue;
+        const ts = Number(localStorage.getItem(k));
+        if (ts) next[k.slice("leasup_bump_".length)] = ts;
+      }
+    } catch { /* ignore */ }
+    setBumpedAt(next);
+  }, []);
+
+  async function onBump(p: LookingForPost) {
+    const last = bumpedAt[p.id] ?? 0;
+    if (Date.now() - last < 24 * 60 * 60 * 1000) return;
+    const now = Date.now();
+    setBumpedAt((b) => ({ ...b, [p.id]: now }));
+    try { localStorage.setItem(`leasup_bump_${p.id}`, String(now)); } catch { /* ignore */ }
+    const { error } = await supabase
+      .from("looking_for_posts")
+      .update({ created_at: new Date().toISOString() })
+      .eq("id", p.id);
+    if (error) {
+      toast.error("Couldn't bump — try again");
+      return;
+    }
+    toast.success("Bumped to the top!");
+    qc.invalidateQueries({ queryKey: ["looking-for"] });
+  }
+
+
   const posts = allPosts
     .filter((p) => {
       if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
@@ -404,6 +438,8 @@ function LookingForPage() {
                 upvotes={bumped[p.id] ?? p.upvotes ?? 0}
                 upvoted={upvoted.includes(p.id)}
                 onUpvote={() => onUpvote(p)}
+                canBump={Date.now() - (bumpedAt[p.id] ?? 0) >= 24 * 60 * 60 * 1000}
+                onBump={() => onBump(p)}
               />
             ))}
           </div>
@@ -461,7 +497,7 @@ function initialBg(name: string) {
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
-  upvotes, upvoted, onUpvote,
+  upvotes, upvoted, onUpvote, canBump, onBump,
 }: {
   p: LookingForPost;
   campusName?: string | null;
@@ -476,6 +512,8 @@ function LookingForCard({
   onNotifyMe: () => void;
   onRenew: () => void;
   upvotes: number;
+  canBump: boolean;
+  onBump: () => void;
   upvoted: boolean;
   onUpvote: () => void;
 }) {
@@ -658,6 +696,22 @@ function LookingForCard({
             >
               🔼 {upvotes}
             </button>
+            {/* Q157 — owner bump (once per 24h) */}
+            {isMine && (
+              <button
+                type="button"
+                onClick={onBump}
+                disabled={!canBump}
+                title={canBump ? "Move this post to the top of Recent" : "Already bumped in the last 24 hours"}
+                className={
+                  canBump
+                    ? "rounded border border-indigo-200 px-2 py-0.5 text-xs text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/40 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                    : "cursor-not-allowed px-2 py-0.5 text-xs text-gray-400"
+                }
+              >
+                {canBump ? "⬆️ Bump" : "Bumped"}
+              </button>
+            )}
           </div>
 
         </div>

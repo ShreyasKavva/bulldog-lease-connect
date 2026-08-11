@@ -335,6 +335,22 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         {conv && <Avatar c={conv} size={36} />}
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</div>
+          {/* Q157 — quick jump back to the listing being discussed */}
+          {conv?.listing?.id && (
+            <Link
+              to="/listing/$id"
+              params={{ id: conv.listing.id }}
+              className="mt-0.5 flex min-w-0 items-center gap-1.5 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+            >
+              {conv.listing.photo_url ? (
+                <img src={conv.listing.photo_url} alt="" className="inline-block h-6 w-6 rounded object-cover" loading="lazy" />
+              ) : (
+                <span aria-hidden>🏠</span>
+              )}
+              <span className="truncate">{conv.listing.title}</span>
+              <span aria-hidden>→</span>
+            </Link>
+          )}
         </div>
       </header>
 
