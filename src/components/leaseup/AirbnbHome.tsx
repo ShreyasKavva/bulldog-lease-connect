@@ -361,6 +361,46 @@ export function AirbnbHome({
         </div>
       </div>
 
+      {/* Q167 — "Listed today" rail */}
+      {!loading && (() => {
+        const today = new Date().toISOString().slice(0, 10);
+        const todayListings = listings
+          .filter((l) => String(l.created_at ?? "").slice(0, 10) >= today)
+          .filter((l) => !search.campusId || l.campus_id === search.campusId)
+          .slice(0, 6);
+        if (todayListings.length < 2) return null;
+        return (
+          <section className="mx-auto max-w-7xl px-4 sm:px-6">
+            <h2 className="mb-2 mt-4 text-base font-semibold text-gray-800 dark:text-foreground">🆕 Listed today</h2>
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
+              {todayListings.map((l) => {
+                const c = campuses.find((x) => x.id === l.campus_id);
+                return (
+                  <div
+                    key={l.id}
+                    onClick={() => onOpen(l)}
+                    className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
+                  >
+                    <span className="absolute right-1.5 top-1.5 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] text-white">Today</span>
+                    {l.photo_urls?.[0] ? (
+                      <img src={l.photo_urls[0]} alt="" className="h-24 w-full object-cover" />
+                    ) : (
+                      <div className="grid h-24 w-full place-items-center bg-gray-100 text-2xl dark:bg-muted">🏠</div>
+                    )}
+                    <div className="px-2 py-1.5">
+                      <div className="text-sm font-bold">${l.price}/mo</div>
+                      <div className="truncate text-xs text-gray-400">{c?.short_name ?? c?.name ?? "Near campus"}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })()}
+
+
+
       {/* Q165 — smart results summary (only with an active filter) */}
       {!loading && inCat.length > 0 &&
         (cat !== "all" || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
