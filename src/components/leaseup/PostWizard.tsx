@@ -381,6 +381,10 @@ export function PostWizard({ userId }: { userId: string }) {
                     placeholder="750"
                   />
                 </div>
+                <CampusAvgPriceHint
+                  campusId={d.campusId}
+                  campusName={campuses.find((c) => c.id === d.campusId)?.name}
+                />
               </div>
 
               <div>
