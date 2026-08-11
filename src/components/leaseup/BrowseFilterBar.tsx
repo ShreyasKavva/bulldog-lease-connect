@@ -6,13 +6,13 @@
  * desktop bedroom quick-filter row. All state lives in the URL — this
  * component only calls `onPatch` / `onClearAll`.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
-export type Sort = "newest" | "price_asc" | "price_desc" | "popular";
+export type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
 
 export type BrowseFilterValues = {
   q?: string;
@@ -88,6 +88,7 @@ const SORT_LABELS: Record<Sort, string> = {
   price_asc: "Lowest price",
   price_desc: "Highest price",
   popular: "Most popular",
+  ending_soon: "Ending soon",
 };
 
 const AMENITIES: Array<{ key: keyof BrowseFilterValues; icon: string; label: string }> = [
