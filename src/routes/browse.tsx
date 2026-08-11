@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { pushRecentSearch } from "@/lib/leaseup/recent-searches";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
@@ -317,7 +318,7 @@ function Browse() {
     const bedsLabel = (s.bedrooms ?? "")
       .split(",")
       .filter(Boolean)
-      .map((b) => (b === "0" ? "Studio" : `${b} bed`))
+      .map((b: string) => (b === "0" ? "Studio" : `${b} bed`))
       .join(", ");
     const parts = [
       bedsLabel || null,
