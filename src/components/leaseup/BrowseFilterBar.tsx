@@ -339,7 +339,9 @@ export function BrowseFilterBar({
       <div className="mx-auto max-w-7xl px-4">
         {/* PART A — compact pill search bar */}
         <div className="flex items-center gap-2">
+          <div ref={searchWrapRef} className="relative flex min-w-0 flex-1 items-center">
           <div className="flex h-12 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-4 pr-1.5 shadow-sm">
+
             <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
 
             {/* Q149 — always-on keyword search with clear button */}
@@ -435,7 +437,44 @@ export function BrowseFilterBar({
             )}
 
           </div>
+
+          {/* Q164 — recent searches dropdown (only when the input is focused + empty) */}
+          {searchOpen && !searchInput && recents.length > 0 && (
+            <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-xl border border-border bg-surface py-1 shadow-card-lg">
+              <div className="px-3 pt-2 text-xs text-muted-foreground">🕐 Recent searches</div>
+              {recents.map((r, i) => (
+                <button
+                  key={`${r.label}-${i}`}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setSearchOpen(false);
+                    onSearchInput(r.query ?? "");
+                    onPatch({
+                      campus: r.campus,
+                      bedrooms: r.bedrooms,
+                      max_price: r.maxPrice,
+                      movein: r.movein as never,
+                    } as Partial<BrowseFilterValues>);
+                  }}
+                  className="block w-full truncate px-3 py-2 text-left text-sm font-semibold hover:bg-background"
+                >
+                  {r.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { clearRecentSearches(); setRecents([]); setSearchOpen(false); }}
+                className="mt-1 block w-full px-3 py-1.5 text-left text-xs text-red-400 hover:text-red-500"
+              >
+                Clear history
+              </button>
+            </div>
+          )}
+          </div>
         </div>
+
 
 
         {/* PART C — active filter pills */}
