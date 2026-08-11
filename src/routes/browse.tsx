@@ -429,6 +429,8 @@ function Browse() {
         if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
       }
       if (s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
+      if (s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
+
       if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
       if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
       if (!matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
