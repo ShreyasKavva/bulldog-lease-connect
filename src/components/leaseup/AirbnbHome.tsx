@@ -120,6 +120,8 @@ export function AirbnbHome({
   loading?: boolean;
 }) {
   const navigate = useNavigate();
+  /** Q170 — guest-only onboarding CTA. */
+  const { user: sessionUser } = useSession();
   const railsRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
