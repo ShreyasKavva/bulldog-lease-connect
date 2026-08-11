@@ -72,7 +72,7 @@ function SavedPage() {
 
   const list = collections.length
     ? collections
-    : [{ name: DEFAULT_COLLECTION, listings: [] as Listing[] }];
+    : [{ name: DEFAULT_COLLECTION, listings: [] as Listing[], savedAt: {} as Record<string, string> }];
   const total = list.reduce((n, c) => n + c.listings.length, 0);
 
   return (

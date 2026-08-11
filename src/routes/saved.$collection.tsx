@@ -3,7 +3,7 @@
  * Rename / delete the collection from the header; hearts remove with undo.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,17 @@ import {
   saveToCollection,
 } from "@/lib/leaseup/collections";
 import type { Listing } from "@/lib/leaseup/types";
+
+/** Q161 — saved-listing sort options, persisted to localStorage. */
+const SAVED_SORT_KEY = "leasup_saved_sort";
+const SAVED_SORTS = ["recent", "price_asc", "price_desc", "ending_soon"] as const;
+type SavedSort = (typeof SAVED_SORTS)[number];
+const SAVED_SORT_LABELS: Record<SavedSort, string> = {
+  recent: "Recently saved",
+  price_asc: "Price ↑",
+  price_desc: "Price ↓",
+  ending_soon: "Ending soonest",
+};
 
 export const Route = createFileRoute("/saved/$collection")({
   head: () => ({
@@ -48,7 +59,38 @@ function CollectionPage() {
     enabled: !!user?.id,
   });
 
-  const listings: Listing[] = collections.find((c) => c.name === name)?.listings ?? [];
+  const entry = collections.find((c) => c.name === name);
+  const savedAt = entry?.savedAt ?? {};
+
+  const [sortBy, setSortBy] = useState<SavedSort>("recent");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(SAVED_SORT_KEY);
+      if (stored && (SAVED_SORTS as readonly string[]).includes(stored)) setSortBy(stored as SavedSort);
+    } catch { /* ignore */ }
+  }, []);
+  function changeSort(next: SavedSort) {
+    setSortBy(next);
+    try { window.localStorage.setItem(SAVED_SORT_KEY, next); } catch { /* ignore */ }
+  }
+
+  const listings: Listing[] = useMemo(() => {
+    const arr = [...(entry?.listings ?? [])];
+    if (sortBy === "price_asc") return arr.sort((a, b) => (a?.price ?? 0) - (b?.price ?? 0));
+    if (sortBy === "price_desc") return arr.sort((a, b) => (b?.price ?? 0) - (a?.price ?? 0));
+    if (sortBy === "ending_soon")
+      return arr.sort((a, b) => {
+        const ta = a?.available_to ? new Date(a.available_to).getTime() : Infinity;
+        const tb = b?.available_to ? new Date(b.available_to).getTime() : Infinity;
+        return ta - tb;
+      });
+    return arr.sort(
+      (a, b) =>
+        new Date(savedAt[b?.id] ?? b?.created_at ?? 0).getTime() -
+        new Date(savedAt[a?.id] ?? a?.created_at ?? 0).getTime(),
+    );
+  }, [entry, sortBy, savedAt]);
 
   function refresh() {
     if (!user) return;
@@ -158,7 +200,22 @@ function CollectionPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <>
+          <div className="mt-6 flex items-center justify-end">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              Sort:
+              <select
+                value={sortBy}
+                onChange={(e) => changeSort(e.target.value as SavedSort)}
+                className="rounded-lg border border-gray-200 bg-background px-2 py-1 text-sm text-foreground dark:border-border"
+              >
+                {SAVED_SORTS.map((k) => (
+                  <option key={k} value={k}>{SAVED_SORT_LABELS[k]}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {listings.map((l) => (
               <ListingCard
                 key={l.id}
@@ -170,6 +227,7 @@ function CollectionPage() {
               />
             ))}
           </div>
+          </>
         )}
       </main>
 
