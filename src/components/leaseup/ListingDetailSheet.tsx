@@ -20,6 +20,7 @@ import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
 import { pushRecentView } from "@/lib/leaseup/recent-views";
+import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 
 
 export function ListingDetailSheet({
