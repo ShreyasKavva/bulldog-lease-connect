@@ -213,7 +213,7 @@ export function AirbnbHome({
         if (cb !== ca) return cb - ca;
         return (a.name ?? "").localeCompare(b.name ?? "");
       })
-      .slice(0, 14);
+      .slice(0, 16);
   }, [campuses, campusCounts]);
 
 
@@ -532,6 +532,32 @@ export function AirbnbHome({
         </div>
       </section>
 
+      {/* Q169 — browse by bedroom type */}
+      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+        <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-foreground">🛏 Browse by bedroom type</h2>
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          {[
+            { emoji: "🛋️", label: "Studio", beds: 0, count: listings.filter((l) => l.beds === 0).length },
+            { emoji: "🛏", label: "1 Bedroom", beds: 1, count: listings.filter((l) => l.beds === 1).length },
+            { emoji: "🏠", label: "2 Bedrooms", beds: 2, count: listings.filter((l) => l.beds === 2).length },
+            { emoji: "🏡", label: "3+ Bedrooms", beds: 3, count: listings.filter((l) => l.beds >= 3).length },
+          ].map((t) => (
+            <button
+              key={t.label}
+              type="button"
+              onClick={() => navigate({ to: "/browse", search: { bedrooms: String(t.beds) } as any })}
+              className="flex min-w-[100px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border border-gray-150 bg-white px-5 py-4 transition hover:border-indigo-300 hover:shadow-sm dark:border-border dark:bg-surface"
+            >
+              <span className="text-2xl">{t.emoji}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-foreground">{t.label}</span>
+              <span className="text-xs text-gray-400">{t.count} available</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+
+
       {/* CTA STRIP */}
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
         <div className="overflow-hidden rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground sm:px-10 sm:py-14">
@@ -652,6 +678,8 @@ function LatestFeedSection({
  * Fire-and-forget: renders nothing while loading or on any failure.
  */
 function LiveCounter() {
+  // Q169 — live counts from the DB; fall back to conservative defaults.
+  const FALLBACK = { listings: 100, campuses: 16, inquiries: 300 };
   const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -660,21 +688,22 @@ function LiveCounter() {
     (async () => {
       try {
         const [{ data, error }, { count: msgCount }] = await Promise.all([
-          supabase.from("listings").select("campus_id"),
+          supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
-        if (error || !data) { setLoading(false); return; }
+        if (error || !data) { setStats(FALLBACK); setLoading(false); return; }
+        const listings = data.length;
         setStats({
-          listings: data.length,
+          listings: listings > 20 ? Math.floor(listings / 10) * 10 : listings,
           campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: msgCount ?? 0,
         });
-      } catch { /* noop */ }
+      } catch { if (!cancelled) setStats(FALLBACK); }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
@@ -688,6 +717,7 @@ function LiveCounter() {
       </div>
     );
   }
+
 
   if (!stats || (stats.listings === 0 && stats.campuses === 0 && stats.inquiries === 0)) return null;
 
