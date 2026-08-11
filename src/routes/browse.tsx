@@ -59,7 +59,10 @@ type BrowseSearch = {
   sort?: Sort;
   /** Q159 — only listings posted in the last 7 days. */
   new?: true;
+  /** Q161 — move-in quick filter. */
+  movein?: MoveIn;
   view?: "grid" | "list" | "map";
+
   // Q96 — params emitted by hero/nav search + homepage category pills
   tenants?: number;
   type?: string;
