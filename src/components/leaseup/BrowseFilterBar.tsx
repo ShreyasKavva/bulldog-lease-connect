@@ -234,8 +234,11 @@ export function BrowseFilterBar({
 
   return (
     <>
-    {/* Q155 — slim sticky bar that animates in once the filter row scrolls away */}
+    {/* Q155 — slim sticky bar that animates in once the filter row scrolls away.
+        Portaled to <body> so no transformed ancestor breaks position: fixed. */}
+    {mounted && createPortal(
     <div
+
       className={cn(
         "fixed inset-x-0 top-14 z-40 h-14 border-b border-border bg-surface/95 shadow-sm backdrop-blur-sm transition-transform duration-300",
         stuck ? "translate-y-0" : "pointer-events-none -translate-y-[150%]",
