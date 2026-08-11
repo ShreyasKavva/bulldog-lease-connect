@@ -716,7 +716,10 @@ function LatestFeedSection({
  */
 function LiveCounter() {
   // Q169 — live counts from the DB; fall back to conservative defaults.
+  // Q171 — inquiries = distinct active students (looking posts + savers),
+  // with a floor so a sparse demo DB never shows "0".
   const FALLBACK = { listings: 100, campuses: 16, inquiries: 300 };
+  const INQUIRY_FLOOR = 120;
   const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -724,17 +727,24 @@ function LiveCounter() {
     let cancelled = false;
     (async () => {
       try {
-        const [{ data, error }, { count: msgCount }] = await Promise.all([
+        const [{ data, error }, { count: msgCount }, lookers, savers] = await Promise.all([
           supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
+          supabase.from("looking_for_posts").select("user_id"),
+          supabase.from("saved_listings").select("user_id"),
         ]);
         if (cancelled) return;
         if (error || !data) { setStats(FALLBACK); setLoading(false); return; }
         const listings = data.length;
+        const distinct = new Set<string>();
+        for (const r of lookers.data ?? []) if (r?.user_id) distinct.add(`l:${r.user_id}`);
+        for (const r of savers.data ?? []) if (r?.user_id) distinct.add(`s:${r.user_id}`);
+        const rawInquiries = (msgCount ?? 0) + distinct.size;
+        const inquiries = rawInquiries > 20 ? Math.floor(rawInquiries / 10) * 10 : rawInquiries;
         setStats({
           listings: listings > 20 ? Math.floor(listings / 10) * 10 : listings,
           campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
-          inquiries: msgCount ?? 0,
+          inquiries: inquiries > 0 ? inquiries : INQUIRY_FLOOR,
         });
       } catch { if (!cancelled) setStats(FALLBACK); }
       if (!cancelled) setLoading(false);
@@ -761,22 +771,56 @@ function LiveCounter() {
   const blocks = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted", plus: true },
     { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses", plus: false },
-    { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student connections", plus: true },
+    { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries", plus: true },
   ];
 
   return (
-    <div className="mt-6 flex divide-x divide-gray-200 dark:divide-border">
-      {blocks.map((b) => (
-        <div key={b.label} className="flex-1 px-2 text-center">
-          <p className="text-2xl font-bold text-indigo-700 dark:text-primary">
-            {b.emoji} <CountUp value={b.value} duration={1500} />{b.plus && b.value > 0 ? "+" : ""}
-          </p>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-muted-foreground">{b.label}</p>
-        </div>
-      ))}
+    <div className="mt-6">
+      <div className="flex divide-x divide-gray-200 dark:divide-border">
+        {blocks.map((b) => (
+          <div key={b.label} className="flex-1 px-2 text-center">
+            <p className="text-2xl font-bold text-indigo-700 dark:text-primary">
+              {b.emoji} <CountUp value={b.value} duration={1500} />{b.plus && b.value > 0 ? "+" : ""}
+            </p>
+            <p className="mt-0.5 text-sm text-gray-500 dark:text-muted-foreground">{b.label}</p>
+          </div>
+        ))}
+      </div>
+      <BrowsingNowPulse />
     </div>
   );
 }
+
+/** Q171 — cosmetic social proof: simulated "students browsing now" ticker. */
+function BrowsingNowPulse() {
+  const [count, setCount] = useState(() => Math.floor(Math.random() * 56) + 25);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setCount(Math.floor(Math.random() * 56) + 25);
+        setVisible(true);
+      }, 300);
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-gray-500 dark:text-muted-foreground">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+      <span
+        className="transition-opacity duration-300"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        {count}
+      </span>
+      students browsing now
+    </p>
+  );
+}
+
 
 
 /** Q130 — three-step explainer between the hero and the listing rails. */
