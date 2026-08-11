@@ -301,6 +301,8 @@ export function PostWizard({ userId }: { userId: string }) {
     setPhotoError(null);
     set({ step: 3 });
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }
+
 
 
   async function publish() {
