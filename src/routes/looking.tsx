@@ -696,6 +696,22 @@ function LookingForCard({
             >
               🔼 {upvotes}
             </button>
+            {/* Q157 — owner bump (once per 24h) */}
+            {isMine && (
+              <button
+                type="button"
+                onClick={onBump}
+                disabled={!canBump}
+                title={canBump ? "Move this post to the top of Recent" : "Already bumped in the last 24 hours"}
+                className={
+                  canBump
+                    ? "rounded border border-indigo-200 px-2 py-0.5 text-xs text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/40 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                    : "cursor-not-allowed px-2 py-0.5 text-xs text-gray-400"
+                }
+              >
+                {canBump ? "⬆️ Bump" : "Bumped"}
+              </button>
+            )}
           </div>
 
         </div>
