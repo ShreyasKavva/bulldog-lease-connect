@@ -111,6 +111,9 @@ function LookingForPage() {
     // Q167
     "texas-a-m-university",
     "arizona-state-university",
+    // Q168
+    "university-of-southern-california",
+    "new-york-university",
   ];
   const pillCampuses = PILL_SLUGS.map((slug) => campuses.find((c) => c.slug === slug)).filter(
     (c, i, arr): c is NonNullable<typeof c> => !!c && arr.findIndex((x) => x?.id === c.id) === i,
