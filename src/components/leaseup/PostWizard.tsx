@@ -712,16 +712,88 @@ export function PostWizard({ userId }: { userId: string }) {
                 </button>
                 <button
                   type="button"
-                  disabled={publishing}
-                  onClick={publish}
+                  onClick={goPreview}
                   className="rounded-full bg-gray-900 px-6 py-3 font-medium text-white disabled:opacity-50 dark:bg-white dark:text-gray-900"
                 >
-                  {publishing ? "Posting…" : "Post listing →"}
+                  Preview →
                 </button>
               </div>
             </div>
           </>
+        ) : (
+          <>
+            <p className="mb-6 text-xs text-gray-400">Step 3 of 3 — Preview</p>
+            {(() => {
+              const incomplete = d.title.trim().length < 3 || !(Number(d.price) > 0);
+              const cover =
+                d.photos?.[0]?.url ||
+                d.photoUrls?.map((u) => u.trim()).find((u) => u && urlOk[u]) ||
+                null;
+              const campusName = campuses.find((c) => c.id === d.campusId)?.name ?? null;
+              const fmt = (s?: string | null) =>
+                s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
+              const dates = [fmt(d.availableFrom), fmt(d.availableTo)].filter(Boolean).join(" – ");
+              const photoCount = (d.photos?.length ?? 0) + (d.photoUrls?.filter((u) => u.trim() && urlOk[u.trim()]).length ?? 0);
+
+              if (incomplete) {
+                return (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    ⚠️ Your listing is missing a title or a monthly rent. Go back and finish step 1 before publishing.
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  <p className="mb-3 text-sm font-medium">How your listing will appear to students</p>
+                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-border dark:bg-surface">
+                    {cover ? (
+                      <img src={cover} alt={d.title} className="h-48 w-full object-cover" />
+                    ) : (
+                      <div className="grid h-48 w-full place-items-center bg-gray-100 text-3xl dark:bg-muted">🏠</div>
+                    )}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="min-w-0 flex-1 truncate text-base font-semibold">{d.title}</h3>
+                        <span className="shrink-0 font-bold">${Math.round(Number(d.price)).toLocaleString()}/mo</span>
+                      </div>
+                      {campusName && <p className="mt-1 text-sm text-gray-500">{campusName}</p>}
+                      <p className="mt-1 text-sm text-gray-500">
+                        {d.beds === 0 ? "Studio" : `${d.beds} bd`} · {d.baths} ba
+                        {d.area?.trim() ? ` · ${d.area.trim()}` : ""}
+                      </p>
+                      {dates && <p className="mt-1 text-xs text-gray-400">{dates}</p>}
+                    </div>
+                  </div>
+
+                  <p className="mt-4 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-muted dark:text-muted-foreground">
+                    💡 Complete listings get 3x more inquiries. Add at least 3 photos!
+                    {photoCount < 3 ? ` You have ${photoCount}.` : ""}
+                  </p>
+
+                  <div className="mt-6 flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => set({ step: 2 })}
+                      className="text-sm text-gray-400 hover:text-gray-600"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={publishing}
+                      onClick={publish}
+                      className="rounded-full bg-gray-900 px-6 py-3 font-medium text-white disabled:opacity-50 dark:bg-white dark:text-gray-900"
+                    >
+                      {publishing ? "Posting…" : "✅ Publish listing"}
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </>
         )}
+
       </main>
     </div>
   );
