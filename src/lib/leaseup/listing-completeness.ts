@@ -21,7 +21,8 @@ function hasPrefs(prefs: unknown): boolean {
   );
 }
 
-export function listingCompleteness(l: CompletenessInput): number {
+export function listingCompleteness(l: CompletenessInput | null | undefined): number {
+  if (!l || typeof l !== "object") return 0;
   const photos = (l.photo_urls?.length ? l.photo_urls : l.photos) ?? [];
   let pct = 0;
   if ((l.title ?? "").trim().length > 0) pct += 10;
@@ -35,7 +36,8 @@ export function listingCompleteness(l: CompletenessInput): number {
   return Math.min(pct, 100);
 }
 
-export function completenessStyle(pct: number): { label: string; className: string } {
+export function completenessStyle(pctInput: number): { label: string; className: string } {
+  const pct = Number.isFinite(pctInput) ? Math.round(pctInput) : 0;
   if (pct >= 80)
     return { label: `✅ ${pct}% complete`, className: "bg-green-50 text-green-700" };
   if (pct >= 50)
