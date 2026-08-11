@@ -578,16 +578,25 @@ function Browse() {
 
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 pt-3">
 
-          {/* Q90 — grid / map toggle */}
+          {/* Q90/Q160 — grid / list / map toggle */}
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => patchSearch({ view: undefined })}
+              onClick={() => patchSearch({ view: "grid" })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                mapView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
+                mapView || listView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" />Grid
+            </button>
+            <button
+              onClick={() => patchSearch({ view: "list" })}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                listView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
+              )}
+            >
+              <List className="h-3.5 w-3.5" />List
             </button>
             <button
               onClick={() => patchSearch({ view: "map" })}
