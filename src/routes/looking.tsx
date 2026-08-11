@@ -438,6 +438,8 @@ function LookingForPage() {
                 upvotes={bumped[p.id] ?? p.upvotes ?? 0}
                 upvoted={upvoted.includes(p.id)}
                 onUpvote={() => onUpvote(p)}
+                canBump={Date.now() - (bumpedAt[p.id] ?? 0) >= 24 * 60 * 60 * 1000}
+                onBump={() => onBump(p)}
               />
             ))}
           </div>
