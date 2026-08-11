@@ -39,6 +39,41 @@ const SORT_VALUES: Sort[] = ["newest", "price_asc", "price_desc", "popular", "en
 const BED_VALUES = ["0", "1", "2", "3+"] as const;
 type BedKey = (typeof BED_VALUES)[number];
 
+/** Q161 — move-in quick filter values. */
+const MOVEIN_VALUES = ["now", "30d", "summer", "fall"] as const;
+type MoveIn = (typeof MOVEIN_VALUES)[number];
+const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
+  { key: "now", label: "🏃 Available now" },
+  { key: "30d", label: "📅 Next 30 days" },
+  { key: "summer", label: "☀️ Summer" },
+  { key: "fall", label: "🍂 Fall" },
+];
+
+/** Matches a listing's available_from against a move-in quick filter. */
+function matchesMoveIn(availableFrom: string | null | undefined, key: MoveIn): boolean {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const from = availableFrom ? new Date(availableFrom) : null;
+  const t = from && !Number.isNaN(from.getTime()) ? from.getTime() : null;
+
+  if (key === "now") return t === null || t <= today;
+  if (t === null) return false;
+  if (key === "30d") return t <= today + 30 * 86400000;
+
+  const y = now.getFullYear();
+  const inWindow = (startMonth: number, endMonth: number, endDay: number) => {
+    for (const year of [y, y + 1]) {
+      const start = new Date(year, startMonth, 1).getTime();
+      const end = new Date(year, endMonth, endDay, 23, 59, 59).getTime();
+      if (t >= start && t <= end) return true;
+    }
+    return false;
+  };
+  if (key === "summer") return inWindow(4, 7, 31); // May 1 – Aug 31
+  return inWindow(7, 11, 31); // Fall: Aug 1 – Dec 31
+}
+
+
 type BrowseSearch = {
   q?: string;
   campus?: string;
