@@ -201,6 +201,9 @@ export function PostWizard({ userId }: { userId: string }) {
   const [urlOk, setUrlOk] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Q157 — draft recovery: a saved draft is offered, never silently restored.
+  const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number } | null>(null);
+
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
 
   useEffect(() => {
@@ -208,17 +211,44 @@ export function PostWizard({ userId }: { userId: string }) {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Draft;
-        if (parsed && (parsed.title || parsed.photos?.length)) setD({ ...EMPTY, ...parsed, step: 1 });
+        const parsed = JSON.parse(raw) as Draft & { savedAt?: number };
+        const savedAt = typeof parsed?.savedAt === "number" ? parsed.savedAt : 0;
+        const fresh = savedAt > 0 && Date.now() - savedAt < 72 * 60 * 60 * 1000;
+        if (parsed && fresh && (parsed.title || parsed.photos?.length)) {
+          setRecovered({ draft: { ...EMPTY, ...parsed, step: 1 }, savedAt });
+        } else if (!fresh) {
+          localStorage.removeItem(DRAFT_KEY);
+        }
       }
     } catch { /* ignore bad draft */ }
     // Always start fresh at step 1 on mount (SPA navigation keeps state otherwise).
     setD((p) => ({ ...p, step: 1 }));
   }, []);
 
+  // Keep the newest form state for the interval / unload writers.
+  const draftRef = useRef(d);
+  draftRef.current = d;
+  const blockedRef = useRef(false);
+  blockedRef.current = !!recovered;
+
   useEffect(() => {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* quota */ }
-  }, [d]);
+    const save = () => {
+      // Don't clobber a recoverable draft the user hasn't answered on yet.
+      if (blockedRef.current) return;
+      const cur = draftRef.current;
+      if (!cur.title && !cur.photos?.length && !cur.description) return;
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...cur, savedAt: Date.now() }));
+      } catch { /* quota */ }
+    };
+    const id = window.setInterval(save, 60_000);
+    window.addEventListener("beforeunload", save);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("beforeunload", save);
+      save();
+    };
+  }, []);
 
   async function handleFiles(list: FileList | File[]) {
     const files = Array.from(list)
