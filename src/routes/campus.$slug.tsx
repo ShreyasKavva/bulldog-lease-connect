@@ -170,6 +170,8 @@ function CampusLandingPage() {
   }
 
   const short = campus.short_name || campus.name;
+  const neighborhoods = campusNeighborhoods(campus);
+
 
   return (
     <div className="min-h-screen bg-background">
