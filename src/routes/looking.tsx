@@ -402,6 +402,32 @@ function LookingForPage() {
           </div>
         </div>
 
+        {/* Q168 — budget band chips */}
+        <div className="-mx-4 mb-2 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          {([
+            ["any", "Any budget"],
+            ["under800", "Under $800"],
+            ["1000", "~$1,000"],
+            ["1200", "~$1,200"],
+            ["1500plus", "$1,500+"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setBudgetBand(key)}
+              aria-pressed={budgetBand === key}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                budgetBand === key
+                  ? "bg-indigo-600 text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+
 
 
 
