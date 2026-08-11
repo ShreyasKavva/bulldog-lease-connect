@@ -34,6 +34,7 @@ import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
 import { HomeSmartBanner } from "./HomeSmartBanner";
+import { useSession } from "@/lib/leaseup/use-session";
 
 
 type Cat =
@@ -119,6 +120,8 @@ export function AirbnbHome({
   loading?: boolean;
 }) {
   const navigate = useNavigate();
+  /** Q170 — guest-only onboarding CTA. */
+  const { user: sessionUser } = useSession();
   const railsRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
@@ -402,9 +405,14 @@ export function AirbnbHome({
 
 
       {/* Q165 — smart results summary (only with an active filter) */}
-      {!loading && inCat.length > 0 &&
+      {!loading &&
         (cat !== "all" || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            {inCat.length === 0 ? (
+              <p className="mb-2 px-1 text-sm text-gray-400">
+                No subleases found — try adjusting your filters
+              </p>
+            ) : (
             <p className="mb-2 px-1 text-sm text-gray-500">
               {`Showing ${inCat.length} sublease${inCat.length !== 1 ? "s" : ""}`}
               {inCat.length > 1
@@ -420,8 +428,10 @@ export function AirbnbHome({
                   }`
                 : ""}
             </p>
+            )}
           </div>
         )}
+
 
       {/* Q130 — how it works */}
       <HowItWorks />
@@ -555,6 +565,33 @@ export function AirbnbHome({
           ))}
         </div>
       </section>
+
+      {/* Q170 — guest onboarding CTA (signed-out visitors only) */}
+      {!sessionUser && (
+        <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+          <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 text-center">
+            <h2 className="text-2xl font-bold text-white">Find your perfect sublease 🎓</h2>
+            <p className="mb-5 mt-1 text-sm text-indigo-100">
+              LeaseUp connects students at 18+ campuses. Free to use, no broker fees.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/browse"
+                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+              >
+                Browse subleases →
+              </Link>
+              <button
+                type="button"
+                onClick={onPost}
+                className="rounded-xl border border-white px-5 py-2.5 text-sm text-white hover:bg-white/10"
+              >
+                Post a sublease
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
 
 

@@ -453,6 +453,7 @@ function MyListingsPage() {
 
                   </button>
 
+                  {(l.status ?? "active") === "active" && <BumpButton listing={l} />}
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
                   <button
                     onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
@@ -677,5 +678,59 @@ function RenewalNudge({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Q170 — "Bump" refreshes a listing's updated_at so it sorts to the top of
+ * Newest. Rate limited to once per 24h via a localStorage timestamp.
+ */
+function BumpButton({ listing }: { listing: Listing }) {
+  const KEY = `leasup_bump_${listing.id}`;
+  const [last, setLast] = useState<number>(0);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    try {
+      setLast(Number(window.localStorage.getItem(KEY) ?? 0));
+    } catch {
+      /* storage blocked */
+    }
+  }, [KEY]);
+
+  const limited = Date.now() - last < 24 * 60 * 60 * 1000;
+
+  async function bump() {
+    if (limited || busy) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", listing.id);
+      if (error) throw error;
+      const now = Date.now();
+      try { window.localStorage.setItem(KEY, String(now)); } catch { /* ignore */ }
+      setLast(now);
+      toast.success("⬆️ Listing bumped to top!");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't bump that listing");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={bump}
+      disabled={limited || busy}
+      title={limited ? "Bumped recently — try again tomorrow" : "Bump to top"}
+      className={cn(
+        "flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs text-indigo-600 transition hover:bg-indigo-100",
+        limited && "cursor-not-allowed opacity-40 hover:bg-indigo-50",
+      )}
+    >
+      ⬆️ Bump
+    </button>
   );
 }

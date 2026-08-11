@@ -409,7 +409,7 @@ export function ListingCard({
 
 
       <div className="px-1 py-3" onClick={onOpen}>
-        <h3 className="truncate text-sm font-medium text-foreground">{listing.title}</h3>
+        <h3 className="truncate text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground/80">
           {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
           Posted {postedAgo(listing.created_at)}

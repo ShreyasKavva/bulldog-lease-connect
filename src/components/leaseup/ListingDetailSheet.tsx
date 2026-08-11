@@ -596,7 +596,7 @@ export function ListingDetailSheet({
                   >
                     <div className="h-28 w-full bg-muted">
                       {l.photo_urls?.[0] ? (
-                        <img src={l.photo_urls[0]} alt="" className="h-28 w-full object-cover" />
+                        <img src={l.photo_urls[0]} alt="" loading="lazy" className="h-28 w-full object-cover" />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
                       )}
