@@ -326,6 +326,9 @@ export function AirbnbHome({
       </section>
 
 
+      {/* Q160 — signed-in smart banner */}
+      <HomeSmartBanner onPost={onPost} />
+
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />
 
