@@ -568,3 +568,90 @@ function MyListingsPage() {
 }
 // Star icon kept imported for future use
 void Star;
+
+/**
+ * Q163 — renewal nudge. Shows an amber banner when a listing's available_to
+ * date is within 14 days, with an inline date picker to extend it.
+ */
+function RenewalNudge({
+  listing,
+  onExtended,
+  onMarkTaken,
+}: {
+  listing: Listing;
+  onExtended: () => void;
+  onMarkTaken: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState(listing.available_to ?? "");
+  const [saving, setSaving] = useState(false);
+
+  if (!listing.available_to) return null;
+  const days = Math.ceil(
+    (new Date(listing.available_to).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  if (!Number.isFinite(days) || days < 0 || days > 14) return null;
+
+  async function save() {
+    if (!date) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({ available_to: date })
+        .eq("id", listing.id);
+      if (error) throw error;
+      toast.success("Listing extended ✓");
+      setOpen(false);
+      onExtended();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't extend that listing");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="-mt-1 rounded-b-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-amber-900 dark:text-amber-200">
+          ⏰ Expires in {days} day{days === 1 ? "" : "s"}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className="rounded-full bg-amber-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-amber-700"
+          >
+            Extend dates
+          </button>
+          <button
+            type="button"
+            onClick={onMarkTaken}
+            className="rounded-full border border-amber-300 px-2.5 py-1 text-[11px] font-bold text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-500/20"
+          >
+            Mark as taken
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="rounded-lg border border-amber-300 bg-white px-2 py-1 text-xs dark:bg-background"
+          />
+          <button
+            type="button"
+            disabled={saving || !date}
+            onClick={save}
+            className="rounded-full bg-gray-900 px-3 py-1 text-[11px] font-bold text-white disabled:opacity-50 dark:bg-foreground dark:text-background"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
