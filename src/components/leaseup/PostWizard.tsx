@@ -291,6 +291,18 @@ export function PostWizard({ userId }: { userId: string }) {
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
   }
 
+  /** Q163 — step 2 → preview. Validates photos before showing the preview card. */
+  function goPreview() {
+    const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
+    if (d.photos.length === 0 && validUrls.length === 0) {
+      setPhotoError("Please add at least 1 photo");
+      return;
+    }
+    setPhotoError(null);
+    set({ step: 3 });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+
+
   async function publish() {
     if (publishing) return;
     const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
