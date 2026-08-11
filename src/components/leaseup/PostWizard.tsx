@@ -12,6 +12,7 @@ import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
