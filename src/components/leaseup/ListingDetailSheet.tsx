@@ -560,36 +560,43 @@ export function ListingDetailSheet({
 
 
 
-          {/* Q140 — More at this campus */}
+          {/* Q166 — More near [campus] */}
           {moreAtCampus.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-bold">More at this campus</h3>
-              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+              <h3 className="mb-2 mt-4 text-sm font-semibold text-gray-700 dark:text-muted-foreground">
+                🏘 More near {host?.campus_name ?? "this campus"}
+              </h3>
+              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
                 {moreAtCampus.map((l) => (
                   <button
                     key={l.id}
                     onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
-                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border bg-surface text-left transition hover:shadow-card"
+                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
                   >
-                    <div className="h-24 w-full bg-muted">
+                    <div className="h-28 w-full bg-muted">
                       {l.photo_urls?.[0] ? (
-                        <img src={l.photo_urls[0]} alt="" className="h-full w-full object-cover" />
+                        <img src={l.photo_urls[0]} alt="" className="h-28 w-full object-cover" />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
                       )}
                     </div>
                     <div className="p-2">
-                      <div className="truncate text-xs font-bold text-foreground">{l.title}</div>
                       <div className="text-sm font-extrabold text-foreground">
                         ${l.price.toLocaleString()}<span className="text-[10px] font-medium text-muted-foreground">/mo</span>
                       </div>
-                      <div className="truncate text-[11px] text-muted-foreground">{l.area ?? "Near campus"}</div>
+                      <div className="truncate text-xs font-semibold text-foreground">{l.title}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
+                        {l.available_from
+                          ? `From ${new Date(l.available_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                          : (l.area ?? "Near campus")}
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           )}
+
         </div>
 
         {/* Sticky action footer — Q152 save/copy row above the primary CTA */}
