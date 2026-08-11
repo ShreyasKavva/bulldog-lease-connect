@@ -18,6 +18,7 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
 import { openSaveToCollection } from "./SaveToCollectionModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
+import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 
 function fmtDate(iso: string | null) {
   if (!iso) return null;
@@ -362,12 +363,19 @@ export function ListingCard({
             </span>
           )}
         </p>
+        {/* Q155 — lease term pill (suppressed while the critical expiry badge shows) */}
+        {expiry?.kind !== "critical" && leaseTermLabel(listing.available_from, listing.available_to) && (
+          <span className="mt-1 inline-block rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700">
+            {leaseTermLabel(listing.available_from, listing.available_to)}
+          </span>
+        )}
         {/* Q154 — soft expiry nudge for listings ending in 4–14 days */}
         {expiry?.kind === "soft" && (
           <p className="mt-0.5 text-xs text-amber-600">
             Available for {expiry.days} more days
           </p>
         )}
+
 
         {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
         {listing.profile?.verified_email && (
