@@ -43,6 +43,7 @@ import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav } from "@/components/leaseup/BottomNav";
 import { Footer } from "@/components/leaseup/Footer";
 import { SaveToCollectionModal } from "@/components/leaseup/SaveToCollectionModal";
+import { QuickInquiryModal } from "@/components/leaseup/QuickInquiryModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
 import { useRouterState } from "@tanstack/react-router";
 
@@ -65,6 +66,7 @@ function AppShell() {
       </PullToRefresh>
       <BottomNav />
       <SaveToCollectionModal />
+      <QuickInquiryModal />
     </>
   );
 }
