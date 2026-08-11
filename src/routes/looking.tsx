@@ -146,6 +146,40 @@ function LookingForPage() {
     if (error) toast.error("Couldn't upvote — try again");
   }
 
+  // Q157 — owner "Bump" moves a post back to the top of Recent, once per 24h.
+  const [bumpedAt, setBumpedAt] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const next: Record<string, number> = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k?.startsWith("leasup_bump_")) continue;
+        const ts = Number(localStorage.getItem(k));
+        if (ts) next[k.slice("leasup_bump_".length)] = ts;
+      }
+    } catch { /* ignore */ }
+    setBumpedAt(next);
+  }, []);
+
+  async function onBump(p: LookingForPost) {
+    const last = bumpedAt[p.id] ?? 0;
+    if (Date.now() - last < 24 * 60 * 60 * 1000) return;
+    const now = Date.now();
+    setBumpedAt((b) => ({ ...b, [p.id]: now }));
+    try { localStorage.setItem(`leasup_bump_${p.id}`, String(now)); } catch { /* ignore */ }
+    const { error } = await supabase
+      .from("looking_for_posts")
+      .update({ created_at: new Date().toISOString() })
+      .eq("id", p.id);
+    if (error) {
+      toast.error("Couldn't bump — try again");
+      return;
+    }
+    toast.success("Bumped to the top!");
+    qc.invalidateQueries({ queryKey: ["looking-for"] });
+  }
+
+
   const posts = allPosts
     .filter((p) => {
       if (budgetFilter && (p.budget_max == null || p.budget_max > Number(budgetFilter))) return false;
