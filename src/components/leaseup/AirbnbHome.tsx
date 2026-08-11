@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
+import { HomeSmartBanner } from "./HomeSmartBanner";
 
 
 type Cat =
