@@ -181,6 +181,19 @@ export function ListingCard({
     openSaveToCollection(listing.id);
   }
 
+  /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */
+  function handleMessage(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!user) {
+      openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
+      return;
+    }
+    if (onMessage) { onMessage(); return; }
+    onOpen();
+  }
+
+
+
 
   function step(e: React.MouseEvent, dir: 1 | -1) {
     e.stopPropagation();
