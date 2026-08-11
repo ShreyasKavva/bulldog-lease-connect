@@ -150,6 +150,8 @@ export function BrowseFilterBar({
   /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
   const barRef = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [stickySortOpen, setStickySortOpen] = useState(false);
   useEffect(() => {
     const el = barRef.current;
