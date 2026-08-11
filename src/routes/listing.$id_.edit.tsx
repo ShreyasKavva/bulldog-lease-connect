@@ -14,6 +14,7 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/listing/$id_/edit")({
