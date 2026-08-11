@@ -643,7 +643,11 @@ function LookingForCard({
 
 
           <h3 className="mt-1 font-bold leading-tight">{p.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
+          {p.description?.trim() ? (
+            <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
+          ) : (
+            <p className="mt-1 text-sm italic text-gray-400">[No message provided]</p>
+          )}
 
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
             {p.budget_max != null && (
