@@ -1,12 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
+
+let chanSeq = 0;
 
 export function useUnreadCount() {
   const { user } = useSession();
   const qc = useQueryClient();
   const prev = useRef(0);
+  // Unique per hook instance: several components mount this hook at once and
+  // Supabase throws if two subscribers share one channel name.
+  const channelId = useId();
 
   const q = useQuery({
     queryKey: ["unread", user?.id],
@@ -37,7 +42,7 @@ export function useUnreadCount() {
   useEffect(() => {
     if (!user?.id) return;
     const ch = supabase
-      .channel(`unread:${user.id}`)
+      .channel(`unread:${user.id}:${channelId}:${++chanSeq}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` },
@@ -45,7 +50,7 @@ export function useUnreadCount() {
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user?.id, qc]);
+  }, [user?.id, qc, channelId]);
 
   return q.data ?? 0;
 }
