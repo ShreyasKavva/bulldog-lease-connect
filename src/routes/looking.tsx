@@ -497,7 +497,7 @@ function initialBg(name: string) {
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,
-  upvotes, upvoted, onUpvote,
+  upvotes, upvoted, onUpvote, canBump, onBump,
 }: {
   p: LookingForPost;
   campusName?: string | null;
@@ -512,6 +512,8 @@ function LookingForCard({
   onNotifyMe: () => void;
   onRenew: () => void;
   upvotes: number;
+  canBump: boolean;
+  onBump: () => void;
   upvoted: boolean;
   onUpvote: () => void;
 }) {
