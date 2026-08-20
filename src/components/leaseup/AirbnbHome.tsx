@@ -766,40 +766,10 @@ function LiveCounter() {
           </div>
         ))}
       </div>
-      <BrowsingNowPulse />
     </div>
   );
 }
 
-/** Q171 — cosmetic social proof: simulated "students browsing now" ticker. */
-function BrowsingNowPulse() {
-  const [count, setCount] = useState(() => Math.floor(Math.random() * 56) + 25);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setCount(Math.floor(Math.random() * 56) + 25);
-        setVisible(true);
-      }, 300);
-    }, 30_000);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-gray-500 dark:text-muted-foreground">
-      <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-      <span
-        className="transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-      >
-        {count}
-      </span>
-      students browsing now
-    </p>
-  );
-}
 
 
 
