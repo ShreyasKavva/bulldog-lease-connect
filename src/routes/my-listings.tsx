@@ -251,8 +251,6 @@ function MyListingsPage() {
     navigate({ to: "/post", search: { relist: l.id } as any });
   }
 
-  /** Q149 — clone an expired listing and jump straight into editing the copy. */
-  const [reposting, setReposting] = useState<string | null>(null);
   async function repost(l: Listing) {
     if (!user) return;
     setReposting(l.id);
