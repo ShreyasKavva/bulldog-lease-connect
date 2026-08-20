@@ -531,29 +531,30 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Q167 — compact per-listing analytics row */}
+                {/* Q174 — inquiries link straight into the host's inbox; zeros are hidden */}
                 {(() => {
-                  const v = l.view_count ?? 0;
-                  const sv = perListing.saves ?? 0;
                   const ms = perListing.messages ?? 0;
-                  const vClass = v >= 10 ? "text-green-600" : v >= 3 ? "text-amber-600" : "text-gray-400";
-                  if (v === 0 && sv === 0 && ms === 0) {
-                    return (
-                      <div className="mt-2 flex items-center gap-2 px-1 text-xs text-gray-400">
-                        👁 No views yet — share your listing to get noticed
-                      </div>
-                    );
-                  }
+                  const convId = (perListing as { convId?: string | null }).convId ?? null;
+                  if (ms === 0) return null;
                   return (
                     <div className="mt-2 flex items-center gap-2 px-1 text-xs text-gray-500">
-                      {v > 0 && <span className={vClass}>👁 {v} views</span>}
-                      {v > 0 && (sv > 0 || ms > 0) && <span className="text-gray-300">·</span>}
-                      {sv > 0 && <span>❤️ {sv} saves</span>}
-                      {sv > 0 && ms > 0 && <span className="text-gray-300">·</span>}
-                      {ms > 0 && <span>💬 {ms} inquiries</span>}
+                      {convId ? (
+                        <Link
+                          to="/messages/$conversationId"
+                          params={{ conversationId: convId }}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
+                        </Link>
+                      ) : (
+                        <Link to="/messages" className="font-semibold text-primary hover:underline">
+                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
+                        </Link>
+                      )}
                     </div>
                   );
                 })()}
+
                 {!filled && !expired && (
 
                   <RenewalNudge
