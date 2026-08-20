@@ -33,7 +33,6 @@ import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
-import { HomeSmartBanner } from "./HomeSmartBanner";
 import { useSession } from "@/lib/leaseup/use-session";
 
 
