@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { markListingFilled, toggleSaved, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing } from "@/lib/leaseup/queries";
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
+import { isDemoListing } from "@/lib/leaseup/demo";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ShareSheet } from "@/components/leaseup/ShareSheet";
