@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 import { StatCard } from "@/components/leaseup/analytics/Charts";
+import { StatsBoundary } from "@/components/leaseup/analytics/StatsBoundary";
 import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
 import { TourAvailabilityDialog } from "@/components/leaseup/TourAvailabilityDialog";
 import { StaleListingsNudge } from "@/components/leaseup/StaleListingsNudge";
