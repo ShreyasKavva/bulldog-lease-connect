@@ -33,7 +33,6 @@ import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
-import { HomeSmartBanner } from "./HomeSmartBanner";
 import { useSession } from "@/lib/leaseup/use-session";
 
 
@@ -331,8 +330,8 @@ export function AirbnbHome({
 
 
 
-      {/* Q160 — signed-in smart banner */}
-      <HomeSmartBanner onPost={onPost} />
+      {/* Q174 — removed the signed-in "views total" smart banner */}
+
 
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />

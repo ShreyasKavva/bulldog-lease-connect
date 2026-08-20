@@ -34,8 +34,10 @@ function relativeSince(ts: number) {
 const SEMESTER_PRESETS = [
   { label: "Fall 2026", from: "2026-08-20", to: "2026-12-20" },
   { label: "Spring 2027", from: "2027-01-10", to: "2027-05-10" },
+  { label: "Summer 2027", from: "2027-05-15", to: "2027-08-15" },
   { label: "Full Year", from: "2026-08-20", to: "2027-05-10" },
 ];
+
 
 const PLACE_TYPES = [
   { id: "entire", label: "Entire Place" },

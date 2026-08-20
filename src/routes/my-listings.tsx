@@ -102,16 +102,20 @@ function MyListingsPage() {
     active: groups.active.length,
   };
 
-  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> }, isLoading: aggLoading } = useQuery({
+  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number; convId: string | null }> }, isLoading: aggLoading } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
     queryFn: async () => {
       const ids = listings.map((l) => l.id);
-      const byListing: Record<string, { saves: number; messages: number }> = {};
-      for (const id of ids) byListing[id] = { saves: 0, messages: 0 };
+      const byListing: Record<string, { saves: number; messages: number; convId: string | null }> = {};
+      for (const id of ids) byListing[id] = { saves: 0, messages: 0, convId: null };
       const [sav, convs] = await Promise.all([
         supabase.from("saved_listings").select("listing_id").in("listing_id", ids),
-        supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
+        supabase
+          .from("conversations")
+          .select("id, listing_id, last_message_at")
+          .in("listing_id", ids)
+          .order("last_message_at", { ascending: false, nullsFirst: false }),
       ]);
       for (const r of (sav.data ?? []) as { listing_id: string }[]) {
         const e = byListing[r.listing_id];
@@ -120,6 +124,11 @@ function MyListingsPage() {
       const convToListing = new Map<string, string>(
         (convs.data ?? []).map((c: any) => [c.id, c.listing_id as string]),
       );
+      // Newest conversation per listing → host-side entry point.
+      for (const c of (convs.data ?? []) as any[]) {
+        const e = byListing[c.listing_id];
+        if (e && !e.convId) e.convId = c.id;
+      }
       const convIds = [...convToListing.keys()];
       let msgCount = 0;
       if (convIds.length) {
@@ -138,6 +147,7 @@ function MyListingsPage() {
       return { saves: sav.data?.length ?? 0, messages: msgCount, byListing };
     },
   });
+
 
 
   // Celebration on return from Stripe Checkout
@@ -379,7 +389,7 @@ function MyListingsPage() {
               const filled = isRented(l);
               const expired = isExpired(l);
               const stats = shareStats[l.id] ?? { count: 0, lastAt: null };
-              const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0 };
+              const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0, convId: null as string | null };
 
               const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
               const ageDays = (Date.now() - new Date(l.created_at as string).getTime()) / 86400000;
@@ -440,25 +450,40 @@ function MyListingsPage() {
                           .join(" – ")}
                       </div>
                     )}
-                    {/* Q156 — host analytics row */}
+                    {/* Q174 — only surface non-zero stats; never a wall of zeros */}
                     {aggLoading ? (
                       <div className="mt-1 h-4 w-52 animate-pulse rounded bg-muted" aria-hidden />
-                    ) : (
-                      <>
+                    ) : (() => {
+                      const v = l.view_count ?? 0;
+                      const sv = perListing.saves ?? 0;
+                      const ms = perListing.messages ?? 0;
+                      const sh = stats.count ?? 0;
+                      if (v === 0 && sv === 0 && ms === 0 && sh === 0) {
+                        return (
+                          <p className="mt-1 text-xs text-gray-500">Just posted — share it to get your first views</p>
+                        );
+                      }
+                      return (
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{l.view_count ?? 0}</span> view{(l.view_count ?? 0) === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.saves}</span> save{perListing.saves === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.messages}</span> message{perListing.messages === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
-                          {(l.view_count ?? 0) > 0 && ageDays < 7 && (
+                          {v > 0 && (
+                            <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{v}</span> view{v === 1 ? "" : "s"}</span>
+                          )}
+                          {sv > 0 && (
+                            <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{sv}</span> save{sv === 1 ? "" : "s"}</span>
+                          )}
+                          {ms > 0 && (
+                            <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{ms}</span> message{ms === 1 ? "" : "s"}</span>
+                          )}
+                          {sh > 0 && (
+                            <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {sh} time{sh === 1 ? "" : "s"}</span>
+                          )}
+                          {v > 0 && ageDays < 7 && (
                             <span className="rounded bg-green-50 px-1.5 text-xs font-semibold text-green-600">↗ Active</span>
                           )}
                         </div>
-                        {perListing.messages === 0 && ageDays > 3 && (
-                          <p className="mt-1 text-xs text-amber-600">💡 No inquiries yet — consider lowering price or adding photos.</p>
-                        )}
-                      </>
-                    )}
+                      );
+                    })()}
+
 
                   </button>
 
@@ -506,29 +531,30 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Q167 — compact per-listing analytics row */}
+                {/* Q174 — inquiries link straight into the host's inbox; zeros are hidden */}
                 {(() => {
-                  const v = l.view_count ?? 0;
-                  const sv = perListing.saves ?? 0;
                   const ms = perListing.messages ?? 0;
-                  const vClass = v >= 10 ? "text-green-600" : v >= 3 ? "text-amber-600" : "text-gray-400";
-                  if (v === 0 && sv === 0 && ms === 0) {
-                    return (
-                      <div className="mt-2 flex items-center gap-2 px-1 text-xs text-gray-400">
-                        👁 No views yet — share your listing to get noticed
-                      </div>
-                    );
-                  }
+                  const convId = (perListing as { convId?: string | null }).convId ?? null;
+                  if (ms === 0) return null;
                   return (
                     <div className="mt-2 flex items-center gap-2 px-1 text-xs text-gray-500">
-                      {v > 0 && <span className={vClass}>👁 {v} views</span>}
-                      {v > 0 && (sv > 0 || ms > 0) && <span className="text-gray-300">·</span>}
-                      {sv > 0 && <span>❤️ {sv} saves</span>}
-                      {sv > 0 && ms > 0 && <span className="text-gray-300">·</span>}
-                      {ms > 0 && <span>💬 {ms} inquiries</span>}
+                      {convId ? (
+                        <Link
+                          to="/messages/$conversationId"
+                          params={{ conversationId: convId }}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
+                        </Link>
+                      ) : (
+                        <Link to="/messages" className="font-semibold text-primary hover:underline">
+                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
+                        </Link>
+                      )}
                     </div>
                   );
                 })()}
+
                 {!filled && !expired && (
 
                   <RenewalNudge
