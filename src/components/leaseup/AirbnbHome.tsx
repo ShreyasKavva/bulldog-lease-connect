@@ -331,8 +331,8 @@ export function AirbnbHome({
 
 
 
-      {/* Q160 — signed-in smart banner */}
-      <HomeSmartBanner onPost={onPost} />
+      {/* Q174 — removed the signed-in "views total" smart banner */}
+
 
       {/* Q110 Part C — signed-out welcome strip (tablet+) */}
       <GuestWelcomeStrip />
