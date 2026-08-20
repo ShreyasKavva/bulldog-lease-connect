@@ -1310,6 +1310,13 @@ function PriceSidebar({
         )}
       </Button>
 
+      {isDemoListing(listing.user_id) && !isOwner && (
+        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+          🧪 Sample listing — this one is posted by the LeaseUp demo account, so don't expect a reply.
+        </p>
+      )}
+
+
       {months > 0 && (
         <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
           <div className="flex items-center justify-between text-muted-foreground">
