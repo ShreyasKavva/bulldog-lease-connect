@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { ShareToStoryButton } from "@/components/leaseup/ShareToStoryButton";
 import { StatCard } from "@/components/leaseup/analytics/Charts";
+import { StatsBoundary } from "@/components/leaseup/analytics/StatsBoundary";
 import { ListingStatsPanel } from "@/components/leaseup/analytics/ListingStatsPanel";
 import { TourAvailabilityDialog } from "@/components/leaseup/TourAvailabilityDialog";
 import { StaleListingsNudge } from "@/components/leaseup/StaleListingsNudge";
@@ -67,6 +68,8 @@ function MyListingsPage() {
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
   const [feedbackFor, setFeedbackFor] = useState<Listing | null>(null);
   const [tab, setTab] = useState<"active" | "rented" | "expired">("active");
+  /** Q149 — clone an expired listing and jump straight into editing the copy. */
+  const [reposting, setReposting] = useState<string | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
   const isRented = (l: Listing) => l.status === "filled";
@@ -249,8 +252,6 @@ function MyListingsPage() {
     navigate({ to: "/post", search: { relist: l.id } as any });
   }
 
-  /** Q149 — clone an expired listing and jump straight into editing the copy. */
-  const [reposting, setReposting] = useState<string | null>(null);
   async function repost(l: Listing) {
     if (!user) return;
     setReposting(l.id);
@@ -294,15 +295,31 @@ function MyListingsPage() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
-        {!isLoading && listings.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard icon="👀" label="Total views" value={totals.views} />
-            <StatCard icon="❤️" label="Total saves" value={aggCounts.saves} />
-            <StatCard icon="💬" label="Messages" value={aggCounts.messages} />
-            <StatCard icon="📋" label="Active listings" value={totals.active} />
+        {!isLoading && listings.length === 0 && (
+          <div className="mx-auto max-w-md rounded-2xl bg-surface p-10 text-center shadow-card">
+            <div className="text-5xl">🏡</div>
+            <h2 className="mt-3 text-lg font-bold">You haven't posted a sublease yet</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Post one in about 2 minutes and reach students at your campus.
+            </p>
+            <Button onClick={() => setPosting(true)} className="mt-5 gap-1 bg-primary text-primary-foreground hover:bg-primary-dark">
+              <Plus className="h-4 w-4" />Post a sublease →
+            </Button>
           </div>
         )}
-        {user && <StaleListingsNudge userId={user.id} onEdit={(id: string) => navigate({ to: "/my-listings/$listingId/analytics", params: { listingId: id } })} />}
+        <StatsBoundary>
+          <>
+            {!isLoading && listings.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatCard icon="👀" label="Total views" value={totals.views} />
+                <StatCard icon="❤️" label="Total saves" value={aggCounts.saves} />
+                <StatCard icon="💬" label="Messages" value={aggCounts.messages} />
+                <StatCard icon="📋" label="Active listings" value={totals.active} />
+              </div>
+            )}
+            {user && listings.length > 0 && <StaleListingsNudge userId={user.id} onEdit={(id: string) => navigate({ to: "/my-listings/$listingId/analytics", params: { listingId: id } })} />}
+          </>
+        </StatsBoundary>
         {!isLoading && listings.some((l) => l.is_active && l.status !== "filled") && (
           <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary to-[#1D4ED8] p-5 text-primary-foreground shadow-card sm:flex-row sm:items-center">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📣</div>
@@ -319,7 +336,7 @@ function MyListingsPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3">
+        <div className={cn("flex items-center justify-between gap-3", !isLoading && listings.length === 0 && "hidden")}>
           <div className="flex gap-2 overflow-x-auto pb-1">
           {(["active", "rented", "expired"] as const).map((t) => (
             <button
@@ -352,7 +369,7 @@ function MyListingsPage() {
 
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />)}</div>
-        ) : visibleListings.length === 0 ? (
+        ) : listings.length === 0 ? null : visibleListings.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">{tab === "rented" ? "🎉" : tab === "expired" ? "⏰" : "🏡"}</div>
             <h3 className="mt-3 text-lg font-bold">
