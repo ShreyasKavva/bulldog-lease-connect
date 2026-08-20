@@ -368,7 +368,7 @@ function MyListingsPage() {
 
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />)}</div>
-        ) : visibleListings.length === 0 ? (
+        ) : listings.length === 0 ? null : visibleListings.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">{tab === "rented" ? "🎉" : tab === "expired" ? "⏰" : "🏡"}</div>
             <h3 className="mt-3 text-lg font-bold">
