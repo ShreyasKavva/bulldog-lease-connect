@@ -102,16 +102,20 @@ function MyListingsPage() {
     active: groups.active.length,
   };
 
-  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number }> }, isLoading: aggLoading } = useQuery({
+  const { data: aggCounts = { saves: 0, messages: 0, byListing: {} as Record<string, { saves: number; messages: number; convId: string | null }> }, isLoading: aggLoading } = useQuery({
     queryKey: ["my-listings-aggregates", user?.id, listings.map((l) => l.id).join(",")],
     enabled: !!user && listings.length > 0,
     queryFn: async () => {
       const ids = listings.map((l) => l.id);
-      const byListing: Record<string, { saves: number; messages: number }> = {};
-      for (const id of ids) byListing[id] = { saves: 0, messages: 0 };
+      const byListing: Record<string, { saves: number; messages: number; convId: string | null }> = {};
+      for (const id of ids) byListing[id] = { saves: 0, messages: 0, convId: null };
       const [sav, convs] = await Promise.all([
         supabase.from("saved_listings").select("listing_id").in("listing_id", ids),
-        supabase.from("conversations").select("id, listing_id").in("listing_id", ids),
+        supabase
+          .from("conversations")
+          .select("id, listing_id, last_message_at")
+          .in("listing_id", ids)
+          .order("last_message_at", { ascending: false, nullsFirst: false }),
       ]);
       for (const r of (sav.data ?? []) as { listing_id: string }[]) {
         const e = byListing[r.listing_id];
@@ -120,6 +124,11 @@ function MyListingsPage() {
       const convToListing = new Map<string, string>(
         (convs.data ?? []).map((c: any) => [c.id, c.listing_id as string]),
       );
+      // Newest conversation per listing → host-side entry point.
+      for (const c of (convs.data ?? []) as any[]) {
+        const e = byListing[c.listing_id];
+        if (e && !e.convId) e.convId = c.id;
+      }
       const convIds = [...convToListing.keys()];
       let msgCount = 0;
       if (convIds.length) {
@@ -138,6 +147,7 @@ function MyListingsPage() {
       return { saves: sav.data?.length ?? 0, messages: msgCount, byListing };
     },
   });
+
 
 
   // Celebration on return from Stripe Checkout
