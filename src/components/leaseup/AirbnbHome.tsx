@@ -325,22 +325,8 @@ export function AirbnbHome({
         <LiveCounter />
       </section>
 
-      {/* CTA STRIP — "Got a sublease to post?" */}
-      <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6">
-        <div className="overflow-hidden rounded-3xl bg-primary px-6 py-8 text-center text-primary-foreground sm:px-10">
-          <h2 className="text-2xl font-extrabold sm:text-3xl">Got a sublease to post?</h2>
-          <p className="mt-2 text-sm opacity-90 sm:text-base">
-            It takes 2 minutes. Free to post — always.
-          </p>
-          <button
-            onClick={onPost}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25 sm:text-base"
-          >
-            Post Your Sublease
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </section>
+      {/* (Removed large dark "Got a sublease to post?" CTA — duplicate of the
+          thin yellow HomeSmartBanner below. Keep nav button + yellow banner.) */}
 
 
 
