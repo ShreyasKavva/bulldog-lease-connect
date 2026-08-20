@@ -450,25 +450,40 @@ function MyListingsPage() {
                           .join(" – ")}
                       </div>
                     )}
-                    {/* Q156 — host analytics row */}
+                    {/* Q174 — only surface non-zero stats; never a wall of zeros */}
                     {aggLoading ? (
                       <div className="mt-1 h-4 w-52 animate-pulse rounded bg-muted" aria-hidden />
-                    ) : (
-                      <>
+                    ) : (() => {
+                      const v = l.view_count ?? 0;
+                      const sv = perListing.saves ?? 0;
+                      const ms = perListing.messages ?? 0;
+                      const sh = stats.count ?? 0;
+                      if (v === 0 && sv === 0 && ms === 0 && sh === 0) {
+                        return (
+                          <p className="mt-1 text-xs text-gray-500">Just posted — share it to get your first views</p>
+                        );
+                      }
+                      return (
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{l.view_count ?? 0}</span> view{(l.view_count ?? 0) === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.saves}</span> save{perListing.saves === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{perListing.messages}</span> message{perListing.messages === 1 ? "" : "s"}</span>
-                          <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {stats.count} time{stats.count === 1 ? "" : "s"}</span>
-                          {(l.view_count ?? 0) > 0 && ageDays < 7 && (
+                          {v > 0 && (
+                            <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{v}</span> view{v === 1 ? "" : "s"}</span>
+                          )}
+                          {sv > 0 && (
+                            <span className="inline-flex items-center gap-1"><Bookmark className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{sv}</span> save{sv === 1 ? "" : "s"}</span>
+                          )}
+                          {ms > 0 && (
+                            <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" /><span className="font-semibold text-gray-700 dark:text-foreground">{ms}</span> message{ms === 1 ? "" : "s"}</span>
+                          )}
+                          {sh > 0 && (
+                            <span className="inline-flex items-center gap-1"><Share2 className="h-3 w-3" />Shared {sh} time{sh === 1 ? "" : "s"}</span>
+                          )}
+                          {v > 0 && ageDays < 7 && (
                             <span className="rounded bg-green-50 px-1.5 text-xs font-semibold text-green-600">↗ Active</span>
                           )}
                         </div>
-                        {perListing.messages === 0 && ageDays > 3 && (
-                          <p className="mt-1 text-xs text-amber-600">💡 No inquiries yet — consider lowering price or adding photos.</p>
-                        )}
-                      </>
-                    )}
+                      );
+                    })()}
+
 
                   </button>
 
