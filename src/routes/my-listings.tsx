@@ -389,7 +389,7 @@ function MyListingsPage() {
               const filled = isRented(l);
               const expired = isExpired(l);
               const stats = shareStats[l.id] ?? { count: 0, lastAt: null };
-              const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0 };
+              const perListing = aggCounts.byListing?.[l.id] ?? { saves: l.saves_count ?? 0, messages: 0, convId: null as string | null };
 
               const lastShareDays = stats.lastAt ? Math.floor((Date.now() - new Date(stats.lastAt).getTime()) / 86400000) : Infinity;
               const ageDays = (Date.now() - new Date(l.created_at as string).getTime()) / 86400000;
