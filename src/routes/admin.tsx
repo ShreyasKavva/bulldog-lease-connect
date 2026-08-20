@@ -30,7 +30,6 @@ import {
   fetchSuspiciousListings, fetchUserRiskScores,
 } from "@/lib/leaseup/admin.queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
-import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -67,7 +66,6 @@ function AdminPage() {
   if (!me?.is_admin) {
     return (
       <div className="min-h-screen bg-background">
-        <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md mt-24 rounded-2xl bg-surface p-8 shadow-card-md text-center">
           <div className="text-4xl">🚫</div>
           <h1 className="mt-2 text-xl font-black">Admins only</h1>
@@ -80,8 +78,6 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Nav onPost={() => navigate({ to: "/" })} onOpenMessages={() => navigate({ to: "/" })}
-        onOpenProfile={() => navigate({ to: "/" })} search="" onSearch={() => {}} />
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="flex items-center gap-2 mb-4">
           <ShieldCheck className="h-5 w-5 text-primary" />

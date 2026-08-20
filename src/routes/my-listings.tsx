@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchMyListings, deleteListing, setListingActive, markListingFilled, reopenListing, relistListing } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
@@ -183,7 +182,6 @@ function MyListingsPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to manage your listings</h2>
           <button type="button" onClick={() => openSignIn("/my-listings")} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</button>
@@ -273,12 +271,6 @@ function MyListingsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Nav
-        onPost={() => setPosting(true)}
-        onOpenMessages={() => navigate({ to: "/" })}
-        onOpenProfile={() => navigate({ to: "/" })}
-        search="" onSearch={() => {}}
-      />
       <header className="border-b border-gray-100 bg-surface dark:border-border">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center">
           <div className="min-w-0">
