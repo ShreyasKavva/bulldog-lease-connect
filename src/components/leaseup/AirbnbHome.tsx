@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { MapPin, Flame, Sparkles, ArrowRight, Search, ChevronDown } from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -281,9 +281,6 @@ export function AirbnbHome({
       {/* HERO — search first */}
       <section className="bg-white py-12 dark:bg-background">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <Link to="/" className="inline-block text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
-            LeaseUp
-          </Link>
           <h1 className="mt-4 text-4xl font-bold text-gray-900 dark:text-foreground">
             Sublease near your campus.
           </h1>
@@ -324,11 +321,28 @@ export function AirbnbHome({
           )}
         </div>
 
-        {/* Q150 — quick-post a "Looking For" request without finding the board first */}
-        <QuickLookingPost />
 
         <LiveCounter />
       </section>
+
+      {/* CTA STRIP — "Got a sublease to post?" */}
+      <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6">
+        <div className="overflow-hidden rounded-3xl bg-primary px-6 py-8 text-center text-primary-foreground sm:px-10">
+          <h2 className="text-2xl font-extrabold sm:text-3xl">Got a sublease to post?</h2>
+          <p className="mt-2 text-sm opacity-90 sm:text-base">
+            It takes 2 minutes. Free to post — always.
+          </p>
+          <button
+            onClick={onPost}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25 sm:text-base"
+          >
+            Post Your Sublease
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </section>
+
+
 
 
       {/* Q160 — signed-in smart banner */}
@@ -339,7 +353,7 @@ export function AirbnbHome({
 
 
       {/* CATEGORY PILLS */}
-      <div className="sticky top-14 z-20 border-b bg-white/95 backdrop-blur dark:bg-surface/95">
+      <div className="sticky top-14 z-50 border-b border-gray-200 bg-white dark:bg-surface">
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
@@ -433,11 +447,7 @@ export function AirbnbHome({
         )}
 
 
-      {/* Q130 — how it works */}
-      <HowItWorks />
 
-      {/* Q134 — FAQ accordion */}
-      <HomeFaq />
 
 
       {/* Q114 — skeleton rails while the listings query is loading */}
@@ -595,22 +605,6 @@ export function AirbnbHome({
 
 
 
-      {/* CTA STRIP */}
-      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
-        <div className="overflow-hidden rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground sm:px-10 sm:py-14">
-          <h2 className="text-2xl font-extrabold sm:text-3xl">Got a sublease to post?</h2>
-          <p className="mt-2 text-sm opacity-90 sm:text-base">
-            It takes 2 minutes. Free to post — always.
-          </p>
-          <button
-            onClick={onPost}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25 sm:text-base"
-          >
-            Post Your Sublease
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </section>
 
       {/* Q106 — footer now lives globally in src/components/leaseup/Footer.tsx */}
 
@@ -823,100 +817,6 @@ function BrowsingNowPulse() {
 
 
 
-/** Q130 — three-step explainer between the hero and the listing rails. */
-const HOW_IT_WORKS = [
-  { emoji: "🏠", title: "Post your sublease", body: "Takes 2 minutes. Free always." },
-  { emoji: "🔍", title: "Students find you", body: "Verified students browse by campus." },
-  { emoji: "💬", title: "Connect directly", body: "Message the host. No middleman." },
-];
-
-function HowItWorks() {
-  return (
-    <section className="mx-auto mt-12 max-w-5xl px-4 sm:px-6">
-      <h2 className="mb-6 text-center text-xl font-extrabold sm:text-2xl">How LeaseUp works</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {HOW_IT_WORKS.map((s) => (
-          <div
-            key={s.title}
-            className="rounded-2xl bg-gray-50 p-6 text-center dark:bg-surface"
-          >
-            <div className="text-3xl" aria-hidden>{s.emoji}</div>
-            <h3 className="mt-3 text-base font-bold">{s.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// Q134 — homepage FAQ
-const FAQS: { q: string; a: string }[] = [
-  {
-    q: "Is LeaseUp free to use?",
-    a: "Yes — completely free to post a sublease and free to browse. No subscription, no listing fees, no middlemen taking a cut.",
-  },
-  {
-    q: "How are listings verified?",
-    a: "Every user signs up with a .edu email address, so you know you're talking to a real student. Verified listings show a ✓ Verified badge.",
-  },
-  {
-    q: "How do I contact a host?",
-    a: "Click \u201CMessage Host \u2192\u201D on any listing to start a direct conversation. No phone number required — messages stay within LeaseUp until you're ready to connect.",
-  },
-  {
-    q: "What lease lengths are available?",
-    a: "Most subleases are one semester (Fall or Spring). Full-year and summer subleases are also supported — filter by dates on the browse page.",
-  },
-  {
-    q: "Which campuses is LeaseUp available at?",
-    a: "We're currently live at University of Georgia, Ohio State, UT Austin, Georgia Tech, Auburn, Clemson, Duke, FSU, Florida, Michigan, Penn State, and Vanderbilt — and adding new campuses every semester.",
-  },
-  {
-    q: "I need housing — how do I post a \u201CLooking For\u201D request?",
-    a: "Click \u201CLooking for a place?\u201D in the nav. Post your budget, move-in dates, and preferences. Hosts with available subleases can message you directly.",
-  },
-];
-
-function HomeFaq() {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section className="mx-auto mt-14 max-w-3xl px-4 sm:px-6">
-      <h2 className="mb-6 text-center text-xl font-extrabold sm:text-2xl">
-        Frequently asked questions
-      </h2>
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-        {FAQS.map((f, i) => {
-          const isOpen = open === i;
-          return (
-            <div key={f.q} className={i > 0 ? "border-t border-border" : undefined}>
-              <button
-                type="button"
-                onClick={() => setOpen(isOpen ? null : i)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-              >
-                <span className="text-sm font-semibold sm:text-base">{f.q}</span>
-                <ChevronDown
-                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {isOpen && (
-                <p className="px-5 pb-5 -mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {f.a}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-
 
 function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
   if (!posts || posts.length === 0) return null;
@@ -1034,13 +934,13 @@ function FeaturedListingCard({
         onClick={() => onOpen(featured)}
         className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md"
       >
-        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+        <div className="relative w-full overflow-hidden bg-muted">
           {photo ? (
             <img
               src={photo}
               alt={featured.title}
               loading="lazy"
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+              className="max-h-64 w-full object-cover transition duration-300 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="grid h-full w-full place-items-center text-5xl">🏠</div>
@@ -1202,38 +1102,3 @@ function RecentlyViewedSection({
   );
 }
 
-/* ---------------- Q150 — homepage quick-post to the Looking Board ---------------- */
-
-function QuickLookingPost() {
-  const navigate = useNavigate();
-  const [text, setText] = useState("");
-
-  function post() {
-    const v = text.trim();
-    if (!v) return;
-    navigate({ to: "/looking", search: { prefill: v.slice(0, 300) } });
-  }
-
-  return (
-    <div className="mx-auto mt-5 max-w-3xl px-4 sm:px-6">
-      <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm dark:border-border dark:bg-surface">
-        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 300))}
-          onKeyDown={(e) => { if (e.key === "Enter") post(); }}
-          placeholder="What are you looking for? (e.g. 'UGA studio Aug–Dec under $700')"
-          aria-label="Post a looking-for request"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-        <button
-          onClick={post}
-          disabled={!text.trim()}
-          className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark disabled:opacity-50"
-        >
-          Post →
-        </button>
-      </div>
-    </div>
-  );
-}
