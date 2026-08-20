@@ -67,6 +67,8 @@ function MyListingsPage() {
   const [reviewFor, setReviewFor] = useState<{ listing: Listing; userId: string; name: string } | null>(null);
   const [feedbackFor, setFeedbackFor] = useState<Listing | null>(null);
   const [tab, setTab] = useState<"active" | "rented" | "expired">("active");
+  /** Q149 — clone an expired listing and jump straight into editing the copy. */
+  const [reposting, setReposting] = useState<string | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
   const isRented = (l: Listing) => l.status === "filled";
