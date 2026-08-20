@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchMyTours, updateBookingStatus, setBookingSurvey, buildIcs, downloadIcs, formatDateChip, formatTime12, type Booking } from "@/lib/leaseup/tours";
-import { Nav } from "@/components/leaseup/Nav";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Calendar, Check, X, MessageSquare, Download } from "lucide-react";
@@ -32,7 +31,6 @@ function ToursPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to see your tours</h2>
           <button type="button" onClick={() => openSignIn("/tours")} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</button>
@@ -89,7 +87,6 @@ function ToursPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Nav onPost={() => {}} onOpenMessages={() => navigate({ to: "/" })} onOpenProfile={() => navigate({ to: "/" })} search="" onSearch={() => {}} />
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <h1 className="flex items-center gap-2 text-2xl font-black"><Calendar className="h-6 w-6 text-primary" />Your tours</h1>

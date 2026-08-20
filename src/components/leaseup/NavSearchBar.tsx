@@ -61,7 +61,7 @@ export function NavSearchBar() {
   return (
     <>
       {/* Desktop */}
-      <div className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm hover:shadow md:flex dark:border-border dark:bg-background">
+      <div className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm hover:shadow lg:flex dark:border-border dark:bg-background">
         <Popover open={open === "where"} onOpenChange={(o) => setOpen(o ? "where" : null)}>
           <PopoverTrigger asChild>
             <button className={cn("flex min-w-0 items-center gap-1.5", seg)}>
@@ -152,7 +152,7 @@ export function NavSearchBar() {
       {/* Mobile: jump to /browse and open the filter sheet */}
       <button
         onClick={() => navigate({ to: "/browse", search: { openFilters: 1 } as any })}
-        className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm md:hidden dark:border-border dark:bg-background"
+        className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm lg:hidden dark:border-border dark:bg-background"
       >
         <Search className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">Where to?</span>

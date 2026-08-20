@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Nav } from "@/components/leaseup/Nav";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { fetchAllPriceStats, fetchNeighborhoodBreakdown, type CampusPriceStat } from "@/lib/leaseup/pricing";
 import { cn } from "@/lib/utils";
@@ -45,7 +44,6 @@ function MarketPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
       <main className="mx-auto max-w-5xl px-4 py-8">
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Sublease market data</h1>

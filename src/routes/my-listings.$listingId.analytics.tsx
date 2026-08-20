@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { Nav } from "@/components/leaseup/Nav";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchListing } from "@/lib/leaseup/queries";
 import {
@@ -116,7 +115,6 @@ function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Nav onPost={() => {}} onOpenMessages={() => navigate({ to: "/" })} onOpenProfile={() => navigate({ to: "/" })} search="" onSearch={() => {}} />
       <header className="border-b bg-surface">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4">
           <Link to="/my-listings" className="rounded-md p-2 hover:bg-background"><ArrowLeft className="h-5 w-5" /></Link>

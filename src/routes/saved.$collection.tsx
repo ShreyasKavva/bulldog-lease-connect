@@ -8,7 +8,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
-import { Nav } from "@/components/leaseup/Nav";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
@@ -146,7 +145,6 @@ function CollectionPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to see saved subleases</h2>
           <button
@@ -163,7 +161,6 @@ function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Nav onPost={() => {}} onOpenMessages={() => {}} onOpenProfile={() => {}} search="" onSearch={() => {}} />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <div className="flex items-center gap-3">
           <Link to="/saved" aria-label="Back to collections" className="rounded-full p-2 hover:bg-muted">
