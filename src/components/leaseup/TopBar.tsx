@@ -117,7 +117,13 @@ export function TopBar(_legacy: LegacyProps = {}) {
           <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
 
           {/* Center: functional compact search bar on non-home routes */}
-          {!isHome && <NavSearchBar />}
+          {!isHome && (
+            // Only at lg+: below that the nav links crowd it and the search
+            // pill collapses to a floating circle overlapping "Subleases".
+            <div className="hidden min-w-0 flex-1 lg:flex">
+              <NavSearchBar />
+            </div>
+          )}
 
           {/* Right cluster */}
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
