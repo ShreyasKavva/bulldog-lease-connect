@@ -112,12 +112,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
   return (
     <>
       <header
-        className={
-          "sticky top-0 z-40 transition-all duration-200 " +
-          (isHome && !scrolled
-            ? "bg-transparent"
-            : "border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-sm dark:border-border dark:bg-surface/95")
-        }
+        className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm dark:border-border dark:bg-surface"
       >
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-6 sm:px-10 lg:px-20">
           <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
