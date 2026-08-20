@@ -35,15 +35,9 @@ export function TopBar(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isHome = path === "/";
 
-  // Homepage: transparent over the hero, solid white after ~80px of scroll.
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    if (!isHome) { setScrolled(true); return; }
-    const onScroll = () => setScrolled(window.scrollY > 80);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  // Header is always solid — no transparent-over-hero behavior (caused nav
+  // overlap where page text rendered on top of the links while scrolling).
+  const [scrolled] = useState(true);
 
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInNext, setSignInNext] = useState<string | undefined>(undefined);
