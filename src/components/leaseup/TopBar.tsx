@@ -37,7 +37,6 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
   // Header is always solid — no transparent-over-hero behavior (caused nav
   // overlap where page text rendered on top of the links while scrolling).
-  const [scrolled] = useState(true);
 
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInNext, setSignInNext] = useState<string | undefined>(undefined);
