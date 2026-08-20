@@ -335,7 +335,7 @@ function MyListingsPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3">
+        <div className={cn("flex items-center justify-between gap-3", !isLoading && listings.length === 0 && "hidden")}>
           <div className="flex gap-2 overflow-x-auto pb-1">
           {(["active", "rented", "expired"] as const).map((t) => (
             <button
