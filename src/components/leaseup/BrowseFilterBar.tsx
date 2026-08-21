@@ -519,38 +519,79 @@ export function BrowseFilterBar({
           </div>
         )}
 
-        {/* PART D — one compact quick row: size only. Everything else lives in Filters. */}
-        <div className="mt-2 hidden items-center gap-2 sm:flex">
-          <span className="mr-1 text-sm text-muted-foreground">Size</span>
-          <button
-            onClick={() => onPatch({ bedrooms: undefined })}
-            className={cn(
-              "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-              bedSet.size === 0
-                ? "border-foreground bg-foreground text-background"
-                : "hover:border-foreground",
-            )}
-          >
-            Any
-          </button>
-          {BEDS.map((b) => (
+        {/*
+          PART D — Airbnb-style chip rail: the handful of filters people
+          actually reach for, one tap each, scrollable on mobile. Everything
+          deeper still lives in the Filters sheet.
+        */}
+        <div className="mt-2 flex items-center gap-2">
+          <div className="scrollbar-none -mx-1 flex flex-1 items-center gap-2 overflow-x-auto px-1 py-0.5">
             <button
-              key={b}
-              onClick={() => toggleBed(b)}
+              onClick={() => onPatch({ bedrooms: undefined })}
               className={cn(
-                "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-                bedSet.has(b)
+                "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                bedSet.size === 0
                   ? "border-foreground bg-foreground text-background"
-                  : "hover:border-foreground",
+                  : "border-border hover:border-foreground",
               )}
             >
-              {bedLabel(b)}
+              Any size
             </button>
-          ))}
-          <span className="ml-auto text-sm text-muted-foreground">
+            {BEDS.map((b) => (
+              <button
+                key={b}
+                onClick={() => toggleBed(b)}
+                className={cn(
+                  "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                  bedSet.has(b)
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border hover:border-foreground",
+                )}
+              >
+                {bedLabel(b)}
+              </button>
+            ))}
+
+            <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+
+            {AMENITIES.map((a) => {
+              const on = values[a.key] === 1;
+              return (
+                <button
+                  key={a.key as string}
+                  aria-pressed={on}
+                  onClick={() => onPatch({ [a.key]: on ? undefined : 1 } as Partial<BrowseFilterValues>)}
+                  className={cn(
+                    "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    on
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border hover:border-foreground",
+                  )}
+                >
+                  <span aria-hidden>{a.icon}</span> {a.label}
+                </button>
+              );
+            })}
+
+            <button
+              aria-pressed={values.verified === 1}
+              onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
+              className={cn(
+                "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                values.verified === 1
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border hover:border-foreground",
+              )}
+            >
+              ✓ Verified
+            </button>
+          </div>
+
+          <span className="hidden shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:block">
             {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
           </span>
         </div>
+
 
       </div>
 
