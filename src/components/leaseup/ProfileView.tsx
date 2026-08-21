@@ -650,9 +650,15 @@ function OwnListingRow({ listing }: { listing: any }) {
         className="min-w-0 flex-1"
       >
         <div className="truncate text-sm font-semibold">{listing.title}</div>
-        <div className="mt-0.5 text-xs text-muted-foreground">
-          {(listing.view_count ?? 0).toLocaleString()} views · {savedCount} saved
-        </div>
+        {(() => {
+          const v = listing.view_count ?? 0;
+          const parts = [
+            v > 0 ? `${v.toLocaleString()} ${v === 1 ? "view" : "views"}` : null,
+            savedCount > 0 ? `${savedCount} saved` : null,
+          ].filter(Boolean) as string[];
+          if (!parts.length) return null;
+          return <div className="mt-0.5 text-xs text-muted-foreground">{parts.join(" · ")}</div>;
+        })()}
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           <span>${listing.price}/mo</span>
           <span
