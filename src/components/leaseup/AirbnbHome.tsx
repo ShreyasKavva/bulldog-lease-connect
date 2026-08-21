@@ -127,6 +127,15 @@ export function AirbnbHome({
   const [cat, setCat] = useState<Cat>("all");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
+  /**
+   * Q177 — when we don't know the visitor's campus, ask the browser where they
+   * are and personalise around the closest campus instead of a random one.
+   */
+  const recentIds = useRecentViews();
+  const geoCampus = useNearestCampus(campuses, !userCampusId && recentIds.length < 2);
+  const homeCampusId = userCampusId ?? geoCampus?.id ?? feedCampusId ?? null;
+
+
 
   // Median price per (campus, beds) for the Best Deals filter/badge.
   const priceMedian = useMemo(() => {
