@@ -699,7 +699,7 @@ function LookingForCard({
                   : "border-border text-foreground hover:border-primary hover:text-primary"
               }`}
             >
-              🔼 {upvotes}
+              🔼{upvotes > 0 ? ` ${upvotes}` : ""}
             </button>
             {/* Q157 — owner bump (once per 24h) */}
             {isMine && (
