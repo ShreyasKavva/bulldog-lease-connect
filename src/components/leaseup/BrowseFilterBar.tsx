@@ -17,6 +17,16 @@ import { cn } from "@/lib/utils";
 
 export type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
 
+export type MoveIn = "now" | "30d" | "summer" | "fall";
+
+const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
+  { key: "now", label: "🏃 Available now" },
+  { key: "30d", label: "📅 Next 30 days" },
+  { key: "summer", label: "☀️ Summer" },
+  { key: "fall", label: "🍂 Fall" },
+];
+
+
 export type BrowseFilterValues = {
   q?: string;
   area?: string;
