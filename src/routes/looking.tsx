@@ -455,19 +455,6 @@ function LookingForPage() {
 
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {/* Q124 — signed-out CTA card above the post list */}
-            {!user && (
-              <div className="rounded-xl border border-[#FF5A5F]/20 bg-[#FF5A5F]/5 p-4 sm:col-span-2">
-                <h3 className="text-sm font-semibold">Looking for a sublease?</h3>
-                <p className="text-sm text-muted-foreground">Post your search and let hosts reach you.</p>
-                <Link
-                  to="/post"
-                  className="mt-3 inline-block rounded-lg bg-[#FF5A5F] px-4 py-2 text-sm text-white hover:bg-[#e04e53]"
-                >
-                  Post my search →
-                </Link>
-              </div>
-            )}
             {posts.map(p => (
               <LookingForCard
                 key={p.id}
