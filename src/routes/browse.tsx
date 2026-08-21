@@ -42,12 +42,6 @@ type BedKey = (typeof BED_VALUES)[number];
 /** Q161 — move-in quick filter values. */
 const MOVEIN_VALUES = ["now", "30d", "summer", "fall"] as const;
 type MoveIn = (typeof MOVEIN_VALUES)[number];
-const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
-  { key: "now", label: "🏃 Available now" },
-  { key: "30d", label: "📅 Next 30 days" },
-  { key: "summer", label: "☀️ Summer" },
-  { key: "fall", label: "🍂 Fall" },
-];
 
 /** Matches a listing's available_from against a move-in quick filter. */
 function matchesMoveIn(availableFrom: string | null | undefined, key: MoveIn): boolean {
