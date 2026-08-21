@@ -82,7 +82,7 @@ export function SearchPill({
   const whenLabel =
     value.from && value.to
       ? `${fmt(value.from)} – ${fmt(value.to)}`
-      : value.from ? `${fmt(value.from)} – …` : "Move-in date";
+      : value.from ? `${fmt(value.from)} – Select end date` : "Move-in – Move-out";
   const whoLabel = value.guests <= 1 ? "How many students" : `${value.guests} students`;
 
   // Active/hover state drives the raised-pill look and divider hiding.
