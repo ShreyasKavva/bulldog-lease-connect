@@ -861,28 +861,37 @@ function GuestWelcomeStrip() {
 /* ---------------- Q148 — featured listing hero card ---------------- */
 
 function FeaturedListingCard({
-  listings, campuses, onOpen,
+  listings, campuses, onOpen, campusId,
 }: {
   listings: Listing[];
   campuses: Campus[];
   onOpen: (l: Listing) => void;
+  /** Q177 — the spotlight is always scoped to one campus, never a random one. */
+  campusId?: string | null;
 }) {
   const active = useMemo(
-    () => listings.filter((l) => (l.status ?? "active") === "active"),
-    [listings],
+    () =>
+      listings.filter(
+        (l) =>
+          (l.status ?? "active") === "active" &&
+          (!campusId || l.campus_id === campusId) &&
+          (l.photo_urls?.length || l.photos?.length),
+      ),
+    [listings, campusId],
   );
   const featured = useMemo(() => {
-    if (active.length < 5) return null;
+    if (!campusId || active.length < 5) return null;
     return [...active].sort(
       (a, b) =>
         ((b.view_count ?? 0) * 0.4 + (b.saves_count ?? 0) * 0.6) -
         ((a.view_count ?? 0) * 0.4 + (a.saves_count ?? 0) * 0.6),
     )[0];
-  }, [active]);
+  }, [active, campusId]);
 
   if (!featured) return null;
   const campus = campuses.find((c) => c.id === featured.campus_id);
-  const photo = featured.photos?.[0];
+  const photo = (featured.photo_urls?.length ? featured.photo_urls : featured.photos)?.[0];
+
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
