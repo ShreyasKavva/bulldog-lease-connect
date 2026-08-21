@@ -20,6 +20,7 @@ import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
 import { pushRecentView } from "@/lib/leaseup/recent-views";
+import { isDemoListing } from "@/lib/leaseup/demo";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
 import { CostCalculator } from "@/components/leaseup/CostCalculator";
@@ -331,13 +332,20 @@ export function ListingDetailSheet({
           )}
 
 
-          {/* Social-proof stats row */}
+          {/* Social-proof stats row — Q174-FIX: zero counts are never shown */}
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
-            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
-            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label={saveCount === 1 ? "save" : "saves"} />
-            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label={msgCount === 1 ? "message" : "messages"} />
+            {(views ?? 0) > 0 && (
+              <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
+            )}
+            {saveCount > 0 && (
+              <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label={saveCount === 1 ? "save" : "saves"} />
+            )}
+            {msgCount > 0 && (
+              <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label={msgCount === 1 ? "message" : "messages"} />
+            )}
             <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
           </div>
+
 
 
 
@@ -435,6 +443,13 @@ export function ListingDetailSheet({
               </div>
               <span className="text-xs font-semibold text-primary">View profile</span>
             </button>
+          )}
+
+          {/* Q174-FIX — demo-account warning, shown before the Message action */}
+          {isDemoListing(listing.user_id) && (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              🧪 Sample listing — this one is posted by the LeaseUp demo account, so don't expect a reply.
+            </p>
           )}
 
           <div className="grid grid-cols-2 gap-2">
