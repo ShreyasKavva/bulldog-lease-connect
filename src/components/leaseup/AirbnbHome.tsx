@@ -31,6 +31,8 @@ import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
+import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
+
 import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
 import { useSession } from "@/lib/leaseup/use-session";
