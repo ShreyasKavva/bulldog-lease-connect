@@ -466,13 +466,30 @@ export function AirbnbHome({
             onSave={onSave}
             onOpen={onOpen}
           />
-          {/* Q149 — recently viewed */}
-          <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+          {/* Q149/Q177 — recently viewed, or "near you" for first-time visitors */}
+          {recentIds.length >= 2 ? (
+            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+          ) : (
+            <NearYouSection
+              listings={listings}
+              campus={geoCampus ?? campuses.find((c) => c.id === homeCampusId) ?? null}
+              savedIds={savedIds}
+              onSave={onSave}
+              onOpen={onOpen}
+            />
+          )}
         </>
       )}
 
-      {/* Q148 — featured listing hero card */}
-      {!loading && <FeaturedListingCard listings={listings} campuses={campuses} onOpen={onOpen} />}
+      {/* Q148 — featured listing hero card, scoped to the visitor's campus */}
+      {!loading && (
+        <FeaturedListingCard
+          listings={listings}
+          campuses={campuses}
+          onOpen={onOpen}
+          campusId={search.campusId ?? homeCampusId}
+        />
+      )}
 
 
       {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
@@ -480,7 +497,8 @@ export function AirbnbHome({
         {!loading && (
           <SmartSections
             campuses={campuses}
-            userCampusId={search.campusId ?? userCampusId ?? feedCampusId ?? null}
+            userCampusId={search.campusId ?? homeCampusId}
+
             savedIds={savedIds}
             onSave={onSave}
             onOpen={onOpen}
