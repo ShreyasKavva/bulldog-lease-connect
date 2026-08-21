@@ -331,13 +331,20 @@ export function ListingDetailSheet({
           )}
 
 
-          {/* Social-proof stats row */}
+          {/* Social-proof stats row — Q174-FIX: zero counts are never shown */}
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
-            <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
-            <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label={saveCount === 1 ? "save" : "saves"} />
-            <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label={msgCount === 1 ? "message" : "messages"} />
+            {(views ?? 0) > 0 && (
+              <Stat icon={<Eye className="h-3.5 w-3.5" />} value={<CountUp value={views ?? 0} />} label={(views ?? 0) === 1 ? "view" : "views"} />
+            )}
+            {saveCount > 0 && (
+              <Stat icon={<HeartIcon className="h-3.5 w-3.5" />} value={<CountUp value={saveCount} />} label={saveCount === 1 ? "save" : "saves"} />
+            )}
+            {msgCount > 0 && (
+              <Stat icon={<MessageCircle className="h-3.5 w-3.5" />} value={<CountUp value={msgCount} />} label={msgCount === 1 ? "message" : "messages"} />
+            )}
             <Stat icon={<Clock className="h-3.5 w-3.5" />} value={daysAgo(listing.created_at)} label="posted" />
           </div>
+
 
 
 
