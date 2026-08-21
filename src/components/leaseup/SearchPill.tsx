@@ -9,7 +9,7 @@
  *    active it expands to show the "Search" label.
  *  - Popovers open below the pressed segment (aligned to that segment).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search, X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -58,6 +58,7 @@ export function SearchPill({
   const isMobile = useIsMobile();
 
   const [openField, setOpenField] = useState<null | Field>(null);
+  const firedRef = useRef(false);
   const [hoverField, setHoverField] = useState<null | Field>(null);
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity,
@@ -82,7 +83,7 @@ export function SearchPill({
   const whenLabel =
     value.from && value.to
       ? `${fmt(value.from)} – ${fmt(value.to)}`
-      : value.from ? `${fmt(value.from)} – …` : "Move-in date";
+      : value.from ? `${fmt(value.from)} – Select end date` : "Move-in – Move-out";
   const whoLabel = value.guests <= 1 ? "How many students" : `${value.guests} students`;
 
   // Active/hover state drives the raised-pill look and divider hiding.
@@ -124,7 +125,7 @@ export function SearchPill({
 
     >
       {/* WHERE */}
-      <Popover open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
+      <Popover modal={false} open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("where")}
@@ -171,7 +172,7 @@ export function SearchPill({
       <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("where") ? "opacity-100" : "opacity-0")} />
 
       {/* WHEN */}
-      <Popover open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
+      <Popover modal={false} open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("when")}
@@ -188,7 +189,13 @@ export function SearchPill({
           <Calendar
             mode="range"
             selected={{ from: value.from ?? undefined, to: value.to ?? undefined }}
-            onSelect={(r: any) => onChange({ ...value, from: r?.from ?? null, to: r?.to ?? null })}
+            onSelect={(r: any) => {
+              const from = r?.from ?? null;
+              let to = r?.to ?? null;
+              // A half-finished range (single click) must never submit from === to.
+              if (from && to && new Date(from).toDateString() === new Date(to).toDateString()) to = null;
+              onChange({ ...value, from, to });
+            }}
             numberOfMonths={isMobile ? 1 : 2}
             className="pointer-events-auto"
           />
@@ -209,13 +216,12 @@ export function SearchPill({
       <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("when") ? "opacity-100" : "opacity-0")} />
 
       {/* WHO */}
-      <Popover open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
+      <Popover modal={false} open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("who")}
             onMouseLeave={() => setHoverField(null)}
-            className={cn(segmentClass("who"), "flex-1 sm:pr-20")}
-
+            className={cn(segmentClass("who"), "flex-1")}
           >
             <span className="text-[12px] font-semibold text-foreground">Who</span>
             <span className={cn("mt-0.5 text-sm truncate w-full", value.guests > 1 ? "font-medium text-foreground" : "text-muted-foreground")}>
@@ -245,12 +251,24 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      {/* SEARCH — full-width row on mobile; floats over the WHO segment on desktop */}
+      {/* SEARCH — own layout space (no overlap with WHO) so the first click always lands,
+          even while a popover is open. pointerdown fires before Radix's dismiss layer. */}
       <button
-        onClick={() => { setOpenField(null); onSearch?.(); }}
+        onPointerDown={(e) => {
+          if (!canSearch) return;
+          e.preventDefault();
+          firedRef.current = true;
+          setOpenField(null);
+          onSearch?.();
+        }}
+        onClick={() => {
+          if (firedRef.current) { firedRef.current = false; return; }
+          setOpenField(null);
+          onSearch?.();
+        }}
         disabled={!canSearch}
         className={cn(
-          "mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:-ml-14 sm:self-center",
+          "relative z-[60] mt-2 flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:ml-1 sm:self-center",
           anyActive ? "sm:w-auto sm:px-5" : "sm:w-12 sm:justify-center",
         )}
         aria-label="Search"

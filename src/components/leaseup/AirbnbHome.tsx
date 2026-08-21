@@ -238,9 +238,11 @@ export function AirbnbHome({
         );
       if (hit) state = { ...state, campusId: hit.id, where: hit.short_name ?? hit.name };
     }
-    // Q119 — a picked campus goes straight to its landing page.
+    // Q176 — only a bare campus pick (no dates, no roommate count) goes to the
+    // campus landing page. Any other filter must reach /browse with all params.
+    const onlyCampus = !state.from && !state.to && state.guests <= 1;
     const picked = state.campusId ? campuses.find((c) => c.id === state.campusId) : null;
-    if (picked?.slug) {
+    if (onlyCampus && picked?.slug) {
       navigate({ to: "/campus/$slug", params: { slug: picked.slug } });
       return;
     }
