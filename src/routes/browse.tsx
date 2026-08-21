@@ -31,7 +31,6 @@ import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
-import { CampusPills } from "@/components/leaseup/CampusPills";
 import { matchesRoommateFilters } from "@/lib/leaseup/roommate-prefs";
 
 type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
