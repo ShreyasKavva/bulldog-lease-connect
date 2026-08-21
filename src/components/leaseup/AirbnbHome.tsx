@@ -249,16 +249,18 @@ export function AirbnbHome({
         );
       if (hit) state = { ...state, campusId: hit.id, where: hit.short_name ?? hit.name };
     }
-    // Q176 — only a bare campus pick (no dates, no roommate count) goes to the
-    // campus landing page. Any other filter must reach /browse with all params.
-    const onlyCampus = !state.from && !state.to && state.guests <= 1;
+    // Q177 — searching always lands on /browse. When we know the campus we open
+    // the map centered on it (Airbnb-style), with the filter chips on top.
     const picked = state.campusId ? campuses.find((c) => c.id === state.campusId) : null;
-    if (onlyCampus && picked?.slug) {
-      navigate({ to: "/campus/$slug", params: { slug: picked.slug } });
-      return;
-    }
-    navigate({ to: "/browse", search: buildBrowseSearch(state) as any });
+    navigate({
+      to: "/browse",
+      search: {
+        ...(buildBrowseSearch(state) as Record<string, unknown>),
+        ...(picked ? { view: "map" } : {}),
+      } as any,
+    });
   }
+
 
   /** Category pills: "All" filters in place, the rest deep-link into /browse. */
   const CAT_SEARCH: Partial<Record<Cat, Record<string, string | number>>> = {
