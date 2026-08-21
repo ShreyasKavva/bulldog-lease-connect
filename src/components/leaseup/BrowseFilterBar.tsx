@@ -287,49 +287,24 @@ export function BrowseFilterBar({
       aria-hidden={!stuck}
     >
       <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-4">
-        <div className="hidden h-9 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-3 pr-2 sm:flex">
+        <div className="flex h-9 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-3 pr-2">
           <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             value={searchInput}
             onChange={(e) => onSearchInput(e.target.value)}
-            placeholder="Search..."
+            placeholder="Search subleases…"
             aria-label="Search subleases"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </div>
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto sm:flex-none">
-          <button
-            onClick={() => onPatch({ bedrooms: undefined })}
-            className={cn(
-              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-              bedSet.size === 0 ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
-            )}
-          >
-            Any
-          </button>
-          {BEDS.map((b) => (
-            <button
-              key={b}
-              onClick={() => toggleBed(b)}
-              className={cn(
-                "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-                bedSet.has(b) ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
-              )}
-            >
-              {bedLabel(b)}
-            </button>
-          ))}
-          <button
-            onClick={() => onPatch({ new: values.new ? undefined : true })}
-            aria-pressed={!!values.new}
-            className={cn(
-              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-              values.new ? "border-green-600 bg-green-600 text-white" : "hover:border-foreground",
-            )}
-          >
-            🆕 New
-          </button>
-        </div>
+        <button
+          onClick={() => setFiltersOpen(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-bold"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filters{activeCount > 0 && <span className="text-primary">({activeCount})</span>}
+        </button>
+
         <div className="relative shrink-0">
           <button
             onClick={() => setStickySortOpen((o) => !o)}
