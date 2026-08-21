@@ -18,7 +18,8 @@ import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
 
-const CENTER: [number, number] = [33.9519, -83.3576];
+/** Fallback only — the real center comes from the selected campus (Q177). */
+const DEFAULT_CENTER: [number, number] = [39.8283, -98.5795];
 
 /** Stable pseudo-random offset from the listing id (no Math.random → no SSR drift). */
 function seededOffset(id: string): [number, number] {
@@ -32,10 +33,19 @@ function seededOffset(id: string): [number, number] {
   return [(a - 0.5) * 0.04, (b - 0.5) * 0.04];
 }
 
-function coordsFor(l: Listing): [number, number] {
+/**
+ * Best available position: the listing's own coordinates, else a stable
+ * scatter around its campus, else around the map center.
+ */
+function coordsFor(
+  l: Listing,
+  center: [number, number],
+  campusCoords?: Record<string, [number, number]>,
+): [number, number] {
   if (l.lat != null && l.lng != null) return [l.lat, l.lng];
+  const base = (l.campus_id && campusCoords?.[l.campus_id]) || center;
   const [dy, dx] = seededOffset(l.id);
-  return [CENTER[0] + dy, CENTER[1] + dx];
+  return [base[0] + dy, base[1] + dx];
 }
 
 function pinHtml(l: Listing, active: boolean) {
@@ -127,7 +137,24 @@ function PopupCard({ listing, onClose }: { listing: Listing; onClose: () => void
   );
 }
 
-export function BrowseMapView({ listings }: { listings: Listing[] }) {
+export function BrowseMapView({
+  listings,
+  center,
+  centerLabel,
+  campusCoords,
+}: {
+  listings: Listing[];
+  /** Campus coordinates for the current search — the map opens here. */
+  center?: [number, number] | null;
+  centerLabel?: string;
+  /** campus id -> coordinates, so pins land near the right school. */
+  campusCoords?: Record<string, [number, number]>;
+}) {
+  const mapCenter = useMemo<[number, number]>(
+    () => center ?? DEFAULT_CENTER,
+    [center?.[0], center?.[1]],
+  );
+  const zoom = center ? 14 : 4;
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LType.Map | null>(null);
   const Lref = useRef<typeof LType | null>(null);
@@ -149,7 +176,7 @@ export function BrowseMapView({ listings }: { listings: Listing[] }) {
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
       Lref.current = L;
-      const map = L.map(elRef.current, { zoomControl: true, attributionControl: false }).setView(CENTER, 14);
+      const map = L.map(elRef.current, { zoomControl: true, attributionControl: false }).setView(mapCenter, zoom);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
@@ -171,7 +198,7 @@ export function BrowseMapView({ listings }: { listings: Listing[] }) {
     const layer = L.layerGroup().addTo(map);
     layerRef.current = layer;
     listings.forEach((l) => {
-      const [lat, lng] = coordsFor(l);
+      const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
       const isActive = l.id === activeId;
       const marker = L.marker([lat, lng], {
         icon: L.divIcon({ className: "lu-map-pin-wrap", html: pinHtml(l, isActive), iconSize: [56, 26], iconAnchor: [28, 26] }),
@@ -182,17 +209,28 @@ export function BrowseMapView({ listings }: { listings: Listing[] }) {
         setActiveId(l.id);
       });
     });
-  }, [listings, activeId, ready]);
+  }, [listings, activeId, ready, mapCenter, campusCoords]);
+
+  /** Recenter whenever the visitor switches campus. */
+  useEffect(() => {
+    if (!ready || !center) return;
+    mapRef.current?.setView(center, 14);
+  }, [ready, center?.[0], center?.[1]]);
 
   function focus(l: Listing) {
     setActiveId(l.id);
     setSheetOpen(false);
-    const [lat, lng] = coordsFor(l);
+    const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
     mapRef.current?.flyTo([lat, lng], 16);
   }
 
   const list = (
     <div className="space-y-1 p-2">
+      {centerLabel && (
+        <p className="px-2 pb-1 pt-2 text-sm font-semibold text-foreground">
+          Subleases around {centerLabel}
+        </p>
+      )}
       {listings.length === 0 ? (
         <p className="p-6 text-center text-sm text-muted-foreground">No subleases match those filters.</p>
       ) : (

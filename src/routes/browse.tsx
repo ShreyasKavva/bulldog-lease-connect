@@ -335,6 +335,18 @@ function Browse() {
 
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
+
+  /** Q177 — the campus the visitor actually searched for (not their profile). */
+  const searchedCampus = campusId ? campuses.find((c) => c.id === campusId) ?? null : null;
+
+  /** Q177 — pins fall back to their own campus, not one hardcoded city. */
+  const campusCoords = useMemo(() => {
+    const out: Record<string, [number, number]> = {};
+    for (const c of campuses) {
+      if (c.lat != null && c.lng != null) out[c.id] = [c.lat, c.lng];
+    }
+    return out;
+  }, [campuses]);
   const listView = s.view === "list";
 
   /** Q160 — remember the last chosen browse layout. */
@@ -674,9 +686,15 @@ function Browse() {
 
         {mapView ? (
           <div className="mt-3">
-            <BrowseMapView listings={filtered} />
+            <BrowseMapView
+              listings={filtered}
+              center={searchedCampus ? campusCoords[searchedCampus.id] ?? null : null}
+              centerLabel={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : undefined}
+              campusCoords={campusCoords}
+            />
           </div>
         ) : (
+
         <main className="mx-auto max-w-7xl px-4 py-5">
 
           {user && <RenterFeedbackPrompt userId={user.id} />}

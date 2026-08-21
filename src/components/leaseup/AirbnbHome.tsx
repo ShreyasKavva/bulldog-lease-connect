@@ -31,6 +31,8 @@ import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
+import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
+
 import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -126,6 +128,15 @@ export function AirbnbHome({
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  /**
+   * Q177 — when we don't know the visitor's campus, ask the browser where they
+   * are and personalise around the closest campus instead of a random one.
+   */
+  const recentIds = useRecentViews();
+  const geoCampus = useNearestCampus(campuses, !userCampusId && recentIds.length < 2);
+  const homeCampusId = userCampusId ?? geoCampus?.id ?? feedCampusId ?? null;
+
 
 
   // Median price per (campus, beds) for the Best Deals filter/badge.
@@ -238,16 +249,18 @@ export function AirbnbHome({
         );
       if (hit) state = { ...state, campusId: hit.id, where: hit.short_name ?? hit.name };
     }
-    // Q176 — only a bare campus pick (no dates, no roommate count) goes to the
-    // campus landing page. Any other filter must reach /browse with all params.
-    const onlyCampus = !state.from && !state.to && state.guests <= 1;
+    // Q177 — searching always lands on /browse. When we know the campus we open
+    // the map centered on it (Airbnb-style), with the filter chips on top.
     const picked = state.campusId ? campuses.find((c) => c.id === state.campusId) : null;
-    if (onlyCampus && picked?.slug) {
-      navigate({ to: "/campus/$slug", params: { slug: picked.slug } });
-      return;
-    }
-    navigate({ to: "/browse", search: buildBrowseSearch(state) as any });
+    navigate({
+      to: "/browse",
+      search: {
+        ...(buildBrowseSearch(state) as Record<string, unknown>),
+        ...(picked ? { view: "map" } : {}),
+      } as any,
+    });
   }
+
 
   /** Category pills: "All" filters in place, the rest deep-link into /browse. */
   const CAT_SEARCH: Partial<Record<Cat, Record<string, string | number>>> = {
@@ -457,13 +470,30 @@ export function AirbnbHome({
             onSave={onSave}
             onOpen={onOpen}
           />
-          {/* Q149 — recently viewed */}
-          <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+          {/* Q149/Q177 — recently viewed, or "near you" for first-time visitors */}
+          {recentIds.length >= 2 ? (
+            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+          ) : (
+            <NearYouSection
+              listings={listings}
+              campus={geoCampus ?? campuses.find((c) => c.id === homeCampusId) ?? null}
+              savedIds={savedIds}
+              onSave={onSave}
+              onOpen={onOpen}
+            />
+          )}
         </>
       )}
 
-      {/* Q148 — featured listing hero card */}
-      {!loading && <FeaturedListingCard listings={listings} campuses={campuses} onOpen={onOpen} />}
+      {/* Q148 — featured listing hero card, scoped to the visitor's campus */}
+      {!loading && (
+        <FeaturedListingCard
+          listings={listings}
+          campuses={campuses}
+          onOpen={onOpen}
+          campusId={search.campusId ?? homeCampusId}
+        />
+      )}
 
 
       {/* SMART SECTIONS (Q93) — curated, query-backed rows */}
@@ -471,7 +501,8 @@ export function AirbnbHome({
         {!loading && (
           <SmartSections
             campuses={campuses}
-            userCampusId={search.campusId ?? userCampusId ?? feedCampusId ?? null}
+            userCampusId={search.campusId ?? homeCampusId}
+
             savedIds={savedIds}
             onSave={onSave}
             onOpen={onOpen}
@@ -861,31 +892,44 @@ function GuestWelcomeStrip() {
 /* ---------------- Q148 — featured listing hero card ---------------- */
 
 function FeaturedListingCard({
-  listings, campuses, onOpen,
+  listings, campuses, onOpen, campusId,
 }: {
   listings: Listing[];
   campuses: Campus[];
   onOpen: (l: Listing) => void;
+  /** Q177 — the spotlight is always scoped to one campus, never a random one. */
+  campusId?: string | null;
 }) {
   const active = useMemo(
-    () => listings.filter((l) => (l.status ?? "active") === "active"),
-    [listings],
+    () =>
+      listings.filter(
+        (l) =>
+          (l.status ?? "active") === "active" &&
+          (!campusId || l.campus_id === campusId) &&
+          (l.photo_urls?.length || l.photos?.length),
+      ),
+    [listings, campusId],
   );
   const featured = useMemo(() => {
-    if (active.length < 5) return null;
+    if (!campusId || active.length < 5) return null;
     return [...active].sort(
       (a, b) =>
         ((b.view_count ?? 0) * 0.4 + (b.saves_count ?? 0) * 0.6) -
         ((a.view_count ?? 0) * 0.4 + (a.saves_count ?? 0) * 0.6),
     )[0];
-  }, [active]);
+  }, [active, campusId]);
 
   if (!featured) return null;
   const campus = campuses.find((c) => c.id === featured.campus_id);
-  const photo = featured.photos?.[0];
+  const photo = (featured.photo_urls?.length ? featured.photo_urls : featured.photos)?.[0];
+
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">
+        Most popular {campus ? `near ${campus.short_name ?? campus.name}` : "this week"}
+      </h2>
+
       <button
         type="button"
         onClick={() => onOpen(featured)}
@@ -1059,3 +1103,57 @@ function RecentlyViewedSection({
   );
 }
 
+
+/* ---------------- Q177 — "Near you" (first-visit fallback) ---------------- */
+
+/**
+ * Shown instead of "Recently viewed" when a visitor has no history: we use the
+ * campus closest to their browser location so the first row is relevant rather
+ * than an arbitrary listing from across the country.
+ */
+function NearYouSection({
+  listings, campus, savedIds, onSave, onOpen,
+}: {
+  listings: Listing[];
+  campus: Campus | null;
+  savedIds: Set<string>;
+  onSave: (l: Listing) => void;
+  onOpen: (l: Listing) => void;
+}) {
+  const items = useMemo(() => {
+    if (!campus) return [];
+    return listings
+      .filter(
+        (l) =>
+          l.campus_id === campus.id &&
+          (l.status ?? "active") === "active" &&
+          (l.photo_urls?.length || l.photos?.length),
+      )
+      .slice(0, 8);
+  }, [listings, campus]);
+
+  if (!campus || items.length < 3) return null;
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-foreground">
+        Near you — {campus.short_name ?? campus.name}
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Based on your location. Pick a different campus any time.
+      </p>
+      <ScrollRow>
+        {items.map((l) => (
+          <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+            <ListingCard
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onSave={() => onSave(l)}
+              onOpen={() => onOpen(l)}
+            />
+          </div>
+        ))}
+      </ScrollRow>
+    </section>
+  );
+}
