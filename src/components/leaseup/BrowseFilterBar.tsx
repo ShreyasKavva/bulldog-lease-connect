@@ -136,6 +136,9 @@ export function BrowseFilterBar({
   resultCount,
   placeLabel,
   initialFiltersOpen,
+  campuses = [],
+  campusValue,
+  onCampusChange,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -146,7 +149,12 @@ export function BrowseFilterBar({
   placeLabel: string;
   /** Q96 — nav search on mobile deep-links here with the sheet open. */
   initialFiltersOpen?: boolean;
+  /** Campus picker inside the bar (replaces the old campus rail). */
+  campuses?: Array<{ id: string; slug: string; name: string; short_name?: string | null }>;
+  campusValue?: string;
+  onCampusChange?: (slug: string | undefined) => void;
 }) {
+
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
