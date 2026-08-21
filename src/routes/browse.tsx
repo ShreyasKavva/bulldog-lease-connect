@@ -336,6 +336,9 @@ function Browse() {
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
 
+  /** Q177 — the campus the visitor actually searched for (not their profile). */
+  const searchedCampus = campuses.find((c) => c.slug === s.campus) ?? null;
+
   /** Q177 — pins fall back to their own campus, not one hardcoded city. */
   const campusCoords = useMemo(() => {
     const out: Record<string, [number, number]> = {};
@@ -685,12 +688,8 @@ function Browse() {
           <div className="mt-3">
             <BrowseMapView
               listings={filtered}
-              center={
-                myCampus?.lat != null && myCampus?.lng != null
-                  ? [myCampus.lat, myCampus.lng]
-                  : null
-              }
-              centerLabel={myCampus ? (myCampus.short_name ?? myCampus.name) : undefined}
+              center={searchedCampus ? campusCoords[searchedCampus.id] ?? null : null}
+              centerLabel={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : undefined}
               campusCoords={campusCoords}
             />
           </div>
