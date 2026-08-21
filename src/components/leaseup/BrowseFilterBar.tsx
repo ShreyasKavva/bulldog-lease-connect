@@ -253,6 +253,12 @@ export function BrowseFilterBar({
   if (values.verified === 1)
     pills.push({ label: "✓ Verified", clear: { verified: undefined } });
   if (values.new) pills.push({ label: "🆕 New", clear: { new: undefined } });
+  if (values.movein)
+    pills.push({
+      label: MOVEIN_PILLS.find((p) => p.key === values.movein)?.label ?? "Move-in",
+      clear: { movein: undefined },
+    });
+
 
   return (
     <>
