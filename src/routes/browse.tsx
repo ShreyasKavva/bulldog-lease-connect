@@ -31,7 +31,6 @@ import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
-import { CampusPills } from "@/components/leaseup/CampusPills";
 import { matchesRoommateFilters } from "@/lib/leaseup/roommate-prefs";
 
 type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
@@ -43,12 +42,6 @@ type BedKey = (typeof BED_VALUES)[number];
 /** Q161 — move-in quick filter values. */
 const MOVEIN_VALUES = ["now", "30d", "summer", "fall"] as const;
 type MoveIn = (typeof MOVEIN_VALUES)[number];
-const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
-  { key: "now", label: "🏃 Available now" },
-  { key: "30d", label: "📅 Next 30 days" },
-  { key: "summer", label: "☀️ Summer" },
-  { key: "fall", label: "🍂 Fall" },
-];
 
 /** Matches a listing's available_from against a move-in quick filter. */
 function matchesMoveIn(availableFrom: string | null | undefined, key: MoveIn): boolean {
@@ -600,27 +593,23 @@ function Browse() {
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
       <div>
-        {/* Browse sub-tabs */}
-        <div className="sticky top-14 z-30 border-b bg-surface">
-          <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 text-sm font-bold">
-            <span className="rounded-full bg-primary px-3 py-1.5 text-primary-foreground">🏠 Available</span>
-            <Link to="/looking" className="rounded-full bg-background px-3 py-1.5 text-muted-foreground hover:text-foreground">🔍 Looking For</Link>
-            
-          </div>
-        </div>
-
         {/* Q108 — page heading reflects the active campus filter */}
-        <div className="mx-auto max-w-7xl px-4 pt-5">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 pt-5">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {campusId
               ? `Subleases near ${campuses.find((c) => c.id === campusId)?.name ?? "your campus"}`
               : "Browse subleases"}
           </h1>
+          <Link
+            to="/looking"
+            className="ml-auto text-sm font-semibold text-primary hover:underline"
+          >
+            Looking for a place instead? →
+          </Link>
         </div>
 
-        {/* Q87 — Airbnb-style sticky search bar + filter modal */}
+        {/* One search + filter bar. Campus, dates, price and extras all live here. */}
         <BrowseFilterBar
-
           values={s as BrowseFilterValues}
           onPatch={(patch) => patchSearch(patch as Partial<BrowseSearch>)}
           onClearAll={clearFilters}
@@ -629,60 +618,11 @@ function Browse() {
           resultCount={filtered.length}
           placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
           initialFiltersOpen={s.openFilters === 1}
+          campuses={campuses}
+          campusValue={campusId ? campuses.find((c) => c.id === campusId)?.slug : undefined}
+          onCampusChange={(slug) => patchSearch({ campus: slug })}
         />
 
-        <div className="mx-auto max-w-7xl">
-          <CampusPills
-            title="Browse by campus"
-            slugs={[
-              "university-of-georgia",
-              "ohio-state-university",
-              "university-of-texas-at-austin",
-              "georgia-tech",
-              "auburn-university",
-              "clemson-university",
-              "duke-university",
-              "florida-state-university",
-              "university-of-florida",
-              "university-of-michigan",
-              "penn-state-university",
-              "vanderbilt-university",
-              "texas-a-m-university",
-              "arizona-state-university",
-              "university-of-southern-california",
-              "new-york-university",
-              "boston-university",
-              "university-of-washington",
-            ]}
-          />
-        </div>
-
-        {/* Q161 — move-in date quick filters (hidden when explicit dates are set) */}
-        {!s.from && !s.to && (
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto pb-1">
-              {MOVEIN_PILLS.map((p) => {
-                const active = s.movein === p.key;
-                return (
-                  <button
-                    key={p.key}
-                    type="button"
-                    onClick={() => patchSearch({ movein: active ? undefined : p.key })}
-                    aria-pressed={active}
-                    className={cn(
-                      "whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                      active
-                        ? "bg-indigo-600 text-white"
-                        : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
 
 
@@ -746,17 +686,6 @@ function Browse() {
               campusName={myCampus?.name}
               onOpen={setSelected}
             />
-          )}
-          {view === "grid" && (
-            <Link
-              to="/looking"
-              className="mb-4 mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3 text-sm transition hover:bg-primary-light/70"
-            >
-              <span className="font-medium text-primary-dark">
-                Looking for a sublease? Post your request and let listers come to you.
-              </span>
-              <span className="inline-flex items-center gap-1 font-bold text-primary">Post a request →</span>
-            </Link>
           )}
           {view === "scroll" ? (
             <ScrollView

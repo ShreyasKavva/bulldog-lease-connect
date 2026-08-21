@@ -17,6 +17,16 @@ import { cn } from "@/lib/utils";
 
 export type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
 
+export type MoveIn = "now" | "30d" | "summer" | "fall";
+
+const MOVEIN_PILLS: Array<{ key: MoveIn; label: string }> = [
+  { key: "now", label: "🏃 Available now" },
+  { key: "30d", label: "📅 Next 30 days" },
+  { key: "summer", label: "☀️ Summer" },
+  { key: "fall", label: "🍂 Fall" },
+];
+
+
 export type BrowseFilterValues = {
   q?: string;
   area?: string;
@@ -36,6 +46,9 @@ export type BrowseFilterValues = {
   sort?: Sort;
   /** Q159 — "New" quick filter (last 7 days). */
   new?: true;
+  /** Q161 — move-in quick filter, now inside the Filters sheet. */
+  movein?: MoveIn;
+
   /** Q147 — roommate preference filters (csv of option ids). */
   rm_looking?: string;
   rm_study?: string;
@@ -136,6 +149,9 @@ export function BrowseFilterBar({
   resultCount,
   placeLabel,
   initialFiltersOpen,
+  campuses = [],
+  campusValue,
+  onCampusChange,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -146,7 +162,12 @@ export function BrowseFilterBar({
   placeLabel: string;
   /** Q96 — nav search on mobile deep-links here with the sheet open. */
   initialFiltersOpen?: boolean;
+  /** Campus picker inside the bar (replaces the old campus rail). */
+  campuses?: Array<{ id: string; slug: string; name: string; short_name?: string | null }>;
+  campusValue?: string;
+  onCampusChange?: (slug: string | undefined) => void;
 }) {
+
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -171,7 +192,6 @@ export function BrowseFilterBar({
     };
   }, [searchOpen]);
 
-  const [priceOpen, setPriceOpen] = useState(false);
   /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
   const barRef = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
@@ -190,25 +210,8 @@ export function BrowseFilterBar({
   }, []);
   useEffect(() => { if (!stuck) setStickySortOpen(false); }, [stuck]);
 
-  const activePricePreset = PRICE_PRESETS.find(
-    (p) => values.min_price === p.min && values.max_price === p.max,
-  );
-  const priceButtonLabel = activePricePreset
-    ? `Price: ${activePricePreset.label.replace("/mo", "")}`
-    : values.min_price != null || values.max_price != null
-      ? `Price: $${values.min_price ?? 0}–$${values.max_price ?? PRICE_MAX}`
-      : "Price";
-
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
-
-  /** Q124 — any quick filter (bedroom / price / verified) active. */
-  const quickActive =
-    bedSet.size > 0 ||
-    values.min_price != null ||
-    values.max_price != null ||
-    values.verified === 1;
-
 
   const activeCount =
     (values.q ? 1 : 0) +
@@ -216,8 +219,12 @@ export function BrowseFilterBar({
     (values.min_price != null || values.max_price != null ? 1 : 0) +
     (bedSet.size ? 1 : 0) +
     (values.baths != null ? 1 : 0) +
+    (values.movein ? 1 : 0) +
+    (values.new ? 1 : 0) +
+    (values.verified === 1 ? 1 : 0) +
     (values.from || values.to ? 1 : 0) +
     AMENITIES.filter((a) => values[a.key] === 1).length;
+
 
   // Local price range while dragging, synced from URL.
   const [range, setRange] = useState<[number, number]>([
@@ -228,9 +235,8 @@ export function BrowseFilterBar({
     setRange([values.min_price ?? 0, values.max_price ?? PRICE_MAX]);
   }, [values.min_price, values.max_price]);
 
-  const sizeLabel = bedSet.size
-    ? Array.from(bedSet).map(bedLabel).join(", ")
-    : "Any size";
+
+
   const dateLabel =
     values.from || values.to
       ? `${shortDate(values.from) ?? "…"}–${shortDate(values.to) ?? "…"}`
@@ -260,6 +266,12 @@ export function BrowseFilterBar({
   if (values.verified === 1)
     pills.push({ label: "✓ Verified", clear: { verified: undefined } });
   if (values.new) pills.push({ label: "🆕 New", clear: { new: undefined } });
+  if (values.movein)
+    pills.push({
+      label: MOVEIN_PILLS.find((p) => p.key === values.movein)?.label ?? "Move-in",
+      clear: { movein: undefined },
+    });
+
 
   return (
     <>
@@ -275,49 +287,24 @@ export function BrowseFilterBar({
       aria-hidden={!stuck}
     >
       <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-4">
-        <div className="hidden h-9 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-3 pr-2 sm:flex">
+        <div className="flex h-9 min-w-0 flex-1 items-center rounded-full border border-border bg-surface pl-3 pr-2">
           <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             value={searchInput}
             onChange={(e) => onSearchInput(e.target.value)}
-            placeholder="Search..."
+            placeholder="Search subleases…"
             aria-label="Search subleases"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </div>
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto sm:flex-none">
-          <button
-            onClick={() => onPatch({ bedrooms: undefined })}
-            className={cn(
-              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-              bedSet.size === 0 ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
-            )}
-          >
-            Any
-          </button>
-          {BEDS.map((b) => (
-            <button
-              key={b}
-              onClick={() => toggleBed(b)}
-              className={cn(
-                "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-                bedSet.has(b) ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
-              )}
-            >
-              {bedLabel(b)}
-            </button>
-          ))}
-          <button
-            onClick={() => onPatch({ new: values.new ? undefined : true })}
-            aria-pressed={!!values.new}
-            className={cn(
-              "shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold",
-              values.new ? "border-green-600 bg-green-600 text-white" : "hover:border-foreground",
-            )}
-          >
-            🆕 New
-          </button>
-        </div>
+        <button
+          onClick={() => setFiltersOpen(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-bold"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filters{activeCount > 0 && <span className="text-primary">({activeCount})</span>}
+        </button>
+
         <div className="relative shrink-0">
           <button
             onClick={() => setStickySortOpen((o) => !o)}
@@ -387,20 +374,26 @@ export function BrowseFilterBar({
               </button>
             )}
 
-            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
-            >
-              {dateLabel}
-            </button>
-            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
-            >
-              {sizeLabel}
-            </button>
+
+            {/* Campus picker lives in the bar so location is one click, not a rail. */}
+            {campuses.length > 0 && (
+              <>
+                <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+                <select
+                  value={campusValue ?? ""}
+                  onChange={(e) => onCampusChange?.(e.target.value || undefined)}
+                  aria-label="Campus"
+                  className="hidden max-w-[11rem] shrink-0 bg-transparent px-1 text-sm font-semibold text-foreground outline-none sm:block"
+                >
+                  <option value="">All campuses</option>
+                  {campuses.map((c) => (
+                    <option key={c.id} value={c.slug}>{c.short_name || c.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
+
+
 
             {/* PART E — sort dropdown */}
             <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
@@ -526,8 +519,9 @@ export function BrowseFilterBar({
           </div>
         )}
 
-        {/* PART D — desktop bedroom quick filter */}
+        {/* PART D — one compact quick row: size only. Everything else lives in Filters. */}
         <div className="mt-2 hidden items-center gap-2 sm:flex">
+          <span className="mr-1 text-sm text-muted-foreground">Size</span>
           <button
             onClick={() => onPatch({ bedrooms: undefined })}
             className={cn(
@@ -550,148 +544,14 @@ export function BrowseFilterBar({
                   : "hover:border-foreground",
               )}
             >
-              {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
+              {bedLabel(b)}
             </button>
           ))}
-          {/* Q159 — new-in-the-last-7-days quick filter */}
-          <button
-            onClick={() => onPatch({ new: values.new ? undefined : true })}
-            aria-pressed={!!values.new}
-            className={cn(
-              "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-              values.new
-                ? "border-green-600 bg-green-600 text-white"
-                : "hover:border-foreground",
-            )}
-          >
-            🆕 New
-          </button>
-          {/* Q123 — price preset dropdown (combinable with beds/verified) */}
-          <div className="relative">
-            <button
-              onClick={() => setPriceOpen((o) => !o)}
-              aria-expanded={priceOpen}
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-                activePricePreset || values.min_price != null || values.max_price != null
-                  ? "border-foreground bg-foreground text-background"
-                  : "hover:border-foreground",
-              )}
-            >
-              {priceButtonLabel}
-              {values.min_price != null || values.max_price != null ? (
-                <XIcon
-                  className="h-3 w-3"
-                  role="button"
-                  aria-label="Clear price filter"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPriceOpen(false);
-                    onPatch({ min_price: undefined, max_price: undefined });
-                  }}
-                />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
-            </button>
-            {priceOpen && (
-              <>
-                <button
-                  className="fixed inset-0 z-40 cursor-default"
-                  aria-label="Close price menu"
-                  onClick={() => setPriceOpen(false)}
-                />
-                <div className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
-                  {/* Q168 — explicit min / max inputs */}
-                  <div className="flex items-center gap-2 px-1.5 py-2">
-                    <input
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      placeholder="Min $"
-                      aria-label="Minimum price"
-                      defaultValue={values.min_price ?? ""}
-                      onBlur={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        onPatch({ min_price: Number.isFinite(v) && v > 0 ? v : undefined });
-                      }}
-                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                    />
-                    <span className="text-sm text-muted-foreground">—</span>
-                    <input
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      placeholder="Max $"
-                      aria-label="Maximum price"
-                      defaultValue={values.max_price ?? ""}
-                      onBlur={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        onPatch({ max_price: Number.isFinite(v) && v > 0 ? v : undefined });
-                      }}
-                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                    />
-                  </div>
-
-                  {PRICE_PRESETS.map((p) => {
-                    const active =
-                      values.min_price === p.min && values.max_price === p.max;
-                    return (
-                      <button
-                        key={p.label}
-                        onClick={() => {
-                          onPatch(
-                            active
-                              ? { min_price: undefined, max_price: undefined }
-                              : { min_price: p.min, max_price: p.max },
-                          );
-                          setPriceOpen(false);
-                        }}
-                        className={cn(
-                          "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-background",
-                          active && "bg-background text-foreground",
-                        )}
-                      >
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Q109 — verified-host quick filter */}
-          <button
-            onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
-            aria-pressed={values.verified === 1}
-            className={cn(
-              "rounded-full border px-3 py-1 text-sm font-semibold transition-colors",
-              values.verified === 1
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                : "border-border text-muted-foreground hover:border-foreground",
-            )}
-          >
-            ✓ Verified
-          </button>
-
-          {/* Q124 — clear all (only when a quick filter is active) */}
-          {quickActive && (
-            <button
-              onClick={onClearAll}
-              className="ml-auto cursor-pointer text-sm text-[#FF5A5F] hover:underline"
-            >
-              Clear all
-            </button>
-          )}
+          <span className="ml-auto text-sm text-muted-foreground">
+            {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+          </span>
         </div>
 
-        {/* Q124 — result count line, only while filtering */}
-        {quickActive && (
-          <p className="mt-2 hidden text-sm text-muted-foreground sm:block">
-            Showing {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
-          </p>
-        )}
       </div>
 
 
@@ -708,10 +568,10 @@ export function BrowseFilterBar({
           <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
             {/* Price */}
             <section>
-              <h3 className="text-sm font-bold">Price range</h3>
+              <h3 className="text-sm font-bold">Monthly rent</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Min ${range[0]} – Max ${range[1]}
-                {range[1] >= PRICE_MAX ? "+" : ""}
+                ${range[0]} – ${range[1]}
+                {range[1] >= PRICE_MAX ? "+" : ""} per month
               </p>
               <Slider
                 className="mt-5"
@@ -727,7 +587,29 @@ export function BrowseFilterBar({
                   })
                 }
               />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {PRICE_PRESETS.map((p) => {
+                  const on = values.min_price === p.min && values.max_price === p.max;
+                  return (
+                    <button
+                      key={p.label}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        onPatch(on ? { min_price: undefined, max_price: undefined } : { min_price: p.min, max_price: p.max })
+                      }
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                        on ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                      )}
+                    >
+                      {p.label.replace("/mo", "")}
+                    </button>
+                  );
+                })}
+              </div>
             </section>
+
 
             {/* Bedrooms + bathrooms */}
             <section className="space-y-4">
@@ -774,10 +656,29 @@ export function BrowseFilterBar({
 
             {/* Availability */}
             <section>
-              <h3 className="text-sm font-bold">Availability</h3>
+              <h3 className="text-sm font-bold">Move-in</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {MOVEIN_PILLS.map((p) => {
+                  const on = values.movein === p.key;
+                  return (
+                    <button
+                      key={p.key}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => onPatch({ movein: on ? undefined : p.key })}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                        on ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
-                  Move-in
+                  Exact move-in date
                   <input
                     type="date"
                     value={values.from ?? ""}
@@ -786,7 +687,7 @@ export function BrowseFilterBar({
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
-                  Move-out
+                  Move-out by
                   <input
                     type="date"
                     value={values.to ?? ""}
@@ -796,6 +697,36 @@ export function BrowseFilterBar({
                 </label>
               </div>
             </section>
+
+            {/* Listing quality */}
+            <section>
+              <h3 className="text-sm font-bold">Listing quality</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={!!values.new}
+                  onClick={() => onPatch({ new: values.new ? undefined : true })}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    values.new ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                  )}
+                >
+                  🆕 Posted this week
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={values.verified === 1}
+                  onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    values.verified === 1 ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                  )}
+                >
+                  ✓ Verified student
+                </button>
+              </div>
+            </section>
+
 
             {/* Q147 — roommate preferences */}
             <section>
