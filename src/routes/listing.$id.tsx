@@ -787,9 +787,11 @@ function ListingDetailPage() {
               )}
               {/* PART D — activity signals */}
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString()} views
-                </span>
+                {viewCount > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString()} {viewCount === 1 ? "view" : "views"}
+                  </span>
+                )}
                 {savedCount >= 3 && (
                   <span className="inline-flex items-center gap-1">
                     🔖 {savedCount.toLocaleString()} people saved this
