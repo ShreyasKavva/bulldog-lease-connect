@@ -1736,7 +1736,7 @@ function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: (
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="truncate text-sm font-bold">{profile?.name ?? "Student"}</p>
+            <p className="truncate text-sm font-bold">{p.display_name ?? profile?.name ?? "Student"}</p>
             {profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
           </div>
           {p.budget_max != null && (

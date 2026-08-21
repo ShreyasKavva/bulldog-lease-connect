@@ -179,7 +179,7 @@ export function ListingDetailSheet({
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
   const host = hostProfile;
   const prefChips = roommatePrefChips((listing as Listing & { roommate_prefs?: unknown }).roommate_prefs);
-  const hostName = host?.name || hostDisplayName || "Host";
+  const hostName = listing.display_name || host?.name || hostDisplayName || "Host";
   const otherActive = Math.max(0, (host?.active_listing_count ?? 0) - 1);
 
   return (
@@ -434,7 +434,7 @@ export function ListingDetailSheet({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1 font-bold">
-                  {listing.profile.name}
+                  {listing.display_name || listing.profile.name}
                   {listing.profile.verified_email && <BadgeCheck className="h-4 w-4 text-success" />}
                 </div>
                 <div className="text-xs text-muted-foreground">

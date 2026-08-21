@@ -247,8 +247,8 @@ export function ListingCard({
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-muted dark:to-background">
-            <Home className="h-8 w-8 text-gray-400" />
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-muted dark:to-background">
+            <span className="text-xs font-medium text-gray-500 dark:text-muted-foreground">No photo yet</span>
           </div>
         )}
 
@@ -456,10 +456,10 @@ export function ListingCard({
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className="truncate hover:underline"
             >
-              {listing.profile?.name || "Student"}
+              {listing.display_name || listing.profile?.name || "Student"}
             </Link>
           ) : (
-            <span className="truncate">{listing.profile?.name || "Student"}</span>
+            <span className="truncate">{listing.display_name || listing.profile?.name || "Student"}</span>
           )}
         </p>
 

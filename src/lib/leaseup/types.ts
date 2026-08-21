@@ -61,6 +61,8 @@ export type Listing = {
   available_to: string | null;
   amenities: string[] | null;
   photos: string[] | null;
+  /** Q175 — poster display name override (used by seeded sample listings). */
+  display_name?: string | null;
   is_active: boolean;
   flagged?: boolean;
   view_count?: number;
