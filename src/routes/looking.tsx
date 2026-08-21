@@ -302,51 +302,17 @@ function LookingForPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary-light/50 px-4 py-3 text-sm">
-          <p className="font-medium text-primary-dark">
-            Have a sublease to fill? Browse the board and message students directly.
-          </p>
-          <Link to="/browse" className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-dark">
-            Browse listings →
-          </Link>
-        </div>
-
-        {/* Q136 — campus filter pills (same chip style as browse) */}
-        <div className="-mx-4 mb-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {[
-            { key: "all", label: "All" },
-            ...pillCampuses.map((c) => ({ key: c.id, label: c.short_name || c.name })),
-          ].map((t) => {
-            const active = campusFilter === t.key;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setCampusFilter(t.key)}
-                className={`shrink-0 snap-start rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  active
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border bg-surface text-foreground hover:border-primary hover:text-primary"
-                }`}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Filters */}
-        <div className="mb-5 flex flex-wrap items-end gap-3">
-
+        {/* One filter row: campus · budget · move-in · sort. No duplicate chip rows. */}
+        <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-3">
           <label className="text-xs font-semibold text-muted-foreground">
             Campus
             <select
               value={campusFilter}
               onChange={(e) => setCampusFilter(e.target.value)}
-              className="mt-1 block h-10 w-56 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+              className="mt-1 block h-10 w-56 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground"
             >
-              <option value="mine">My campus</option>
               <option value="all">All campuses</option>
+              <option value="mine">My campus</option>
               {campuses.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -357,9 +323,9 @@ function LookingForPage() {
             <select
               value={budgetFilter}
               onChange={(e) => setBudgetFilter(e.target.value)}
-              className="mt-1 block h-10 w-36 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+              className="mt-1 block h-10 w-36 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground"
             >
-              <option value="">Any</option>
+              <option value="">Any budget</option>
               {[600, 800, 1000, 1200, 1500, 2000].map((v) => (
                 <option key={v} value={v}>${v}/mo</option>
               ))}
@@ -371,20 +337,19 @@ function LookingForPage() {
               type="date"
               value={moveInBy}
               onChange={(e) => setMoveInBy(e.target.value)}
-              className="mt-1 block h-10 w-44 rounded-md border bg-surface px-3 text-sm font-medium text-foreground"
+              className="mt-1 block h-10 w-44 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground"
             />
           </label>
           {(budgetFilter || moveInBy || campusFilter !== "all") && (
             <button
               type="button"
               onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("all"); }}
-              className="h-10 rounded-md px-3 text-sm font-semibold text-primary hover:underline"
+              className="h-10 rounded-lg px-3 text-sm font-semibold text-primary hover:underline"
             >
               Clear filters
             </button>
           )}
           <div className="ml-auto flex items-center gap-3">
-            {/* Q152 — sort toggle */}
             <div className="inline-flex rounded-full border border-border p-0.5">
               {([["recent", "Recent"], ["upvoted", "Most upvoted"]] as const).map(([key, label]) => (
                 <button
@@ -405,30 +370,6 @@ function LookingForPage() {
           </div>
         </div>
 
-        {/* Q168 — budget band chips */}
-        <div className="-mx-4 mb-2 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-          {([
-            ["any", "Any budget"],
-            ["under800", "Under $800"],
-            ["1000", "~$1,000"],
-            ["1200", "~$1,200"],
-            ["1500plus", "$1,500+"],
-          ] as const).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setBudgetBand(key)}
-              aria-pressed={budgetBand === key}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                budgetBand === key
-                  ? "bg-indigo-600 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
 
 
 
