@@ -1239,7 +1239,7 @@ function HostCard({
             params={{ userId: listing.user_id }}
             className="truncate text-base font-bold hover:underline"
           >
-            Hosted by {poster?.name ?? "Student"}
+            Hosted by {listing.display_name || poster?.name || "Student"}
           </Link>
           {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
         </div>
