@@ -774,10 +774,29 @@ export function BrowseFilterBar({
 
             {/* Availability */}
             <section>
-              <h3 className="text-sm font-bold">Availability</h3>
+              <h3 className="text-sm font-bold">Move-in</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {MOVEIN_PILLS.map((p) => {
+                  const on = values.movein === p.key;
+                  return (
+                    <button
+                      key={p.key}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => onPatch({ movein: on ? undefined : p.key })}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                        on ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
-                  Move-in
+                  Exact move-in date
                   <input
                     type="date"
                     value={values.from ?? ""}
@@ -786,7 +805,7 @@ export function BrowseFilterBar({
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
-                  Move-out
+                  Move-out by
                   <input
                     type="date"
                     value={values.to ?? ""}
@@ -796,6 +815,36 @@ export function BrowseFilterBar({
                 </label>
               </div>
             </section>
+
+            {/* Listing quality */}
+            <section>
+              <h3 className="text-sm font-bold">Listing quality</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={!!values.new}
+                  onClick={() => onPatch({ new: values.new ? undefined : true })}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    values.new ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                  )}
+                >
+                  🆕 Posted this week
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={values.verified === 1}
+                  onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    values.verified === 1 ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                  )}
+                >
+                  ✓ Verified student
+                </button>
+              </div>
+            </section>
+
 
             {/* Q147 — roommate preferences */}
             <section>
