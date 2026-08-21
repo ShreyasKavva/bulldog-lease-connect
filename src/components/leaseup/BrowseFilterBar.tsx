@@ -222,9 +222,8 @@ export function BrowseFilterBar({
     setRange([values.min_price ?? 0, values.max_price ?? PRICE_MAX]);
   }, [values.min_price, values.max_price]);
 
-  const sizeLabel = bedSet.size
-    ? Array.from(bedSet).map(bedLabel).join(", ")
-    : "Any size";
+
+
   const dateLabel =
     values.from || values.to
       ? `${shortDate(values.from) ?? "…"}–${shortDate(values.to) ?? "…"}`
