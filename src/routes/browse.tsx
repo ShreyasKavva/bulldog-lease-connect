@@ -694,17 +694,6 @@ function Browse() {
               onOpen={setSelected}
             />
           )}
-          {view === "grid" && (
-            <Link
-              to="/looking"
-              className="mb-4 mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3 text-sm transition hover:bg-primary-light/70"
-            >
-              <span className="font-medium text-primary-dark">
-                Looking for a sublease? Post your request and let listers come to you.
-              </span>
-              <span className="inline-flex items-center gap-1 font-bold text-primary">Post a request →</span>
-            </Link>
-          )}
           {view === "scroll" ? (
             <ScrollView
               listings={filtered}
