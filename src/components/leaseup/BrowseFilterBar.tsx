@@ -708,10 +708,10 @@ export function BrowseFilterBar({
           <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
             {/* Price */}
             <section>
-              <h3 className="text-sm font-bold">Price range</h3>
+              <h3 className="text-sm font-bold">Monthly rent</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Min ${range[0]} – Max ${range[1]}
-                {range[1] >= PRICE_MAX ? "+" : ""}
+                ${range[0]} – ${range[1]}
+                {range[1] >= PRICE_MAX ? "+" : ""} per month
               </p>
               <Slider
                 className="mt-5"
@@ -727,7 +727,29 @@ export function BrowseFilterBar({
                   })
                 }
               />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {PRICE_PRESETS.map((p) => {
+                  const on = values.min_price === p.min && values.max_price === p.max;
+                  return (
+                    <button
+                      key={p.label}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        onPatch(on ? { min_price: undefined, max_price: undefined } : { min_price: p.min, max_price: p.max })
+                      }
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                        on ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
+                      )}
+                    >
+                      {p.label.replace("/mo", "")}
+                    </button>
+                  );
+                })}
+              </div>
             </section>
+
 
             {/* Bedrooms + bathrooms */}
             <section className="space-y-4">
