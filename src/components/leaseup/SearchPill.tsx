@@ -9,7 +9,7 @@
  *    active it expands to show the "Search" label.
  *  - Popovers open below the pressed segment (aligned to that segment).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search, X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -58,6 +58,7 @@ export function SearchPill({
   const isMobile = useIsMobile();
 
   const [openField, setOpenField] = useState<null | Field>(null);
+  const firedRef = useRef(false);
   const [hoverField, setHoverField] = useState<null | Field>(null);
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity,
@@ -124,7 +125,7 @@ export function SearchPill({
 
     >
       {/* WHERE */}
-      <Popover open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
+      <Popover modal={false} open={openField === "where"} onOpenChange={(o) => setOpenField(o ? "where" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("where")}
@@ -171,7 +172,7 @@ export function SearchPill({
       <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("where") ? "opacity-100" : "opacity-0")} />
 
       {/* WHEN */}
-      <Popover open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
+      <Popover modal={false} open={openField === "when"} onOpenChange={(o) => setOpenField(o ? "when" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("when")}
@@ -215,7 +216,7 @@ export function SearchPill({
       <span className={cn("my-2.5 hidden w-px bg-border transition-opacity sm:block", showDivider("when") ? "opacity-100" : "opacity-0")} />
 
       {/* WHO */}
-      <Popover open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
+      <Popover modal={false} open={openField === "who"} onOpenChange={(o) => setOpenField(o ? "who" : null)}>
         <PopoverTrigger asChild>
           <button
             onMouseEnter={() => setHoverField("who")}
