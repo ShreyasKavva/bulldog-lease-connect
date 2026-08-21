@@ -526,8 +526,9 @@ export function BrowseFilterBar({
           </div>
         )}
 
-        {/* PART D — desktop bedroom quick filter */}
+        {/* PART D — one compact quick row: size only. Everything else lives in Filters. */}
         <div className="mt-2 hidden items-center gap-2 sm:flex">
+          <span className="mr-1 text-sm text-muted-foreground">Size</span>
           <button
             onClick={() => onPatch({ bedrooms: undefined })}
             className={cn(
@@ -550,148 +551,14 @@ export function BrowseFilterBar({
                   : "hover:border-foreground",
               )}
             >
-              {b === "0" ? "Studio" : b === "3+" ? "3+BR" : `${b}BR`}
+              {bedLabel(b)}
             </button>
           ))}
-          {/* Q159 — new-in-the-last-7-days quick filter */}
-          <button
-            onClick={() => onPatch({ new: values.new ? undefined : true })}
-            aria-pressed={!!values.new}
-            className={cn(
-              "rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-              values.new
-                ? "border-green-600 bg-green-600 text-white"
-                : "hover:border-foreground",
-            )}
-          >
-            🆕 New
-          </button>
-          {/* Q123 — price preset dropdown (combinable with beds/verified) */}
-          <div className="relative">
-            <button
-              onClick={() => setPriceOpen((o) => !o)}
-              aria-expanded={priceOpen}
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-sm font-semibold transition-colors",
-                activePricePreset || values.min_price != null || values.max_price != null
-                  ? "border-foreground bg-foreground text-background"
-                  : "hover:border-foreground",
-              )}
-            >
-              {priceButtonLabel}
-              {values.min_price != null || values.max_price != null ? (
-                <XIcon
-                  className="h-3 w-3"
-                  role="button"
-                  aria-label="Clear price filter"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPriceOpen(false);
-                    onPatch({ min_price: undefined, max_price: undefined });
-                  }}
-                />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
-            </button>
-            {priceOpen && (
-              <>
-                <button
-                  className="fixed inset-0 z-40 cursor-default"
-                  aria-label="Close price menu"
-                  onClick={() => setPriceOpen(false)}
-                />
-                <div className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-card-lg">
-                  {/* Q168 — explicit min / max inputs */}
-                  <div className="flex items-center gap-2 px-1.5 py-2">
-                    <input
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      placeholder="Min $"
-                      aria-label="Minimum price"
-                      defaultValue={values.min_price ?? ""}
-                      onBlur={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        onPatch({ min_price: Number.isFinite(v) && v > 0 ? v : undefined });
-                      }}
-                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                    />
-                    <span className="text-sm text-muted-foreground">—</span>
-                    <input
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      placeholder="Max $"
-                      aria-label="Maximum price"
-                      defaultValue={values.max_price ?? ""}
-                      onBlur={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        onPatch({ max_price: Number.isFinite(v) && v > 0 ? v : undefined });
-                      }}
-                      className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                    />
-                  </div>
-
-                  {PRICE_PRESETS.map((p) => {
-                    const active =
-                      values.min_price === p.min && values.max_price === p.max;
-                    return (
-                      <button
-                        key={p.label}
-                        onClick={() => {
-                          onPatch(
-                            active
-                              ? { min_price: undefined, max_price: undefined }
-                              : { min_price: p.min, max_price: p.max },
-                          );
-                          setPriceOpen(false);
-                        }}
-                        className={cn(
-                          "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-background",
-                          active && "bg-background text-foreground",
-                        )}
-                      >
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Q109 — verified-host quick filter */}
-          <button
-            onClick={() => onPatch({ verified: values.verified === 1 ? undefined : 1 })}
-            aria-pressed={values.verified === 1}
-            className={cn(
-              "rounded-full border px-3 py-1 text-sm font-semibold transition-colors",
-              values.verified === 1
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                : "border-border text-muted-foreground hover:border-foreground",
-            )}
-          >
-            ✓ Verified
-          </button>
-
-          {/* Q124 — clear all (only when a quick filter is active) */}
-          {quickActive && (
-            <button
-              onClick={onClearAll}
-              className="ml-auto cursor-pointer text-sm text-[#FF5A5F] hover:underline"
-            >
-              Clear all
-            </button>
-          )}
+          <span className="ml-auto text-sm text-muted-foreground">
+            {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+          </span>
         </div>
 
-        {/* Q124 — result count line, only while filtering */}
-        {quickActive && (
-          <p className="mt-2 hidden text-sm text-muted-foreground sm:block">
-            Showing {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
-          </p>
-        )}
       </div>
 
 
