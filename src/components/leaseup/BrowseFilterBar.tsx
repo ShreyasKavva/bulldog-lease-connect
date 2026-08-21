@@ -387,20 +387,26 @@ export function BrowseFilterBar({
               </button>
             )}
 
-            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
-            >
-              {dateLabel}
-            </button>
-            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="hidden shrink-0 truncate px-1 text-sm text-muted-foreground hover:text-foreground sm:block"
-            >
-              {sizeLabel}
-            </button>
+
+            {/* Campus picker lives in the bar so location is one click, not a rail. */}
+            {campuses.length > 0 && (
+              <>
+                <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+                <select
+                  value={campusValue ?? ""}
+                  onChange={(e) => onCampusChange?.(e.target.value || undefined)}
+                  aria-label="Campus"
+                  className="hidden max-w-[11rem] shrink-0 bg-transparent px-1 text-sm font-semibold text-foreground outline-none sm:block"
+                >
+                  <option value="">All campuses</option>
+                  {campuses.map((c) => (
+                    <option key={c.id} value={c.slug}>{c.short_name || c.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
+
+
 
             {/* PART E — sort dropdown */}
             <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
