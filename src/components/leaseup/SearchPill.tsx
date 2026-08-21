@@ -250,12 +250,24 @@ export function SearchPill({
         </PopoverContent>
       </Popover>
 
-      {/* SEARCH — full-width row on mobile; floats over the WHO segment on desktop */}
+      {/* SEARCH — own layout space (no overlap with WHO) so the first click always lands,
+          even while a popover is open. pointerdown fires before Radix's dismiss layer. */}
       <button
-        onClick={() => { setOpenField(null); onSearch?.(); }}
+        onPointerDown={(e) => {
+          if (!canSearch) return;
+          e.preventDefault();
+          firedRef.current = true;
+          setOpenField(null);
+          onSearch?.();
+        }}
+        onClick={() => {
+          if (firedRef.current) { firedRef.current = false; return; }
+          setOpenField(null);
+          onSearch?.();
+        }}
         disabled={!canSearch}
         className={cn(
-          "mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:-ml-14 sm:self-center",
+          "relative z-[60] mt-2 flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:ml-1 sm:self-center",
           anyActive ? "sm:w-auto sm:px-5" : "sm:w-12 sm:justify-center",
         )}
         aria-label="Search"
