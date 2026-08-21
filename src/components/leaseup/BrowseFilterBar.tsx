@@ -36,6 +36,9 @@ export type BrowseFilterValues = {
   sort?: Sort;
   /** Q159 — "New" quick filter (last 7 days). */
   new?: true;
+  /** Q161 — move-in quick filter, now inside the Filters sheet. */
+  movein?: MoveIn;
+
   /** Q147 — roommate preference filters (csv of option ids). */
   rm_looking?: string;
   rm_study?: string;
