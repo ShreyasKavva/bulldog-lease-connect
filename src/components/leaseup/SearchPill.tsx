@@ -220,8 +220,7 @@ export function SearchPill({
           <button
             onMouseEnter={() => setHoverField("who")}
             onMouseLeave={() => setHoverField(null)}
-            className={cn(segmentClass("who"), "flex-1 sm:pr-20")}
-
+            className={cn(segmentClass("who"), "flex-1")}
           >
             <span className="text-[12px] font-semibold text-foreground">Who</span>
             <span className={cn("mt-0.5 text-sm truncate w-full", value.guests > 1 ? "font-medium text-foreground" : "text-muted-foreground")}>
