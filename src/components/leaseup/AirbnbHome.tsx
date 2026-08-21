@@ -895,6 +895,10 @@ function FeaturedListingCard({
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">
+        Most popular {campus ? `near ${campus.short_name ?? campus.name}` : "this week"}
+      </h2>
+
       <button
         type="button"
         onClick={() => onOpen(featured)}
