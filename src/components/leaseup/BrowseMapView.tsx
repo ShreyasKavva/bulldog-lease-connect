@@ -33,10 +33,19 @@ function seededOffset(id: string): [number, number] {
   return [(a - 0.5) * 0.04, (b - 0.5) * 0.04];
 }
 
-function coordsFor(l: Listing, center: [number, number]): [number, number] {
+/**
+ * Best available position: the listing's own coordinates, else a stable
+ * scatter around its campus, else around the map center.
+ */
+function coordsFor(
+  l: Listing,
+  center: [number, number],
+  campusCoords?: Record<string, [number, number]>,
+): [number, number] {
   if (l.lat != null && l.lng != null) return [l.lat, l.lng];
+  const base = (l.campus_id && campusCoords?.[l.campus_id]) || center;
   const [dy, dx] = seededOffset(l.id);
-  return [center[0] + dy, center[1] + dx];
+  return [base[0] + dy, base[1] + dx];
 }
 
 function pinHtml(l: Listing, active: boolean) {
@@ -132,11 +141,14 @@ export function BrowseMapView({
   listings,
   center,
   centerLabel,
+  campusCoords,
 }: {
   listings: Listing[];
   /** Campus coordinates for the current search — the map opens here. */
   center?: [number, number] | null;
   centerLabel?: string;
+  /** campus id -> coordinates, so pins land near the right school. */
+  campusCoords?: Record<string, [number, number]>;
 }) {
   const mapCenter = useMemo<[number, number]>(
     () => center ?? DEFAULT_CENTER,
@@ -186,7 +198,7 @@ export function BrowseMapView({
     const layer = L.layerGroup().addTo(map);
     layerRef.current = layer;
     listings.forEach((l) => {
-      const [lat, lng] = coordsFor(l, mapCenter);
+      const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
       const isActive = l.id === activeId;
       const marker = L.marker([lat, lng], {
         icon: L.divIcon({ className: "lu-map-pin-wrap", html: pinHtml(l, isActive), iconSize: [56, 26], iconAnchor: [28, 26] }),
@@ -197,7 +209,7 @@ export function BrowseMapView({
         setActiveId(l.id);
       });
     });
-  }, [listings, activeId, ready, mapCenter]);
+  }, [listings, activeId, ready, mapCenter, campusCoords]);
 
   /** Recenter whenever the visitor switches campus. */
   useEffect(() => {
@@ -208,7 +220,7 @@ export function BrowseMapView({
   function focus(l: Listing) {
     setActiveId(l.id);
     setSheetOpen(false);
-    const [lat, lng] = coordsFor(l, mapCenter);
+    const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
     mapRef.current?.flyTo([lat, lng], 16);
   }
 
