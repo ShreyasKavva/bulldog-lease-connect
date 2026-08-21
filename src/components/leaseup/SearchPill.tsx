@@ -188,7 +188,13 @@ export function SearchPill({
           <Calendar
             mode="range"
             selected={{ from: value.from ?? undefined, to: value.to ?? undefined }}
-            onSelect={(r: any) => onChange({ ...value, from: r?.from ?? null, to: r?.to ?? null })}
+            onSelect={(r: any) => {
+              const from = r?.from ?? null;
+              let to = r?.to ?? null;
+              // A half-finished range (single click) must never submit from === to.
+              if (from && to && new Date(from).toDateString() === new Date(to).toDateString()) to = null;
+              onChange({ ...value, from, to });
+            }}
             numberOfMonths={isMobile ? 1 : 2}
             className="pointer-events-auto"
           />
