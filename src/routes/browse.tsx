@@ -337,7 +337,7 @@ function Browse() {
   const mapView = s.view === "map";
 
   /** Q177 — the campus the visitor actually searched for (not their profile). */
-  const searchedCampus = campuses.find((c) => c.slug === s.campus) ?? null;
+  const searchedCampus = campusId ? campuses.find((c) => c.id === campusId) ?? null : null;
 
   /** Q177 — pins fall back to their own campus, not one hardcoded city. */
   const campusCoords = useMemo(() => {
