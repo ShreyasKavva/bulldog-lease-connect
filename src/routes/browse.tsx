@@ -335,6 +335,15 @@ function Browse() {
 
   const [view] = useState<View>("grid");
   const mapView = s.view === "map";
+
+  /** Q177 — pins fall back to their own campus, not one hardcoded city. */
+  const campusCoords = useMemo(() => {
+    const out: Record<string, [number, number]> = {};
+    for (const c of campuses) {
+      if (c.lat != null && c.lng != null) out[c.id] = [c.lat, c.lng];
+    }
+    return out;
+  }, [campuses]);
   const listView = s.view === "list";
 
   /** Q160 — remember the last chosen browse layout. */
@@ -682,6 +691,7 @@ function Browse() {
                   : null
               }
               centerLabel={myCampus ? (myCampus.short_name ?? myCampus.name) : undefined}
+              campusCoords={campusCoords}
             />
           </div>
         ) : (
