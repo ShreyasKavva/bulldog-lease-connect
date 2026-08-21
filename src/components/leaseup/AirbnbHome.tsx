@@ -1101,3 +1101,57 @@ function RecentlyViewedSection({
   );
 }
 
+
+/* ---------------- Q177 — "Near you" (first-visit fallback) ---------------- */
+
+/**
+ * Shown instead of "Recently viewed" when a visitor has no history: we use the
+ * campus closest to their browser location so the first row is relevant rather
+ * than an arbitrary listing from across the country.
+ */
+function NearYouSection({
+  listings, campus, savedIds, onSave, onOpen,
+}: {
+  listings: Listing[];
+  campus: Campus | null;
+  savedIds: Set<string>;
+  onSave: (l: Listing) => void;
+  onOpen: (l: Listing) => void;
+}) {
+  const items = useMemo(() => {
+    if (!campus) return [];
+    return listings
+      .filter(
+        (l) =>
+          l.campus_id === campus.id &&
+          (l.status ?? "active") === "active" &&
+          (l.photo_urls?.length || l.photos?.length),
+      )
+      .slice(0, 8);
+  }, [listings, campus]);
+
+  if (!campus || items.length < 3) return null;
+
+  return (
+    <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+      <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-foreground">
+        Near you — {campus.short_name ?? campus.name}
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Based on your location. Pick a different campus any time.
+      </p>
+      <ScrollRow>
+        {items.map((l) => (
+          <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+            <ListingCard
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onSave={() => onSave(l)}
+              onOpen={() => onOpen(l)}
+            />
+          </div>
+        ))}
+      </ScrollRow>
+    </section>
+  );
+}
