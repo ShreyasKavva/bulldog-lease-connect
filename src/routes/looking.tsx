@@ -285,9 +285,13 @@ function LookingForPage() {
       <header className="border-b bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 py-6">
           <div>
-            <h1 className="text-2xl font-bold">Students looking for subleases</h1>
-            <p className="text-sm text-muted-foreground">Post what you need — let hosts bring listings to you.</p>
+            <h1 className="text-2xl font-bold">Roommate & sublease requests</h1>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              The reverse of browsing: students post what they're looking for, and anyone with a
+              matching place messages them directly.
+            </p>
           </div>
+
           <div className="ml-auto flex gap-2">
             <Link to="/browse" className="rounded-full border px-4 py-2.5 text-sm font-medium hover:bg-background">Browse subleases</Link>
             <button
