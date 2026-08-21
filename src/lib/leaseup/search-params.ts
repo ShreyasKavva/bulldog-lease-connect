@@ -9,8 +9,11 @@ export function buildBrowseSearch(state: SearchState): Record<string, string | n
   const params: Record<string, string | number> = {};
   if (state.campusId) params.campus = state.campusId;
   else if (state.where.trim()) params.q = state.where.trim();
-  if (state.from) params.from = state.from.toISOString().slice(0, 10);
-  if (state.to) params.to = state.to.toISOString().slice(0, 10);
+  const from = state.from ? state.from.toISOString().slice(0, 10) : null;
+  const to = state.to ? state.to.toISOString().slice(0, 10) : null;
+  if (from) params.from = from;
+  // A zero-length window (single-click range) matches nothing — drop it.
+  if (to && to !== from) params.to = to;
   if (state.guests > 1) params.people = state.guests;
   return params;
 }
