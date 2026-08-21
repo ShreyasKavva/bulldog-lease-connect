@@ -138,7 +138,10 @@ export function BrowseMapView({
   center?: [number, number] | null;
   centerLabel?: string;
 }) {
-  const mapCenter: [number, number] = center ?? DEFAULT_CENTER;
+  const mapCenter = useMemo<[number, number]>(
+    () => center ?? DEFAULT_CENTER,
+    [center?.[0], center?.[1]],
+  );
   const zoom = center ? 14 : 4;
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LType.Map | null>(null);
