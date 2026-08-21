@@ -444,6 +444,13 @@ export function ListingDetailSheet({
             </button>
           )}
 
+          {/* Q174-FIX — demo-account warning, shown before the Message action */}
+          {isDemoListing(listing.user_id) && (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              🧪 Sample listing — this one is posted by the LeaseUp demo account, so don't expect a reply.
+            </p>
+          )}
+
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => onMessage(listing)}
