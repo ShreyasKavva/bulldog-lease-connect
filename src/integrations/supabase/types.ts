@@ -1067,6 +1067,7 @@ export type Database = {
           deposit_amount: number | null
           deposit_escrow_enabled: boolean
           description: string
+          display_name: string | null
           featured_purchased_at: string | null
           featured_until: string | null
           filled_at: string | null
@@ -1118,6 +1119,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_escrow_enabled?: boolean
           description?: string
+          display_name?: string | null
           featured_purchased_at?: string | null
           featured_until?: string | null
           filled_at?: string | null
@@ -1169,6 +1171,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_escrow_enabled?: boolean
           description?: string
+          display_name?: string | null
           featured_purchased_at?: string | null
           featured_until?: string | null
           filled_at?: string | null
