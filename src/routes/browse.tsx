@@ -674,9 +674,18 @@ function Browse() {
 
         {mapView ? (
           <div className="mt-3">
-            <BrowseMapView listings={filtered} />
+            <BrowseMapView
+              listings={filtered}
+              center={
+                myCampus?.lat != null && myCampus?.lng != null
+                  ? [myCampus.lat, myCampus.lng]
+                  : null
+              }
+              centerLabel={myCampus ? (myCampus.short_name ?? myCampus.name) : undefined}
+            />
           </div>
         ) : (
+
         <main className="mx-auto max-w-7xl px-4 py-5">
 
           {user && <RenterFeedbackPrompt userId={user.id} />}
