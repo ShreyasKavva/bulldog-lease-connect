@@ -1239,7 +1239,7 @@ function HostCard({
             params={{ userId: listing.user_id }}
             className="truncate text-base font-bold hover:underline"
           >
-            Hosted by {poster?.name ?? "Student"}
+            Hosted by {listing.display_name || poster?.name || "Student"}
           </Link>
           {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
         </div>
@@ -1736,7 +1736,7 @@ function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: (
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="truncate text-sm font-bold">{profile?.name ?? "Student"}</p>
+            <p className="truncate text-sm font-bold">{p.display_name ?? profile?.name ?? "Student"}</p>
             {profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
           </div>
           {p.budget_max != null && (

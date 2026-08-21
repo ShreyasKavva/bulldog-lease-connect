@@ -802,7 +802,7 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold">
-                  {p.profile?.name ?? "A student"}
+                  {p.display_name ?? p.profile?.name ?? "A student"}
                 </div>
                 <div className="truncate text-[11px] text-muted-foreground">
                   {p.budget_max ? `Up to $${p.budget_max}/mo` : "Budget flexible"}

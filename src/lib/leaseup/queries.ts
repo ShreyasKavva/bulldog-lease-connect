@@ -50,6 +50,15 @@ async function attachProfiles(listings: any[]): Promise<Listing[]> {
   return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));
 }
 
+/** Q175 — listings with photos always rank ahead of listings without. */
+function photosFirst<T extends { photos?: string[] | null }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => {
+    const pa = (a.photos?.length ?? 0) > 0 ? 0 : 1;
+    const pb = (b.photos?.length ?? 0) > 0 ? 0 : 1;
+    return pa - pb;
+  });
+}
+
 export async function fetchListings(): Promise<Listing[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
@@ -61,7 +70,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .order("is_featured", { ascending: false })
     .order("sort_at", { ascending: false });
   if (error) throw error;
-  const withProfiles = await attachProfiles(data ?? []);
+  const withProfiles = await attachProfiles(photosFirst(data ?? []));
   return attachSignedUrls(withProfiles);
 }
 
@@ -595,10 +604,13 @@ export async function fetchCuratedListings(opts: {
   /** Drop rows with no views (used by the trending row on a fresh DB). */
   minViews?: number;
 }): Promise<Listing[]> {
+  const today = new Date().toISOString().slice(0, 10);
   let q = supabase
     .from("listings").select("*")
     .eq("is_active", true)
-    .eq("status", "active");
+    .eq("status", "active")
+    // Q175 — never surface a listing whose availability window already ended.
+    .or(`available_to.is.null,available_to.gte.${today}`);
   if (opts.maxPrice != null) q = q.lte("price", opts.maxPrice);
   if (opts.availableBefore) q = q.lte("available_from", opts.availableBefore);
   if (opts.campusId) q = q.eq("campus_id", opts.campusId);
@@ -608,7 +620,9 @@ export async function fetchCuratedListings(opts: {
     .order(opts.orderBy ?? "created_at", { ascending: opts.ascending ?? false, nullsFirst: false })
     .limit(opts.limit ?? 12);
   if (error) throw error;
-  const withProfiles = await attachProfiles(data ?? []);
+  // Q175 — curated rails are prime real estate: photo-less rows are dropped.
+  const rows = (data ?? []).filter((l: any) => (l.photos?.length ?? 0) > 0);
+  const withProfiles = await attachProfiles(rows);
   return attachSignedUrls(withProfiles);
 }
 
