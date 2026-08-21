@@ -179,7 +179,6 @@ export function BrowseFilterBar({
     };
   }, [searchOpen]);
 
-  const [priceOpen, setPriceOpen] = useState(false);
   /** Q155 — sticky compact bar shown once the main filter row scrolls out of view. */
   const barRef = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
@@ -198,25 +197,8 @@ export function BrowseFilterBar({
   }, []);
   useEffect(() => { if (!stuck) setStickySortOpen(false); }, [stuck]);
 
-  const activePricePreset = PRICE_PRESETS.find(
-    (p) => values.min_price === p.min && values.max_price === p.max,
-  );
-  const priceButtonLabel = activePricePreset
-    ? `Price: ${activePricePreset.label.replace("/mo", "")}`
-    : values.min_price != null || values.max_price != null
-      ? `Price: $${values.min_price ?? 0}–$${values.max_price ?? PRICE_MAX}`
-      : "Price";
-
   const sort: Sort = values.sort ?? "newest";
   const bedSet = new Set((values.bedrooms ?? "").split(",").filter(Boolean));
-
-  /** Q124 — any quick filter (bedroom / price / verified) active. */
-  const quickActive =
-    bedSet.size > 0 ||
-    values.min_price != null ||
-    values.max_price != null ||
-    values.verified === 1;
-
 
   const activeCount =
     (values.q ? 1 : 0) +
@@ -224,8 +206,12 @@ export function BrowseFilterBar({
     (values.min_price != null || values.max_price != null ? 1 : 0) +
     (bedSet.size ? 1 : 0) +
     (values.baths != null ? 1 : 0) +
+    (values.movein ? 1 : 0) +
+    (values.new ? 1 : 0) +
+    (values.verified === 1 ? 1 : 0) +
     (values.from || values.to ? 1 : 0) +
     AMENITIES.filter((a) => values[a.key] === 1).length;
+
 
   // Local price range while dragging, synced from URL.
   const [range, setRange] = useState<[number, number]>([
