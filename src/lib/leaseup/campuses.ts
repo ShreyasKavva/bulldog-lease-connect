@@ -57,7 +57,9 @@ export function campusMatchesQuery(
   // longer official names still resolve from a short alias ("Georgia Institute
   // of Technology" -> alias "georgia institute"). Reverse needs 4+ chars to
   // avoid state/abbreviation false positives.
-  return haystack.some((h) => h.includes(q) || (h.length >= 4 && q.includes(h)));
+  return haystack.some(
+    (h) => h.startsWith(q) || h.includes(` ${q}`) || (h.length >= 4 && q.includes(h)),
+  );
 }
 
 export async function fetchCampuses(): Promise<Campus[]> {
