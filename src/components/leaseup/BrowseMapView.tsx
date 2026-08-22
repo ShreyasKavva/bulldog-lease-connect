@@ -83,11 +83,13 @@ function CompactCard({
 }: { listing: Listing; active: boolean; onClick: () => void }) {
   const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0];
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === "Enter") onClick?.(); }}
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted/60",
+        "flex w-full cursor-pointer items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted/60",
         active && "border-l-2 border-foreground bg-muted/50",
       )}
     >
