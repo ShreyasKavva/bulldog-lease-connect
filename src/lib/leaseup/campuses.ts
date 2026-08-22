@@ -207,12 +207,15 @@ export async function fetchCampusBySlugOrAlias(slug: string): Promise<Campus | n
   if (exact) return exact;
   const norm = (s: string | null | undefined) =>
     (s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const all = await fetchCampuses();
+  // Q179 — the full list is far too large to scan client-side, so fall back to
+  // the server-side ranked search with the slug read as plain text.
+  const candidates = await searchCampuses(key.replace(/-/g, " "), 10);
   return (
-    all.find((c) => norm(c.short_name) === norm(key)) ??
-    all.find((c) => norm(c.name) === norm(key)) ??
-    all.find((c) => norm(c.slug) === norm(key)) ??
-    all.find((c) => (CAMPUS_ALIASES[c.slug] ?? []).some((a) => norm(a) === norm(key))) ??
+    candidates.find((c) => norm(c.slug) === norm(key)) ??
+    candidates.find((c) => norm(c.short_name) === norm(key)) ??
+    candidates.find((c) => norm(c.name) === norm(key)) ??
+    candidates.find((c) => (CAMPUS_ALIASES[c.slug] ?? []).some((a) => norm(a) === norm(key))) ??
+    candidates[0] ??
     null
   );
 }
