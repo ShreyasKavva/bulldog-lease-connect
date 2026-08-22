@@ -3140,6 +3140,10 @@ export type Database = {
           title: string
         }[]
       }
+      import_campuses_tmp: {
+        Args: { _rows: Json; _token: string }
+        Returns: number
+      }
       increment_listing_share: {
         Args: { _listing_id: string }
         Returns: number
