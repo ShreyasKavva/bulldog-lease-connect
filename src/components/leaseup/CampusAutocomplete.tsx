@@ -42,35 +42,20 @@ export function CampusAutocomplete({
 
   useEffect(() => setText(value), [value]);
 
-  // 150ms debounce so keystrokes don't spam the filter.
+  // Q179 — 200ms debounce; the list now covers every accredited US school so
+  // the filtering happens server-side.
   useEffect(() => {
-    const t = window.setTimeout(() => setDebounced(text), 150);
+    const t = window.setTimeout(() => setDebounced(text), 200);
     return () => window.clearTimeout(t);
   }, [text]);
 
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: fetchCampuses,
-    staleTime: Infinity,
-  });
-  const { data: counts = {} } = useQuery({
-    queryKey: ["active-listing-counts-by-campus"],
-    queryFn: fetchActiveListingCountsByCampus,
+  const q = debounced.trim();
+  const { data: results = [], isFetching } = useQuery({
+    queryKey: ["campus-search", q.toLowerCase()],
+    queryFn: () => searchCampuses(q, q ? 8 : 5),
     staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
-
-  const q = debounced.trim().toLowerCase();
-  const results = useMemo(() => {
-    if (!q) {
-      return [...campuses]
-        .sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0) || a.name.localeCompare(b.name))
-        .slice(0, 5);
-    }
-    return campuses
-      .filter((c) => campusMatchesQuery(c, q))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .slice(0, 6);
-  }, [campuses, counts, q]);
 
   useEffect(() => setActive(0), [q, open]);
 
