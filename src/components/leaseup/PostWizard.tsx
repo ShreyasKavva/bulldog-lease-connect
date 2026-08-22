@@ -20,6 +20,17 @@ import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection"
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
 const DRAFT_KEY = "leaseup-post-draft";
+/** Q181 — remembers which draft id the user waved off, so it never nags again. */
+const DISMISSED_KEY = "leaseup-post-draft-dismissed";
+
+function draftId() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (parsed?.draftId) return parsed.draftId as string;
+  } catch { /* noop */ }
+  return `d${Date.now()}`;
+}
 const MAX_PHOTOS = 10;
 
 /** Q157 — "2h ago" style label for the draft-recovery banner. */
@@ -216,7 +227,7 @@ export function PostWizard({ userId }: { userId: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
-  const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number } | null>(null);
+  const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number; draftId?: string } | null>(null);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
 
@@ -225,12 +236,18 @@ export function PostWizard({ userId }: { userId: string }) {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Draft & { savedAt?: number };
+        const parsed = JSON.parse(raw) as Draft & { savedAt?: number; draftId?: string };
         const savedAt = typeof parsed?.savedAt === "number" ? parsed.savedAt : 0;
-        const fresh = savedAt > 0 && Date.now() - savedAt < 72 * 60 * 60 * 1000;
-        if (parsed && fresh && (parsed.title || parsed.photos?.length)) {
-          setRecovered({ draft: { ...EMPTY, ...parsed, step: 1 }, savedAt });
-        } else if (!fresh) {
+        // Q181 — only offer a draft that is actually worth resuming.
+        const fresh = savedAt > 0 && Date.now() - savedAt < 14 * 24 * 60 * 60 * 1000;
+        const meaningful = !!(parsed?.campusId || parsed?.price || parsed?.title?.trim());
+        const datesPast =
+          !!parsed?.availableTo && new Date(parsed.availableTo).getTime() < Date.now();
+        const dismissed =
+          !!parsed?.draftId && localStorage.getItem(DISMISSED_KEY) === parsed.draftId;
+        if (fresh && meaningful && !datesPast && !dismissed) {
+          setRecovered({ draft: { ...EMPTY, ...parsed, step: 1 }, savedAt, draftId: parsed.draftId });
+        } else if (!dismissed) {
           localStorage.removeItem(DRAFT_KEY);
         }
       }
@@ -250,9 +267,10 @@ export function PostWizard({ userId }: { userId: string }) {
       // Don't clobber a recoverable draft the user hasn't answered on yet.
       if (blockedRef.current) return;
       const cur = draftRef.current;
-      if (!cur.title && !cur.photos?.length && !cur.description) return;
+      // Q181 — a draft is only real once a campus, price or title exists.
+      if (!cur.campusId && !cur.price && !cur.title?.trim()) return;
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...cur, savedAt: Date.now() }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...cur, draftId: draftId(), savedAt: Date.now() }));
       } catch { /* quota */ }
     };
     const id = window.setInterval(save, 60_000);
@@ -351,7 +369,8 @@ export function PostWizard({ userId }: { userId: string }) {
         .select("id")
         .single();
       if (err) throw err;
-      try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+      // Q181 — the draft became a live listing: it is dead, never prompt again.
+      try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DISMISSED_KEY); } catch { /* noop */ }
       toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
@@ -376,7 +395,7 @@ export function PostWizard({ userId }: { userId: string }) {
             type="button"
             onClick={() => {
               try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftRef.current, savedAt: Date.now() }));
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftRef.current, draftId: draftId(), savedAt: Date.now() }));
               } catch { /* quota */ }
               toast.success("Draft saved");
               navigate({ to: "/" });
@@ -405,7 +424,8 @@ export function PostWizard({ userId }: { userId: string }) {
             <button
               type="button"
               onClick={() => {
-                try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+                // Q181 — the draft became a live listing: it is dead, never prompt again.
+      try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DISMISSED_KEY); } catch { /* noop */ }
                 setRecovered(null);
               }}
               className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
