@@ -8,12 +8,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchActiveListingCountsByCampus, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
 import { Search, School } from "lucide-react";
 
 const CAMPUS_EMOJI: Record<string, string> = {
   "university-of-georgia": "🐾",
   "georgia-tech": "🐝",
+  "university-of-virginia": "🏛️",
   "university-of-florida": "🐊",
   "auburn-university": "🐯",
   "university-of-alabama": "🐘",
@@ -73,15 +74,7 @@ function CampusDirectoryPage() {
 
   const sorted = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = q
-      ? campuses.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            (c.short_name ?? "").toLowerCase().includes(q) ||
-            (c.city ?? "").toLowerCase().includes(q) ||
-            (c.state ?? "").toLowerCase().includes(q),
-        )
-      : campuses;
+    const filtered = q ? campuses.filter((c) => campusMatchesQuery(c, q)) : campuses;
     return [...filtered].sort((a, b) => {
       const ca = counts[a.id] ?? 0;
       const cb = counts[b.id] ?? 0;

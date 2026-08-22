@@ -153,6 +153,7 @@ export async function fetchCampusBySlugOrAlias(slug: string): Promise<Campus | n
     all.find((c) => norm(c.short_name) === norm(key)) ??
     all.find((c) => norm(c.name) === norm(key)) ??
     all.find((c) => norm(c.slug) === norm(key)) ??
+    all.find((c) => (CAMPUS_ALIASES[c.slug] ?? []).some((a) => norm(a) === norm(key))) ??
     null
   );
 }
