@@ -5,7 +5,7 @@
  * that submit to /browse. Mobile: a single pill that jumps to /browse and
  * opens the Q87 filter sheet.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { MapPin, Calendar as CalendarIcon, Users, Search, Minus, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
