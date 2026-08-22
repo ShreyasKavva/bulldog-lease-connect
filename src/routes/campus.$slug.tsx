@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import { CampusEmptyState } from "@/components/leaseup/CampusEmptyState";
 
 /** Q163 — hard-coded insider neighborhoods, matched on campus name/short_name. */
 const NEIGHBORHOODS: Array<{ match: RegExp; areas: string }> = [
