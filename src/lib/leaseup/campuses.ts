@@ -50,17 +50,14 @@ export function campusMatchesQuery(
 ): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const haystack = [
-    c.name,
-    c.short_name,
-    c.city,
-    c.state,
-    c.slug?.replace(/-/g, " "),
-    ...(CAMPUS_ALIASES[c.slug] ?? []),
-  ]
+  const haystack = [c.name, c.short_name, c.city, c.slug?.replace(/-/g, " "), ...(CAMPUS_ALIASES[c.slug] ?? [])]
     .filter(Boolean)
     .map((s) => String(s).toLowerCase());
-  return haystack.some((h) => h.includes(q) || q.includes(h));
+  // Forward match ("virg" -> "University of Virginia") plus a reverse match so
+  // longer official names still resolve from a short alias ("Georgia Institute
+  // of Technology" -> alias "georgia institute"). Reverse needs 4+ chars to
+  // avoid state/abbreviation false positives.
+  return haystack.some((h) => h.includes(q) || (h.length >= 4 && q.includes(h)));
 }
 
 export async function fetchCampuses(): Promise<Campus[]> {
