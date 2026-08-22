@@ -55,6 +55,7 @@ const CAMPUS_ABBREV: Record<string, string> = {
   "University of Florida": "UF",
   "Georgia Tech": "GT",
   "Georgia Institute of Technology": "GT",
+  "University of Virginia": "UVA",
   "University of Alabama": "Alabama",
 };
 

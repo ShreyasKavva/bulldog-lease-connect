@@ -12,6 +12,7 @@ import { Search, X } from "lucide-react";
 import {
   fetchCampuses,
   fetchActiveListingCountsByCampus,
+  campusMatchesQuery,
   type Campus,
 } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
@@ -66,12 +67,7 @@ export function CampusAutocomplete({
         .slice(0, 5);
     }
     return campuses
-      .filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          (c.short_name ?? "").toLowerCase().includes(q) ||
-          (c.city ?? "").toLowerCase().includes(q),
-      )
+      .filter((c) => campusMatchesQuery(c, q))
       .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 6);
   }, [campuses, counts, q]);

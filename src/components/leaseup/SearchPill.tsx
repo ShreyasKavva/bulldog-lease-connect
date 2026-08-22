@@ -15,7 +15,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "./CampusAutocomplete";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ const QUICK_PICKS = [
   { emoji: "🌰", name: "Ohio State University", slug: "ohio-state" },
   { emoji: "🤘", name: "University of Texas at Austin", slug: "ut-austin" },
   { emoji: "🐝", name: "Georgia Tech", slug: "georgia-tech" },
+  { emoji: "🏛️", name: "UVA", slug: "university-of-virginia" },
 ];
 
 export type SearchState = {
@@ -67,12 +68,7 @@ export function SearchPill({
   useEffect(() => setQ(value.where), [value.where]);
 
   const matches = q.trim().length
-    ? campuses.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q.toLowerCase()) ||
-          c.short_name?.toLowerCase().includes(q.toLowerCase()) ||
-          c.city.toLowerCase().includes(q.toLowerCase()),
-      ).slice(0, 6)
+    ? campuses.filter((c) => campusMatchesQuery(c, q)).slice(0, 6)
     : campuses.slice(0, 6);
 
   function pickCampus(c: Campus) {

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, MapPin, Search } from "lucide-react";
-import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function MapCampusSelector({
@@ -30,11 +30,7 @@ export function MapCampusSelector({
 
   const active = campuses.find((c) => c.id === activeId);
   const label = active?.short_name ?? active?.name ?? "Pick a campus";
-  const filtered = q
-    ? campuses.filter((c) =>
-        `${c.name} ${c.short_name} ${c.city} ${c.state}`.toLowerCase().includes(q.toLowerCase()),
-      )
-    : campuses;
+  const filtered = q ? campuses.filter((c) => campusMatchesQuery(c, q)) : campuses;
 
   return (
     <div className="relative pointer-events-auto" ref={ref}>
