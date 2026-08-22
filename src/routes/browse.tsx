@@ -651,9 +651,15 @@ function Browse() {
           resultCount={filtered.length}
           placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
           initialFiltersOpen={s.openFilters === 1}
-          campuses={campuses}
-          campusValue={campusId ? campuses.find((c) => c.id === campusId)?.slug : undefined}
-          onCampusChange={(slug) => patchSearch({ campus: slug })}
+          selectedCampus={searchedCampus}
+          onCampusSelect={(campus) => {
+            if ((campus.listing_count ?? 0) === 0) {
+              navigate({ to: "/campus/$slug", params: { slug: campus.slug } });
+              return;
+            }
+            patchSearch({ campus: campus.slug, page: undefined });
+          }}
+          onCampusClear={() => patchSearch({ campus: undefined, page: undefined })}
         />
 
 
