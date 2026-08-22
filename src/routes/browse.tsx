@@ -467,8 +467,10 @@ function Browse() {
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
       if (!matchesBeds(l)) return false;
-      if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
-      if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
+      // Q180 — OVERLAP, not containment: a listing matches when its availability
+      // overlaps the requested window at all.
+      if (toDate && l.available_from && new Date(l.available_from) > toDate) return false;
+      if (fromDate && l.available_to && new Date(l.available_to) < fromDate) return false;
 
       // Q96 — search-bar / category-pill params
       if (s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
