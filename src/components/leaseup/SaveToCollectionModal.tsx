@@ -5,7 +5,7 @@
  * `openSaveToCollection(listingId)` and this listens for the event, so no
  * page has to thread props down to its cards.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, X } from "lucide-react";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ export function SaveToCollectionModal() {
   const [listingId, setListingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const pending = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     function onOpen(e: Event) {
@@ -66,8 +67,34 @@ export function SaveToCollectionModal() {
     qc.invalidateQueries({ queryKey: ["saved-listings", user.id] });
   }
 
+  /** Q181 — flip the row + heart instantly; the write happens in the background. */
+  function optimistic(name: string, isIn: boolean) {
+    if (!user || !listingId) return;
+    qc.setQueryData(["collections", user.id], (prev: any) => {
+      if (!Array.isArray(prev)) return prev;
+      return prev.map((c: any) =>
+        c.name !== name
+          ? c
+          : {
+              ...c,
+              listings: isIn
+                ? c.listings.filter((l: any) => l.id !== listingId)
+                : [...c.listings, { id: listingId }],
+            },
+      );
+    });
+    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
+      const next = new Set(prev ?? []);
+      if (isIn) next.delete(listingId); else next.add(listingId);
+      return next;
+    });
+  }
+
   async function toggle(name: string, isIn: boolean) {
     if (!user || !listingId) return;
+    if (pending.current.has(name)) return;
+    pending.current.add(name);
+    optimistic(name, isIn);
     try {
       if (isIn) {
         await removeFromCollection(user.id, listingId, name);
@@ -78,7 +105,10 @@ export function SaveToCollectionModal() {
       }
       refresh();
     } catch {
-      toast.error("Couldn't update your saved listings");
+      optimistic(name, !isIn);
+      toast.error("Couldn't save — try again");
+    } finally {
+      pending.current.delete(name);
     }
   }
 
