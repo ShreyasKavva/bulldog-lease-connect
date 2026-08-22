@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type LType from "leaflet";
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER } from "@/lib/leaseup/constants";
+import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
 
 export function MapView({ listings, onSelect }: { listings: Listing[]; onSelect: (l: Listing) => void }) {
   const ref = useRef<HTMLDivElement>(null);
