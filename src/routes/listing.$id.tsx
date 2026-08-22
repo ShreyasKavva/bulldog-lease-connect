@@ -43,10 +43,10 @@ import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
 import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import {
-import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
   buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
   shareToDiscord, shareToGroupMe, withUtm,
 } from "@/lib/leaseup/share";
+import { posterName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 
 
