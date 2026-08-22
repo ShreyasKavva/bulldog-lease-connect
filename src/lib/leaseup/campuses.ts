@@ -12,6 +12,57 @@ export type Campus = {
   slug: string;
 };
 
+/**
+ * Q178 — extra search aliases per campus slug. Official names are long, but
+ * students type nicknames ("GT", "UVA", "Bama"). Every alias below resolves
+ * to the same campus in autocomplete, the search pill and /campuses.
+ */
+export const CAMPUS_ALIASES: Record<string, string[]> = {
+  "georgia-tech": ["gt", "georgia tech", "georgia institute", "georgia institute of technology", "ga tech", "yellow jackets"],
+  "university-of-virginia": ["uva", "u va", "virginia", "wahoos", "cavaliers", "charlottesville"],
+  "university-of-georgia": ["uga", "georgia bulldogs", "athens"],
+  "texas-a-m-university": ["tamu", "a&m", "aggies"],
+  "university-of-florida": ["uf", "gators"],
+  "boston-university": ["bu", "terriers"],
+  "university-of-southern-california": ["usc", "trojans"],
+  "university-of-south-carolina": ["uofsc", "gamecocks"],
+  "university-of-north-carolina": ["unc", "tar heels", "chapel hill"],
+  "nc-state-university": ["ncsu", "nc state", "wolfpack"],
+  "university-of-alabama": ["bama", "roll tide"],
+  "louisiana-state-university": ["lsu"],
+  "new-york-university": ["nyu"],
+  "ohio-state-university": ["osu", "the ohio state university", "buckeyes"],
+  "university-of-texas-at-austin": ["ut", "ut austin", "longhorns"],
+  "university-of-central-florida": ["ucf", "knights"],
+  "florida-state-university": ["fsu", "seminoles"],
+  "university-of-mississippi": ["ole miss"],
+  "virginia-tech": ["vt", "virginia tech", "hokies"],
+  "university-of-illinois": ["uiuc"],
+  "university-of-wisconsin": ["uw madison", "badgers"],
+  "university-of-washington": ["uw", "huskies"],
+};
+
+/** True when a campus matches a free-text search query (name, short name,
+ *  city, state or any alias above). */
+export function campusMatchesQuery(
+  c: Pick<Campus, "name" | "short_name" | "city" | "state" | "slug">,
+  query: string,
+): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const haystack = [
+    c.name,
+    c.short_name,
+    c.city,
+    c.state,
+    c.slug?.replace(/-/g, " "),
+    ...(CAMPUS_ALIASES[c.slug] ?? []),
+  ]
+    .filter(Boolean)
+    .map((s) => String(s).toLowerCase());
+  return haystack.some((h) => h.includes(q) || q.includes(h));
+}
+
 export async function fetchCampuses(): Promise<Campus[]> {
   const { data, error } = await supabase
     .from("campuses")
