@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchCampuses, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { EstimatedReach } from "@/components/leaseup/EstimatedReach";

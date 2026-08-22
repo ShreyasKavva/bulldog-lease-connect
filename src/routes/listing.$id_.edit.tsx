@@ -11,7 +11,7 @@ import { ArrowLeft, ImagePlus, Loader2, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
-import { fetchCampuses, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { openSignIn } from "@/components/leaseup/SignInModal";
