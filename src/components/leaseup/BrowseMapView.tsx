@@ -234,7 +234,7 @@ export function BrowseMapView({
       zIndexOffset: -500,
       icon: L.divIcon({
         className: "lu-anchor-wrap",
-        html: `<div class="lu-map-anchor">📍 ${centerLabel}</div>`,
+        html: `<div class="lu-map-anchor"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>${centerLabel}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
       }),
