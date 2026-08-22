@@ -424,8 +424,11 @@ export function PostWizard({ userId }: { userId: string }) {
             <button
               type="button"
               onClick={() => {
-                // Q181 — the draft became a live listing: it is dead, never prompt again.
-      try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DISMISSED_KEY); } catch { /* noop */ }
+                // Q181 — remember the dismissal so this draft never nags again.
+                try {
+                  if (recovered.draftId) localStorage.setItem(DISMISSED_KEY, recovered.draftId);
+                  localStorage.removeItem(DRAFT_KEY);
+                } catch { /* noop */ }
                 setRecovered(null);
               }}
               className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
