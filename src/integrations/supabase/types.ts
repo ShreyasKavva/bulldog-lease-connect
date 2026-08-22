@@ -162,42 +162,95 @@ export type Database = {
           },
         ]
       }
+      campus_notify_signups: {
+        Row: {
+          campus_id: string
+          created_at: string
+          email: string
+          id: string
+          notified_at: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          campus_id: string
+          created_at?: string
+          email: string
+          id?: string
+          notified_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          campus_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          notified_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_notify_signups_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campuses: {
         Row: {
+          aliases: string | null
           city: string
           created_at: string
           domain: string | null
           id: string
+          ipeds_unitid: number | null
           lat: number
+          level: number
           lng: number
           name: string
+          search_text: string | null
           short_name: string
           slug: string
           state: string
+          zip: string | null
         }
         Insert: {
+          aliases?: string | null
           city: string
           created_at?: string
           domain?: string | null
           id?: string
+          ipeds_unitid?: number | null
           lat: number
+          level?: number
           lng: number
           name: string
+          search_text?: string | null
           short_name: string
           slug: string
           state: string
+          zip?: string | null
         }
         Update: {
+          aliases?: string | null
           city?: string
           created_at?: string
           domain?: string | null
           id?: string
+          ipeds_unitid?: number | null
           lat?: number
+          level?: number
           lng?: number
           name?: string
+          search_text?: string | null
           short_name?: string
           slug?: string
           state?: string
+          zip?: string | null
         }
         Relationships: []
       }
@@ -3017,6 +3070,22 @@ export type Database = {
     Functions: {
       auto_approve_pending_listings: { Args: never; Returns: undefined }
       bump_listing: { Args: { _listing_id: string }; Returns: string }
+      campuses_with_listings: {
+        Args: never
+        Returns: {
+          city: string
+          domain: string
+          id: string
+          lat: number
+          level: number
+          listing_count: number
+          lng: number
+          name: string
+          short_name: string
+          slug: string
+          state: string
+        }[]
+      }
       compute_verification_tier: {
         Args: { _listing_id: string }
         Returns: string
@@ -3086,6 +3155,23 @@ export type Database = {
         }
         Returns: number
       }
+      nearby_campuses_with_listings: {
+        Args: { _campus_id: string; _limit?: number }
+        Returns: {
+          city: string
+          distance_miles: number
+          domain: string
+          id: string
+          lat: number
+          level: number
+          listing_count: number
+          lng: number
+          name: string
+          short_name: string
+          slug: string
+          state: string
+        }[]
+      }
       notif_pref_enabled: {
         Args: { _key: string; _uid: string }
         Returns: boolean
@@ -3101,6 +3187,24 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_campuses: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          city: string
+          domain: string
+          id: string
+          lat: number
+          level: number
+          listing_count: number
+          lng: number
+          name: string
+          short_name: string
+          slug: string
+          state: string
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       snapshot_listing_stats: { Args: never; Returns: undefined }
       upvote_looking_for_post: { Args: { _post_id: string }; Returns: number }
       user_in_message_convo: {
