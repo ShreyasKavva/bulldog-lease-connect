@@ -1,14 +1,17 @@
 /**
- * BrowseMapView — Airbnb-style explore map for /browse (Q90).
+ * BrowseMapView — Airbnb-style explore map for /browse (Q90, restyled in Q177).
  *
  * Desktop: 45% scrollable compact card list on the left, 55% map on the right.
  * Mobile: full-screen map with a "Show X subleases" pill that opens a
  * bottom sheet containing the same compact card list.
  *
- * Leaflet is loaded lazily (only when this component mounts) and its CSS is
- * already linked from __root.tsx. Listings without lat/lng are scattered
- * deterministically around the campus center using their id as a seed so the
- * pins never jump between renders.
+ * Q177 changes:
+ *  - CARTO Positron basemap (shared constant) + visible-but-subtle attribution
+ *  - Airbnb-style white price pills (hover / selected / viewed states)
+ *  - Deterministic collision fan-out so no pill hides another
+ *  - Approximate location only: every point is jittered from the listing id and
+ *    the selected listing renders a ~250m area circle instead of a precise pin
+ *  - One campus anchor label + custom top-right zoom / fullscreen controls
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 // @ts-ignore - leaflet types are optional here
@@ -17,41 +20,61 @@ import { Link } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
+import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
+import { useRecentViews } from "@/lib/leaseup/recent-views";
 
 /** Fallback only — the real center comes from the selected campus (Q177). */
 const DEFAULT_CENTER: [number, number] = [39.8283, -98.5795];
 
-/** Stable pseudo-random offset from the listing id (no Math.random → no SSR drift). */
-function seededOffset(id: string): [number, number] {
+/** Stable pseudo-random hash from the listing id (no Math.random → no SSR drift). */
+function hashId(id: string): number {
   let h = 2166136261;
   for (let i = 0; i < id.length; i++) {
     h ^= id.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  const a = ((h >>> 0) % 10000) / 10000;
+  return h >>> 0;
+}
+
+function seededOffset(id: string): [number, number] {
+  const h = hashId(id);
+  const a = (h % 10000) / 10000;
   const b = ((Math.imul(h, 48271) >>> 0) % 10000) / 10000;
   return [(a - 0.5) * 0.04, (b - 0.5) * 0.04];
 }
 
 /**
- * Best available position: the listing's own coordinates, else a stable
- * scatter around its campus, else around the map center.
+ * Privacy jitter (Q177): never plot the exact address. ~120–260m, stable per id.
+ */
+function privacyJitter(id: string): [number, number] {
+  const h = hashId(id);
+  const angle = ((h % 3600) / 3600) * Math.PI * 2;
+  const dist = 0.0011 + (((Math.imul(h, 2246822519) >>> 0) % 1000) / 1000) * 0.0013; // deg lat
+  return [Math.sin(angle) * dist, Math.cos(angle) * dist];
+}
+
+/**
+ * Best available approximate position: the listing's own coordinates (jittered),
+ * else a stable scatter around its campus, else around the map center.
  */
 function coordsFor(
   l: Listing,
   center: [number, number],
   campusCoords?: Record<string, [number, number]>,
 ): [number, number] {
-  if (l.lat != null && l.lng != null) return [l.lat, l.lng];
+  const [jy, jx] = privacyJitter(l.id);
+  if (l.lat != null && l.lng != null) return [l.lat + jy, l.lng + jx];
   const base = (l.campus_id && campusCoords?.[l.campus_id]) || center;
   const [dy, dx] = seededOffset(l.id);
   return [base[0] + dy, base[1] + dx];
 }
 
-function pinHtml(l: Listing, active: boolean) {
-  const bg = active ? "#111827" : "#FFFFFF";
-  const fg = active ? "#FFFFFF" : "#111827";
-  return `<div class="lu-map-pin" style="background:${bg};color:${fg};">$${l.price}</div>`;
+type PinState = "default" | "active" | "viewed";
+
+function pinHtml(l: Listing, state: PinState) {
+  const bg = state === "active" ? "#222222" : "#FFFFFF";
+  const fg = state === "active" ? "#FFFFFF" : state === "viewed" ? "#717171" : "#222222";
+  return `<div class="lu-map-pin" style="background:${bg};color:${fg};">$${l.price.toLocaleString()}</div>`;
 }
 
 function CompactCard({
@@ -125,6 +148,7 @@ function PopupCard({ listing, onClose }: { listing: Listing; onClose: () => void
           </span>
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" />}
         </p>
+        <p className="mt-1 text-[11px] text-muted-foreground">Approximate area shown</p>
         <Link
           to="/listing/$id"
           params={{ id: listing.id }}
@@ -156,14 +180,17 @@ export function BrowseMapView({
   );
   const zoom = center ? 14 : 4;
   const elRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LType.Map | null>(null);
   const Lref = useRef<typeof LType | null>(null);
   const layerRef = useRef<LType.LayerGroup | null>(null);
+  const anchorRef = useRef<LType.Marker | null>(null);
   const listingsRef = useRef(listings);
   const activeRef = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const viewed = useRecentViews();
 
   listingsRef.current = listings;
   activeRef.current = activeId;
@@ -176,8 +203,12 @@ export function BrowseMapView({
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
       Lref.current = L;
-      const map = L.map(elRef.current, { zoomControl: true, attributionControl: false }).setView(mapCenter, zoom);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+      const map = L.map(elRef.current, {
+        zoomControl: false,
+        attributionControl: true,
+      }).setView(mapCenter, zoom);
+      L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
+      map.attributionControl.setPrefix("");
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
       setReady(true);
@@ -189,7 +220,28 @@ export function BrowseMapView({
     };
   }, []);
 
-  // Re-render pins on listing / selection change
+  // Campus anchor label (one per map)
+  useEffect(() => {
+    const L = Lref.current;
+    const map = mapRef.current;
+    if (!L || !map || !ready) return;
+    anchorRef.current?.remove();
+    anchorRef.current = null;
+    if (!center || !centerLabel) return;
+    anchorRef.current = L.marker(center, {
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: -500,
+      icon: L.divIcon({
+        className: "lu-anchor-wrap",
+        html: `<div class="lu-map-anchor"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>${centerLabel}</div>`,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      }),
+    }).addTo(map);
+  }, [ready, centerLabel, center?.[0], center?.[1]]);
+
+  // Re-render pins on listing / selection change, with collision fan-out.
   useEffect(() => {
     const L = Lref.current;
     const map = mapRef.current;
@@ -197,11 +249,49 @@ export function BrowseMapView({
     layerRef.current?.remove();
     const layer = L.layerGroup().addTo(map);
     layerRef.current = layer;
+
+    const placed: { x: number; y: number }[] = [];
     listings.forEach((l) => {
       const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
+      let point = map.latLngToLayerPoint([lat, lng]);
+
+      // Deterministic fan-out: nudge along a spiral until clear of placed pins.
+      const step = 34;
+      for (let i = 0; i < 12; i++) {
+        const clash = placed.some(
+          (p) => Math.abs(p.x - point.x) < 62 && Math.abs(p.y - point.y) < 28,
+        );
+        if (!clash) break;
+        const angle = (hashId(l.id) % 8) * (Math.PI / 4) + i * 1.1;
+        point = L.point(
+          point.x + Math.cos(angle) * step,
+          point.y + Math.sin(angle) * (step * 0.6),
+        );
+      }
+      placed.push({ x: point.x, y: point.y });
+      const pos = map.layerPointToLatLng(point);
+
       const isActive = l.id === activeId;
-      const marker = L.marker([lat, lng], {
-        icon: L.divIcon({ className: "lu-map-pin-wrap", html: pinHtml(l, isActive), iconSize: [56, 26], iconAnchor: [28, 26] }),
+      const state: PinState = isActive ? "active" : viewed.includes(l.id) ? "viewed" : "default";
+
+      if (isActive) {
+        // Approximate area circle instead of a precise address pin.
+        L.circle(pos, {
+          radius: 250,
+          color: "rgba(34,34,34,0.25)",
+          weight: 1,
+          fillColor: "#222222",
+          fillOpacity: 0.08,
+        }).addTo(layer);
+      }
+
+      const marker = L.marker(pos, {
+        icon: L.divIcon({
+          className: "lu-map-pin-wrap",
+          html: pinHtml(l, state),
+          iconSize: [56, 26],
+          iconAnchor: [28, 13],
+        }),
         zIndexOffset: isActive ? 1000 : 0,
       }).addTo(layer);
       marker.on("click", (e: any) => {
@@ -209,7 +299,7 @@ export function BrowseMapView({
         setActiveId(l.id);
       });
     });
-  }, [listings, activeId, ready, mapCenter, campusCoords]);
+  }, [listings, activeId, ready, mapCenter, campusCoords, viewed]);
 
   /** Recenter whenever the visitor switches campus. */
   useEffect(() => {
@@ -222,6 +312,14 @@ export function BrowseMapView({
     setSheetOpen(false);
     const [lat, lng] = coordsFor(l, mapCenter, campusCoords);
     mapRef.current?.flyTo([lat, lng], 16);
+  }
+
+  function toggleFullscreen() {
+    const el = shellRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else el.requestFullscreen?.();
+    setTimeout(() => mapRef.current?.invalidateSize(), 250);
   }
 
   const list = (
@@ -242,14 +340,28 @@ export function BrowseMapView({
   );
 
   return (
-    <div className="relative flex h-[calc(100dvh-7rem)] w-full overflow-hidden rounded-none md:rounded-2xl">
+    <div>
+    <div ref={shellRef} className="relative flex h-[calc(100dvh-7rem)] w-full overflow-hidden rounded-none bg-surface md:rounded-2xl">
       <style>{`
-        .lu-map-pin { display:inline-block; padding:4px 10px; border-radius:9999px;
-          font-weight:600; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,.18);
-          white-space:nowrap; transition:transform .15s ease;
+        .lu-map-pin { display:inline-block; padding:6px 12px; border-radius:9999px;
+          font-weight:600; font-size:13px; line-height:1;
+          border:1px solid rgba(0,0,0,.06);
+          box-shadow:0 2px 6px rgba(0,0,0,.18);
+          white-space:nowrap;
+          transition:transform .15s ease, box-shadow .15s ease;
           font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
         .lu-map-pin-wrap:hover { z-index:900 !important; }
-        .lu-map-pin-wrap:hover .lu-map-pin { transform:scale(1.1); }
+        .lu-map-pin-wrap:hover .lu-map-pin { transform:scale(1.06);
+          box-shadow:0 4px 12px rgba(0,0,0,.25); }
+        .lu-map-anchor { display:inline-block; transform:translate(-50%,-50%);
+          background:#fff; color:#222; padding:6px 12px; border-radius:9999px;
+          font-size:14px; font-weight:600; white-space:nowrap;
+          box-shadow:0 2px 8px rgba(0,0,0,.15); border:1px solid rgba(0,0,0,.06);
+          font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+        .leaflet-control-attribution { font-size:9px !important; color:#9ca3af !important;
+          background:rgba(255,255,255,.7) !important; border-radius:9999px !important;
+          padding:1px 8px !important; margin:6px !important; box-shadow:none !important; }
+        .leaflet-control-attribution a { color:#9ca3af !important; }
       `}</style>
 
       {/* Left list — desktop only */}
@@ -260,6 +372,39 @@ export function BrowseMapView({
       {/* Map */}
       <div className="relative min-w-0 flex-1">
         <div ref={elRef} className="absolute inset-0 z-0" />
+
+        {/* Custom top-right controls */}
+        <div className="absolute right-3 top-3 z-[600] flex flex-col items-end gap-2">
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label="Toggle fullscreen"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-[#e5e5e5] bg-white text-[#222] shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-neutral-50"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+            </svg>
+          </button>
+          <div className="overflow-hidden rounded-xl border border-[#e5e5e5] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
+            <button
+              type="button"
+              aria-label="Zoom in"
+              onClick={() => mapRef.current?.zoomIn()}
+              className="grid h-10 w-10 place-items-center text-lg font-semibold text-[#222] hover:bg-neutral-50"
+            >
+              +
+            </button>
+            <div className="h-px bg-[#e5e5e5]" />
+            <button
+              type="button"
+              aria-label="Zoom out"
+              onClick={() => mapRef.current?.zoomOut()}
+              className="grid h-10 w-10 place-items-center text-lg font-semibold text-[#222] hover:bg-neutral-50"
+            >
+              −
+            </button>
+          </div>
+        </div>
 
         {active && (
           <div className="pointer-events-auto absolute left-1/2 top-4 z-[500] -translate-x-1/2">
@@ -292,6 +437,10 @@ export function BrowseMapView({
           </div>
         </div>
       )}
+    </div>
+    <p className="px-4 py-2 text-xs text-muted-foreground">
+      Map shows approximate areas. Exact address is shared by the host after you connect.
+    </p>
     </div>
   );
 }

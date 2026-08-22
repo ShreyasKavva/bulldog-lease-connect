@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type LType from "leaflet";
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER } from "@/lib/leaseup/constants";
+import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
 
 export function MapView({ listings, onSelect }: { listings: Listing[]; onSelect: (l: Listing) => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,9 +20,7 @@ export function MapView({ listings, onSelect }: { listings: Listing[]; onSelect:
       if (cancelled || !ref.current || mapRef.current) return;
       Lref.current = L;
       const map = L.map(ref.current).setView(UGA_CENTER, 14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap", maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       L.marker(UGA_CENTER, {
         icon: L.divIcon({
           className: "",
