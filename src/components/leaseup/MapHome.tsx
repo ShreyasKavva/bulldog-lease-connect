@@ -64,7 +64,7 @@ export function MapHome({
 
       Lref.current = L;
 
-      const map = L.map(ref.current, { zoomControl: false, attributionControl: false }).setView(center, 15);
+      const map = L.map(ref.current, { zoomControl: false }).setView(center, 15);
       L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       L.control.zoom({ position: "topright" }).addTo(map);
       mapRef.current = map;
