@@ -64,10 +64,7 @@ export function MapHome({
       Lref.current = L;
 
       const map = L.map(ref.current, { zoomControl: false, attributionControl: false }).setView(center, 15);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
-        subdomains: "abcd",
-      }).addTo(map);
+      L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       L.control.zoom({ position: "topright" }).addTo(map);
       mapRef.current = map;
       renderPins();
