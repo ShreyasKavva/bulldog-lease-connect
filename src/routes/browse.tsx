@@ -766,17 +766,53 @@ function Browse() {
                   <Search className="h-4 w-4 text-muted-foreground" />
                 </span>
               </div>
-              <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Try adjusting your dates, size, or price range
-              </p>
-              <button
-                onClick={clearFilters}
-                className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
-              >
-                Clear all filters
-              </button>
+              {campusTotal > 0 ? (
+                <>
+                  {/* Q180 — hidden-by-filters recovery, never a dead end. */}
+                  <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                    {campusTotal} sublease{campusTotal === 1 ? "" : "s"} at {campusLabel} {campusTotal === 1 ? "is" : "are"} hidden by your filters
+                  </h3>
+                  <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
+                    {(s.from || s.to) && (
+                      <li>Dates: {[s.from, s.to].filter(Boolean).join(" – ")}</li>
+                    )}
+                    {(minPrice != null || maxPrice != null) && (
+                      <li>Price: {minPrice != null ? `$${minPrice}` : "$0"}–{maxPrice != null ? `$${maxPrice}` : "any"}/mo</li>
+                    )}
+                    {bedSet.size > 0 && <li>Beds: {[...bedSet].join(", ")}</li>}
+                    {s.q && <li>Keyword: “{s.q}”</li>}
+                  </ul>
+                  {(s.from || s.to) && (
+                    <button
+                      onClick={() => patchSearch({ from: undefined, to: undefined })}
+                      className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                    >
+                      Clear dates and show all {campusTotal}
+                    </button>
+                  )}
+                  <button
+                    onClick={clearFilters}
+                    className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    Clear all filters
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Try adjusting your dates, size, or price range
+                  </p>
+                  <button
+                    onClick={clearFilters}
+                    className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+                  >
+                    Clear all filters
+                  </button>
+                </>
+              )}
             </div>
+
 
           ) : (
             <>
