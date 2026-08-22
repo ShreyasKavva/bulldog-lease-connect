@@ -11,6 +11,7 @@
  * intent (?post / ?message / ?save) is replayed by the effects below.
  */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { openSignIn } from "@/components/leaseup/SignInModal";
@@ -123,6 +124,8 @@ function Home() {
       setSelected(null);
     } catch (e: any) { toast.error(e.message); }
   }
+
+  const toggleSave = useToggleSave(user?.id);
 
   function handleSave(listing: Listing) {
     if (!user) { requireAuth("save", { listingId: listing.id }); return; }

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { pushRecentSearch } from "@/lib/leaseup/recent-searches";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -608,6 +609,8 @@ function Browse() {
     });
   }
 
+
+  const toggleSave = useToggleSave(user?.id);
 
   function handleSave(listing: Listing) {
     if (!user) { openSignIn("/browse"); return; }

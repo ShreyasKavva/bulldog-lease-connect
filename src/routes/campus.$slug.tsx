@@ -5,6 +5,7 @@
  * from short_name / name ("uga", "osu"). Fully public — no auth required.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useMemo, useState } from "react";
 import { setLastCampusSlug } from "@/lib/leaseup/last-campus";
 
@@ -157,6 +158,8 @@ function CampusLandingPage() {
 
   const visible = listings.slice(0, 6);
 
+
+  const toggleSave = useToggleSave(user?.id);
 
   function handleSave(l: Listing) {
     if (!user) {

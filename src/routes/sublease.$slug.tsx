@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -136,6 +137,8 @@ function CampusPage() {
     queryKey: ["looking-for", campus.id],
     queryFn: () => fetchLookingFor(campus.id),
   });
+
+  const toggleSave = useToggleSave(user?.id);
 
   function handleSave(l: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
