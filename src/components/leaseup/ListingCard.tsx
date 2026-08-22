@@ -291,7 +291,7 @@ export function ListingCard({
             type="button"
             onClick={handleMessage}
             aria-label="Message the host"
-            className="rounded-full bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="rounded-full border border-white/70 bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
           >
             💬 Message
           </button>
