@@ -9,7 +9,7 @@
  *    active it expands to show the "Search" label.
  *  - Popovers open below the pressed segment (aligned to that segment).
  */
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Search, X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
