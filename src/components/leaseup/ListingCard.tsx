@@ -466,7 +466,14 @@ export function ListingCard({
           )}
         </p>
 
-
+        {/* Q181 — primary CTA: unmistakably the thing to click. */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onOpen(); }}
+          className="mt-3 w-full rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:w-auto"
+        >
+          View listing →
+        </button>
       </div>
     </article>
   );
