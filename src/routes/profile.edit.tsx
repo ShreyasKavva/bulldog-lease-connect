@@ -49,7 +49,7 @@ function EditProfilePage() {
       const { data, error } = await supabase
         .from("profiles")
         .select("name, bio, major, year, avatar_url, campus_id")
-        .eq("id", user!.id)
+        .eq("id", user?.id ?? "")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -207,7 +207,7 @@ function EditProfilePage() {
             <p className="mt-1 text-right text-xs text-gray-400">{bio.length}/{BIO_MAX}</p>
           </Field>
 
-          <Field label="University / major">
+          <Field label="Major">
             <input
               value={major}
               onChange={(e) => setMajor(e.target.value)}
