@@ -11,6 +11,7 @@ import { getOrCreateConversation } from "@/lib/leaseup/queries";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { Listing } from "@/lib/leaseup/types";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 const CAMPUS_ABBREV: Record<string, string> = {
   "University of Georgia": "UGA",
@@ -121,7 +122,7 @@ export function HostProfile({ userId }: { userId: string }) {
     return <div className="mx-auto max-w-5xl px-4 py-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
   }
 
-  const name = profile.name || "Student";
+  const name = profileDisplayName(profile);
   const first = firstName(name);
   const campus = abbrevCampus(profile.campus_name);
   const line2 = [campus, profile.year ? `Class of ${profile.year}` : null].filter(Boolean).join(" · ");

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/leaseup/types";
 import { Plus, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 type Story = {
   userId: string;
@@ -127,7 +128,7 @@ export function StoriesBar({
               )}
             </span>
             <span className="max-w-[64px] truncate text-[10px] font-bold text-foreground">
-              {(s.profile.name ?? "Student").split(" ")[0]}
+              {profileDisplayName(s.profile).split(" ")[0]}
             </span>
           </button>
         );

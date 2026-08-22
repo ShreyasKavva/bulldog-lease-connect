@@ -15,6 +15,7 @@ import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { copyToClipboard, shareToGroupMe, withUtm } from "@/lib/leaseup/share";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 const CAMPUS_ICON: Record<string, string> = {
   "university-of-georgia": "🐾",
@@ -347,7 +348,7 @@ function CampusPage() {
                 const move = p.move_in_date
                   ? new Date(p.move_in_date).toLocaleDateString(undefined, { month: "short", year: "numeric" })
                   : "Flexible";
-                const first = (p.profile?.name ?? "Student").split(" ")[0];
+                const first = posterFirstName(p);
                 const snippet = (p.description ?? "").slice(0, 120);
                 return (
                   <article

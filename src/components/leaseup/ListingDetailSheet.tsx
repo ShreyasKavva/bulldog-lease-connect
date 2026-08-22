@@ -12,6 +12,7 @@ import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings } from "@/lib/leaseup/queries";
+import { posterName } from "@/lib/leaseup/display-name";
 import { cn } from "@/lib/utils";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
@@ -179,7 +180,7 @@ export function ListingDetailSheet({
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
   const host = hostProfile;
   const prefChips = roommatePrefChips((listing as Listing & { roommate_prefs?: unknown }).roommate_prefs);
-  const hostName = listing.display_name || host?.name || hostDisplayName || "Host";
+  const hostName = posterName({ display_name: listing.display_name, profile: host as any, host: { display_name: hostDisplayName } }, "Host");
   const otherActive = Math.max(0, (host?.active_listing_count ?? 0) - 1);
 
   return (
@@ -434,7 +435,7 @@ export function ListingDetailSheet({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1 font-bold">
-                  {listing.display_name || listing.profile.name}
+                  {posterName(listing)}
                   {listing.profile.verified_email && <BadgeCheck className="h-4 w-4 text-success" />}
                 </div>
                 <div className="text-xs text-muted-foreground">

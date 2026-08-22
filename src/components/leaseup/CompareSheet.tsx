@@ -2,6 +2,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Check, X, BedDouble, Bath, MapPin, Calendar, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 function fmtDate(d: string | null) {
   if (!d) return "—";
@@ -95,7 +96,7 @@ export function CompareSheet({
                       <Row label="Pet friendly"><YesNo v={l.pet_friendly} /></Row>
                       <Row label="Parking"><YesNo v={l.parking} /></Row>
                       <Row label="Type">{l.type === "transfer" ? "Transfer" : "Sublease"}</Row>
-                      <Row label="Poster">{l.profile?.name ?? "Student"}</Row>
+                      <Row label="Poster">{posterName(l)}</Row>
 
                       <div className="flex gap-2 pt-2">
                         <button

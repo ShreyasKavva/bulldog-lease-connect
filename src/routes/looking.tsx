@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 // Q152 — local memory of which Looking Board posts this device already upvoted.
 const UPVOTED_KEY = "leasup_upvoted_posts";
@@ -503,7 +504,7 @@ function LookingForCard({
   browseCampusSlug?: string | null;
 }) {
   const profile = p.profile;
-  const displayName = p.display_name ?? profile?.name ?? "Student";
+  const displayName = posterName({ display_name: p.display_name, profile: profile as any });
   const dateRange = fmtDateRange(p.move_in_date, p.move_out_date);
   const ageDays = Math.floor((Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
   const expiringSoon = ageDays >= 55 && ageDays < 60;
