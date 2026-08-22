@@ -241,6 +241,25 @@ function Browse() {
     }
   }, []);
 
+  /**
+   * Q180 — dates must never be remembered across sessions: they go stale as soon
+   * as the calendar moves past them. Strip from/to out of any saved filter blob
+   * so returning users aren't stuck with a range they set weeks ago.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("leasup_browse_filters");
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && typeof saved === "object" && ("from" in saved || "to" in saved)) {
+        delete saved.from; delete saved.to;
+        window.localStorage.setItem("leasup_browse_filters", JSON.stringify(saved));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+
   const { data: listings = [], isLoading, isError } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
@@ -467,8 +486,10 @@ function Browse() {
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
       if (!matchesBeds(l)) return false;
-      if (fromDate && l.available_from && new Date(l.available_from) > fromDate) return false;
-      if (toDate && l.available_to && new Date(l.available_to) < toDate) return false;
+      // Q180 — OVERLAP, not containment: a listing matches when its availability
+      // overlaps the requested window at all.
+      if (toDate && l.available_from && new Date(l.available_from) > toDate) return false;
+      if (fromDate && l.available_to && new Date(l.available_to) < fromDate) return false;
 
       // Q96 — search-bar / category-pill params
       if (s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
@@ -510,6 +531,13 @@ function Browse() {
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
+
+  /** Q180 — how many live listings the selected campus has before any filters. */
+  const campusTotal = useMemo(
+    () => (campusId ? listings.filter((l) => l.campus_id === campusId).length : listings.length),
+    [listings, campusId],
+  );
+  const campusLabel = searchedCampus?.name ?? searchedCampus?.short_name ?? "this campus";
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -657,9 +685,10 @@ function Browse() {
               navigate({ to: "/campus/$slug", params: { slug: campus.slug } });
               return;
             }
-            patchSearch({ campus: campus.slug, page: undefined });
+            // Q180 — a new school is a new search: never carry stale dates over.
+            patchSearch({ campus: campus.slug, from: undefined, to: undefined, page: undefined });
           }}
-          onCampusClear={() => patchSearch({ campus: undefined, page: undefined })}
+          onCampusClear={() => patchSearch({ campus: undefined, from: undefined, to: undefined, page: undefined })}
         />
 
 
@@ -756,17 +785,53 @@ function Browse() {
                   <Search className="h-4 w-4 text-muted-foreground" />
                 </span>
               </div>
-              <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Try adjusting your dates, size, or price range
-              </p>
-              <button
-                onClick={clearFilters}
-                className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
-              >
-                Clear all filters
-              </button>
+              {campusTotal > 0 ? (
+                <>
+                  {/* Q180 — hidden-by-filters recovery, never a dead end. */}
+                  <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                    {campusTotal} sublease{campusTotal === 1 ? "" : "s"} at {campusLabel} {campusTotal === 1 ? "is" : "are"} hidden by your filters
+                  </h3>
+                  <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
+                    {(s.from || s.to) && (
+                      <li>Dates: {[s.from, s.to].filter(Boolean).join(" – ")}</li>
+                    )}
+                    {(minPrice != null || maxPrice != null) && (
+                      <li>Price: {minPrice != null ? `$${minPrice}` : "$0"}–{maxPrice != null ? `$${maxPrice}` : "any"}/mo</li>
+                    )}
+                    {bedSet.size > 0 && <li>Beds: {[...bedSet].join(", ")}</li>}
+                    {s.q && <li>Keyword: “{s.q}”</li>}
+                  </ul>
+                  {(s.from || s.to) && (
+                    <button
+                      onClick={() => patchSearch({ from: undefined, to: undefined })}
+                      className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                    >
+                      Clear dates and show all {campusTotal}
+                    </button>
+                  )}
+                  <button
+                    onClick={clearFilters}
+                    className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    Clear all filters
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Try adjusting your dates, size, or price range
+                  </p>
+                  <button
+                    onClick={clearFilters}
+                    className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+                  >
+                    Clear all filters
+                  </button>
+                </>
+              )}
             </div>
+
 
           ) : (
             <>
