@@ -107,9 +107,8 @@ function CampusDirectoryPage() {
             Find subleases at your school
           </h1>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              LeaseUp is live at {total || "dozens of"} colleges — and searchable at every
-            accredited US school. Verified .edu students, free to
-            post, no scams.
+            LeaseUp is live at {total || "dozens of"} colleges — and searchable at every
+            accredited US school. Verified .edu students, free to post, no scams.
           </p>
           <div className="relative mt-6">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
