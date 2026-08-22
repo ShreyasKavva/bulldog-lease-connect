@@ -5,12 +5,12 @@
  * that submit to /browse. Mobile: a single pill that jumps to /browse and
  * opens the Q87 filter sheet.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { MapPin, Calendar as CalendarIcon, Users, Search, Minus, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { searchCampuses } from "@/lib/leaseup/campuses";
 import { EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
 import { CampusAutocomplete } from "./CampusAutocomplete";
@@ -32,20 +32,20 @@ export function NavSearchBar() {
   const [open, setOpen] = useState<null | "where" | "when" | "who">(null);
   const [q, setQ] = useState("");
 
-  // Campuses lazy-load: the query only runs once a field is opened.
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: fetchCampuses,
-    staleTime: Infinity,
+  // Q179 — ranked server-side search across every accredited US campus.
+  // Lazy: only runs once a field is opened.
+  const [debouncedQ, setDebouncedQ] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedQ(q), 200);
+    return () => window.clearTimeout(t);
+  }, [q]);
+  const { data: matches = [] } = useQuery({
+    queryKey: ["campus-search", debouncedQ.trim().toLowerCase()],
+    queryFn: () => searchCampuses(debouncedQ, 8),
+    staleTime: 60_000,
     enabled: open !== null,
+    placeholderData: (prev) => prev,
   });
-
-  const matches = (q.trim()
-    ? campuses.filter((c) =>
-        `${c.name} ${c.short_name ?? ""} ${c.city}`.toLowerCase().includes(q.trim().toLowerCase()),
-      )
-    : campuses
-  ).slice(0, 8);
 
   function submit() {
     setOpen(null);

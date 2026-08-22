@@ -13,7 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { CampusAutocomplete } from "./CampusAutocomplete";
-import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 import { toast } from "sonner";
 
 const DONE_KEY = "leaseup-onboarding-complete";
@@ -72,13 +72,6 @@ export function OnboardingModal() {
   const email = user?.email ?? "";
   const domain = useMemo(() => email.split("@")[1]?.toLowerCase() ?? "", [email]);
 
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: fetchCampuses,
-    staleTime: Infinity,
-    enabled: open,
-  });
-
   useEffect(() => {
     let cancelled = false;
     async function check() {
@@ -96,14 +89,11 @@ export function OnboardingModal() {
         return;
       }
       setName(profile?.name?.trim() || nameFromEmail(user.email));
-      if (profile?.campus_id) {
-        setCampus(campuses.find((c) => c.id === profile.campus_id) ?? null);
-      } else {
-        const guessId = await fetchDomainCampusId(domain).catch(() => null);
-        if (guessId && !cancelled) {
-          const all = await fetchCampuses().catch(() => [] as Campus[]);
-          if (!cancelled) setCampus(all.find((c) => c.id === guessId) ?? null);
-        }
+      // Q179 — resolve by id: the student's school may have no listings yet.
+      const targetId = profile?.campus_id ?? (await fetchDomainCampusId(domain).catch(() => null));
+      if (targetId && !cancelled) {
+        const rows = await fetchCampusesByIds([targetId]).catch(() => [] as Campus[]);
+        if (!cancelled) setCampus(rows[0] ?? null);
       }
       if (!cancelled) setOpen(true);
     }

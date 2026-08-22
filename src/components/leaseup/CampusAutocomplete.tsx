@@ -6,15 +6,10 @@
  * shows the most active campuses. Keyboard: ↑/↓ to move, Enter to pick,
  * Escape to close. Picking a campus stores its id, not just the text.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
-import {
-  fetchCampuses,
-  fetchActiveListingCountsByCampus,
-  campusMatchesQuery,
-  type Campus,
-} from "@/lib/leaseup/campuses";
+import { searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function CampusAutocomplete({
@@ -42,35 +37,20 @@ export function CampusAutocomplete({
 
   useEffect(() => setText(value), [value]);
 
-  // 150ms debounce so keystrokes don't spam the filter.
+  // Q179 — 200ms debounce; the list now covers every accredited US school so
+  // the filtering happens server-side.
   useEffect(() => {
-    const t = window.setTimeout(() => setDebounced(text), 150);
+    const t = window.setTimeout(() => setDebounced(text), 200);
     return () => window.clearTimeout(t);
   }, [text]);
 
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: fetchCampuses,
-    staleTime: Infinity,
-  });
-  const { data: counts = {} } = useQuery({
-    queryKey: ["active-listing-counts-by-campus"],
-    queryFn: fetchActiveListingCountsByCampus,
+  const q = debounced.trim();
+  const { data: results = [], isFetching } = useQuery({
+    queryKey: ["campus-search", q.toLowerCase()],
+    queryFn: () => searchCampuses(q, q ? 8 : 5),
     staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
-
-  const q = debounced.trim().toLowerCase();
-  const results = useMemo(() => {
-    if (!q) {
-      return [...campuses]
-        .sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0) || a.name.localeCompare(b.name))
-        .slice(0, 5);
-    }
-    return campuses
-      .filter((c) => campusMatchesQuery(c, q))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .slice(0, 6);
-  }, [campuses, counts, q]);
 
   useEffect(() => setActive(0), [q, open]);
 
@@ -147,7 +127,7 @@ export function CampusAutocomplete({
           )}
           {results.length === 0 ? (
             <div className="px-3 py-4 text-center text-xs text-muted-foreground">
-              No campuses found
+              {isFetching ? "Searching…" : "No campuses found"}
             </div>
           ) : (
             results.map((c, i) => (
@@ -162,7 +142,16 @@ export function CampusAutocomplete({
                 )}
               >
                 <span className="truncate font-medium">{c.name}</span>
-                {c.state && <span className="shrink-0 text-sm text-gray-400">· {c.state}</span>}
+                {c.city && (
+                  <span className="shrink-0 text-sm text-gray-400">
+                    · {c.city}, {c.state}
+                  </span>
+                )}
+                {(c.listing_count ?? 0) > 0 && (
+                  <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
+                    {c.listing_count} live
+                  </span>
+                )}
               </button>
             ))
           )}

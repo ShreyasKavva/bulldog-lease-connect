@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import { CampusEmptyState } from "@/components/leaseup/CampusEmptyState";
 
 /** Q163 — hard-coded insider neighborhoods, matched on campus name/short_name. */
 const NEIGHBORHOODS: Array<{ match: RegExp; areas: string }> = [
@@ -216,13 +217,22 @@ function CampusLandingPage() {
             </div>
           )}
 
-          <Link
-            to="/browse"
-            search={{ campus: campus.slug } as any}
-            className="mt-5 inline-flex items-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
-          >
-            Browse {stats.count} active listing{stats.count === 1 ? "" : "s"} →
-          </Link>
+          {stats.count > 0 ? (
+            <Link
+              to="/browse"
+              search={{ campus: campus.slug } as any}
+              className="mt-5 inline-flex items-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+            >
+              Browse {stats.count} active listing{stats.count === 1 ? "" : "s"} →
+            </Link>
+          ) : (
+            <Link
+              to="/post"
+              className="mt-5 inline-flex items-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+            >
+              Post the first sublease →
+            </Link>
+          )}
           {lookingCount > 0 && (
             <p className="mt-3">
               <Link to="/looking" className="text-sm text-[#FF5A5F] hover:underline cursor-pointer">
@@ -284,7 +294,8 @@ function CampusLandingPage() {
         </div>
       </section>
 
-      {/* Stats bar */}
+      {/* Stats bar — hidden until the campus has real inventory (no "0 / —"). */}
+      {stats.count > 0 && (
       <div className="border-y border-gray-100 bg-white py-4 dark:border-border dark:bg-surface">
         <div
           className={`mx-auto grid max-w-5xl gap-4 px-6 ${stats.thisMonth > 0 ? "grid-cols-3" : "grid-cols-2"}`}
@@ -305,6 +316,7 @@ function CampusLandingPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Listings */}
       <section className="mx-auto max-w-7xl px-6 py-10">
@@ -316,14 +328,7 @@ function CampusLandingPage() {
             ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              No subleases posted near {campus.name} yet.
-            </p>
-            <Link to="/post" className="mt-3 inline-block font-semibold text-primary hover:underline">
-              Be the first! → Post a sublease
-            </Link>
-          </div>
+          <CampusEmptyState campus={campus} />
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -349,7 +354,8 @@ function CampusLandingPage() {
           </>
         )}
 
-        {/* Q163 — Campus Insider */}
+        {/* Q163 — Campus Insider (only meaningful once listings exist) */}
+        {listings.length > 0 && (
         <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-border dark:bg-surface">
           <h3 className="text-sm font-bold">📍 Campus Insider</h3>
           {isLoading ? (
@@ -377,6 +383,7 @@ function CampusLandingPage() {
             </div>
           )}
         </div>
+        )}
       </section>
 
     </div>

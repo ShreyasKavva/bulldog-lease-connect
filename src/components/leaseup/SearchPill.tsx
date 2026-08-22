@@ -9,13 +9,12 @@
  *    active it expands to show the "Search" label.
  *  - Popovers open below the pressed segment (aligned to that segment).
  */
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Search, X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useQuery } from "@tanstack/react-query";
-import { fetchCampuses, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
+import { type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "./CampusAutocomplete";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -61,16 +60,6 @@ export function SearchPill({
   const [openField, setOpenField] = useState<null | Field>(null);
   const firedRef = useRef(false);
   const [hoverField, setHoverField] = useState<null | Field>(null);
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity,
-  });
-  const [q, setQ] = useState(value.where);
-  useEffect(() => setQ(value.where), [value.where]);
-
-  const matches = q.trim().length
-    ? campuses.filter((c) => campusMatchesQuery(c, q)).slice(0, 6)
-    : campuses.slice(0, 6);
-
   function pickCampus(c: Campus) {
     onChange({ ...value, where: c.short_name ?? c.name, campusId: c.id });
     setOpenField("when");

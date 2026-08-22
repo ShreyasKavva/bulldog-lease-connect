@@ -30,7 +30,7 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 import { TrendingCarousel } from "@/components/leaseup/TrendingCarousel";
 import { fetchTrendingIds } from "@/lib/leaseup/referral.queries";
 import { useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusBySlugOrAlias, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 import { matchesRoommateFilters } from "@/lib/leaseup/roommate-prefs";
 
 type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
@@ -251,7 +251,28 @@ function Browse() {
     enabled: !!user?.id,
   });
   const { data: profile } = useMyProfile();
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
+  const { data: campusesWithListings = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
+  // Q179 — a searched campus (or the visitor's own school) may have no live
+  // listings yet, so it won't be in the inventory list. Resolve it separately
+  // and merge, otherwise the filter silently falls back to "all campuses".
+  const slugParam = (Route.useSearch() as BrowseSearch).campus ?? null;
+  const { data: slugCampus = null } = useQuery({
+    queryKey: ["campus-resolve", slugParam],
+    queryFn: () => fetchCampusBySlugOrAlias(slugParam!),
+    enabled: !!slugParam && !campusesWithListings.some((c) => c.slug === slugParam || c.id === slugParam),
+    staleTime: Infinity,
+  });
+  const { data: myCampusRows = [] } = useQuery({
+    queryKey: ["campus-by-id", profile?.campus_id],
+    queryFn: () => fetchCampusesByIds([profile!.campus_id!]),
+    enabled: !!profile?.campus_id && !campusesWithListings.some((c) => c.id === profile?.campus_id),
+    staleTime: Infinity,
+  });
+  const campuses = useMemo(() => {
+    const seen = new Map<string, Campus>();
+    for (const c of [...campusesWithListings, ...myCampusRows, ...(slugCampus ? [slugCampus] : [])]) seen.set(c.id, c);
+    return [...seen.values()];
+  }, [campusesWithListings, myCampusRows, slugCampus]);
   const myCampus = campuses.find(c => c.id === profile?.campus_id);
   const { data: trendingIds = [] } = useQuery({
     queryKey: ["trending-ids", profile?.campus_id ?? "all"],

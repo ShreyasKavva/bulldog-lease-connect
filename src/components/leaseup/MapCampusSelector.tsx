@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, MapPin, Search } from "lucide-react";
-import { fetchCampuses, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
+import { searchCampuses, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function MapCampusSelector({
@@ -11,13 +11,20 @@ export function MapCampusSelector({
   activeId: string | null;
   onSelect: (c: Campus) => void;
 }) {
-  const { data: campuses = [] } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: fetchCampuses,
-    staleTime: Infinity,
-  });
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebounced(q), 200);
+    return () => window.clearTimeout(t);
+  }, [q]);
+  // Q179 — searches every accredited US campus server-side.
+  const { data: filtered = [] } = useQuery({
+    queryKey: ["campus-search", debounced.trim().toLowerCase()],
+    queryFn: () => searchCampuses(debounced, 10),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
+  });
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,9 +35,14 @@ export function MapCampusSelector({
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const active = campuses.find((c) => c.id === activeId);
+  const { data: activeRows = [] } = useQuery({
+    queryKey: ["campus-by-id", activeId],
+    queryFn: () => fetchCampusesByIds([activeId!]),
+    enabled: !!activeId,
+    staleTime: Infinity,
+  });
+  const active = activeRows[0] ?? filtered.find((c) => c.id === activeId);
   const label = active?.short_name ?? active?.name ?? "Pick a campus";
-  const filtered = q ? campuses.filter((c) => campusMatchesQuery(c, q)) : campuses;
 
   return (
     <div className="relative pointer-events-auto" ref={ref}>

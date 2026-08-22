@@ -29,7 +29,8 @@ import { useEffect, useMemo, useState } from "react";
 import { NEIGHBORHOODS, AMENITIES } from "@/lib/leaseup/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,7 +70,12 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
   const [relistPrefilled, setRelistPrefilled] = useState(false);
   const runScreen = useServerFn(screenListing);
 
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+  const { data: campusesWithListings = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses });
+  // Q179 — a student can post at any accredited school, not just ones we already cover.
+  const [pickedCampus, setPickedCampus] = useState<Campus | null>(null);
+  const campuses = pickedCampus && !campusesWithListings.some((c) => c.id === pickedCampus.id)
+    ? [...campusesWithListings, pickedCampus]
+    : campusesWithListings;
 
   const isEdit = !!editListingId;
   const isRelist = !!relistFrom && !isEdit;
@@ -430,19 +436,14 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
             </Field>
 
             <Field label="Campus">
-              <Select value={form.campus_id} onValueChange={(v) => setField("campus_id", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pick your campus" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campuses.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                      {c.city && c.state ? ` — ${c.city}, ${c.state}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
+                <CampusAutocomplete
+                  value={campuses.find((c) => c.id === form.campus_id)?.name ?? ""}
+                  placeholder="Search your school…"
+                  onSelect={(c) => { setPickedCampus(c); setField("campus_id", c.id); }}
+                  onClear={() => setField("campus_id", "")}
+                />
+              </div>
             </Field>
 
             <div className="grid grid-cols-2 gap-3">

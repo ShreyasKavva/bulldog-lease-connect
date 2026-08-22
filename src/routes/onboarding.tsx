@@ -10,12 +10,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchCampuses, fetchCampusIdByEmailDomain } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusesByIds, fetchCampusIdByEmailDomain, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { YEARS } from "@/lib/leaseup/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -38,18 +39,33 @@ function Onboarding() {
   const qc = useQueryClient();
 
   const [campusId, setCampusId] = useState<string | null>(null);
-  const [campusOpen, setCampusOpen] = useState(false);
   const [detectedCampusId, setDetectedCampusId] = useState<string | null>(null);
   const [overrideCampus, setOverrideCampus] = useState(false);
   const [year, setYear] = useState("");
   const [major, setMajor] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: campuses = [] } = useQuery({
+  const { data: campusesWithListings = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
     staleTime: Infinity,
   });
+  // Q179 — the student's own school may have no listings yet, so resolve any
+  // pre-selected / detected campus by id and merge it into the local list.
+  const { data: resolved = [] } = useQuery({
+    queryKey: ["campus-by-id", campusId],
+    queryFn: () => fetchCampusesByIds([campusId!]),
+    enabled: !!campusId,
+    staleTime: Infinity,
+  });
+  const [pickedCampus, setPickedCampus] = useState<Campus | null>(null);
+  const campuses = useMemo(() => {
+    const seen = new Map<string, Campus>();
+    for (const c of [...campusesWithListings, ...resolved, ...(pickedCampus ? [pickedCampus] : [])]) {
+      seen.set(c.id, c);
+    }
+    return [...seen.values()];
+  }, [campusesWithListings, resolved, pickedCampus]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "up" } });
@@ -205,36 +221,17 @@ function Onboarding() {
         ) : (
           <div className="mt-6">
             <Label>Campus</Label>
-            <div className="relative mt-1.5">
-              <button
-                type="button"
-                onClick={() => setCampusOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-xl border border-border bg-surface px-3 py-3 text-left text-sm hover:border-primary/40"
-              >
-                <span className={cn("truncate", !activeCampus && "text-muted-foreground")}>
-                  {activeCampus ? `${activeCampus.name} — ${activeCampus.city}, ${activeCampus.state}` : "Pick your campus…"}
-                </span>
-                <ChevronDown className="h-4 w-4 opacity-60" />
-              </button>
-              {campusOpen && (
-                <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-card-md">
-                  {campuses.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => { setCampusId(c.id); setCampusOpen(false); }}
-                      className={cn(
-                        "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-background",
-                        campusId === c.id && "bg-primary-light",
-                      )}
-                    >
-                      <div>
-                        <div className="font-semibold text-foreground">{c.name}</div>
-                        <div className="text-xs text-muted-foreground">{c.city}, {c.state}</div>
-                      </div>
-                      {campusId === c.id && <Check className="h-4 w-4 text-primary" />}
-                    </button>
-                  ))}
+            <div className="mt-1.5 rounded-xl border border-border bg-surface px-3 py-3">
+              {/* Q179 — search every accredited US school. */}
+              <CampusAutocomplete
+                value={activeCampus ? activeCampus.name : ""}
+                placeholder="Search your school…"
+                onSelect={(c) => { setPickedCampus(c); setCampusId(c.id); }}
+                onClear={() => setCampusId(null)}
+              />
+              {activeCampus && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {activeCampus.city}, {activeCampus.state}
                 </div>
               )}
             </div>

@@ -11,7 +11,8 @@ import { ArrowLeft, ImagePlus, Loader2, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
@@ -134,7 +135,12 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
 
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: 300_000 });
+  const { data: campusesWithListings = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: 300_000 });
+  // Q179 — the chosen campus may have no other listings, so resolve it by id.
+  const [pickedCampus, setPickedCampus] = useState<Campus | null>(null);
+  const campuses = pickedCampus && !campusesWithListings.some((c) => c.id === pickedCampus.id)
+    ? [...campusesWithListings, pickedCampus]
+    : campusesWithListings;
 
   const [form, setForm] = useState<Form>(() => {
     const extras: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
@@ -305,16 +311,14 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
 
           <div className="grid gap-6 sm:grid-cols-2">
             <Field label="Campus">
-              <select
-                value={form.campusId}
-                onChange={(e) => set({ campusId: e.target.value })}
-                className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground"
-              >
-                <option value="">Select a campus</option>
-                {campuses.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <div className="w-full rounded-xl border border-border bg-surface px-4 py-3">
+                <CampusAutocomplete
+                  value={campuses.find((c) => c.id === form.campusId)?.name ?? ""}
+                  placeholder="Search your school…"
+                  onSelect={(c) => { setPickedCampus(c); set({ campusId: c.id }); }}
+                  onClear={() => set({ campusId: "" })}
+                />
+              </div>
             </Field>
             <Field label="Neighborhood">
               <input
