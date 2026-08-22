@@ -6,7 +6,7 @@
  * via TanStack Query. Filter is fully client-side.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { Search, School } from "lucide-react";
