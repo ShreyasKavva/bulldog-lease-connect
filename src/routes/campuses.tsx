@@ -8,7 +8,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCampuses, fetchActiveListingCountsByCampus, campusMatchesQuery, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { Search, School } from "lucide-react";
 
 const CAMPUS_EMOJI: Record<string, string> = {
@@ -71,17 +71,31 @@ function CampusDirectoryPage() {
   });
 
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebounced(query), 200);
+    return () => window.clearTimeout(t);
+  }, [query]);
+
+  // Q179 — the grid shows campuses with live inventory; typing searches every
+  // accredited US school server-side so nobody hits a dead end.
+  const { data: searchResults = [], isFetching } = useQuery({
+    queryKey: ["campus-search", debounced.trim().toLowerCase(), "directory"],
+    queryFn: () => searchCampuses(debounced, 30),
+    enabled: debounced.trim().length > 0,
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
+  });
 
   const sorted = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const filtered = q ? campuses.filter((c) => campusMatchesQuery(c, q)) : campuses;
-    return [...filtered].sort((a, b) => {
-      const ca = counts[a.id] ?? 0;
-      const cb = counts[b.id] ?? 0;
+    const base = debounced.trim() ? searchResults : campuses;
+    return [...base].sort((a, b) => {
+      const ca = counts[a.id] ?? a.listing_count ?? 0;
+      const cb = counts[b.id] ?? b.listing_count ?? 0;
       if (cb !== ca) return cb - ca;
       return a.name.localeCompare(b.name);
     });
-  }, [campuses, counts, query]);
+  }, [campuses, searchResults, counts, debounced]);
 
   const total = campuses.length;
 
@@ -93,7 +107,8 @@ function CampusDirectoryPage() {
             Find subleases at your school
           </h1>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            LeaseUp is live at {total || "dozens of"} colleges. Verified .edu students, free to
+              LeaseUp is live at {total || "dozens of"} colleges — and searchable at every
+            accredited US school. Verified .edu students, free to
             post, no scams.
           </p>
           <div className="relative mt-6">
@@ -109,7 +124,7 @@ function CampusDirectoryPage() {
           </div>
         </header>
 
-        {isLoading ? (
+        {isLoading || (debounced.trim() && isFetching && sorted.length === 0) ? (
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="h-40 animate-pulse rounded-2xl border border-border bg-surface" />
