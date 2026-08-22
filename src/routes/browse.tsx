@@ -659,9 +659,10 @@ function Browse() {
               navigate({ to: "/campus/$slug", params: { slug: campus.slug } });
               return;
             }
-            patchSearch({ campus: campus.slug, page: undefined });
+            // Q180 — a new school is a new search: never carry stale dates over.
+            patchSearch({ campus: campus.slug, from: undefined, to: undefined, page: undefined });
           }}
-          onCampusClear={() => patchSearch({ campus: undefined, page: undefined })}
+          onCampusClear={() => patchSearch({ campus: undefined, from: undefined, to: undefined, page: undefined })}
         />
 
 
