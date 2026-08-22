@@ -10,7 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
-import { fetchCampuses, fetchCampusIdByEmailDomain } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusesByIds, fetchCampusIdByEmailDomain, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { YEARS } from "@/lib/leaseup/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,11 +46,27 @@ function Onboarding() {
   const [major, setMajor] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: campuses = [] } = useQuery({
+  const { data: campusesWithListings = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
     staleTime: Infinity,
   });
+  // Q179 — the student's own school may have no listings yet, so resolve any
+  // pre-selected / detected campus by id and merge it into the local list.
+  const { data: resolved = [] } = useQuery({
+    queryKey: ["campus-by-id", campusId],
+    queryFn: () => fetchCampusesByIds([campusId!]),
+    enabled: !!campusId,
+    staleTime: Infinity,
+  });
+  const [pickedCampus, setPickedCampus] = useState<Campus | null>(null);
+  const campuses = useMemo(() => {
+    const seen = new Map<string, Campus>();
+    for (const c of [...campusesWithListings, ...resolved, ...(pickedCampus ? [pickedCampus] : [])]) {
+      seen.set(c.id, c);
+    }
+    return [...seen.values()];
+  }, [campusesWithListings, resolved, pickedCampus]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "up" } });
