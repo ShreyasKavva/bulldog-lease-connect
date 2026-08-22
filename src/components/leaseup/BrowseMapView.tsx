@@ -113,8 +113,16 @@ function CompactCard({
           </span>
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />}
         </p>
+        {/* Q181 — same primary CTA as the grid/list cards */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+          className="mt-2 rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
+        >
+          View listing →
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 
