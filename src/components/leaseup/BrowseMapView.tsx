@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
 import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
+import { posterName } from "@/lib/leaseup/display-name";
 
 /** Fallback only — the real center comes from the selected campus (Q177). */
 const DEFAULT_CENTER: [number, number] = [39.8283, -98.5795];
@@ -106,7 +107,7 @@ function CompactCard({
         <p className="mt-0.5 truncate text-xs text-muted-foreground">{listing.area ?? "Near campus"}</p>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
           <span className="truncate">
-            {listing.profile?.name || listing.profile?.email?.split("@")[0] || "Student"}
+            {posterName(listing)}
           </span>
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />}
         </p>
@@ -144,7 +145,7 @@ function PopupCard({ listing, onClose }: { listing: Listing; onClose: () => void
         </p>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
           <span className="truncate">
-            {listing.profile?.name || listing.profile?.email?.split("@")[0] || "Student"}
+            {posterName(listing)}
           </span>
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" />}
         </p>
@@ -346,7 +347,7 @@ export function BrowseMapView({
         .lu-map-pin { display:inline-block; padding:6px 12px; border-radius:9999px;
           font-weight:600; font-size:13px; line-height:1;
           border:1px solid rgba(0,0,0,.06);
-          box-shadow:0 2px 6px rgba(0,0,0,.18);
+          box-shadow:0 2px 8px rgba(0,0,0,.22);
           white-space:nowrap;
           transition:transform .15s ease, box-shadow .15s ease;
           font-family:-apple-system,BlinkMacSystemFont,sans-serif; }

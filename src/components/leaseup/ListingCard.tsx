@@ -11,6 +11,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Heart, Check, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { postedAgo } from "@/lib/leaseup/constants";
 import { CardPriceBadge } from "./PriceBadge";
+import { posterName } from "@/lib/leaseup/display-name";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
@@ -456,10 +457,10 @@ export function ListingCard({
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className="truncate hover:underline"
             >
-              {listing.display_name || listing.profile?.name || "Student"}
+              {posterName(listing)}
             </Link>
           ) : (
-            <span className="truncate">{listing.display_name || listing.profile?.name || "Student"}</span>
+            <span className="truncate">{posterName(listing)}</span>
           )}
         </p>
 

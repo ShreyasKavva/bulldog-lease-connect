@@ -1,11 +1,12 @@
 /**
  * Q177 — single source of truth for the basemap.
  *
- * CARTO Positron: a muted grey/white canvas (soft green parks, pale water,
- * thin white roads, very few street labels) so white price pills pop.
+ * CARTO Voyager: a calm but coloured canvas — green parks, blue water, a clear
+ * road hierarchy and named landmark POIs for orientation, without raw-OSM
+ * clutter (no red highways, route shields or dense building footprints).
  * Both OSM and CARTO require visible attribution — keep BASEMAP_OPTIONS intact.
  */
-export const BASEMAP_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+export const BASEMAP_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
 export const BASEMAP_OPTIONS = {
   subdomains: "abcd",
