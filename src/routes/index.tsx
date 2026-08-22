@@ -11,10 +11,11 @@
  * intent (?post / ?message / ?save) is replayed by the effects below.
  */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { fetchListings, getOrCreateConversation, fetchSavedIds, toggleSaved, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
+import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
@@ -124,21 +125,11 @@ function Home() {
     } catch (e: any) { toast.error(e.message); }
   }
 
-  async function handleSave(listing: Listing) {
+  const toggleSave = useToggleSave(user?.id);
+
+  function handleSave(listing: Listing) {
     if (!user) { requireAuth("save", { listingId: listing.id }); return; }
-    const isSaved = savedIds.has(listing.id);
-    // Q107 — optimistic heart: flip instantly, revert on error.
-    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
-      const s = new Set(prev ?? []);
-      if (isSaved) s.delete(listing.id); else s.add(listing.id);
-      return s;
-    });
-    try {
-      await toggleSaved(user.id, listing.id, isSaved);
-    } catch (e: any) {
-      qc.invalidateQueries({ queryKey: ["saved", user.id] });
-      toast.error(e.message);
-    }
+    void toggleSave(listing.id);
   }
 
 

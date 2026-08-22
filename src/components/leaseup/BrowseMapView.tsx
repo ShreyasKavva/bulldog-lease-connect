@@ -83,11 +83,13 @@ function CompactCard({
 }: { listing: Listing; active: boolean; onClick: () => void }) {
   const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0];
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === "Enter") onClick?.(); }}
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted/60",
+        "flex w-full cursor-pointer items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted/60",
         active && "border-l-2 border-foreground bg-muted/50",
       )}
     >
@@ -111,8 +113,16 @@ function CompactCard({
           </span>
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />}
         </p>
+        {/* Q181 — same primary CTA as the grid/list cards */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+          className="mt-2 rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
+        >
+          View listing →
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -153,9 +163,9 @@ function PopupCard({ listing, onClose }: { listing: Listing; onClose: () => void
         <Link
           to="/listing/$id"
           params={{ id: listing.id }}
-          className="mt-2 inline-block text-sm font-medium text-foreground hover:underline"
+          className="mt-2 inline-block rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
         >
-          View listing
+          View listing →
         </Link>
       </div>
     </div>

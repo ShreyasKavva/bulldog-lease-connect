@@ -291,7 +291,7 @@ export function ListingCard({
             type="button"
             onClick={handleMessage}
             aria-label="Message the host"
-            className="rounded-full bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="rounded-full border border-white/70 bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
           >
             💬 Message
           </button>
@@ -390,14 +390,16 @@ export function ListingCard({
             {saved ? "Remove from Saved" : "Save to see it in Saved"}
           </span>
 
-          <Heart
-            className={cn(
-              "h-6 w-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]",
-              saved
-                ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F] transition-transform"
-                : "fill-black/20 text-white transition-transform",
-            )}
-          />
+          {/* Q181 — the heart is a SECONDARY action: ghost/outline, never competing
+              with the primary "View listing" CTA below the photo. */}
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/70 bg-white/70 backdrop-blur-sm">
+            <Heart
+              className={cn(
+                "h-4 w-4 transition-transform",
+                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-gray-700",
+              )}
+            />
+          </span>
           {/* Q143 — save count, hidden at zero */}
           {savesCount > 0 && (
             <span className="text-xs font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
@@ -464,7 +466,14 @@ export function ListingCard({
           )}
         </p>
 
-
+        {/* Q181 — primary CTA: unmistakably the thing to click. */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onOpen(); }}
+          className="mt-3 w-full rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:w-auto"
+        >
+          View listing →
+        </button>
       </div>
     </article>
   );

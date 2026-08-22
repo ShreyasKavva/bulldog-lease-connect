@@ -37,7 +37,7 @@ export function ListingListRow({
       tabIndex={0}
       onClick={() => onOpen?.()}
       onKeyDown={(e) => { if (e.key === "Enter") onOpen?.(); }}
-      className="relative mb-2 flex h-24 cursor-pointer overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:shadow-md sm:h-28"
+      className="relative mb-2 flex min-h-24 cursor-pointer overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:shadow-md sm:min-h-28"
     >
       {photo ? (
         <img
@@ -50,7 +50,7 @@ export function ListingListRow({
         <div className="flex h-full w-36 shrink-0 items-center justify-center bg-muted text-2xl">🏠</div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 pr-10">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 py-2 pr-10">
         <p className="truncate text-sm font-semibold text-foreground">{listing?.title ?? "Sublease"}</p>
         <p className="text-sm font-bold text-primary">
           ${listing?.price ?? 0}
@@ -64,13 +64,21 @@ export function ListingListRow({
             {from ?? "Flexible"}{to ? ` – ${to}` : ""}
           </p>
         )}
+        {/* Q181 — primary CTA, identical to the grid + map cards */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onOpen?.(); }}
+          className="mt-2 w-full rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:w-auto sm:self-start"
+        >
+          View listing →
+        </button>
       </div>
 
       <button
         type="button"
         aria-label={saved ? "Unsave listing" : "Save listing"}
         onClick={(e) => { e.stopPropagation(); onSave?.(); }}
-        className="absolute right-2 top-2 rounded-full bg-surface/90 p-1.5 shadow-sm transition hover:scale-105"
+        className="absolute right-2 top-2 rounded-full border border-border bg-surface/90 p-1.5 transition hover:scale-105"
       >
         <Heart className={cn("h-4 w-4", saved ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
       </button>

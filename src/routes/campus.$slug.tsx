@@ -5,6 +5,7 @@
  * from short_name / name ("uga", "osu"). Fully public — no auth required.
  */
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useMemo, useState } from "react";
 import { setLastCampusSlug } from "@/lib/leaseup/last-campus";
 
@@ -13,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchCampusBySlugOrAlias, type Campus } from "@/lib/leaseup/campuses";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { useSession } from "@/lib/leaseup/use-session";
-import { fetchSavedIds, toggleSaved } from "@/lib/leaseup/queries";
+import { fetchSavedIds } from "@/lib/leaseup/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Listing } from "@/lib/leaseup/types";
 import { Search } from "lucide-react";
@@ -158,18 +159,14 @@ function CampusLandingPage() {
   const visible = listings.slice(0, 6);
 
 
-  async function handleSave(l: Listing) {
+  const toggleSave = useToggleSave(user?.id);
+
+  function handleSave(l: Listing) {
     if (!user) {
       navigate({ to: "/auth", search: { mode: "up", next: `/campus/${campus.slug}` } as any });
       return;
     }
-    const saved = savedIds.has(l.id);
-    try {
-      await toggleSaved(user.id, l.id, !saved);
-      qc.invalidateQueries({ queryKey: ["saved", user.id] });
-    } catch {
-      /* non-fatal */
-    }
+    void toggleSave(l.id);
   }
 
   function submitSearch(e: React.FormEvent) {

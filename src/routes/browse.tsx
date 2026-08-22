@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { pushRecentSearch } from "@/lib/leaseup/recent-searches";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation } from "@/lib/leaseup/queries";
+import { fetchListings, fetchSavedIds, getOrCreateConversation } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { RenterFeedbackPrompt } from "@/components/leaseup/RenterFeedbackPrompt";
 import { ListingCard } from "@/components/leaseup/ListingCard";
@@ -609,16 +610,11 @@ function Browse() {
   }
 
 
-  async function handleSave(listing: Listing) {
+  const toggleSave = useToggleSave(user?.id);
+
+  function handleSave(listing: Listing) {
     if (!user) { openSignIn("/browse"); return; }
-    const saved = savedIds.has(listing.id);
-    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
-      const s = new Set(prev ?? []);
-      if (saved) s.delete(listing.id); else s.add(listing.id);
-      return s;
-    });
-    try { await toggleSaved(user.id, listing.id, saved); }
-    catch { qc.invalidateQueries({ queryKey: ["saved", user.id] }); }
+    void toggleSave(listing.id);
   }
 
   async function handleMessage(listing: Listing) {
