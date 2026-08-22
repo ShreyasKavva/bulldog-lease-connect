@@ -163,9 +163,9 @@ function PopupCard({ listing, onClose }: { listing: Listing; onClose: () => void
         <Link
           to="/listing/$id"
           params={{ id: listing.id }}
-          className="mt-2 inline-block text-sm font-medium text-foreground hover:underline"
+          className="mt-2 inline-block rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
         >
-          View listing
+          View listing →
         </Link>
       </div>
     </div>
