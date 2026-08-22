@@ -316,14 +316,7 @@ function CampusLandingPage() {
             ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              No subleases posted near {campus.name} yet.
-            </p>
-            <Link to="/post" className="mt-3 inline-block font-semibold text-primary hover:underline">
-              Be the first! → Post a sublease
-            </Link>
-          </div>
+          <CampusEmptyState campus={campus} />
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
