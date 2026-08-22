@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, type Campus } from "@/lib/leaseup/campuses";
-import { fetchListings, fetchSavedIds, toggleSaved, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
+import { fetchListings, fetchSavedIds, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
@@ -137,16 +137,9 @@ function CampusPage() {
     queryFn: () => fetchLookingFor(campus.id),
   });
 
-  async function handleSave(l: Listing) {
+  function handleSave(l: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
-    const saved = savedIds.has(l.id);
-    qc.setQueryData(["saved", user.id], (prev: Set<string> | undefined) => {
-      const s = new Set(prev ?? []);
-      if (saved) s.delete(l.id); else s.add(l.id);
-      return s;
-    });
-    try { await toggleSaved(user.id, l.id, saved); }
-    catch { qc.invalidateQueries({ queryKey: ["saved", user.id] }); }
+    void toggleSave(l.id);
   }
 
   async function handleMessage(l: Listing) {
