@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { EstimatedReach } from "@/components/leaseup/EstimatedReach";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
@@ -469,12 +470,18 @@ export function PostWizard({ userId }: { userId: string }) {
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Campus</label>
-                <select className={inputCls("bg-background")} value={d.campusId} onChange={(e) => set({ campusId: e.target.value })}>
-                  <option value="">Select your campus</option>
-                  {campuses.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                {/* Q179 — typeahead over every accredited US school. */}
+                <div className="rounded-xl border border-border bg-background px-3 py-2.5">
+                  <CampusAutocomplete
+                    value={campuses.find((c) => c.id === d.campusId)?.name ?? ""}
+                    placeholder="Search your school…"
+                    onSelect={(c) => {
+                      setCampuses((prev) => (prev.some((x) => x.id === c.id) ? prev : [...prev, c]));
+                      set({ campusId: c.id });
+                    }}
+                    onClear={() => set({ campusId: "" })}
+                  />
+                </div>
                 <EstimatedReach
                   campusId={d.campusId}
                   campusName={campuses.find((c) => c.id === d.campusId)?.name}
