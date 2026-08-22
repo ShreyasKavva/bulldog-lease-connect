@@ -241,6 +241,25 @@ function Browse() {
     }
   }, []);
 
+  /**
+   * Q180 — dates must never be remembered across sessions: they go stale as soon
+   * as the calendar moves past them. Strip from/to out of any saved filter blob
+   * so returning users aren't stuck with a range they set weeks ago.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("leasup_browse_filters");
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && typeof saved === "object" && ("from" in saved || "to" in saved)) {
+        delete saved.from; delete saved.to;
+        window.localStorage.setItem("leasup_browse_filters", JSON.stringify(saved));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+
   const { data: listings = [], isLoading, isError } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
