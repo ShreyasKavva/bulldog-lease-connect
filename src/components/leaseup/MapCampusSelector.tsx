@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, MapPin, Search } from "lucide-react";
-import { searchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { searchCampuses, fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function MapCampusSelector({
@@ -35,7 +35,13 @@ export function MapCampusSelector({
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const active = filtered.find((c) => c.id === activeId);
+  const { data: activeRows = [] } = useQuery({
+    queryKey: ["campus-by-id", activeId],
+    queryFn: () => fetchCampusesByIds([activeId!]),
+    enabled: !!activeId,
+    staleTime: Infinity,
+  });
+  const active = activeRows[0] ?? filtered.find((c) => c.id === activeId);
   const label = active?.short_name ?? active?.name ?? "Pick a campus";
 
   return (
