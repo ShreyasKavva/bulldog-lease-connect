@@ -37,7 +37,7 @@ export function ListingListRow({
       tabIndex={0}
       onClick={() => onOpen?.()}
       onKeyDown={(e) => { if (e.key === "Enter") onOpen?.(); }}
-      className="relative mb-2 flex h-24 cursor-pointer overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:shadow-md sm:h-28"
+      className="relative mb-2 flex min-h-24 cursor-pointer overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:shadow-md sm:min-h-28"
     >
       {photo ? (
         <img
