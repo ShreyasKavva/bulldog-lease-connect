@@ -43,6 +43,7 @@ import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
 import { InlinePriceBadge } from "@/components/leaseup/PriceBadge";
 import { ListerFeedbackModal } from "@/components/leaseup/ListerFeedbackModal";
 import {
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
   buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
   shareToDiscord, shareToGroupMe, withUtm,
 } from "@/lib/leaseup/share";
@@ -461,7 +462,7 @@ function ListingDetailPage() {
 
 
   const [messaging, setMessaging] = useState(false);
-  const firstName = (poster?.name ?? "").trim() || "Host";
+  const firstName = profileDisplayName(poster, "Host").split(" ")[0];
 
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
@@ -1203,7 +1204,7 @@ function HostCard({
   isEdu: boolean;
   memberSince: string | null;
 }) {
-  const initial = (poster?.name ?? "?").trim().charAt(0).toUpperCase();
+  const initial = profileDisplayName(poster, "?").trim().charAt(0).toUpperCase();
   const bannerColor = poster?.banner_color ?? "hsl(var(--primary))";
   const subtitle = [poster?.campus_name && abbrevCampus(poster.campus_name), poster?.year].filter(Boolean).join(" · ");
   const lastSeen = poster?.last_seen ? new Date(poster.last_seen).getTime() : 0;
@@ -1239,7 +1240,7 @@ function HostCard({
             params={{ userId: listing.user_id }}
             className="truncate text-base font-bold hover:underline"
           >
-            Hosted by {listing.display_name || poster?.name || "Student"}
+            Hosted by {posterName({ display_name: listing.display_name, profile: poster as any })}
           </Link>
           {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
         </div>
@@ -1736,7 +1737,7 @@ function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: (
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="truncate text-sm font-bold">{p.display_name ?? profile?.name ?? "Student"}</p>
+            <p className="truncate text-sm font-bold">{posterName({ display_name: p.display_name, profile: profile as any })}</p>
             {profile?.verified_email && <BadgeCheck className="h-3.5 w-3.5 text-success" />}
           </div>
           {p.budget_max != null && (

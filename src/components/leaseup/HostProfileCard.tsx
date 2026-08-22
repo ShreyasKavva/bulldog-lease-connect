@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MessageSquare, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 
 type HostStats = {
@@ -83,7 +84,7 @@ export function HostProfileCard({
         </div>
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate text-base font-bold">
-            {poster?.name ?? "Student"}
+            {profileDisplayName(poster)}
             {poster?.verified_email && <BadgeCheck className="h-4 w-4 shrink-0 text-success" />}
           </p>
           {sinceLabel && <p className="text-sm text-muted-foreground">Member since {sinceLabel}</p>}

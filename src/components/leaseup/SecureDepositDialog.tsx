@@ -8,6 +8,7 @@ import { createDepositIntent } from "@/lib/leaseup/stripe.functions";
 import type { Listing } from "@/lib/leaseup/types";
 import { Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 type Step = "review" | "pay" | "done";
 
@@ -88,7 +89,7 @@ export function SecureDepositDialog({
 
             <ul className="space-y-1.5 text-xs text-muted-foreground">
               <li>🔒 Funds are held securely until your move-in date.</li>
-              <li>✓ Released to {listing.profile?.name ?? "the poster"} 48 hours after move-in with no disputes.</li>
+              <li>✓ Released to {posterName(listing, "the poster")} 48 hours after move-in with no disputes.</li>
               <li>⚖ Disputed? LeaseUp mediates within 48 hours.</li>
             </ul>
 
@@ -112,7 +113,7 @@ export function SecureDepositDialog({
             <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success-light text-3xl">🔒</div>
             <h3 className="text-lg font-black">Deposit held securely</h3>
             <p className="text-sm text-muted-foreground">
-              {listing.profile?.name ?? "The poster"} has been notified. Funds will release after your move-in date.
+              {posterName(listing, "The poster")} has been notified. Funds will release after your move-in date.
             </p>
             <Button onClick={() => onOpenChange(false)} className="w-full">Done</Button>
           </div>

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { Calendar } from "lucide-react";
+import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 export function TourBookingPanel({ listing }: { listing: Listing }) {
   const { user } = useSession();
@@ -80,7 +81,7 @@ export function TourBookingPanel({ listing }: { listing: Listing }) {
       <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 text-center">
         <div className="text-2xl">📅</div>
         <div className="mt-1 text-sm font-bold">Tour requested!</div>
-        <div className="text-xs text-muted-foreground">{listing.profile?.name ?? "The poster"} will confirm shortly. We'll notify you.</div>
+        <div className="text-xs text-muted-foreground">{posterName(listing, "The poster")} will confirm shortly. We'll notify you.</div>
       </div>
     );
   }
@@ -138,7 +139,7 @@ export function TourBookingPanel({ listing }: { listing: Listing }) {
           <div className="mt-1 text-xs text-muted-foreground">
             📍 {listing.title}<br />
             📅 {formatDateChip(activeDate).weekday}, {formatDateChip(activeDate).monthDay} at {formatTime12(activeSlot)}<br />
-            👤 With: {listing.profile?.name ?? "the poster"}
+            👤 With: {posterName(listing, "the poster")}
           </div>
           <textarea
             value={note} onChange={(e) => setNote(e.target.value)}
