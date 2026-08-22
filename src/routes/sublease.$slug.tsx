@@ -22,6 +22,7 @@ const CAMPUS_ICON: Record<string, string> = {
   "auburn-university": "🐅",
   "university-of-florida": "🐊",
   "georgia-tech": "🐝",
+  "university-of-virginia": "🏛️",
   "university-of-alabama": "🐘",
 };
 

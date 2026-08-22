@@ -64,6 +64,7 @@ const CAMPUS_EMOJI: Record<string, string> = {
   "duke-university": "😈",
   "florida-state-university": "🍢",
   "georgia-tech": "🐝",
+  "university-of-virginia": "🏛️", uva: "🏛️",
   "ohio-state-university": "🌰",
   "university-of-texas-at-austin": "🤘",
   "university-of-michigan": "〽️",
