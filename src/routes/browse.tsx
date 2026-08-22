@@ -513,6 +513,13 @@ function Browse() {
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
 
+  /** Q180 — how many live listings the selected campus has before any filters. */
+  const campusTotal = useMemo(
+    () => (campusId ? listings.filter((l) => l.campus_id === campusId).length : listings.length),
+    [listings, campusId],
+  );
+  const campusLabel = searchedCampus?.name ?? searchedCampus?.short_name ?? "this campus";
+
   const activeFilterCount =
     (s.q ? 1 : 0) +
     (campusSlug ? 1 : 0) +
