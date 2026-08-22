@@ -19,9 +19,7 @@ export function MapView({ listings, onSelect }: { listings: Listing[]; onSelect:
       if (cancelled || !ref.current || mapRef.current) return;
       Lref.current = L;
       const map = L.map(ref.current).setView(UGA_CENTER, 14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap", maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       L.marker(UGA_CENTER, {
         icon: L.divIcon({
           className: "",
