@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SignInGate } from "@/components/leaseup/SignInGate";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 
 export const Route = createFileRoute("/profile/edit")({
   head: () => ({
@@ -36,6 +38,7 @@ function EditProfilePage() {
   const [bio, setBio] = useState("");
   const [major, setMajor] = useState("");
   const [year, setYear] = useState("");
+  const [campus, setCampus] = useState<Campus | null>(null);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,13 +48,20 @@ function EditProfilePage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("name, bio, major, year, avatar_url")
+        .select("name, bio, major, year, avatar_url, campus_id")
         .eq("id", user!.id)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  const { data: profileCampus = [] } = useQuery({
+    queryKey: ["campus-by-id", profile?.campus_id],
+    queryFn: () => fetchCampusesByIds(profile?.campus_id ? [profile.campus_id] : []),
+    enabled: !!profile?.campus_id,
+    staleTime: Infinity,
   });
 
   useEffect(() => {
@@ -62,6 +72,10 @@ function EditProfilePage() {
     setYear(profile.year ?? "");
     setAvatarPath(profile.avatar_url ?? null);
   }, [profile]);
+
+  useEffect(() => {
+    if (!campus && profileCampus[0]) setCampus(profileCampus[0]);
+  }, [campus, profileCampus]);
 
   const { data: avatarUrl } = useQuery({
     queryKey: ["avatar-url", avatarPath],
@@ -113,6 +127,7 @@ function EditProfilePage() {
           bio: bio.trim() || null,
           major: major.trim() || null,
           year: year.trim() || null,
+          campus_id: campus?.id ?? null,
         })
         .eq("id", user.id);
       if (error) throw error;
@@ -199,6 +214,17 @@ function EditProfilePage() {
               placeholder="e.g. Marketing"
               className="w-full rounded-xl border border-gray-300 bg-background px-3 py-2.5 text-sm outline-none focus:border-gray-900 dark:border-border dark:focus:border-foreground"
             />
+          </Field>
+
+          <Field label="Home campus">
+            <div className="rounded-xl border border-border bg-background px-3 py-2.5">
+              <CampusAutocomplete
+                value={campus?.name ?? ""}
+                placeholder="Search your school…"
+                onSelect={setCampus}
+                onClear={() => setCampus(null)}
+              />
+            </div>
           </Field>
 
           <Field label="Grad year">

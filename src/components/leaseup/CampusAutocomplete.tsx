@@ -2,7 +2,7 @@
  * Q100 — Campus typeahead used by every "Where" input (homepage hero,
  * nav compact search, campus landing hero).
  *
- * Typing filters the campus list (debounced 150ms); an empty focused input
+ * Typing filters the campus list (debounced 200ms); an empty focused input
  * shows the most active campuses. Keyboard: ↑/↓ to move, Enter to pick,
  * Escape to close. Picking a campus stores its id, not just the text.
  */
@@ -45,12 +45,15 @@ export function CampusAutocomplete({
   }, [text]);
 
   const q = debounced.trim();
+  const canSearch = q.length === 0 || q.length >= 2;
   const { data: results = [], isFetching } = useQuery({
     queryKey: ["campus-search", q.toLowerCase()],
     queryFn: () => searchCampuses(q, q ? 8 : 5),
+    enabled: canSearch,
     staleTime: 60_000,
     placeholderData: (prev) => prev,
   });
+  const visibleResults = canSearch ? results : [];
 
   useEffect(() => setActive(0), [q, open]);
 
@@ -85,14 +88,14 @@ export function CampusAutocomplete({
             if (e.key === "ArrowDown") {
               e.preventDefault();
               setOpen(true);
-              setActive((i) => Math.min(i + 1, results.length - 1));
+              setActive((i) => Math.min(i + 1, visibleResults.length - 1));
             } else if (e.key === "ArrowUp") {
               e.preventDefault();
               setActive((i) => Math.max(i - 1, 0));
             } else if (e.key === "Enter") {
-              if (open && results[active]) {
+              if (open && visibleResults[active]) {
                 e.preventDefault();
-                pick(results[active]);
+                pick(visibleResults[active]);
               }
             } else if (e.key === "Escape") {
               setOpen(false);
@@ -100,6 +103,10 @@ export function CampusAutocomplete({
           }}
           placeholder={placeholder}
           aria-label="Where"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls="campus-autocomplete-results"
+          aria-autocomplete="list"
           className={cn("min-w-0 flex-1 bg-transparent text-sm outline-none", inputClassName)}
         />
         {text && (
@@ -119,21 +126,27 @@ export function CampusAutocomplete({
       </div>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg dark:border-border dark:bg-surface">
-          {!q && results.length > 0 && (
-            <div className="px-3 pt-2 text-xs uppercase tracking-wide text-gray-400">
-              Popular campuses
+        <div id="campus-autocomplete-results" role="listbox" className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 min-w-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
+          {!q && visibleResults.length > 0 && (
+            <div className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Campuses with subleases
             </div>
           )}
-          {results.length === 0 ? (
+          {!canSearch ? (
+            <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+              Type at least 2 characters
+            </div>
+          ) : visibleResults.length === 0 ? (
             <div className="px-3 py-4 text-center text-xs text-muted-foreground">
               {isFetching ? "Searching…" : "No campuses found"}
             </div>
           ) : (
-            results.map((c, i) => (
+            visibleResults.map((c, i) => (
               <button
                 key={c.id}
                 type="button"
+                role="option"
+                aria-selected={i === active}
                 onMouseEnter={() => setActive(i)}
                 onClick={() => pick(c)}
                 className={cn(
@@ -148,8 +161,8 @@ export function CampusAutocomplete({
                   </span>
                 )}
                 {(c.listing_count ?? 0) > 0 && (
-                  <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
-                    {c.listing_count} live
+                  <span className="ml-auto shrink-0 text-xs font-semibold text-success">
+                    {c.listing_count} sublease{c.listing_count === 1 ? "" : "s"}
                   </span>
                 )}
               </button>

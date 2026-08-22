@@ -13,6 +13,8 @@ import { clearRecentSearches, getRecentSearches, type RecentSearch } from "@/lib
 import { Search, SlidersHorizontal, X as XIcon, ChevronDown, Minus, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import type { Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export type Sort = "newest" | "price_asc" | "price_desc" | "popular" | "ending_soon";
@@ -149,9 +151,9 @@ export function BrowseFilterBar({
   resultCount,
   placeLabel,
   initialFiltersOpen,
-  campuses = [],
-  campusValue,
-  onCampusChange,
+  selectedCampus,
+  onCampusSelect,
+  onCampusClear,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -162,10 +164,10 @@ export function BrowseFilterBar({
   placeLabel: string;
   /** Q96 — nav search on mobile deep-links here with the sheet open. */
   initialFiltersOpen?: boolean;
-  /** Campus picker inside the bar (replaces the old campus rail). */
-  campuses?: Array<{ id: string; slug: string; name: string; short_name?: string | null }>;
-  campusValue?: string;
-  onCampusChange?: (slug: string | undefined) => void;
+  /** Shared nationwide campus typeahead inside the bar. */
+  selectedCampus?: Campus | null;
+  onCampusSelect?: (campus: Campus) => void;
+  onCampusClear?: () => void;
 }) {
 
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
@@ -376,22 +378,17 @@ export function BrowseFilterBar({
 
 
             {/* Campus picker lives in the bar so location is one click, not a rail. */}
-            {campuses.length > 0 && (
-              <>
-                <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
-                <select
-                  value={campusValue ?? ""}
-                  onChange={(e) => onCampusChange?.(e.target.value || undefined)}
-                  aria-label="Campus"
-                  className="hidden max-w-[11rem] shrink-0 bg-transparent px-1 text-sm font-semibold text-foreground outline-none sm:block"
-                >
-                  <option value="">All campuses</option>
-                  {campuses.map((c) => (
-                    <option key={c.id} value={c.slug}>{c.short_name || c.name}</option>
-                  ))}
-                </select>
-              </>
-            )}
+            <>
+              <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+              <CampusAutocomplete
+                value={selectedCampus?.name ?? ""}
+                placeholder="All campuses"
+                onSelect={(campus) => onCampusSelect?.(campus)}
+                onClear={onCampusClear}
+                className="hidden w-48 shrink-0 sm:block"
+                inputClassName="font-semibold"
+              />
+            </>
 
 
 
