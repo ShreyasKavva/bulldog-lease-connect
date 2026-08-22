@@ -68,23 +68,77 @@ export function campusMatchesQuery(
   );
 }
 
+/**
+ * Q179 — the campuses table now holds every accredited US institution
+ * (~3.8k rows), so we never ship the whole list to the browser.
+ *
+ * `fetchCampuses()` returns only campuses that actually have live subleases.
+ * That's what discovery surfaces (homepage pills, footer, filters, the
+ * /campuses grid) should show — an empty school would just be a dead end.
+ * Anything that lets a student *choose* a campus (posting, onboarding,
+ * search) uses `searchCampuses()` instead, which searches all of them
+ * server-side.
+ */
 export async function fetchCampuses(): Promise<Campus[]> {
-  const { data, error } = await supabase
-    .from("campuses")
-    .select("id, name, short_name, city, state, lat, lng, domain, slug")
-    .order("name");
+  const { data, error } = await supabase.rpc("campuses_with_listings");
   if (error) throw error;
   return (data ?? []) as Campus[];
+}
+
+/** Server-side ranked typeahead across every campus. Schools with live
+ *  listings rank first, then prefix matches, then everything else. */
+export async function searchCampuses(query: string, limit = 8): Promise<Campus[]> {
+  const q = (query ?? "").trim();
+  if (!q) {
+    const withListings = await fetchCampuses();
+    return withListings
+      .slice()
+      .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0))
+      .slice(0, limit);
+  }
+  const { data, error } = await supabase.rpc("search_campuses", { _q: q, _limit: limit });
+  if (error) throw error;
+  return (data ?? []) as Campus[];
+}
+
+/** Campuses near a given campus that DO have listings — used for the
+ *  "Nearby campuses" rail on an empty campus page. */
+export async function fetchNearbyCampuses(campusId: string, limit = 4): Promise<(Campus & { distance_miles: number })[]> {
+  const { data, error } = await supabase.rpc("nearby_campuses_with_listings", {
+    _campus_id: campusId,
+    _limit: limit,
+  });
+  if (error) return [];
+  return (data ?? []) as (Campus & { distance_miles: number })[];
+}
+
+/** Email capture for a campus with no inventory yet. */
+export async function requestCampusNotify(campusId: string, email: string, userId?: string | null) {
+  const { error } = await supabase
+    .from("campus_notify_signups")
+    .insert({ campus_id: campusId, email: email.trim().toLowerCase(), user_id: userId ?? null });
+  // Duplicate signup is a success from the student's point of view.
+  if (error && error.code !== "23505") throw error;
 }
 
 export async function fetchCampusBySlug(slug: string): Promise<Campus | null> {
   const { data, error } = await supabase
     .from("campuses")
-    .select("id, name, short_name, city, state, lat, lng, domain, slug")
+    .select(CAMPUS_COLS)
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
   return (data as Campus | null) ?? null;
+}
+
+/** Resolve specific campuses by id — needed when a user's own campus has no
+ *  listings and therefore isn't in `fetchCampuses()`. */
+export async function fetchCampusesByIds(ids: string[]): Promise<Campus[]> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return [];
+  const { data, error } = await supabase.from("campuses").select(CAMPUS_COLS).in("id", unique);
+  if (error) return [];
+  return (data ?? []) as Campus[];
 }
 
 /** Q67: look up a campus id from a signed-in user's email domain (e.g. "uga.edu"). */
