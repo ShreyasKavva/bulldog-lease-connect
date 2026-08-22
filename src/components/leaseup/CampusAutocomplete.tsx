@@ -6,15 +6,10 @@
  * shows the most active campuses. Keyboard: ↑/↓ to move, Enter to pick,
  * Escape to close. Picking a campus stores its id, not just the text.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
-import {
-  fetchCampuses,
-  fetchActiveListingCountsByCampus,
-  campusMatchesQuery,
-  type Campus,
-} from "@/lib/leaseup/campuses";
+import { searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function CampusAutocomplete({
@@ -132,7 +127,7 @@ export function CampusAutocomplete({
           )}
           {results.length === 0 ? (
             <div className="px-3 py-4 text-center text-xs text-muted-foreground">
-              No campuses found
+              {isFetching ? "Searching…" : "No campuses found"}
             </div>
           ) : (
             results.map((c, i) => (
@@ -147,7 +142,16 @@ export function CampusAutocomplete({
                 )}
               >
                 <span className="truncate font-medium">{c.name}</span>
-                {c.state && <span className="shrink-0 text-sm text-gray-400">· {c.state}</span>}
+                {c.city && (
+                  <span className="shrink-0 text-sm text-gray-400">
+                    · {c.city}, {c.state}
+                  </span>
+                )}
+                {(c.listing_count ?? 0) > 0 && (
+                  <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
+                    {c.listing_count} live
+                  </span>
+                )}
               </button>
             ))
           )}
