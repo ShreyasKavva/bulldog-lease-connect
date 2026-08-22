@@ -390,14 +390,16 @@ export function ListingCard({
             {saved ? "Remove from Saved" : "Save to see it in Saved"}
           </span>
 
-          <Heart
-            className={cn(
-              "h-6 w-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]",
-              saved
-                ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F] transition-transform"
-                : "fill-black/20 text-white transition-transform",
-            )}
-          />
+          {/* Q181 — the heart is a SECONDARY action: ghost/outline, never competing
+              with the primary "View listing" CTA below the photo. */}
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/70 bg-white/70 backdrop-blur-sm">
+            <Heart
+              className={cn(
+                "h-4 w-4 transition-transform",
+                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-gray-700",
+              )}
+            />
+          </span>
           {/* Q143 — save count, hidden at zero */}
           {savesCount > 0 && (
             <span className="text-xs font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
