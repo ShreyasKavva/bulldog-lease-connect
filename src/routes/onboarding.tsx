@@ -16,7 +16,7 @@ import { YEARS } from "@/lib/leaseup/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -39,7 +39,6 @@ function Onboarding() {
   const qc = useQueryClient();
 
   const [campusId, setCampusId] = useState<string | null>(null);
-  const [campusOpen, setCampusOpen] = useState(false);
   const [detectedCampusId, setDetectedCampusId] = useState<string | null>(null);
   const [overrideCampus, setOverrideCampus] = useState(false);
   const [year, setYear] = useState("");
