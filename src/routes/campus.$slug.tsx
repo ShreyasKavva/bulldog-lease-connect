@@ -383,6 +383,7 @@ function CampusLandingPage() {
             </div>
           )}
         </div>
+        )}
       </section>
 
     </div>
