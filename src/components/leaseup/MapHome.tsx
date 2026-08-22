@@ -20,6 +20,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import type { Listing } from "@/lib/leaseup/types";
 import { UGA_CENTER, isNew } from "@/lib/leaseup/constants";
+import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
 import { Eye, X, MessageCircle, ArrowRight, Bed, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
