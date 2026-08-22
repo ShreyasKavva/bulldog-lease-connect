@@ -235,7 +235,6 @@ function Onboarding() {
                   {activeCampus.city}, {activeCampus.state}
                 </div>
               )}
-              )}
             </div>
           </div>
         )}
