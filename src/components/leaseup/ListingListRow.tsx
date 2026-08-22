@@ -64,13 +64,21 @@ export function ListingListRow({
             {from ?? "Flexible"}{to ? ` – ${to}` : ""}
           </p>
         )}
+        {/* Q181 — primary CTA, identical to the grid + map cards */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onOpen?.(); }}
+          className="mt-2 w-full rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:w-auto sm:self-start"
+        >
+          View listing →
+        </button>
       </div>
 
       <button
         type="button"
         aria-label={saved ? "Unsave listing" : "Save listing"}
         onClick={(e) => { e.stopPropagation(); onSave?.(); }}
-        className="absolute right-2 top-2 rounded-full bg-surface/90 p-1.5 shadow-sm transition hover:scale-105"
+        className="absolute right-2 top-2 rounded-full border border-border bg-surface/90 p-1.5 transition hover:scale-105"
       >
         <Heart className={cn("h-4 w-4", saved ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
       </button>
