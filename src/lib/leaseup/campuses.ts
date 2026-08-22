@@ -10,7 +10,13 @@ export type Campus = {
   lng: number;
   domain: string;
   slug: string;
+  /** 1 = four-year, 2 = two-year (IPEDS level). Only set on Q179 rows. */
+  level?: number | null;
+  /** Active listing count — present on rows returned by the campus RPCs. */
+  listing_count?: number;
 };
+
+const CAMPUS_COLS = "id, name, short_name, city, state, lat, lng, domain, slug, level";
 
 /**
  * Q178 — extra search aliases per campus slug. Official names are long, but
