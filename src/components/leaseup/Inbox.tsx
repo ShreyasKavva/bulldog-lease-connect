@@ -13,7 +13,7 @@ import { ArrowLeft, ArrowUp, Home, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
-import { profileDisplayName } from "@/lib/leaseup/display-name";
+import { conversationName } from "@/lib/leaseup/display-name";
 
 /** Q154 — one-tap conversation openers shown while the composer is empty. */
 const QUICK_REPLIES = [
