@@ -40,7 +40,7 @@ function relTime(iso?: string | null) {
 
 /** Q182 — every counterparty name on this screen goes through the shared helper. */
 function displayName(c: Conversation) {
-  return profileDisplayName(c.other ?? null, "Student");
+  return conversationName(c.other ?? null, c.listing?.display_name ?? null);
 }
 
 /** Q182 — I'm the seller when I own the listing this thread is about. */
