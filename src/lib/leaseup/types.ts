@@ -120,6 +120,8 @@ export type Conversation = {
     status?: string | null;
     photo_url?: string | null;
     user_id?: string | null;
+    /** Q175 — poster display name override (seeded listings). */
+    display_name?: string | null;
   } | null;
 };
 
