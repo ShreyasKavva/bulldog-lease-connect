@@ -531,29 +531,23 @@ function MyListingsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Q174 — inquiries link straight into the host's inbox; zeros are hidden */}
+                {/* Q182 — inquiries deep-link into the Inquiries tab, filtered to this listing */}
                 {(() => {
                   const ms = perListing.messages ?? 0;
-                  const convId = (perListing as { convId?: string | null }).convId ?? null;
                   if (ms === 0) return null;
                   return (
                     <div className="mt-2 flex items-center gap-2 px-1 text-xs text-gray-500">
-                      {convId ? (
-                        <Link
-                          to="/messages/$conversationId"
-                          params={{ conversationId: convId }}
-                          className="font-semibold text-primary hover:underline"
-                        >
-                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
-                        </Link>
-                      ) : (
-                        <Link to="/messages" className="font-semibold text-primary hover:underline">
-                          💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
-                        </Link>
-                      )}
+                      <Link
+                        to="/messages"
+                        search={{ tab: "inquiries", listing: l.id } as never}
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        💬 {ms} inquir{ms === 1 ? "y" : "ies"} — open inbox →
+                      </Link>
                     </div>
                   );
                 })()}
+
 
                 {!filled && !expired && (
 

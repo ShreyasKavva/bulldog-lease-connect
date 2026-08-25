@@ -7,12 +7,13 @@
  * read_at) — no schema change needed.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowUp, Home, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
+import { profileDisplayName } from "@/lib/leaseup/display-name";
 
 /** Q154 — one-tap conversation openers shown while the composer is empty. */
 const QUICK_REPLIES = [
@@ -37,13 +38,19 @@ function relTime(iso?: string | null) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+/** Q182 — every counterparty name on this screen goes through the shared helper. */
 function displayName(c: Conversation) {
-  return c.other?.name?.trim() || "Unknown user";
+  return profileDisplayName(c.other ?? null, "Student");
+}
+
+/** Q182 — I'm the seller when I own the listing this thread is about. */
+function isSellerSide(c: Conversation, meId: string) {
+  return !!c.listing?.user_id && c.listing.user_id === meId;
 }
 
 function Avatar({ c, size = 40 }: { c: Conversation; size?: number }) {
   const bg = c.other?.banner_color ?? "#2563EB";
-  const char = c.other?.avatar_emoji ?? (c.other?.name?.[0]?.toUpperCase() ?? "?");
+  const char = c.other?.avatar_emoji ?? displayName(c)[0]?.toUpperCase() ?? "?";
   return (
     <span
       className="grid shrink-0 place-items-center rounded-full text-base text-white"
@@ -54,6 +61,7 @@ function Avatar({ c, size = 40 }: { c: Conversation; size?: number }) {
     </span>
   );
 }
+
 
 export function Inbox({ conversationId }: { conversationId?: string | null }) {
   const { user } = useSession();
@@ -71,6 +79,42 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
     [conversations, conversationId],
   );
 
+  // Q182 — role split. `?tab=` and `?listing=` let My Listings deep-link in.
+  const search = useRouterState({ select: (s) => s.location.search }) as Record<string, string>;
+  const meId = user?.id ?? "";
+  const { inquiries, sent, inqUnread, sentUnread } = useMemo(() => {
+    const inq: Conversation[] = [];
+    const snt: Conversation[] = [];
+    for (const c of conversations) (isSellerSide(c, meId) ? inq : snt).push(c);
+    const sum = (arr: Conversation[]) => arr.reduce((n, c) => n + (c.unread_count ?? 0), 0);
+    return { inquiries: inq, sent: snt, inqUnread: sum(inq), sentUnread: sum(snt) };
+  }, [conversations, meId]);
+
+  const [tab, setTab] = useState<"inquiries" | "sent" | null>(null);
+  // Explicit ?tab= always wins.
+  useEffect(() => {
+    if (search?.tab === "inquiries" || search?.tab === "sent") setTab(search.tab as never);
+  }, [search?.tab]);
+  // If the active thread lives in the other tab, follow it.
+  useEffect(() => {
+    if (!active || !meId) return;
+    setTab(isSellerSide(active, meId) ? "inquiries" : "sent");
+  }, [active, meId]);
+
+  const listingFilter = search?.listing || null;
+  // Derived default so it stays correct once conversations finish loading:
+  // whichever side needs attention, else whichever side has any threads.
+  const currentTab =
+    tab ??
+    (inqUnread > 0
+      ? "inquiries"
+      : sentUnread > 0
+        ? "sent"
+        : inquiries.length && !sent.length
+          ? "inquiries"
+          : "sent");
+
+
   // Live conversation-list refresh (any message touching me).
   useEffect(() => {
     if (!user?.id) return;
@@ -83,6 +127,9 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
     return () => { supabase.removeChannel(ch); };
   }, [user?.id, qc]);
 
+  const openConv = (id: string) =>
+    navigate({ to: "/messages/$conversationId", params: { conversationId: id } });
+
   return (
     <div className="mx-auto max-w-7xl px-0 md:px-6 lg:px-10">
       <div className="flex min-h-[calc(100vh-3.5rem)] md:gap-6 md:py-6">
@@ -94,13 +141,39 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
           )}
         >
           <h1 className="px-4 pb-2 pt-5 text-2xl font-bold tracking-tight md:text-xl">Messages</h1>
+
+          {/* Q182 — role tabs */}
+          <div className="flex gap-1 border-b border-gray-100 px-3 pb-2 dark:border-border">
+            <TabButton
+              label="Inquiries"
+              hint="About my listings"
+              count={inqUnread}
+              active={currentTab === "inquiries"}
+              onClick={() => { setTab("inquiries"); navigate({ to: "/messages", search: { tab: "inquiries" } as never }); }}
+            />
+            <TabButton
+              label="Sent"
+              hint="I messaged them"
+              count={sentUnread}
+              active={currentTab === "sent"}
+              onClick={() => { setTab("sent"); navigate({ to: "/messages", search: { tab: "sent" } as never }); }}
+            />
+          </div>
+
           {isLoading ? (
             <div className="space-y-2 p-4">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-white/5" />
               ))}
             </div>
-          ) : conversations.length === 0 ? (
+          ) : currentTab === "inquiries" ? (
+            <InquiriesList
+              conversations={listingFilter ? inquiries.filter((c) => c.listing?.id === listingFilter) : inquiries}
+              meId={meId}
+              activeId={conversationId ?? null}
+              onOpen={openConv}
+            />
+          ) : sent.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
               <div className="mb-3 text-5xl" aria-hidden>💬</div>
               <h2 className="mb-1 text-xl font-semibold text-gray-700 dark:text-foreground">No messages yet</h2>
@@ -124,18 +197,19 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
             </div>
           ) : (
             <ul className="divide-y divide-gray-100 dark:divide-border">
-              {conversations.map((c) => (
+              {sent.map((c) => (
                 <ConversationRow
                   key={c.id}
                   c={c}
-                  meId={user!.id}
+                  meId={meId}
                   active={c.id === conversationId}
-                  onOpen={() => navigate({ to: "/messages/$conversationId", params: { conversationId: c.id } })}
+                  onOpen={() => openConv(c.id)}
                 />
               ))}
             </ul>
           )}
         </aside>
+
 
         {/* Thread */}
         <section
@@ -157,9 +231,111 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
   );
 }
 
+function TabButton({
+  label, hint, count, active, onClick,
+}: { label: string; hint: string; count: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={hint}
+      className={cn(
+        "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
+        active
+          ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+          : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10",
+      )}
+    >
+      {label}
+      {count > 0 && (
+        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#FF5A5F] px-1.5 text-[10px] font-bold text-white">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/** Q182 — seller view: conversations grouped under the listing they're about. */
+function InquiriesList({
+  conversations, meId, activeId, onOpen,
+}: { conversations: Conversation[]; meId: string; activeId: string | null; onOpen: (id: string) => void }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, { listing: NonNullable<Conversation["listing"]>; convs: Conversation[] }>();
+    for (const c of conversations) {
+      if (!c.listing?.id) continue;
+      const g = map.get(c.listing.id) ?? { listing: c.listing, convs: [] };
+      g.convs.push(c);
+      map.set(c.listing.id, g);
+    }
+    const ts = (c: Conversation) => new Date(c.last_message_at ?? c.created_at).getTime();
+    return Array.from(map.values())
+      .map((g) => ({ ...g, convs: [...g.convs].sort((a, b) => ts(b) - ts(a)) }))
+      .sort((a, b) => ts(b.convs[0]) - ts(a.convs[0]));
+  }, [conversations]);
+
+  if (groups.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+        <div className="mb-3 text-5xl" aria-hidden>📭</div>
+        <h2 className="mb-1 text-xl font-semibold text-gray-700 dark:text-foreground">
+          No one has messaged you yet
+        </h2>
+        <p className="mb-5 text-sm text-gray-400">
+          When a student asks about one of your listings, it'll show up here.
+        </p>
+        <Link
+          to="/my-listings"
+          className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-white/5"
+        >
+          View my listings
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pb-6">
+      {groups.map((g) => (
+        <section key={g.listing.id}>
+          <header className="flex items-center gap-3 bg-gray-50 px-4 py-2 dark:bg-white/5">
+            {g.listing.photo_url ? (
+              <img src={g.listing.photo_url} alt="" className="h-9 w-9 shrink-0 rounded-md object-cover" loading="lazy" />
+            ) : (
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gray-200 dark:bg-white/10">
+                <Home className="h-4 w-4 text-gray-400" />
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">{g.listing.title}</div>
+              <div className="truncate text-xs text-gray-500">
+                {g.listing.price != null ? `$${g.listing.price}/mo · ` : ""}
+                {g.convs.length} inquir{g.convs.length === 1 ? "y" : "ies"}
+              </div>
+            </div>
+          </header>
+          <ul className="divide-y divide-gray-100 dark:divide-border">
+            {g.convs.map((c) => (
+              <ConversationRow
+                key={c.id}
+                c={c}
+                meId={meId}
+                active={c.id === activeId}
+                onOpen={() => onOpen(c.id)}
+                showAvatar
+              />
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function ConversationRow({
-  c, meId, active, onOpen,
-}: { c: Conversation; meId: string; active: boolean; onOpen: () => void }) {
+  c, meId, active, onOpen, showAvatar,
+}: { c: Conversation; meId: string; active: boolean; onOpen: () => void; showAvatar?: boolean }) {
+
   // Q108 — unread count + last sender arrive with the conversation list.
   const unread = c.unread_count ?? 0;
   const isUnread = unread > 0 && !active;
@@ -177,7 +353,9 @@ function ConversationRow({
           active ? "bg-gray-100 dark:bg-white/10" : "hover:bg-gray-50 dark:hover:bg-white/5",
         )}
       >
-        {c.listing?.photo_url ? (
+        {showAvatar ? (
+          <Avatar c={c} size={48} />
+        ) : c.listing?.photo_url ? (
           <img
             src={c.listing.photo_url}
             alt=""
@@ -198,9 +376,10 @@ function ConversationRow({
             </span>
             <span className="shrink-0 text-xs text-gray-400">{relTime(c.last_message_at)}</span>
           </span>
-          {c.listing?.title && (
+          {!showAvatar && c.listing?.title && (
             <span className="block truncate text-xs text-gray-400">{c.listing.title}</span>
           )}
+
           <span
             className={cn(
               "block truncate text-sm",
@@ -342,8 +521,17 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         </button>
         {conv && <Avatar c={conv} size={36} />}
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</div>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</span>
+            {/* Q182 — unambiguous role marker for the listing owner */}
+            {conv && user?.id && isSellerSide(conv, user.id) && (
+              <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                Inquiry about your listing
+              </span>
+            )}
+          </div>
           {/* Q157 — quick jump back to the listing being discussed */}
+
           {conv?.listing?.id && (
             <Link
               to="/listing/$id"
