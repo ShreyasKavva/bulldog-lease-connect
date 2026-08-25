@@ -13,7 +13,7 @@ import { ArrowLeft, ArrowUp, Home, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
-import { profileDisplayName } from "@/lib/leaseup/display-name";
+import { conversationName } from "@/lib/leaseup/display-name";
 
 /** Q154 — one-tap conversation openers shown while the composer is empty. */
 const QUICK_REPLIES = [
@@ -40,7 +40,7 @@ function relTime(iso?: string | null) {
 
 /** Q182 — every counterparty name on this screen goes through the shared helper. */
 function displayName(c: Conversation) {
-  return profileDisplayName(c.other ?? null, "Student");
+  return conversationName(c.other ?? null, c.listing?.display_name ?? null);
 }
 
 /** Q182 — I'm the seller when I own the listing this thread is about. */

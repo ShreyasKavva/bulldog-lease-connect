@@ -37,6 +37,25 @@ export function posterFirstName(listing?: PosterLike | null, fallback = "Student
   return posterName(listing, fallback).split(" ")[0];
 }
 
+/**
+ * Q182-FIX — counterparty name for a conversation row/thread.
+ *
+ * Seeded listings are owned by the demo placeholder account, whose profile name
+ * is banned above. Rather than showing a wall of identical "Student" rows we
+ * fall back to the listing's poster display name ("Priya N."), which is the
+ * same varied generator used for listing bylines. "Student" is now only used
+ * when there is genuinely no name anywhere.
+ */
+export function conversationName(
+  profile?: { name?: string | null; email?: string | null; display_name?: string | null } | null,
+  listingDisplayName?: string | null,
+  fallback = "Student",
+): string {
+  const fromProfile = profileDisplayName(profile, "");
+  if (fromProfile) return fromProfile;
+  return clean(listingDisplayName) ?? fallback;
+}
+
 /** For raw profile records (no listing wrapper). */
 export function profileDisplayName(
   profile?: { name?: string | null; email?: string | null; display_name?: string | null } | null,
