@@ -140,7 +140,7 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
             conversationId && "hidden md:block",
           )}
         >
-          <h1{/*x*/} data-x={`${tab}|${currentTab}|${inqUnread}|${sentUnread}|${inquiries.length}|${sent.length}`} className="px-4 pb-2 pt-5 text-2xl font-bold tracking-tight md:text-xl">Messages</h1>
+          <h1 className="px-4 pb-2 pt-5 text-2xl font-bold tracking-tight md:text-xl">Messages</h1>
 
           {/* Q182 — role tabs */}
           <div className="flex gap-1 border-b border-gray-100 px-3 pb-2 dark:border-border">
