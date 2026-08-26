@@ -170,12 +170,26 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   );
   const otherIds = Array.from(new Set(visible.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
   const listingIds = Array.from(new Set(visible.map((c) => c.listing_id).filter(Boolean) as string[]));
-  const [{ data: profs }, { data: lists }] = await Promise.all([
+  // Q183 — roommate-search threads carry a looking post instead of a listing.
+  const postIds = Array.from(new Set(visible.map((c) => c.looking_post_id).filter(Boolean) as string[]));
+  const [{ data: profs }, { data: lists }, { data: lookingRows }] = await Promise.all([
     otherIds.length ? supabase.from("profiles_public").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
       ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id,display_name").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),
+    postIds.length
+      ? supabase
+          .from("looking_for_posts")
+          .select("id,title,user_id,budget_max,move_in_date,move_out_date,area,display_name,campus:campuses(name,short_name)")
+          .in("id", postIds)
+      : Promise.resolve({ data: [] as any }),
   ]);
+  const postMap = new Map<string, any>(
+    (lookingRows ?? []).map((p: any) => [
+      p.id,
+      { ...p, campus_name: p.campus?.short_name ?? p.campus?.name ?? null },
+    ]),
+  );
   // Sign first photo of each listing (absolute URLs pass through untouched)
   const firstPaths = (lists ?? [])
     .map((l: any) => (l.photos && l.photos[0]) || null)
