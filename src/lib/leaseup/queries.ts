@@ -131,18 +131,25 @@ export async function getOrCreateConversation(
   meId: string,
   otherId: string,
   listingId: string | null,
+  lookingPostId: string | null = null,
 ): Promise<string> {
   const [a, b] = [meId, otherId].sort();
   const { data: rows } = await supabase
     .from("conversations")
-    .select("id, listing_id")
+    .select("id, listing_id, looking_post_id")
     .eq("participant_1_id", a)
     .eq("participant_2_id", b);
-  const match = rows?.find((r: any) => (r.listing_id ?? null) === (listingId ?? null));
+  // Q183 — dedupe key is (p1, p2, listing_id, looking_post_id): a pair can hold
+  // one listing thread AND one roommate-post thread without colliding.
+  const match = rows?.find(
+    (r: any) =>
+      (r.listing_id ?? null) === (listingId ?? null) &&
+      (r.looking_post_id ?? null) === (lookingPostId ?? null),
+  );
   if (match) return match.id;
   const { data: created, error } = await supabase
     .from("conversations")
-    .insert({ participant_1_id: a, participant_2_id: b, listing_id: listingId })
+    .insert({ participant_1_id: a, participant_2_id: b, listing_id: listingId, looking_post_id: lookingPostId })
     .select("id")
     .single();
   if (error) throw error;
