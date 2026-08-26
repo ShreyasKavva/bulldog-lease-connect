@@ -76,7 +76,7 @@ export function Footer() {
           <h2 className={headingCls}>For Students</h2>
           <Link to="/browse" className={linkCls}>Browse subleases</Link>
           <Link to="/post" className={linkCls}>Post a sublease</Link>
-          <Link to="/looking" className={linkCls}>Looking for a place?</Link>
+          <Link to="/looking" className={linkCls}>Roommate Search</Link>
           
         </div>
 

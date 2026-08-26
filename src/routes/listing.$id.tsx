@@ -713,7 +713,7 @@ function ListingDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Bump to top of the feed?</DialogTitle>
                   <DialogDescription>
-                    Bring this listing back to the top of the UGA feed. Free — you can bump again in 7 days.
+                    Bring this listing back to the top of your campus feed. Free — you can bump again in 7 days.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

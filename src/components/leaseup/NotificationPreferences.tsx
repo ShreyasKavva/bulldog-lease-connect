@@ -3,12 +3,12 @@ import { Switch } from "@/components/ui/switch";
 
 const ROWS: { key: keyof Defaults; label: string; description: string }[] = [
   { key: "new_message", label: "New messages", description: "When someone sends you a message." },
-  { key: "listing_match", label: "Listing matches", description: "When a new listing matches a Looking For post." },
+  { key: "listing_match", label: "Listing matches", description: "When a new listing matches a Roommate Search post." },
   { key: "price_drop", label: "Price drops", description: "When a listing you saved drops in price." },
   { key: "listing_saved", label: "Someone saved my listing", description: "When another student saves your post." },
   { key: "view_milestone", label: "View milestones", description: "Celebrate 50/100/250 view milestones." },
   { key: "new_review", label: "New reviews", description: "When someone leaves you a review." },
-  { key: "looking_for_interest", label: "Looking For interest", description: "When someone might have a place for you." },
+  { key: "looking_for_interest", label: "Roommate Search interest", description: "When someone might have a place for you." },
   { key: "lease_expiring", label: "Listing expiring", description: "Reminders before your listing or post expires." },
 ];
 

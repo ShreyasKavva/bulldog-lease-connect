@@ -669,7 +669,7 @@ function Browse() {
             to="/looking"
             className="ml-auto text-sm font-semibold text-primary hover:underline"
           >
-            Looking for a place instead? →
+            Roommate Search instead? →
           </Link>
         </div>
 

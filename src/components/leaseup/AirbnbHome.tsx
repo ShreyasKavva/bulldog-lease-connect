@@ -536,7 +536,7 @@ export function AirbnbHome({
 
 
 
-      {/* LOOKING FOR STRIP (Q66) */}
+      {/* ROOMMATE SEARCH STRIP (Q66) */}
       <LookingForStrip posts={lookingForPosts ?? []} />
 
 

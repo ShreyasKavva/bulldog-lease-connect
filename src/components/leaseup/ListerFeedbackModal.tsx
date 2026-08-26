@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 const OPTIONS: Array<{ value: string; label: string }> = [
   { value: "messaged_on_leaseup",    label: "They messaged me through LeaseUp" },
-  { value: "looking_for_board",      label: "I found them on the Looking For board" },
+  { value: "looking_for_board",      label: "I found them on the Roommate Search board" },
   { value: "shared_listing_link",    label: "They shared my listing link directly" },
   { value: "group_chat",             label: "Someone in a group chat saw my listing" },
   { value: "other",                  label: "Other" },

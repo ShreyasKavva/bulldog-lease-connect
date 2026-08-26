@@ -34,7 +34,7 @@ export function SmartSections({
 }: RowProps & { campuses: Campus[]; userCampusId?: string | null }) {
   const uga = campuses.find((c) => c.slug === UGA_SLUG) ?? null;
   const nearCampus = campuses.find((c) => c.id === userCampusId) ?? uga;
-  const nearLabel = nearCampus ? `Near ${nearCampus.short_name || nearCampus.name}` : "Near UGA";
+  const nearLabel = nearCampus ? `Near ${nearCampus.short_name || nearCampus.name}` : "Near your campus";
   const rowProps = { savedIds, onSave, onOpen, filter };
 
   const sections = [

@@ -291,7 +291,7 @@ function RoommateCard({ p, onMessage }: { p: RoommateProfileWithUser; onMessage:
             )}
           </div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">
-            {[u?.year && `UGA · ${u.year}`, u?.major].filter(Boolean).join(" · ") || "UGA · Student"}
+            {[u?.year, u?.major].filter(Boolean).join(" · ") || "Student"}
           </div>
           <div className="mt-1.5">
             <span className={cn(

@@ -38,7 +38,7 @@ import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
-// Q152 — local memory of which Looking Board posts this device already upvoted.
+// Q152 — local memory of which Roommate Search posts this device already upvoted.
 const UPVOTED_KEY = "leasup_upvoted_posts";
 
 export const Route = createFileRoute("/looking")({
@@ -50,9 +50,9 @@ export const Route = createFileRoute("/looking")({
   }),
   head: () => ({
     meta: [
-      { title: "Looking For a Sublease? Post Here. — LeaseUp" },
-      { name: "description", content: "Tell students what you need. Get notified when a matching listing is posted." },
-      { property: "og:title", content: "Looking For a Sublease? Post Here." },
+      { title: "Roommate Search — Post What You Need — LeaseUp" },
+      { name: "description", content: "Roommate Search: tell students what you need, get notified when a matching room or sublease is posted." },
+      { property: "og:title", content: "Roommate Search — Post What You Need" },
       { property: "og:description", content: "Tell students what you need. Get notified when a matching listing is posted." },
       { property: "og:url", content: "https://leasup.co/looking" },
       { property: "og:type", content: "website" },
@@ -292,10 +292,10 @@ function LookingForPage() {
       <header className="border-b bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 py-6">
           <div>
-            <h1 className="text-2xl font-bold">Roommate & sublease requests</h1>
+            <h1 className="text-2xl font-bold">Roommate Search</h1>
             <p className="max-w-xl text-sm text-muted-foreground">
-              The reverse of browsing: students post what they're looking for, and anyone with a
-              matching place messages them directly.
+              The reverse of browsing: students post what they need, and anyone with a
+              matching room or sublease messages them directly.
             </p>
           </div>
 
@@ -860,7 +860,7 @@ function ConfirmDeleteDialog({
     <Dialog open={!!post} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Remove your Looking For post?</DialogTitle>
+          <DialogTitle>Remove your Roommate Search post?</DialogTitle>
           <DialogDescription>You won't be notified of new matches.</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">

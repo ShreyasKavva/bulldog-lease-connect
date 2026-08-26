@@ -27,7 +27,7 @@ export function MapView({ listings, onSelect }: { listings: Listing[]; onSelect:
           html: `<div style="width:18px;height:18px;background:#16A34A;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
           iconSize: [18, 18], iconAnchor: [9, 9],
         }),
-      }).addTo(map).bindPopup("UGA Campus");
+      }).addTo(map).bindPopup("Campus");
       mapRef.current = map;
       renderPins();
     })();
