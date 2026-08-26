@@ -605,9 +605,33 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         </div>
       </header>
 
-      {/* Q107 — listing context strip */}
+      {/* Q107 — listing context strip · Q183 — roommate-post context strip */}
       <div className="flex items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 dark:border-border dark:bg-surface">
-        {conv?.listing?.id ? (
+        {conv?.looking_post_id ? (
+          <>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-emerald-50 dark:bg-emerald-500/15">
+              <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">
+                {conv.looking_post?.title ?? "Roommate Search post"}
+              </div>
+              <div className="truncate text-xs text-gray-500">
+                {[
+                  displayName(conv),
+                  conv.looking_post?.campus_name || null,
+                  conv.looking_post?.budget_max != null ? `Up to $${conv.looking_post.budget_max}/mo` : null,
+                  conv.looking_post?.move_in_date
+                    ? `Move-in ${new Date(conv.looking_post.move_in_date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`
+                    : null,
+                ].filter(Boolean).join(" · ")}
+              </div>
+            </div>
+            <Link to="/looking" className="shrink-0 text-xs text-[#FF5A5F] hover:underline">
+              View post →
+            </Link>
+          </>
+        ) : conv?.listing?.id ? (
           <>
             {conv.listing.photo_url ? (
               <img
