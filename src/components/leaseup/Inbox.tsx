@@ -573,9 +573,15 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</span>
             {/* Q182 — unambiguous role marker for the listing owner */}
-            {conv && user?.id && isSellerSide(conv, user.id) && (
+            {conv && user?.id && !conv.looking_post_id && isSellerSide(conv, user.id) && (
               <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
                 Inquiry about your listing
+              </span>
+            )}
+            {/* Q183 — roommate-search thread marker */}
+            {conv?.looking_post_id && (
+              <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                Roommate request
               </span>
             )}
           </div>
