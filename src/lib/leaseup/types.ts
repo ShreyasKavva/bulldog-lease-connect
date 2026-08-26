@@ -93,6 +93,8 @@ export type Conversation = {
   participant_1_id: string;
   participant_2_id: string;
   listing_id: string | null;
+  /** Q183 — roommate-search thread context (null for listing/general threads). */
+  looking_post_id?: string | null;
   last_message: string | null;
   last_message_at: string | null;
   created_at: string;
