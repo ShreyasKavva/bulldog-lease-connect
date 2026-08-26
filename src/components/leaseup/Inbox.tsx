@@ -170,6 +170,14 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               active={currentTab === "sent"}
               onClick={() => { setTab("sent"); navigate({ to: "/messages", search: { tab: "sent" } as never }); }}
             />
+            {/* Q183 — roommate-search threads have no listing; they get their own tab. */}
+            <TabButton
+              label="Roommates"
+              hint="From Roommate Search posts"
+              count={roomUnread}
+              active={currentTab === "roommates"}
+              onClick={() => { setTab("roommates"); navigate({ to: "/messages", search: { tab: "roommates" } as never }); }}
+            />
           </div>
 
           {isLoading ? (
@@ -185,6 +193,35 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               activeId={conversationId ?? null}
               onOpen={openConv}
             />
+          ) : currentTab === "roommates" ? (
+            roommates.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+                <div className="mb-3 text-5xl" aria-hidden>🧑‍🤝‍🧑</div>
+                <h2 className="mb-1 text-xl font-semibold text-gray-700 dark:text-foreground">No roommate chats yet</h2>
+                <p className="mb-5 text-sm text-gray-400">
+                  Message someone from Roommate Search and the thread shows up here.
+                </p>
+                <Link
+                  to="/looking"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-white/5"
+                >
+                  🧑‍🤝‍🧑 Open Roommate Search
+                </Link>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100 dark:divide-border">
+                {roommates.map((c) => (
+                  <ConversationRow
+                    key={c.id}
+                    c={c}
+                    meId={meId}
+                    active={c.id === conversationId}
+                    onOpen={() => openConv(c.id)}
+                    showAvatar
+                  />
+                ))}
+              </ul>
+            )
           ) : sent.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
               <div className="mb-3 text-5xl" aria-hidden>💬</div>
