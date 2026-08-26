@@ -229,6 +229,7 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
     ...c,
     other: pMap.get(c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id),
     listing: c.listing_id ? lMap.get(c.listing_id) ?? null : null,
+    looking_post: c.looking_post_id ? postMap.get(c.looking_post_id) ?? null : null,
     last_message_sender_id: lastSender.get(c.id) ?? null,
     unread_count: unread.get(c.id) ?? 0,
   }));
