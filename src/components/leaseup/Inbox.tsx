@@ -82,23 +82,33 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
   // Q182 — role split. `?tab=` and `?listing=` let My Listings deep-link in.
   const search = useRouterState({ select: (s) => s.location.search }) as Record<string, string>;
   const meId = user?.id ?? "";
-  const { inquiries, sent, inqUnread, sentUnread } = useMemo(() => {
+  const { inquiries, sent, roommates, inqUnread, sentUnread, roomUnread } = useMemo(() => {
     const inq: Conversation[] = [];
     const snt: Conversation[] = [];
-    for (const c of conversations) (isSellerSide(c, meId) ? inq : snt).push(c);
+    const room: Conversation[] = [];
+    for (const c of conversations) {
+      if (c.looking_post_id) room.push(c);
+      else if (isSellerSide(c, meId)) inq.push(c);
+      else snt.push(c);
+    }
     const sum = (arr: Conversation[]) => arr.reduce((n, c) => n + (c.unread_count ?? 0), 0);
-    return { inquiries: inq, sent: snt, inqUnread: sum(inq), sentUnread: sum(snt) };
+    return {
+      inquiries: inq, sent: snt, roommates: room,
+      inqUnread: sum(inq), sentUnread: sum(snt), roomUnread: sum(room),
+    };
   }, [conversations, meId]);
 
-  const [tab, setTab] = useState<"inquiries" | "sent" | null>(null);
+  const [tab, setTab] = useState<"inquiries" | "sent" | "roommates" | null>(null);
   // Explicit ?tab= always wins.
   useEffect(() => {
-    if (search?.tab === "inquiries" || search?.tab === "sent") setTab(search.tab as never);
+    if (search?.tab === "inquiries" || search?.tab === "sent" || search?.tab === "roommates") {
+      setTab(search.tab as never);
+    }
   }, [search?.tab]);
-  // If the active thread lives in the other tab, follow it.
+  // If the active thread lives in another tab, follow it.
   useEffect(() => {
     if (!active || !meId) return;
-    setTab(isSellerSide(active, meId) ? "inquiries" : "sent");
+    setTab(active.looking_post_id ? "roommates" : isSellerSide(active, meId) ? "inquiries" : "sent");
   }, [active, meId]);
 
   const listingFilter = search?.listing || null;
@@ -110,9 +120,11 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
       ? "inquiries"
       : sentUnread > 0
         ? "sent"
-        : inquiries.length && !sent.length
-          ? "inquiries"
-          : "sent");
+        : roomUnread > 0
+          ? "roommates"
+          : inquiries.length && !sent.length
+            ? "inquiries"
+            : "sent");
 
 
   // Live conversation-list refresh (any message touching me).
