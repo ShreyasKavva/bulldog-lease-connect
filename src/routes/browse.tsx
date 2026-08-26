@@ -681,7 +681,15 @@ function Browse() {
           searchInput={searchInput}
           onSearchInput={setSearchInput}
           resultCount={filtered.length}
-          placeLabel={myCampus ? `${myCampus.city}, ${myCampus.state}` : "Search subleases"}
+          placeLabel={
+            /* Q183 — show the campus being viewed; only fall back to the
+               viewer's own campus when nothing is selected. */
+            searchedCampus
+              ? `${searchedCampus.city}, ${searchedCampus.state}`
+              : myCampus
+                ? `${myCampus.city}, ${myCampus.state}`
+                : "Search subleases"
+          }
           initialFiltersOpen={s.openFilters === 1}
           selectedCampus={searchedCampus}
           onCampusSelect={(campus) => {
