@@ -402,7 +402,7 @@ export async function sendMessage(conversationId: string, senderId: string, reci
   }
 }
 
-// ---- Looking For board ----
+// ---- Roommate Search board ----
 export async function fetchLookingFor(campusId?: string | null): Promise<LookingForPost[]> {
   const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
   let q = supabase
