@@ -294,15 +294,6 @@ function Browse() {
     return [...seen.values()];
   }, [campusesWithListings, myCampusRows, slugCampus]);
   const myCampus = campuses.find(c => c.id === profile?.campus_id);
-  const { data: trendingIds = [] } = useQuery({
-    queryKey: ["trending-ids", profile?.campus_id ?? "all"],
-    queryFn: () => fetchTrendingIds(profile?.campus_id ?? null, 5),
-    staleTime: 5 * 60 * 1000,
-  });
-  const trendingListings = useMemo(
-    () => trendingIds.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
-    [trendingIds, listings],
-  );
 
   // URL-driven filters — shareable, back/forward safe, refresh-safe.
   const s = Route.useSearch();
@@ -379,6 +370,23 @@ function Browse() {
 
   /** Q177 — the campus the visitor actually searched for (not their profile). */
   const searchedCampus = campusId ? campuses.find((c) => c.id === campusId) ?? null : null;
+
+  /**
+   * Q183 — Trending follows the campus being VIEWED, never the viewer's own
+   * profile campus. Both the ids and the heading derive from `campusId`.
+   */
+  const { data: trendingIds = [] } = useQuery({
+    queryKey: ["trending-ids", campusId ?? "all"],
+    queryFn: () => fetchTrendingIds(campusId ?? null, 5),
+    staleTime: 5 * 60 * 1000,
+  });
+  const trendingListings = useMemo(
+    () =>
+      trendingIds
+        .map((id) => listings.find((l) => l.id === id))
+        .filter((l): l is Listing => !!l && (!campusId || l.campus_id === campusId)),
+    [trendingIds, listings, campusId],
+  );
 
   /** Q177 — pins fall back to their own campus, not one hardcoded city. */
   const campusCoords = useMemo(() => {
@@ -753,7 +761,7 @@ function Browse() {
           {view === "grid" && (
             <TrendingCarousel
               listings={trendingListings}
-              campusName={myCampus?.name}
+              campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
               onOpen={setSelected}
             />
           )}
