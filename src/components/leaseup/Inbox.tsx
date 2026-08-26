@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowUp, Home, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowUp, Home, MessageCircle, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
@@ -82,23 +82,33 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
   // Q182 — role split. `?tab=` and `?listing=` let My Listings deep-link in.
   const search = useRouterState({ select: (s) => s.location.search }) as Record<string, string>;
   const meId = user?.id ?? "";
-  const { inquiries, sent, inqUnread, sentUnread } = useMemo(() => {
+  const { inquiries, sent, roommates, inqUnread, sentUnread, roomUnread } = useMemo(() => {
     const inq: Conversation[] = [];
     const snt: Conversation[] = [];
-    for (const c of conversations) (isSellerSide(c, meId) ? inq : snt).push(c);
+    const room: Conversation[] = [];
+    for (const c of conversations) {
+      if (c.looking_post_id) room.push(c);
+      else if (isSellerSide(c, meId)) inq.push(c);
+      else snt.push(c);
+    }
     const sum = (arr: Conversation[]) => arr.reduce((n, c) => n + (c.unread_count ?? 0), 0);
-    return { inquiries: inq, sent: snt, inqUnread: sum(inq), sentUnread: sum(snt) };
+    return {
+      inquiries: inq, sent: snt, roommates: room,
+      inqUnread: sum(inq), sentUnread: sum(snt), roomUnread: sum(room),
+    };
   }, [conversations, meId]);
 
-  const [tab, setTab] = useState<"inquiries" | "sent" | null>(null);
+  const [tab, setTab] = useState<"inquiries" | "sent" | "roommates" | null>(null);
   // Explicit ?tab= always wins.
   useEffect(() => {
-    if (search?.tab === "inquiries" || search?.tab === "sent") setTab(search.tab as never);
+    if (search?.tab === "inquiries" || search?.tab === "sent" || search?.tab === "roommates") {
+      setTab(search.tab as never);
+    }
   }, [search?.tab]);
-  // If the active thread lives in the other tab, follow it.
+  // If the active thread lives in another tab, follow it.
   useEffect(() => {
     if (!active || !meId) return;
-    setTab(isSellerSide(active, meId) ? "inquiries" : "sent");
+    setTab(active.looking_post_id ? "roommates" : isSellerSide(active, meId) ? "inquiries" : "sent");
   }, [active, meId]);
 
   const listingFilter = search?.listing || null;
@@ -110,9 +120,11 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
       ? "inquiries"
       : sentUnread > 0
         ? "sent"
-        : inquiries.length && !sent.length
-          ? "inquiries"
-          : "sent");
+        : roomUnread > 0
+          ? "roommates"
+          : inquiries.length && !sent.length
+            ? "inquiries"
+            : "sent");
 
 
   // Live conversation-list refresh (any message touching me).
@@ -158,6 +170,14 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               active={currentTab === "sent"}
               onClick={() => { setTab("sent"); navigate({ to: "/messages", search: { tab: "sent" } as never }); }}
             />
+            {/* Q183 — roommate-search threads have no listing; they get their own tab. */}
+            <TabButton
+              label="Roommates"
+              hint="From Roommate Search posts"
+              count={roomUnread}
+              active={currentTab === "roommates"}
+              onClick={() => { setTab("roommates"); navigate({ to: "/messages", search: { tab: "roommates" } as never }); }}
+            />
           </div>
 
           {isLoading ? (
@@ -173,6 +193,35 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
               activeId={conversationId ?? null}
               onOpen={openConv}
             />
+          ) : currentTab === "roommates" ? (
+            roommates.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+                <div className="mb-3 text-5xl" aria-hidden>🧑‍🤝‍🧑</div>
+                <h2 className="mb-1 text-xl font-semibold text-gray-700 dark:text-foreground">No roommate chats yet</h2>
+                <p className="mb-5 text-sm text-gray-400">
+                  Message someone from Roommate Search and the thread shows up here.
+                </p>
+                <Link
+                  to="/looking"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-white/5"
+                >
+                  🧑‍🤝‍🧑 Open Roommate Search
+                </Link>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100 dark:divide-border">
+                {roommates.map((c) => (
+                  <ConversationRow
+                    key={c.id}
+                    c={c}
+                    meId={meId}
+                    active={c.id === conversationId}
+                    onOpen={() => openConv(c.id)}
+                    showAvatar
+                  />
+                ))}
+              </ul>
+            )
           ) : sent.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
               <div className="mb-3 text-5xl" aria-hidden>💬</div>
@@ -524,9 +573,15 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate text-sm font-semibold">{conv ? displayName(conv) : "Conversation"}</span>
             {/* Q182 — unambiguous role marker for the listing owner */}
-            {conv && user?.id && isSellerSide(conv, user.id) && (
+            {conv && user?.id && !conv.looking_post_id && isSellerSide(conv, user.id) && (
               <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
                 Inquiry about your listing
+              </span>
+            )}
+            {/* Q183 — roommate-search thread marker */}
+            {conv?.looking_post_id && (
+              <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                Roommate request
               </span>
             )}
           </div>
@@ -550,9 +605,33 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
         </div>
       </header>
 
-      {/* Q107 — listing context strip */}
+      {/* Q107 — listing context strip · Q183 — roommate-post context strip */}
       <div className="flex items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 dark:border-border dark:bg-surface">
-        {conv?.listing?.id ? (
+        {conv?.looking_post_id ? (
+          <>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-emerald-50 dark:bg-emerald-500/15">
+              <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">
+                {conv.looking_post?.title ?? "Roommate Search post"}
+              </div>
+              <div className="truncate text-xs text-gray-500">
+                {[
+                  displayName(conv),
+                  conv.looking_post?.campus_name || null,
+                  conv.looking_post?.budget_max != null ? `Up to $${conv.looking_post.budget_max}/mo` : null,
+                  conv.looking_post?.move_in_date
+                    ? `Move-in ${new Date(conv.looking_post.move_in_date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`
+                    : null,
+                ].filter(Boolean).join(" · ")}
+              </div>
+            </div>
+            <Link to="/looking" className="shrink-0 text-xs text-[#FF5A5F] hover:underline">
+              View post →
+            </Link>
+          </>
+        ) : conv?.listing?.id ? (
           <>
             {conv.listing.photo_url ? (
               <img

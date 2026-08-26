@@ -135,7 +135,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
             <Link
               to="/looking"
               className="hidden rounded-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900 md:inline-flex dark:text-foreground/70 dark:hover:text-foreground"
-            >Looking for a place?</Link>
+            >Roommate Search</Link>
             {user && (
               <Link
                 to="/saved"
@@ -189,7 +189,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
               {mobileOpen && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl dark:border-border dark:bg-surface">
                   <MenuItem to="/browse" onClick={() => setMobileOpen(false)}>Subleases</MenuItem>
-                  <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Looking for a place?</MenuItem>
+                  <MenuItem to="/looking" onClick={() => setMobileOpen(false)}>Roommate Search</MenuItem>
 
                   <div className="my-1 border-t border-gray-100 dark:border-border" />
                   <div className="px-3 pb-1 pt-1">

@@ -22,7 +22,7 @@ const DISMISS_KEY = (uid: string) => `leaseup:renter-feedback-dismissed:${uid}`;
 
 const OPTIONS: Array<{ value: string; label: string }> = [
   { value: "messaged_on_leaseup",   label: "Through a listing I messaged on LeaseUp" },
-  { value: "looking_for_board",     label: "Through the Looking For board" },
+  { value: "looking_for_board",     label: "Through the Roommate Search board" },
   { value: "shared_link",           label: "Someone shared a listing link with me" },
   { value: "still_looking",         label: "I'm still looking, haven't found one yet" },
 ];

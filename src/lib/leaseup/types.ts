@@ -93,6 +93,8 @@ export type Conversation = {
   participant_1_id: string;
   participant_2_id: string;
   listing_id: string | null;
+  /** Q183 — roommate-search thread context (null for listing/general threads). */
+  looking_post_id?: string | null;
   last_message: string | null;
   last_message_at: string | null;
   created_at: string;
@@ -121,6 +123,19 @@ export type Conversation = {
     photo_url?: string | null;
     user_id?: string | null;
     /** Q175 — poster display name override (seeded listings). */
+    display_name?: string | null;
+  } | null;
+
+  /** Q183 — the roommate-search post this thread was started from. */
+  looking_post?: {
+    id: string;
+    title: string;
+    user_id: string;
+    budget_max?: number | null;
+    move_in_date?: string | null;
+    move_out_date?: string | null;
+    area?: string | null;
+    campus_name?: string | null;
     display_name?: string | null;
   } | null;
 };

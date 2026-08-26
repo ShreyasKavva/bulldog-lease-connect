@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -27,7 +27,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
-import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
   Plus, Trash2, Pencil, Check, MessageSquare, BadgeCheck, Calendar, DollarSign,
@@ -39,7 +38,7 @@ import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
-// Q152 — local memory of which Looking Board posts this device already upvoted.
+// Q152 — local memory of which Roommate Search posts this device already upvoted.
 const UPVOTED_KEY = "leasup_upvoted_posts";
 
 export const Route = createFileRoute("/looking")({
@@ -51,9 +50,9 @@ export const Route = createFileRoute("/looking")({
   }),
   head: () => ({
     meta: [
-      { title: "Looking For a Sublease? Post Here. — LeaseUp" },
-      { name: "description", content: "Tell students what you need. Get notified when a matching listing is posted." },
-      { property: "og:title", content: "Looking For a Sublease? Post Here." },
+      { title: "Roommate Search — Post What You Need — LeaseUp" },
+      { name: "description", content: "Roommate Search: tell students what you need, get notified when a matching room or sublease is posted." },
+      { property: "og:title", content: "Roommate Search — Post What You Need" },
       { property: "og:description", content: "Tell students what you need. Get notified when a matching listing is posted." },
       { property: "og:url", content: "https://leasup.co/looking" },
       { property: "og:type", content: "website" },
@@ -84,6 +83,7 @@ function LookingForPage() {
   const { user } = useSession();
   const { data: myProfile } = useMyProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
@@ -227,8 +227,6 @@ function LookingForPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<LookingForPost | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [activeConv, setActiveConv] = useState<string | null>(null);
-  const [messagesOpen, setMessagesOpen] = useState(false);
   const [matchesFor, setMatchesFor] = useState<LookingForPost | null>(null);
   const [foundFor, setFoundFor] = useState<LookingForPost | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
@@ -242,12 +240,18 @@ function LookingForPage() {
     setFormOpen(true);
   }, [prefill, user]);
 
-  async function startConv(otherId: string) {
+  // Q183 — messaging a Roommate Search post opens a real thread tied to that
+  // post (conversations dedupe on participants + listing_id + looking_post_id,
+  // so re-clicking Message always returns to the same conversation).
+  async function startConv(otherId: string, lookingPostId: string | null = null) {
     if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
-    const id = await getOrCreateConversation(user.id, otherId, null);
-    setActiveConv(id);
-    setMessagesOpen(true);
+    try {
+      const id = await getOrCreateConversation(user.id, otherId, null, lookingPostId);
+      navigate({ to: "/messages/$conversationId", params: { conversationId: id } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't open the chat");
+    }
   }
 
   function openPost() {
@@ -288,10 +292,10 @@ function LookingForPage() {
       <header className="border-b bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 py-6">
           <div>
-            <h1 className="text-2xl font-bold">Roommate & sublease requests</h1>
+            <h1 className="text-2xl font-bold">Roommate Search</h1>
             <p className="max-w-xl text-sm text-muted-foreground">
-              The reverse of browsing: students post what they're looking for, and anyone with a
-              matching place messages them directly.
+              The reverse of browsing: students post what they need, and anyone with a
+              matching room or sublease messages them directly.
             </p>
           </div>
 
@@ -411,7 +415,7 @@ function LookingForPage() {
                 isMine={user?.id === p.user_id}
                 interested={interestSet.has(p.id)}
                 onOpenProfile={() => setProfileId(p.user_id)}
-                onReply={() => startConv(p.user_id)}
+                onReply={() => startConv(p.user_id, p.id)}
                 onEdit={() => openEdit(p)}
                 onDelete={() => setConfirmDelete(p)}
                 onFound={() => setFoundFor(p)}
@@ -468,7 +472,6 @@ function LookingForPage() {
       />
 
       <ProfileSheet userId={profileId} open={!!profileId} onOpenChange={(o) => !o && setProfileId(null)} onMessage={startConv} />
-      <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={activeConv} />
     </div>
   );
 }
@@ -857,7 +860,7 @@ function ConfirmDeleteDialog({
     <Dialog open={!!post} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Remove your Looking For post?</DialogTitle>
+          <DialogTitle>Remove your Roommate Search post?</DialogTitle>
           <DialogDescription>You won't be notified of new matches.</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
