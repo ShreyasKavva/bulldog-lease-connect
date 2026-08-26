@@ -27,7 +27,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
-import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
   Plus, Trash2, Pencil, Check, MessageSquare, BadgeCheck, Calendar, DollarSign,
@@ -84,6 +83,7 @@ function LookingForPage() {
   const { user } = useSession();
   const { data: myProfile } = useMyProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: campuses = [] } = useQuery({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
@@ -227,8 +227,6 @@ function LookingForPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<LookingForPost | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [activeConv, setActiveConv] = useState<string | null>(null);
-  const [messagesOpen, setMessagesOpen] = useState(false);
   const [matchesFor, setMatchesFor] = useState<LookingForPost | null>(null);
   const [foundFor, setFoundFor] = useState<LookingForPost | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LookingForPost | null>(null);
@@ -417,7 +415,7 @@ function LookingForPage() {
                 isMine={user?.id === p.user_id}
                 interested={interestSet.has(p.id)}
                 onOpenProfile={() => setProfileId(p.user_id)}
-                onReply={() => startConv(p.user_id)}
+                onReply={() => startConv(p.user_id, p.id)}
                 onEdit={() => openEdit(p)}
                 onDelete={() => setConfirmDelete(p)}
                 onFound={() => setFoundFor(p)}
@@ -474,7 +472,6 @@ function LookingForPage() {
       />
 
       <ProfileSheet userId={profileId} open={!!profileId} onOpenChange={(o) => !o && setProfileId(null)} onMessage={startConv} />
-      <MessagesSheet open={messagesOpen} onOpenChange={setMessagesOpen} initialConversationId={activeConv} />
     </div>
   );
 }
