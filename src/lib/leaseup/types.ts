@@ -125,6 +125,19 @@ export type Conversation = {
     /** Q175 — poster display name override (seeded listings). */
     display_name?: string | null;
   } | null;
+
+  /** Q183 — the roommate-search post this thread was started from. */
+  looking_post?: {
+    id: string;
+    title: string;
+    user_id: string;
+    budget_max?: number | null;
+    move_in_date?: string | null;
+    move_out_date?: string | null;
+    area?: string | null;
+    campus_name?: string | null;
+    display_name?: string | null;
+  } | null;
 };
 
 export type MessageReaction = {
