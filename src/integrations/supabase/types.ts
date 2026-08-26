@@ -326,6 +326,7 @@ export type Database = {
           last_message: string | null
           last_message_at: string | null
           listing_id: string | null
+          looking_post_id: string | null
           muted_by_p1: boolean
           muted_by_p2: boolean
           participant_1_id: string
@@ -341,6 +342,7 @@ export type Database = {
           last_message?: string | null
           last_message_at?: string | null
           listing_id?: string | null
+          looking_post_id?: string | null
           muted_by_p1?: boolean
           muted_by_p2?: boolean
           participant_1_id: string
@@ -356,6 +358,7 @@ export type Database = {
           last_message?: string | null
           last_message_at?: string | null
           listing_id?: string | null
+          looking_post_id?: string | null
           muted_by_p1?: boolean
           muted_by_p2?: boolean
           participant_1_id?: string
@@ -390,6 +393,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "trending_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_looking_post_id_fkey"
+            columns: ["looking_post_id"]
+            isOneToOne: false
+            referencedRelation: "looking_for_posts"
             referencedColumns: ["id"]
           },
         ]
