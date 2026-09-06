@@ -113,14 +113,14 @@ export function AirbnbHome({
    */
   const [pastRails, setPastRails] = useState(false);
   useEffect(() => {
-    const el = railsRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(
-      ([entry]) => setPastRails(entry.boundingClientRect.bottom < 80 && !entry.isIntersecting),
-      { rootMargin: "-80px 0px 0px 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    const onScroll = () => {
+      const el = railsRef.current;
+      if (!el) return;
+      setPastRails(el.getBoundingClientRect().bottom < 80);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
 
@@ -553,8 +553,11 @@ export function AirbnbHome({
               >
                 <CampusMark campus={c} className="h-11 w-11 text-xs shadow-sm sm:h-14 sm:w-14 sm:text-sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold sm:text-base">{c.short_name ?? c.name}</div>
-                  <div className="truncate text-xs text-muted-foreground">{c.city}, {c.state}</div>
+                  <div className="text-sm font-bold leading-tight break-words sm:text-base">{c.short_name ?? c.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="sm:hidden">{c.state}</span>
+                    <span className="hidden sm:inline">{c.city}, {c.state}</span>
+                  </div>
                   <div className={`mt-1 text-xs font-semibold ${count > 0 ? "text-primary" : "text-muted-foreground"}`}>
                     {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "New"}
                   </div>
