@@ -1,5 +1,4 @@
 /**
-import { formatDateRange as sharedRange, formatDay } from "@/lib/leaseup/dates";
  * Public listing detail page — /listing/$id.
  *
  * Airbnb-style layout: full-width photo gallery, two-column details + sticky
@@ -9,6 +8,7 @@ import { formatDateRange as sharedRange, formatDay } from "@/lib/leaseup/dates";
  * conversion + shareable URL + SEO. Power-user features (reactions, secure
  * deposit, tour booking, report) stay in the slide-in sheet.
  */
+import { formatDateRange as sharedRange, formatDay } from "@/lib/leaseup/dates";
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";

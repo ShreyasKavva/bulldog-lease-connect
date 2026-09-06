@@ -1,5 +1,4 @@
 /**
-import { formatDay } from "@/lib/leaseup/dates";
  * Poster dashboard ("/my-listings"). Shows everything the user has posted,
  * with per-listing actions (edit, hide/show, delete, boost, secure deposit,
  * mark filled, reopen, share to Story, view analytics, set tour
@@ -13,6 +12,7 @@ import { formatDay } from "@/lib/leaseup/dates";
  * poster can refresh price/photos. ListingStatsPanel drills into
  * per-listing analytics (my-listings.$listingId.analytics.tsx).
  */
+import { formatDay } from "@/lib/leaseup/dates";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
