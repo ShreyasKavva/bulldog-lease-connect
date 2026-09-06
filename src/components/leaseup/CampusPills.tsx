@@ -75,7 +75,7 @@ export function CampusPills({
       </div>
       {/* Q184 — no negative-margin bleed: it made the first pill start
           clipped at scrollLeft 0 on some widths. Plain edge-aligned rail. */}
-      <div className="flex snap-x gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {visible.map((c) => {
           const n = counts[c.id] ?? 0;
           const label = c.short_name || c.name || "Campus";
