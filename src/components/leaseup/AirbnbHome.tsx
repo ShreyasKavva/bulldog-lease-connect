@@ -106,6 +106,22 @@ export function AirbnbHome({
   /** Q170 — guest-only onboarding CTA. */
   const { user: sessionUser } = useSession();
   const railsRef = useRef<HTMLDivElement>(null);
+  /**
+   * Q185 — the category pills only filter the listing rails, so they stop
+   * sticking to the nav once the rails have scrolled past.
+   */
+  const [pastRails, setPastRails] = useState(false);
+  useEffect(() => {
+    const el = railsRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setPastRails(entry.boundingClientRect.bottom < 80 && !entry.isIntersecting),
+      { rootMargin: "-80px 0px 0px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
