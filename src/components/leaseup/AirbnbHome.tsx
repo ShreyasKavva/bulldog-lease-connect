@@ -119,8 +119,9 @@ export function AirbnbHome({
       setPastRails(el.getBoundingClientRect().bottom < 80);
     };
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    // The app scrolls <body>, not the window, so listen in the capture phase.
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => document.removeEventListener("scroll", onScroll, true);
   }, []);
 
 
