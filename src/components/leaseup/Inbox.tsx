@@ -12,7 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowUp, Home, MessageCircle, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
-import { fetchConversations, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
+import { fetchConversations, fetchConversationById, fetchMessages, sendMessage } from "@/lib/leaseup/queries";
 import { conversationName } from "@/lib/leaseup/display-name";
 
 /** Q154 — one-tap conversation openers shown while the composer is empty. */
@@ -74,9 +74,19 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
     enabled: !!user?.id,
   });
 
+  // Q189 — the list query excludes zero-message conversations, but a freshly
+  // created thread (deep-linked before the first message) must still open and
+  // send. Fetch it directly when it's missing from the list.
+  const inList = conversations.some((c) => c.id === conversationId);
+  const { data: activeFallback } = useQuery({
+    queryKey: ["conversation", conversationId],
+    queryFn: () => fetchConversationById(user!.id, conversationId!),
+    enabled: !!user?.id && !!conversationId && !isLoading && !inList,
+  });
+
   const active = useMemo(
-    () => conversations.find((c) => c.id === conversationId) ?? null,
-    [conversations, conversationId],
+    () => conversations.find((c) => c.id === conversationId) ?? activeFallback ?? null,
+    [conversations, conversationId, activeFallback],
   );
 
   // Q182 — role split. `?tab=` and `?listing=` let My Listings deep-link in.
