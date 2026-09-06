@@ -29,10 +29,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
-function fmtDate(d: string | null) {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
+import { formatDateRange } from "@/lib/leaseup/dates";
 
 export function ScrollView({
   listings,
@@ -326,7 +323,7 @@ function ScrollCard({
           {(l.available_from || l.available_to) && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {fmtDate(l.available_from)}{l.available_to ? ` – ${fmtDate(l.available_to)}` : ""}
+              {formatDateRange(l.available_from, l.available_to)}
             </span>
           )}
         </div>

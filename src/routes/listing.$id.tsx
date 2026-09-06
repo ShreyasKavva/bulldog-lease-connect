@@ -63,10 +63,8 @@ export const Route = createFileRoute("/listing/$id")({
     const bedStr = l.beds === 0 ? "Studio" : `${l.beds}bd`;
     const baStr = `${Number(l.baths)}ba`;
     const campusName = (l as any).campus?.short_name ?? (l as any).campus?.name ?? "campus";
-    const fmtDate = (iso: string | null) =>
-      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-    const range = l.available_from && l.available_to
-      ? ` · Available ${fmtDate(l.available_from)}–${fmtDate(l.available_to)}`
+    const range = l.available_from || l.available_to
+      ? ` · Available ${sharedRange(l.available_from, l.available_to)}`
       : "";
     const desc = `${bedStr}/${baStr} · $${l.price}/mo${range}. Message the host directly on LeaseUp.`;
     const title = `${l.title}${l.area ? ` — ${l.area}` : ""} near ${campusName} | LeaseUp`;
@@ -395,10 +393,8 @@ function ListingDetailPage() {
     const url = withUtm(baseListingUrl(), "native_share");
     const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
-    const fmt = (iso: string | null) =>
-      iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-    const range = listing.available_from && listing.available_to
-      ? ` · ${fmt(listing.available_from)}–${fmt(listing.available_to)}`
+    const range = listing.available_from || listing.available_to
+      ? ` · ${sharedRange(listing.available_from, listing.available_to)}`
       : "";
     const text = `${bedStr}${where ? ` at ${where}` : ""} · $${listing.price}/mo${range}`;
     const title = `${listing.title} — LeaseUp`;
@@ -1527,25 +1523,11 @@ function FactRow({
   );
 }
 
-function toDate(iso: string) {
-  return new Date(iso + (iso.length === 10 ? "T00:00:00" : ""));
-}
 
-/** Q101 C2 — drop the year unless the range crosses out of the current year. */
+
+/** Q185 — always show the year; shared formatter. */
 function formatRange(from: string | null | undefined, to: string | null | undefined): string {
-  const thisYear = new Date().getFullYear();
-  const years = [from, to].filter(Boolean).map((iso) => toDate(iso as string).getFullYear());
-  const showYear = years.some((y) => y !== thisYear);
-  const fmt = (iso: string) =>
-    toDate(iso).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      ...(showYear ? { year: "numeric" as const } : {}),
-    });
-  if (from && to) return `${fmt(from)} – ${fmt(to)}`;
-  if (from) return `From ${fmt(from)}`;
-  if (to) return `Until ${fmt(to)}`;
-  return "Flexible";
+  return sharedRange(from, to, { fallback: "Flexible" }) as string;
 }
 
 /** "~4 months" / "12 nights" for a date range; null when it can't be computed. */
@@ -1721,11 +1703,7 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
 // Queue 60 — Part C: compact card for a looking-for post
 function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: () => void }) {
   const profile = (p as any).profile as { name?: string; avatar_emoji?: string; banner_color?: string; verified_email?: boolean } | undefined;
-  const fmt = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-  const range = p.move_in_date || p.move_out_date
-    ? `${fmt(p.move_in_date)}${p.move_out_date ? `–${fmt(p.move_out_date)}` : ""}`
-    : null;
+  const range = sharedRange(p.move_in_date, p.move_out_date);
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="flex items-start gap-3">

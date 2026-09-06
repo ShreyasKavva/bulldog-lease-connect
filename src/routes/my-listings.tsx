@@ -399,7 +399,7 @@ function MyListingsPage() {
                 {expired && (
                   <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
                     <span className="font-semibold">
-                      This listing ended {l.available_to ? `on ${new Date(l.available_to).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}.
+                      This listing ended {l.available_to ? `on ${formatDay(l.available_to)}` : ""}.
                     </span>
                     <span className="opacity-80">Did you find someone?</span>
                     <button onClick={() => markFilled(l)} className="ml-auto rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Mark as rented</button>
@@ -446,7 +446,7 @@ function MyListingsPage() {
                       <div className="text-xs text-gray-400">
                         {[l.available_from, l.available_to]
                           .filter(Boolean)
-                          .map((d) => new Date(d as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+                          .map((d) => formatDay(d as string))
                           .join(" – ")}
                       </div>
                     )}

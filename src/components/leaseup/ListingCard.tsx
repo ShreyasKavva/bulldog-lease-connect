@@ -21,24 +21,9 @@ import { openSaveToCollection } from "./SaveToCollectionModal";
 import { openQuickInquiry } from "./QuickInquiryModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
+import { formatDateRange } from "@/lib/leaseup/dates";
 
-function fmtDate(iso: string | null) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
-/** Cross-year ranges append the end year so "Aug 31 – Aug 30" reads correctly. */
-function fmtDateRange(fromIso: string | null, toIso: string | null) {
-  const from = fmtDate(fromIso);
-  if (!from) return null;
-  const to = fmtDate(toIso);
-  if (!to) return from;
-  const startYear = new Date(fromIso as string).getFullYear();
-  const endYear = new Date(toIso as string).getFullYear();
-  return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
-}
 
 /**
  * Q143 — urgency badge: only when move-in is between today and 45 days out.
@@ -143,7 +128,7 @@ export function ListingCard({
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
 
-  const dates = fmtDateRange(listing.available_from, listing.available_to);
+  const dates = formatDateRange(listing.available_from, listing.available_to);
   const availableLabel = availableBadge(listing.available_from);
   const isActive = (listing.status ?? "active") === "active";
   const daysLeft = isActive ? daysLeftBadge(listing.available_to) : null;
