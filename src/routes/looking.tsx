@@ -608,7 +608,7 @@ function LookingForCard({
             )}
             {p.beds_min != null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 font-semibold">
-                <Bed className="h-3 w-3" />{p.beds_min}+ bd
+                <Bed className="h-3 w-3" />Any size
               </span>
             )}
             {p.area && (

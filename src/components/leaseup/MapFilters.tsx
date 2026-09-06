@@ -95,7 +95,7 @@ export function MapFilters({
       {/* Beds chip */}
       <FilterChip
         icon={<Bed className="h-3.5 w-3.5" />}
-        label={value.minBeds ? `${value.minBeds}+ bd` : "Beds"}
+        label={value.minBeds ? `${value.minBeds}+ bd` : "Any size"}
         active={value.minBeds != null}
         onClick={() => setOpenMenu(openMenu === "beds" ? null : "beds")}
       >

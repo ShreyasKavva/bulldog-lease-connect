@@ -10,30 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { Search, School } from "lucide-react";
+import { CampusMark } from "@/components/leaseup/CampusMark";
 
-const CAMPUS_EMOJI: Record<string, string> = {
-  "university-of-georgia": "🐾",
-  "georgia-tech": "🐝",
-  "university-of-virginia": "🏛️",
-  "university-of-florida": "🐊",
-  "auburn-university": "🐯",
-  "university-of-alabama": "🐘",
-  "florida-state-university": "🍢",
-  "clemson-university": "🐅",
-  "duke-university": "😈",
-  "university-of-michigan": "〽️",
-  "ohio-state-university": "🌰",
-  "university-of-north-carolina": "🐏",
-  "university-of-south-carolina": "🐓",
-  "penn-state-university": "🦁",
-  "vanderbilt-university": "⭐",
-
-  "university-of-tennessee": "🍊",
-};
-
-function emojiFor(slug: string) {
-  return CAMPUS_EMOJI[slug] ?? "🏫";
-}
 
 export const Route = createFileRoute("/campuses")({
   head: () => ({
@@ -164,15 +142,11 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
     >
       <div>
         <div className="flex items-start gap-3">
-          <div
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-2xl"
-            aria-hidden
-          >
-            {emojiFor(c.slug)}
-          </div>
+          <CampusMark campus={c} className="h-11 w-11 text-xs" />
           <div className="min-w-0">
-            <div className="truncate text-base font-bold text-foreground group-hover:text-primary">
-              {c.name}
+            <div className="text-base font-bold text-foreground group-hover:text-primary">
+              <span className="sm:hidden">{c.short_name || c.name}</span>
+              <span className="hidden sm:inline">{c.name}</span>
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
               {c.city}
@@ -189,7 +163,7 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
             aria-hidden
           />
           <span className={has ? "font-semibold text-foreground" : "text-muted-foreground"}>
-            {has ? `${count} active sublease${count === 1 ? "" : "s"}` : "No listings yet"}
+            {has ? `${count} listing${count === 1 ? "" : "s"}` : "No listings yet"}
           </span>
         </div>
         <span className="text-xs font-semibold text-primary group-hover:underline">
