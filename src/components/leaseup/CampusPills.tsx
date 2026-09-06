@@ -73,7 +73,9 @@ export function CampusPills({
           View all campuses →
         </Link>
       </div>
-      <div className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Q184 — no negative-margin bleed: it made the first pill start
+          clipped at scrollLeft 0 on some widths. Plain edge-aligned rail. */}
+      <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {visible.map((c) => {
           const n = counts[c.id] ?? 0;
           const label = c.short_name || c.name || "Campus";

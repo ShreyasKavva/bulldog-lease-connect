@@ -74,9 +74,12 @@ function activeAgo(iso?: string | null) {
 
 function fmtDateRange(from: string | null, to: string | null) {
   if (!from && !to) return null;
-  const fmt = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "?";
-  return `${fmt(from)} – ${fmt(to)}`;
+  // Q184 — never render a bare "?": open-ended ends read as "onwards".
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString(undefined, { month: "short", year: "numeric" });
+  if (from && !to) return `${fmt(from)} onwards`;
+  if (!from && to) return `Until ${fmt(to)}`;
+  return `${fmt(from!)} – ${fmt(to!)}`;
 }
 
 function LookingForPage() {

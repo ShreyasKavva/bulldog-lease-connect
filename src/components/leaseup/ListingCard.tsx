@@ -333,25 +333,19 @@ export function ListingCard({
           </>
         )}
 
-        {/* Q123/Q143 — price tier + urgency move-in badges share the bottom-left row */}
-        <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-1">
-          <CardPriceBadge price={listing.price} campusId={listing.campus_id} className="static bottom-auto left-auto" />
-          {availableLabel && (
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-800 shadow-sm">
-              {availableLabel}
+        {/* Q184 — max TWO chips on the photo, inside its bounds. Priority:
+            urgency/expiry first, then availability. Social proof is dropped —
+            the save count already sits on the heart, and views are printed
+            under the photo. Price tier is a chip too, so it joins the cap. */}
+        <div className="pointer-events-none absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1 overflow-hidden">
+          {expiry?.kind === "critical" ? (
+            <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow-sm">
+              ⏰ Last 3 days!
             </span>
-          )}
-          {/* Q162 — activity pulse on listings with real engagement */}
-          {views >= 8 && !isNew && !justPosted && (
-            <span className="rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-              ⚡ {views} looking
-            </span>
-          )}
-          {/* Q149 — lease ending soon */}
-          {daysLeft && (
+          ) : daysLeft ? (
             <span
               className={cn(
-                "rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm",
+                "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm",
                 daysLeft.tone === "red"
                   ? "bg-red-600 text-white"
                   : "bg-amber-100 text-amber-900",
@@ -359,20 +353,12 @@ export function ListingCard({
             >
               {daysLeft.label}
             </span>
-          )}
-          {/* Q154 — final-days countdown outranks the saves badge */}
-          {expiry?.kind === "critical" && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow-sm">
-              ⏰ Last 3 days!
+          ) : availableLabel ? (
+            <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-800 shadow-sm">
+              {availableLabel}
             </span>
-          )}
-          {/* Q153 — social proof once a listing has real traction */}
-          {savesCount >= 3 && expiry?.kind !== "critical" && (
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-rose-600 shadow-sm">
-              ❤️ {savesCount} saves
-            </span>
-          )}
-
+          ) : null}
+          <CardPriceBadge price={listing.price} campusId={listing.campus_id} className="static bottom-auto left-auto" />
         </div>
 
 
