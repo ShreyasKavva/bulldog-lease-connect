@@ -10,7 +10,7 @@ import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 
 const headingCls = "mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-const linkCls = "block py-1 text-sm text-muted-foreground transition-colors hover:text-foreground";
+const linkCls = "block py-1 text-sm text-gray-600 transition-colors hover:text-foreground dark:text-muted-foreground";
 
 export function Footer() {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -42,7 +42,7 @@ export function Footer() {
     .slice(0, 6);
 
   return (
-    <footer className="mt-16 border-t border-gray-100 bg-gray-50 dark:border-border dark:bg-surface">
+    <footer className="mt-10 border-t border-gray-100 bg-gray-50 dark:border-border dark:bg-surface">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
         {/* Brand */}
         <div>
