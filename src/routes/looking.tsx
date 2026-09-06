@@ -580,7 +580,7 @@ function LookingForCard({
               </span>
             )}
             {last && <span className="text-[11px] text-muted-foreground">· {last}</span>}
-            <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+            <span className="ml-auto text-[10px] text-muted-foreground">Posted {timeAgo(p.created_at)}</span>
           </div>
           {campusName && <p className="text-xs text-muted-foreground">{campusName}</p>}
 

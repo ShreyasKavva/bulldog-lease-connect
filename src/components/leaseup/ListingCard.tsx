@@ -363,11 +363,11 @@ export function ListingCard({
 
           {/* Q181 — the heart is a SECONDARY action: ghost/outline, never competing
               with the primary "View listing" CTA below the photo. */}
-          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/70 bg-white/70 backdrop-blur-sm">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/30 bg-black/25 shadow-sm backdrop-blur-sm">
             <Heart
               className={cn(
                 "h-4 w-4 transition-transform",
-                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-gray-700",
+                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-white",
               )}
             />
           </span>
