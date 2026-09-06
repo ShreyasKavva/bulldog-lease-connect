@@ -2,5 +2,12 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /profile
+Disallow: /messages
+Disallow: /saved
+Disallow: /post
+Disallow: /notifications
+Disallow: /onboarding
+Disallow: /auth
 
 Sitemap: https://leasup.co/sitemap.xml

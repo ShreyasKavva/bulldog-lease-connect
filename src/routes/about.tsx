@@ -61,9 +61,9 @@ function AboutPage() {
             Who we are
           </h2>
           <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
-            We're students who lived this problem. LeaseUp started at the University of Georgia and
-            is now live at Ohio State, UT Austin, Georgia Tech, and growing. We're expanding to new
-            campuses every semester.
+            We're students who lived this problem. LeaseUp started at the University of Georgia, and
+            right now we're focused on doing each campus right — real listings, real students, real
+            trust — before we grow.
           </p>
         </section>
       </div>
