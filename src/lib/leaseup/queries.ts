@@ -161,6 +161,13 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
     .from("conversations")
     .select("*")
     .or(`participant_1_id.eq.${userId},participant_2_id.eq.${userId}`)
+    // Q189 — zero-message conversations are ghosts: they render as rows with no
+    // timestamp and a "No messages yet" subtitle, making the inbox look broken.
+    // getOrCreateConversation still creates the row up front (correct — both
+    // parties must resolve to it); it just never appears in a LIST until the
+    // first message lands. fetchConversationById below re-fetches a single
+    // conversation without this filter so an open empty thread still works.
+    .not("last_message_at", "is", null)
     .order("last_message_at", { ascending: false, nullsFirst: false });
   if (error) throw error;
   const convs = (data ?? []) as Conversation[];
@@ -168,6 +175,24 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
   const visible = convs.filter((c) =>
     c.participant_1_id === userId ? !c.deleted_by_p1 : !c.deleted_by_p2,
   );
+  return enrichConversations(userId, visible);
+}
+
+/** Q189 — fetch one conversation by id, regardless of message count. */
+export async function fetchConversationById(userId: string, id: string): Promise<Conversation | null> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("*")
+    .eq("id", id)
+    .or(`participant_1_id.eq.${userId},participant_2_id.eq.${userId}`)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const enriched = await enrichConversations(userId, [data as Conversation]);
+  return enriched[0] ?? null;
+}
+
+async function enrichConversations(userId: string, visible: Conversation[]): Promise<Conversation[]> {
   const otherIds = Array.from(new Set(visible.map((c) => (c.participant_1_id === userId ? c.participant_2_id : c.participant_1_id))));
   const listingIds = Array.from(new Set(visible.map((c) => c.listing_id).filter(Boolean) as string[]));
   // Q183 — roommate-search threads carry a looking post instead of a listing.
