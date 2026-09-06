@@ -70,8 +70,11 @@ function activeAgo(iso?: string | null) {
   if (s < 3600) return `Active ${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `Active ${Math.floor(s / 3600)}h ago`;
   const days = Math.floor(s / 86400);
-  // Q185 — beyond two weeks nobody is "active"; the card falls back to posted date.
-  return days <= 14 ? `Active ${days}d ago` : null;
+  // Q185/Q187 — beyond two weeks nobody is "active"; the card falls back to
+  // the posted date. Precise day counts past 3 days make same-day seeded
+  // posts obvious (every card reads "Active 11d ago"), so bucket them.
+  if (days <= 3) return `Active ${days}d ago`;
+  return days <= 14 ? "Active recently" : null;
 }
 
 function fmtDateRange(from: string | null, to: string | null) {
