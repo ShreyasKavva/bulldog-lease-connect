@@ -1,3 +1,4 @@
+import { formatDay } from "@/lib/leaseup/dates";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
@@ -383,13 +384,13 @@ export function ListingDetailSheet({
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
             <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
             <div><Bath className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{Number(listing.baths)} bath</div></div>
-            <div><Calendar className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.available_from ? new Date(listing.available_from).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</div></div>
+            <div><Calendar className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{formatDay(listing.available_from) ?? "—"}</div></div>
           </div>
 
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <Fact label="Available from" value={listing.available_from ? new Date(listing.available_from).toLocaleDateString() : "—"} />
-            <Fact label="Available until" value={listing.available_to ? new Date(listing.available_to).toLocaleDateString() : "—"} />
+            <Fact label="Available from" value={formatDay(listing.available_from) ?? "—"} />
+            <Fact label="Available until" value={formatDay(listing.available_to) ?? "—"} />
             <Fact label="Furnished" value={listing.furnished ? "Yes" : "No"} />
             <Fact label="Utilities" value={listing.utilities_included ? "Included" : "Separate"} />
             <Fact label="Pets" value={listing.pet_friendly ? "Allowed" : "No pets"} />
@@ -624,7 +625,7 @@ export function ListingDetailSheet({
                       <div className="truncate text-xs font-semibold text-foreground">{l.title}</div>
                       <div className="truncate text-[11px] text-muted-foreground">
                         {l.available_from
-                          ? `From ${new Date(l.available_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                          ? `From ${formatDay(l.available_from)}`
                           : (l.area ?? "Near campus")}
                       </div>
                     </div>

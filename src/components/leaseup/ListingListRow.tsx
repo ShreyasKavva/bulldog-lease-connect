@@ -4,13 +4,9 @@
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
+import { formatDateRange } from "@/lib/leaseup/dates";
 
-function fmtDate(d?: string | null) {
-  if (!d) return null;
-  const dt = new Date(d);
-  if (Number.isNaN(dt.getTime())) return null;
-  return dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
+
 
 export function ListingListRow({
   listing,
@@ -28,8 +24,7 @@ export function ListingListRow({
   const photo = listing?.photo_urls?.[0] ?? null;
   const beds = listing?.beds ?? 0;
   const bedLabel = beds === 0 ? "Studio" : `${beds} bd`;
-  const from = fmtDate(listing?.available_from);
-  const to = fmtDate(listing?.available_to);
+  const dates = formatDateRange(listing?.available_from, listing?.available_to);
 
   return (
     <div
@@ -59,10 +54,8 @@ export function ListingListRow({
         <p className="truncate text-xs text-muted-foreground">
           {[campusName, bedLabel, listing?.area].filter(Boolean).join(" · ")}
         </p>
-        {(from || to) && (
-          <p className="truncate text-xs text-muted-foreground/70">
-            {from ?? "Flexible"}{to ? ` – ${to}` : ""}
-          </p>
+        {dates && (
+          <p className="truncate text-xs text-muted-foreground/70">{dates}</p>
         )}
         {/* Q181 — primary CTA, identical to the grid + map cards */}
         <button

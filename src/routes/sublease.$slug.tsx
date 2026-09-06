@@ -12,20 +12,13 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
+import { CampusMark } from "@/components/leaseup/CampusMark";
 import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { copyToClipboard, shareToGroupMe, withUtm } from "@/lib/leaseup/share";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
-const CAMPUS_ICON: Record<string, string> = {
-  "university-of-georgia": "🐾",
-  "auburn-university": "🐅",
-  "university-of-florida": "🐊",
-  "georgia-tech": "🐝",
-  "university-of-virginia": "🏛️",
-  "university-of-alabama": "🐘",
-};
 
 export const Route = createFileRoute("/sublease/$slug")({
   loader: async ({ params }) => {
@@ -189,7 +182,6 @@ function CampusPage() {
     setMessagesOpen(true);
   }
 
-  const campusIcon = CAMPUS_ICON[campus.slug] ?? "🏫";
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
@@ -200,7 +192,7 @@ function CampusPage() {
             <MapPin className="h-3.5 w-3.5" /> {campus.city}, {campus.state}
           </div>
           <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
-            <span aria-hidden="true" className="text-4xl md:text-5xl">{campusIcon}</span>
+            <CampusMark campus={campus} className="h-12 w-12 text-base md:h-14 md:w-14 md:text-lg" />
             {campus.name} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">

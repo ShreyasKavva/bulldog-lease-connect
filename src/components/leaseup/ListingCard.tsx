@@ -21,24 +21,9 @@ import { openSaveToCollection } from "./SaveToCollectionModal";
 import { openQuickInquiry } from "./QuickInquiryModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
+import { formatDateRange } from "@/lib/leaseup/dates";
 
-function fmtDate(iso: string | null) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
-/** Cross-year ranges append the end year so "Aug 31 – Aug 30" reads correctly. */
-function fmtDateRange(fromIso: string | null, toIso: string | null) {
-  const from = fmtDate(fromIso);
-  if (!from) return null;
-  const to = fmtDate(toIso);
-  if (!to) return from;
-  const startYear = new Date(fromIso as string).getFullYear();
-  const endYear = new Date(toIso as string).getFullYear();
-  return startYear === endYear ? `${from} – ${to}` : `${from} – ${to}, ${endYear}`;
-}
 
 /**
  * Q143 — urgency badge: only when move-in is between today and 45 days out.
@@ -143,7 +128,7 @@ export function ListingCard({
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
 
-  const dates = fmtDateRange(listing.available_from, listing.available_to);
+  const dates = formatDateRange(listing.available_from, listing.available_to);
   const availableLabel = availableBadge(listing.available_from);
   const isActive = (listing.status ?? "active") === "active";
   const daysLeft = isActive ? daysLeftBadge(listing.available_to) : null;
@@ -378,11 +363,11 @@ export function ListingCard({
 
           {/* Q181 — the heart is a SECONDARY action: ghost/outline, never competing
               with the primary "View listing" CTA below the photo. */}
-          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/70 bg-white/70 backdrop-blur-sm">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-white/30 bg-black/25 shadow-sm backdrop-blur-sm">
             <Heart
               className={cn(
                 "h-4 w-4 transition-transform",
-                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-gray-700",
+                saved ? "scale-110 fill-[#FF5A5F] text-[#FF5A5F]" : "text-white",
               )}
             />
           </span>

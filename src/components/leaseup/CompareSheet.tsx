@@ -4,9 +4,10 @@ import { Check, X, BedDouble, Bath, MapPin, Calendar, DollarSign } from "lucide-
 import { cn } from "@/lib/utils";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
+import { formatDay } from "@/lib/leaseup/dates";
+
 function fmtDate(d: string | null) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatDay(d) ?? "—";
 }
 
 function YesNo({ v }: { v: boolean | null | undefined }) {

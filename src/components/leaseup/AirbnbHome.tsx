@@ -29,6 +29,7 @@ import { ListingCard } from "./ListingCard";
 import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
+import { CampusMark } from "@/components/leaseup/CampusMark";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
@@ -55,26 +56,6 @@ const CATEGORIES: { k: Cat; label: string; emoji: string }[] = [
 ];
 
 // Emoji mascots for campus spotlights (falls back to 🎓)
-const CAMPUS_EMOJI: Record<string, string> = {
-  uga: "🐾", "university-of-georgia": "🐾",
-  uf: "🐊", "university-of-florida": "🐊",
-  alabama: "🐘", "university-of-alabama": "🐘",
-  auburn: "🐯", "auburn-university": "🐯",
-  "clemson-university": "🐅",
-  "duke-university": "😈",
-  "florida-state-university": "🍢",
-  "georgia-tech": "🐝",
-  "university-of-virginia": "🏛️", uva: "🏛️",
-  "ohio-state-university": "🌰",
-  "university-of-texas-at-austin": "🤘",
-  "university-of-michigan": "〽️",
-  "penn-state-university": "🦁",
-  "vanderbilt-university": "⭐",
-};
-
-function campusEmoji(c: Campus) {
-  return CAMPUS_EMOJI[c.slug] ?? CAMPUS_EMOJI[c.short_name?.toLowerCase() ?? ""] ?? "🎓";
-}
 
 function matchesCategory(l: Listing, cat: Cat, medianForCampusBeds: (id: string, beds: number) => number | null): boolean {
   if (cat === "all") return true;
@@ -126,6 +107,23 @@ export function AirbnbHome({
   /** Q170 — guest-only onboarding CTA. */
   const { user: sessionUser } = useSession();
   const railsRef = useRef<HTMLDivElement>(null);
+  /**
+   * Q185 — the category pills only filter the listing rails, so they stop
+   * sticking to the nav once the rails have scrolled past.
+   */
+  const [pastRails, setPastRails] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = railsRef.current;
+      if (!el) return;
+      setPastRails(el.getBoundingClientRect().bottom < 80);
+    };
+    onScroll();
+    // The app scrolls <body>, not the window, so listen in the capture phase.
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => document.removeEventListener("scroll", onScroll, true);
+  }, []);
+
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
@@ -355,7 +353,7 @@ export function AirbnbHome({
 
 
       {/* CATEGORY PILLS */}
-      <div className="sticky top-14 z-50 border-b border-gray-200 bg-white dark:bg-surface">
+      <div className={cn("z-50 border-b border-gray-200 bg-white dark:bg-surface", pastRails ? "relative" : "sticky top-14")}>
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
@@ -554,14 +552,15 @@ export function AirbnbHome({
                 params={{ slug: c.slug }}
                 className="group flex items-center gap-3 rounded-2xl bg-gray-50 p-4 transition hover:bg-gray-100 sm:gap-4 sm:p-5 dark:bg-background dark:hover:bg-background/70"
               >
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-border sm:h-14 sm:w-14 sm:text-3xl">
-                  {campusEmoji(c)}
-                </div>
+                <CampusMark campus={c} className="h-11 w-11 text-xs shadow-sm sm:h-14 sm:w-14 sm:text-sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold sm:text-base">{c.short_name ?? c.name}</div>
-                  <div className="truncate text-xs text-muted-foreground">{c.city}, {c.state}</div>
+                  <div className="text-sm font-bold leading-tight break-words sm:text-base">{c.short_name ?? c.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="sm:hidden">{c.state}</span>
+                    <span className="hidden sm:inline">{c.city}, {c.state}</span>
+                  </div>
                   <div className={`mt-1 text-xs font-semibold ${count > 0 ? "text-primary" : "text-muted-foreground"}`}>
-                    {count > 0 ? `${count} active ${count === 1 ? "listing" : "listings"}` : "New"}
+                    {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "New"}
                   </div>
                 </div>
                 <ArrowRight className="hidden h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground sm:block" />

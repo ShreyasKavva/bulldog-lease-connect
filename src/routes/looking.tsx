@@ -69,7 +69,9 @@ function activeAgo(iso?: string | null) {
   if (s < 120) return "Active now";
   if (s < 3600) return `Active ${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `Active ${Math.floor(s / 3600)}h ago`;
-  return `Active ${Math.floor(s / 86400)}d ago`;
+  const days = Math.floor(s / 86400);
+  // Q185 — beyond two weeks nobody is "active"; the card falls back to posted date.
+  return days <= 14 ? `Active ${days}d ago` : null;
 }
 
 function fmtDateRange(from: string | null, to: string | null) {
@@ -578,7 +580,7 @@ function LookingForCard({
               </span>
             )}
             {last && <span className="text-[11px] text-muted-foreground">· {last}</span>}
-            <span className="ml-auto text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+            <span className="ml-auto text-[10px] text-muted-foreground">Posted {timeAgo(p.created_at)}</span>
           </div>
           {campusName && <p className="text-xs text-muted-foreground">{campusName}</p>}
 
@@ -608,7 +610,7 @@ function LookingForCard({
             )}
             {p.beds_min != null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 font-semibold">
-                <Bed className="h-3 w-3" />{p.beds_min}+ bd
+                <Bed className="h-3 w-3" />{p.beds_min > 0 ? `${p.beds_min}+ bd` : "Any size"}
               </span>
             )}
             {p.area && (
