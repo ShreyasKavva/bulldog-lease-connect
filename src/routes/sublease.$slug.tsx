@@ -48,10 +48,10 @@ export const Route = createFileRoute("/sublease/$slug")({
         { name: "description", content: desc },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
-        { property: "og:url", content: `/sublease/${params.slug}` },
+        { property: "og:url", content: `https://leasup.co/sublease/${params.slug}` },
         { property: "og:type", content: "website" },
       ],
-      links: [{ rel: "canonical", href: `/sublease/${params.slug}` }],
+      links: [{ rel: "canonical", href: `https://leasup.co/sublease/${params.slug}` }],
       scripts: [{
         type: "application/ld+json",
         children: JSON.stringify({
