@@ -127,19 +127,20 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
           {/* Right cluster */}
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-            {/* Desktop text links */}
+            {/* Desktop text links — Q184: lg+ only, whitespace-nowrap, so the
+                nav can never wrap to two lines at tablet widths. */}
             <Link
               to="/browse"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+              className="hidden whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 lg:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
             >Subleases</Link>
             <Link
               to="/looking"
-              className="hidden rounded-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900 md:inline-flex dark:text-foreground/70 dark:hover:text-foreground"
+              className="hidden whitespace-nowrap rounded-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900 lg:inline-flex dark:text-foreground/70 dark:hover:text-foreground"
             >Roommate Search</Link>
             {user && (
               <Link
                 to="/saved"
-                className="relative hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+                className="relative hidden whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 lg:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
               >
                 Saved
                 {savedIds.size > 0 && (
@@ -151,7 +152,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
             {user && (
               <Link
                 to="/messages"
-                className="relative hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 md:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
+                className="relative hidden whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 lg:inline-flex dark:text-foreground/80 dark:hover:text-foreground"
               >
                 Messages
                 {unread > 0 && (
@@ -167,17 +168,17 @@ export function TopBar(_legacy: LegacyProps = {}) {
 
             <button
               onClick={handlePost}
-              className="hidden items-center gap-1 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-black md:inline-flex dark:bg-white dark:text-gray-900"
+              className="hidden items-center gap-1 whitespace-nowrap rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-black lg:inline-flex dark:bg-white dark:text-gray-900"
             >Post a sublease →</button>
 
-            {/* Mobile Post pill (kept from previous minimal header) */}
+            {/* Compact Post pill below lg (tablet + large phones) */}
             <button
               onClick={handlePost}
-              className="hidden items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white sm:inline-flex md:hidden dark:bg-white dark:text-gray-900"
+              className="hidden items-center gap-1 whitespace-nowrap rounded-full bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white sm:inline-flex lg:hidden dark:bg-white dark:text-gray-900"
             >Post</button>
 
-            {/* Q105 — mobile hamburger menu */}
-            <div ref={mobileRef} className="relative md:hidden">
+            {/* Q105 — hamburger menu (shown below lg, before links could wrap) */}
+            <div ref={mobileRef} className="relative lg:hidden">
               <button
                 onClick={() => setMobileOpen((v) => !v)}
                 aria-label="Open menu"
