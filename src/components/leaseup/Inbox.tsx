@@ -108,32 +108,55 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
     };
   }, [conversations, meId]);
 
-  const [tab, setTab] = useState<"inquiries" | "sent" | "roommates" | null>(null);
-  // Explicit ?tab= always wins.
+  type Tab = "inquiries" | "sent" | "roommates";
+  const [tab, setTab] = useState<Tab | null>(null);
+  const [resolved, setResolved] = useState(false);
+  // Q189 follow-up — the selected tab persists in the URL (?tab=), so a hard
+  // refresh restores it. That restored value must NOT win when its tab is
+  // empty (e.g. ?tab=roommates left over from clicking the now-empty
+  // Roommates tab). Resolve the initial tab ONCE, only after the conversation
+  // lists have loaded: a requested tab with conversations wins; otherwise
+  // fall through Inquiries → Roommates → Sent; all empty → Inquiries.
   useEffect(() => {
-    if (search?.tab === "inquiries" || search?.tab === "sent" || search?.tab === "roommates") {
-      setTab(search.tab as never);
-    }
-  }, [search?.tab]);
-  // If the active thread lives in another tab, follow it.
+    if (resolved || isLoading || !user) return;
+    const requested: Tab | null =
+      search?.tab === "inquiries" || search?.tab === "sent" || search?.tab === "roommates"
+        ? (search.tab as Tab)
+        : active
+          ? active.looking_post_id
+            ? "roommates"
+            : isSellerSide(active, meId)
+              ? "inquiries"
+              : "sent"
+          : null;
+    const counts: Record<Tab, number> = {
+      inquiries: inquiries.length,
+      sent: sent.length,
+      roommates: roommates.length,
+    };
+    setTab(
+      requested && counts[requested] > 0
+        ? requested
+        : counts.inquiries > 0
+          ? "inquiries"
+          : counts.roommates > 0
+            ? "roommates"
+            : counts.sent > 0
+              ? "sent"
+              : "inquiries",
+    );
+    setResolved(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, isLoading, user]);
+  // If the active thread lives in another tab, follow it (post-resolution
+  // only — before that, the resolver above owns the initial choice).
   useEffect(() => {
-    if (!active || !meId) return;
+    if (!resolved || !active || !meId) return;
     setTab(active.looking_post_id ? "roommates" : isSellerSide(active, meId) ? "inquiries" : "sent");
-  }, [active, meId]);
+  }, [resolved, active, meId]);
 
   const listingFilter = search?.listing || null;
-  // Q189 — default tab: first non-empty tab in Inquiries → Roommates → Sent
-  // order. A student whose only threads are roommate chats must not land on an
-  // empty Sent tab and conclude their message vanished. All empty → Inquiries.
-  const currentTab =
-    tab ??
-    (inquiries.length > 0
-      ? "inquiries"
-      : roommates.length > 0
-        ? "roommates"
-        : sent.length > 0
-          ? "sent"
-          : "inquiries");
+  const currentTab = tab ?? "inquiries";
 
 
   // Live conversation-list refresh (any message touching me).
