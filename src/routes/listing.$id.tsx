@@ -1,4 +1,5 @@
 /**
+import { formatDateRange as sharedRange, formatDay } from "@/lib/leaseup/dates";
  * Public listing detail page — /listing/$id.
  *
  * Airbnb-style layout: full-width photo gallery, two-column details + sticky
