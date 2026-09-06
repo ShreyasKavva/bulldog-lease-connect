@@ -122,19 +122,18 @@ export function Inbox({ conversationId }: { conversationId?: string | null }) {
   }, [active, meId]);
 
   const listingFilter = search?.listing || null;
-  // Derived default so it stays correct once conversations finish loading:
-  // whichever side needs attention, else whichever side has any threads.
+  // Q189 — default tab: first non-empty tab in Inquiries → Roommates → Sent
+  // order. A student whose only threads are roommate chats must not land on an
+  // empty Sent tab and conclude their message vanished. All empty → Inquiries.
   const currentTab =
     tab ??
-    (inqUnread > 0
+    (inquiries.length > 0
       ? "inquiries"
-      : sentUnread > 0
-        ? "sent"
-        : roomUnread > 0
-          ? "roommates"
-          : inquiries.length && !sent.length
-            ? "inquiries"
-            : "sent");
+      : roommates.length > 0
+        ? "roommates"
+        : sent.length > 0
+          ? "sent"
+          : "inquiries");
 
 
   // Live conversation-list refresh (any message touching me).
@@ -399,9 +398,10 @@ function ConversationRow({
   const unread = c.unread_count ?? 0;
   const isUnread = unread > 0 && !active;
   const mine = !!c.last_message_sender_id && c.last_message_sender_id === meId;
-  const preview = c.last_message
-    ? `${mine ? "You: " : ""}${c.last_message}`
-    : "No messages yet";
+  // Q189 — the list query excludes zero-message conversations, so every row
+  // has a real preview. "No messages yet" is empty-STATE copy only (the tab
+  // empty states above), never a row subtitle.
+  const preview = c.last_message ? `${mine ? "You: " : ""}${c.last_message}` : "";
 
   return (
     <li>
