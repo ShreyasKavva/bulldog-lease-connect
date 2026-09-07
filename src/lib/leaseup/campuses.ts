@@ -112,11 +112,21 @@ export async function fetchNearbyCampuses(campusId: string, limit = 4): Promise<
   return (data ?? []) as (Campus & { distance_miles: number })[];
 }
 
-/** Email capture for a campus with no inventory yet. */
-export async function requestCampusNotify(campusId: string, email: string, userId?: string | null) {
+/** Email capture for a campus with no inventory yet.
+ *  Signed-out visitors insert an unowned row (user_id NULL); a signed-in user
+ *  may only claim the row when the address matches their account email —
+ *  that's what the row-level policy allows. */
+export async function requestCampusNotify(
+  campusId: string,
+  email: string,
+  userId?: string | null,
+  accountEmail?: string | null,
+) {
+  const addr = email.trim().toLowerCase();
+  const ownsAddress = !!userId && (accountEmail ?? "").trim().toLowerCase() === addr;
   const { error } = await supabase
     .from("campus_notify_signups")
-    .insert({ campus_id: campusId, email: email.trim().toLowerCase(), user_id: userId ?? null });
+    .insert({ campus_id: campusId, email: addr, user_id: ownsAddress ? userId : null });
   // Duplicate signup is a success from the student's point of view.
   if (error && error.code !== "23505") throw error;
 }

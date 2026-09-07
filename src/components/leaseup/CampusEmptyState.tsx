@@ -33,7 +33,7 @@ export function CampusEmptyState({ campus }: { campus: Campus }) {
     }
     setBusy(true);
     try {
-      await requestCampusNotify(campus.id, value, user?.id ?? null);
+      await requestCampusNotify(campus.id, value, user?.id ?? null, user?.email ?? null);
       setSent(true);
       toast.success(`We'll email you when ${campus.short_name ?? campus.name} goes live`);
     } catch {
