@@ -740,7 +740,13 @@ function LiveCounter() {
     (async () => {
       try {
         const today = new Date().toISOString().slice(0, 10);
-        const [{ data: exactData, error }, { data: broadData, error: broadError }, { count: msgCount }, lookers, savers] = await Promise.all([
+        const [
+          { data: exactData, error: exactErr },
+          { data: broadData, error: broadErr },
+          { count: msgCount },
+          lookers,
+          savers,
+        ] = await Promise.all([
           // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
           supabase
             .from("listings")
@@ -755,7 +761,7 @@ function LiveCounter() {
           supabase.from("saved_listings").select("user_id"),
         ]);
         if (cancelled) return;
-        if (error || !exactData || broadError || !broadData) { setStats(null); setLoading(false); return; }
+        if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
         const listings = exactData.length;
         const distinct = new Set<string>();
         for (const r of lookers.data ?? []) if (r?.user_id) distinct.add(`l:${r.user_id}`);
@@ -763,7 +769,11 @@ function LiveCounter() {
         const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
           listings,
-          campuses: new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
+          // Q192 — preserve the previously approved campus count; fall back to the
+          // exact-query set only if the broader read fails.
+          campuses: broadErr || !broadData
+            ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
+            : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
