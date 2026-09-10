@@ -417,7 +417,7 @@ export function BrowseMapView({
 
   return (
     <div>
-    <div ref={shellRef} className="relative flex h-[calc(100dvh-7rem)] w-full overflow-hidden rounded-none bg-surface md:rounded-2xl">
+    <div ref={shellRef} className="relative flex min-h-[60vh] w-full overflow-hidden rounded-none bg-surface md:h-[calc(100vh-220px)] md:min-h-[520px] md:rounded-2xl">
       <style>{`
         .lu-map-pin { display:inline-block; padding:6px 12px; border-radius:9999px;
           font-weight:600; font-size:13px; line-height:1;
