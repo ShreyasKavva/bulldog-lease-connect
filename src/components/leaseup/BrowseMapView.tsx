@@ -367,9 +367,14 @@ export function BrowseMapView({
     const map = mapRef.current;
     if (!ready || !L || !map) return;
     const raf = requestAnimationFrame(() => {
-      map.invalidateSize();
-      fitToResults(map, L);
+      try {
+        map.invalidateSize();
+        fitToResults(map, L);
+      } catch {
+        /* never fatal */
+      }
     });
+
     return () => cancelAnimationFrame(raf);
   }, [ready, listings, center?.[0], center?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
 
