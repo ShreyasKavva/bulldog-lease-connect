@@ -339,17 +339,23 @@ export function BrowseMapView({
     const L = Lref.current;
     const map = mapRef.current;
     if (!ready || !L || !map) return;
-    fitToResults(map, L);
+    const raf = requestAnimationFrame(() => {
+      map.invalidateSize();
+      fitToResults(map, L);
+    });
+    return () => cancelAnimationFrame(raf);
   }, [ready, listings, center?.[0], center?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
-   * Q191 — open on the listings, not the world. Fit the viewport to the
-   * current result set (padded, zoom capped at 14); fall back to the
-   * selected campus, then the default US center, when there are no pins.
+   * Q191/Q195 — open on the listings, not the world. Always re-measure the
+   * container first, then fit the viewport to the current result set
+   * (padded, zoom capped at 14). One listing centres at zoom 14; none falls
+   * back to the selected campus, then UGA.
    */
   function fitToResults(map: LType.Map, L: typeof LType) {
+    map.invalidateSize();
     let pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
-    if (pts.length > 0) {
+    if (pts.length >= 2) {
       // Trim far-flung outliers: if the set spans a continent, a literal
       // fitBounds leaves every pin unreadably piled. Fit the dense cluster
       // (points within a few degrees of the median) instead.
@@ -361,13 +367,17 @@ export function BrowseMapView({
         const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 3 && Math.abs(p[1] - medLng) <= 4);
         if (core.length > 0) pts = core;
       }
-      map.fitBounds(L.latLngBounds(pts).pad(0.15), { maxZoom: 14 });
+      if (pts.length === 1) map.setView(pts[0], 14);
+      else map.fitBounds(L.latLngBounds(pts), { padding: [48, 48], maxZoom: 14 });
+    } else if (pts.length === 1) {
+      map.setView(pts[0], 14);
     } else if (center) {
       map.setView(center, 14);
     } else {
-      map.setView(DEFAULT_CENTER, 4);
+      map.setView(UGA_FALLBACK, 13);
     }
   }
+
 
   function focus(l: Listing) {
     setActiveId(l.id);
