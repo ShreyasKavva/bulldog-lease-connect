@@ -217,11 +217,12 @@ export function BrowseMapView({
       const map = L.map(elRef.current, {
         zoomControl: false,
         attributionControl: true,
-      }).setView(mapCenter, zoom);
+      });
       L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       map.attributionControl.setPrefix("");
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
+      fitToResults(map, L);
       setReady(true);
     })();
     return () => {
@@ -312,11 +313,29 @@ export function BrowseMapView({
     });
   }, [listings, activeId, ready, mapCenter, campusCoords, viewed]);
 
-  /** Recenter whenever the visitor switches campus. */
+  /** Re-fit whenever the result set or campus changes. */
   useEffect(() => {
-    if (!ready || !center) return;
-    mapRef.current?.setView(center, 14);
-  }, [ready, center?.[0], center?.[1]]);
+    const L = Lref.current;
+    const map = mapRef.current;
+    if (!ready || !L || !map) return;
+    fitToResults(map, L);
+  }, [ready, listings, center?.[0], center?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Q191 — open on the listings, not the world. Fit the viewport to the
+   * current result set (padded, zoom capped at 14); fall back to the
+   * selected campus, then the default US center, when there are no pins.
+   */
+  function fitToResults(map: LType.Map, L: typeof LType) {
+    const pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
+    if (pts.length > 0) {
+      map.fitBounds(L.latLngBounds(pts).pad(0.15), { maxZoom: 14 });
+    } else if (center) {
+      map.setView(center, 14);
+    } else {
+      map.setView(DEFAULT_CENTER, 4);
+    }
+  }
 
   function focus(l: Listing) {
     setActiveId(l.id);
