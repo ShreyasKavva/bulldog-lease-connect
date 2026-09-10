@@ -726,13 +726,12 @@ function LatestFeedSection({
 /**
  * Q104 — live supply counter under the hero search.
  * Fire-and-forget: renders nothing while loading or on any failure.
+ *
+ * Q192 — exact active-listing count (same filters as /browse), no rounding;
+ * inquiries shown only when credible (>= 25), otherwise "Free to message".
+ * Campuses count stays on the broader active-listing set (do not touch it).
  */
 function LiveCounter() {
-  // Q169 — live counts from the DB; fall back to conservative defaults.
-  // Q171 — inquiries = distinct active students (looking posts + savers),
-  // with a floor so a sparse demo DB never shows "0".
-  const FALLBACK = { listings: 100, campuses: 16, inquiries: 300 };
-  const INQUIRY_FLOOR = 120;
   const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -740,26 +739,44 @@ function LiveCounter() {
     let cancelled = false;
     (async () => {
       try {
-        const [{ data, error }, { count: msgCount }, lookers, savers] = await Promise.all([
+        const today = new Date().toISOString().slice(0, 10);
+        const [
+          { data: exactData, error: exactErr },
+          { data: broadData, error: broadErr },
+          { count: msgCount },
+          lookers,
+          savers,
+        ] = await Promise.all([
+          // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
+          supabase
+            .from("listings")
+            .select("campus_id")
+            .eq("is_active", true)
+            .eq("status", "active")
+            .or(`available_to.is.null,available_to.gte.${today}`),
+          // Campuses: keep the original broader scope the product approved.
           supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
         ]);
         if (cancelled) return;
-        if (error || !data) { setStats(FALLBACK); setLoading(false); return; }
-        const listings = data.length;
+        if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
+        const listings = exactData.length;
         const distinct = new Set<string>();
         for (const r of lookers.data ?? []) if (r?.user_id) distinct.add(`l:${r.user_id}`);
         for (const r of savers.data ?? []) if (r?.user_id) distinct.add(`s:${r.user_id}`);
         const rawInquiries = (msgCount ?? 0) + distinct.size;
-        const inquiries = rawInquiries > 20 ? Math.floor(rawInquiries / 10) * 10 : rawInquiries;
         setStats({
-          listings: listings > 20 ? Math.floor(listings / 10) * 10 : listings,
-          campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
-          inquiries: inquiries > 0 ? inquiries : INQUIRY_FLOOR,
+          listings,
+          // Q192 — preserve the previously approved campus count; fall back to the
+          // exact-query set only if the broader read fails.
+          campuses: broadErr || !broadData
+            ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
+            : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
+          inquiries: rawInquiries,
         });
-      } catch { if (!cancelled) setStats(FALLBACK); }
+      } catch { if (!cancelled) setStats(null); }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -778,13 +795,15 @@ function LiveCounter() {
     );
   }
 
+  if (!stats || stats.listings === 0) return null;
 
-  if (!stats || (stats.listings === 0 && stats.campuses === 0 && stats.inquiries === 0)) return null;
-
-  const blocks = [
-    { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted", plus: true },
-    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses", plus: false },
-    { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries", plus: true },
+  const showInquiryNumber = stats.inquiries >= 25;
+  const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
+    { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
+    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses" },
+    showInquiryNumber
+      ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
+      : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
   ];
 
   return (
@@ -793,7 +812,12 @@ function LiveCounter() {
         {blocks.map((b) => (
           <div key={b.label} className="flex-1 px-2 text-center">
             <p className="text-2xl font-bold text-indigo-700 dark:text-primary">
-              {b.emoji} <CountUp value={b.value} duration={1500} />{b.plus && b.value > 0 ? "+" : ""}
+              {b.emoji}{" "}
+              {b.text ? (
+                b.text
+              ) : (
+                <CountUp value={b.value ?? 0} duration={1500} />
+              )}
             </p>
             <p className="mt-0.5 text-sm text-gray-500 dark:text-muted-foreground">{b.label}</p>
           </div>
