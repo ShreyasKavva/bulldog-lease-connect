@@ -729,6 +729,7 @@ function LatestFeedSection({
  *
  * Q192 — exact active-listing count (same filters as /browse), no rounding;
  * inquiries shown only when credible (>= 25), otherwise "Free to message".
+ * Campuses count stays on the broader active-listing set (do not touch it).
  */
 function LiveCounter() {
   const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
@@ -739,7 +740,7 @@ function LiveCounter() {
     (async () => {
       try {
         const today = new Date().toISOString().slice(0, 10);
-        const [{ data, error }, { count: msgCount }, lookers, savers] = await Promise.all([
+        const [{ data: exactData, error }, { data: broadData, error: broadError }, { count: msgCount }, lookers, savers] = await Promise.all([
           // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
           supabase
             .from("listings")
@@ -747,20 +748,22 @@ function LiveCounter() {
             .eq("is_active", true)
             .eq("status", "active")
             .or(`available_to.is.null,available_to.gte.${today}`),
+          // Campuses: keep the original broader scope the product approved.
+          supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
         ]);
         if (cancelled) return;
-        if (error || !data) { setStats(null); setLoading(false); return; }
-        const listings = data.length;
+        if (error || !exactData || broadError || !broadData) { setStats(null); setLoading(false); return; }
+        const listings = exactData.length;
         const distinct = new Set<string>();
         for (const r of lookers.data ?? []) if (r?.user_id) distinct.add(`l:${r.user_id}`);
         for (const r of savers.data ?? []) if (r?.user_id) distinct.add(`s:${r.user_id}`);
         const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
           listings,
-          campuses: new Set(data.map((r) => r?.campus_id).filter(Boolean)).size,
+          campuses: new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
@@ -790,7 +793,7 @@ function LiveCounter() {
     { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses" },
     showInquiryNumber
       ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
-      : { emoji: "\ud83d\udd17", text: "Free", label: "to message a poster" },
+      : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
   ];
 
   return (
