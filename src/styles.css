@@ -118,6 +118,18 @@
   /* Leaflet attribution z-index fix */
   .leaflet-container { font-family: inherit; }
 
+  /* Q193 — Tailwind v4 preflight dropped the v3 button cursor:pointer reset. */
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"] {
+    cursor: pointer;
+  }
+
   /* Q88 — Airbnb-style form controls: gray borders, no blue focus ring. */
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
   textarea,
