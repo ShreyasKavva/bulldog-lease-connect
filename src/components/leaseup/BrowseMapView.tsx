@@ -27,6 +27,10 @@ import { posterName } from "@/lib/leaseup/display-name";
 /** Fallback only — the real center comes from the selected campus (Q177). */
 const DEFAULT_CENTER: [number, number] = [39.8283, -98.5795];
 
+/** Home campus — UGA, Athens GA. Used when there are no plottable listings. */
+const UGA_FALLBACK: [number, number] = [33.948, -83.3773];
+
+
 /** Stable pseudo-random hash from the listing id (no Math.random → no SSR drift). */
 function hashId(id: string): number {
   let h = 2166136261;
