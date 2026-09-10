@@ -209,7 +209,10 @@ export function BrowseMapView({
   const active = useMemo(() => listings.find((l) => l.id === activeId) ?? null, [listings, activeId]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     let cancelled = false;
+    let ro: ResizeObserver | null = null;
+    let raf = 0;
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
@@ -222,15 +225,33 @@ export function BrowseMapView({
       map.attributionControl.setPrefix("");
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
-      fitToResults(map, L);
-      setReady(true);
+
+      // The container can still be laying out on first paint; measure on the
+      // next frame, then fit. Without this Leaflet computes a 0x0 viewport
+      // and falls back to world zoom 0.
+      raf = requestAnimationFrame(() => {
+        map.invalidateSize();
+        fitToResults(map, L);
+        setReady(true);
+      });
+
+      // Any later resize (view toggle, sheet, orientation) re-measures.
+      if (typeof ResizeObserver !== "undefined" && elRef.current) {
+        ro = new ResizeObserver(() => {
+          map.invalidateSize();
+        });
+        ro.observe(elRef.current);
+      }
     })();
     return () => {
       cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      ro?.disconnect();
       mapRef.current?.remove();
       mapRef.current = null;
     };
   }, []);
+
 
   // Campus anchor label (one per map)
   useEffect(() => {
