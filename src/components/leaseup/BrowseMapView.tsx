@@ -189,7 +189,7 @@ export function BrowseMapView({
     () => center ?? DEFAULT_CENTER,
     [center?.[0], center?.[1]],
   );
-  const zoom = center ? 14 : 4;
+  
   const elRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LType.Map | null>(null);
