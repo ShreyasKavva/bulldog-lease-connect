@@ -222,10 +222,16 @@ export function BrowseMapView({
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
       Lref.current = L;
+      // A view MUST exist before any layer is added — Leaflet throws
+      // "Set map center and zoom first." otherwise, which aborted the rest of
+      // this effect in the production build (no tiles, no attribution, no pins).
       const map = L.map(elRef.current, {
         zoomControl: false,
         attributionControl: true,
+        center: center ?? UGA_FALLBACK,
+        zoom: 13,
       });
+      // Basemap first, unconditionally — it must never depend on listings data.
       L.tileLayer(BASEMAP_URL, { ...BASEMAP_OPTIONS }).addTo(map);
       map.attributionControl.setPrefix("");
       map.on("click", () => setActiveId(null));
@@ -236,11 +242,16 @@ export function BrowseMapView({
         if (cancelled || mapRef.current !== map || !container) return;
         if (container.clientWidth < 1 || container.clientHeight < 1) return;
 
-        map.invalidateSize();
-        if (!fitToResults(map, L)) return;
+        try {
+          map.invalidateSize();
+          fitToResults(map, L);
+        } catch {
+          /* fitting must never block the layers below */
+        }
         viewportInitialized = true;
         setReady(true);
       };
+
 
       // The container can still be laying out on first paint; measure on the
       // next frame, then fit. Without this Leaflet computes a 0x0 viewport
