@@ -218,6 +218,7 @@ export function BrowseMapView({
     let viewportInitialized = false;
     let ro: ResizeObserver | null = null;
     let raf = 0;
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
@@ -281,6 +282,7 @@ export function BrowseMapView({
     return () => {
       cancelled = true;
       if (raf) cancelAnimationFrame(raf);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
       ro?.disconnect();
       mapRef.current?.remove();
       mapRef.current = null;
