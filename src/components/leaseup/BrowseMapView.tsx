@@ -329,7 +329,9 @@ export function BrowseMapView({
   function fitToResults(map: LType.Map, L: typeof LType) {
     const pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
     if (pts.length > 0) {
-      map.fitBounds(L.latLngBounds(pts).pad(0.15), { maxZoom: 14 });
+      const b = L.latLngBounds(pts).pad(0.15);
+      map.fitBounds(b, { maxZoom: 14 });
+      console.log("[q191] fit", pts.length, JSON.stringify([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]), "->zoom", map.getZoom(), "size", JSON.stringify(map.getSize()));
     } else if (center) {
       map.setView(center, 14);
     } else {
