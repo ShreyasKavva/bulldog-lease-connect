@@ -215,6 +215,7 @@ export function BrowseMapView({
   useEffect(() => {
     if (typeof window === "undefined") return;
     let cancelled = false;
+    let viewportInitialized = false;
     let ro: ResizeObserver | null = null;
     let raf = 0;
     (async () => {
@@ -230,19 +231,30 @@ export function BrowseMapView({
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
 
+      const initializeViewport = () => {
+        const container = elRef.current;
+        if (cancelled || mapRef.current !== map || !container) return;
+        if (container.clientWidth < 1 || container.clientHeight < 1) return;
+
+        map.invalidateSize();
+        if (!fitToResults(map, L)) return;
+        viewportInitialized = true;
+        setReady(true);
+      };
+
       // The container can still be laying out on first paint; measure on the
       // next frame, then fit. Without this Leaflet computes a 0x0 viewport
       // and falls back to world zoom 0.
-      raf = requestAnimationFrame(() => {
-        map.invalidateSize();
-        fitToResults(map, L);
-        setReady(true);
-      });
+      raf = requestAnimationFrame(initializeViewport);
 
       // Any later resize (view toggle, sheet, orientation) re-measures.
       if (typeof ResizeObserver !== "undefined" && elRef.current) {
         ro = new ResizeObserver(() => {
-          map.invalidateSize();
+          const container = elRef.current;
+          if (cancelled || mapRef.current !== map || !container) return;
+          if (container.clientWidth < 1 || container.clientHeight < 1) return;
+          if (!viewportInitialized) initializeViewport();
+          else map.invalidateSize();
         });
         ro.observe(elRef.current);
       }
@@ -282,7 +294,7 @@ export function BrowseMapView({
   useEffect(() => {
     const L = Lref.current;
     const map = mapRef.current;
-    if (!L || !map) return;
+    if (!ready || !L || !map) return;
     layerRef.current?.remove();
     const layer = L.layerGroup().addTo(map);
     layerRef.current = layer;
@@ -357,8 +369,14 @@ export function BrowseMapView({
    * back to the selected campus, then UGA.
    */
   function fitToResults(map: LType.Map, L: typeof LType) {
+    if (typeof window === "undefined" || mapRef.current !== map) return false;
+    const container = elRef.current;
+    if (!container || container.clientWidth < 1 || container.clientHeight < 1) return false;
+
     map.invalidateSize();
-    let pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
+    let pts = listingsRef.current
+      .map((l) => coordsFor(l, mapCenter, campusCoords))
+      .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180);
     if (pts.length >= 2) {
       // Trim far-flung outliers: if the set spans a continent, a literal
       // fitBounds leaves every pin unreadably piled. Fit the dense cluster
@@ -380,6 +398,7 @@ export function BrowseMapView({
     } else {
       map.setView(UGA_FALLBACK, 13);
     }
+    return true;
   }
 
 
