@@ -257,6 +257,14 @@ export function BrowseMapView({
       // next frame, then fit. Without this Leaflet computes a 0x0 viewport
       // and falls back to world zoom 0.
       raf = requestAnimationFrame(initializeViewport);
+      // Safety net: the map already has a valid view, so pins must attach even
+      // if the frame callback is throttled (background tab, slow prod hydrate).
+      fallbackTimer = setTimeout(() => {
+        if (cancelled || mapRef.current !== map || viewportInitialized) return;
+        viewportInitialized = true;
+        setReady(true);
+      }, 600);
+
 
       // Any later resize (view toggle, sheet, orientation) re-measures.
       if (typeof ResizeObserver !== "undefined" && elRef.current) {
