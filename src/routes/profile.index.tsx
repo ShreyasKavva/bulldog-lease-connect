@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { GraduationCap } from "lucide-react";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
       { title: "Your profile — LeaseUp" },
