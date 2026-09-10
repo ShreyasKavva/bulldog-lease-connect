@@ -27,6 +27,10 @@ import { posterName } from "@/lib/leaseup/display-name";
 /** Fallback only — the real center comes from the selected campus (Q177). */
 const DEFAULT_CENTER: [number, number] = [39.8283, -98.5795];
 
+/** Home campus — UGA, Athens GA. Used when there are no plottable listings. */
+const UGA_FALLBACK: [number, number] = [33.948, -83.3773];
+
+
 /** Stable pseudo-random hash from the listing id (no Math.random → no SSR drift). */
 function hashId(id: string): number {
   let h = 2166136261;
@@ -209,7 +213,10 @@ export function BrowseMapView({
   const active = useMemo(() => listings.find((l) => l.id === activeId) ?? null, [listings, activeId]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     let cancelled = false;
+    let ro: ResizeObserver | null = null;
+    let raf = 0;
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !elRef.current || mapRef.current) return;
@@ -222,15 +229,33 @@ export function BrowseMapView({
       map.attributionControl.setPrefix("");
       map.on("click", () => setActiveId(null));
       mapRef.current = map;
-      fitToResults(map, L);
-      setReady(true);
+
+      // The container can still be laying out on first paint; measure on the
+      // next frame, then fit. Without this Leaflet computes a 0x0 viewport
+      // and falls back to world zoom 0.
+      raf = requestAnimationFrame(() => {
+        map.invalidateSize();
+        fitToResults(map, L);
+        setReady(true);
+      });
+
+      // Any later resize (view toggle, sheet, orientation) re-measures.
+      if (typeof ResizeObserver !== "undefined" && elRef.current) {
+        ro = new ResizeObserver(() => {
+          map.invalidateSize();
+        });
+        ro.observe(elRef.current);
+      }
     })();
     return () => {
       cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      ro?.disconnect();
       mapRef.current?.remove();
       mapRef.current = null;
     };
   }, []);
+
 
   // Campus anchor label (one per map)
   useEffect(() => {
@@ -318,17 +343,23 @@ export function BrowseMapView({
     const L = Lref.current;
     const map = mapRef.current;
     if (!ready || !L || !map) return;
-    fitToResults(map, L);
+    const raf = requestAnimationFrame(() => {
+      map.invalidateSize();
+      fitToResults(map, L);
+    });
+    return () => cancelAnimationFrame(raf);
   }, [ready, listings, center?.[0], center?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
-   * Q191 — open on the listings, not the world. Fit the viewport to the
-   * current result set (padded, zoom capped at 14); fall back to the
-   * selected campus, then the default US center, when there are no pins.
+   * Q191/Q195 — open on the listings, not the world. Always re-measure the
+   * container first, then fit the viewport to the current result set
+   * (padded, zoom capped at 14). One listing centres at zoom 14; none falls
+   * back to the selected campus, then UGA.
    */
   function fitToResults(map: LType.Map, L: typeof LType) {
+    map.invalidateSize();
     let pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
-    if (pts.length > 0) {
+    if (pts.length >= 2) {
       // Trim far-flung outliers: if the set spans a continent, a literal
       // fitBounds leaves every pin unreadably piled. Fit the dense cluster
       // (points within a few degrees of the median) instead.
@@ -340,13 +371,17 @@ export function BrowseMapView({
         const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 3 && Math.abs(p[1] - medLng) <= 4);
         if (core.length > 0) pts = core;
       }
-      map.fitBounds(L.latLngBounds(pts).pad(0.15), { maxZoom: 14 });
+      if (pts.length === 1) map.setView(pts[0], 14);
+      else map.fitBounds(L.latLngBounds(pts), { padding: [48, 48], maxZoom: 14 });
+    } else if (pts.length === 1) {
+      map.setView(pts[0], 14);
     } else if (center) {
       map.setView(center, 14);
     } else {
-      map.setView(DEFAULT_CENTER, 4);
+      map.setView(UGA_FALLBACK, 13);
     }
   }
+
 
   function focus(l: Listing) {
     setActiveId(l.id);
@@ -382,7 +417,7 @@ export function BrowseMapView({
 
   return (
     <div>
-    <div ref={shellRef} className="relative flex h-[calc(100dvh-7rem)] w-full overflow-hidden rounded-none bg-surface md:rounded-2xl">
+    <div ref={shellRef} className="relative flex min-h-[60vh] w-full overflow-hidden rounded-none bg-surface md:h-[calc(100vh-220px)] md:min-h-[520px] md:rounded-2xl">
       <style>{`
         .lu-map-pin { display:inline-block; padding:6px 12px; border-radius:9999px;
           font-weight:600; font-size:13px; line-height:1;
@@ -410,9 +445,10 @@ export function BrowseMapView({
         {list}
       </aside>
 
-      {/* Map */}
-      <div className="relative min-w-0 flex-1">
-        <div ref={elRef} className="absolute inset-0 z-0" />
+      {/* Map — explicit non-zero box so Leaflet never measures 0x0. */}
+      <div className="relative min-h-[60vh] w-full min-w-0 flex-1 md:h-full md:min-h-[520px]">
+        <div ref={elRef} className="absolute inset-0 z-0 h-full w-full" />
+
 
         {/* Custom top-right controls */}
         <div className="absolute right-3 top-3 z-[600] flex flex-col items-end gap-2">
