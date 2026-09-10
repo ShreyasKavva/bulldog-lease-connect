@@ -327,11 +327,20 @@ export function BrowseMapView({
    * selected campus, then the default US center, when there are no pins.
    */
   function fitToResults(map: LType.Map, L: typeof LType) {
-    const pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
+    let pts = listingsRef.current.map((l) => coordsFor(l, mapCenter, campusCoords));
     if (pts.length > 0) {
-      const b = L.latLngBounds(pts).pad(0.15);
-      map.fitBounds(b, { maxZoom: 14 });
-      console.log("[q191] fit", pts.length, JSON.stringify([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]), "->zoom", map.getZoom(), "size", JSON.stringify(map.getSize()));
+      // Trim far-flung outliers: if the set spans a continent, a literal
+      // fitBounds leaves every pin unreadably piled. Fit the dense cluster
+      // (points within a few degrees of the median) instead.
+      const lats = pts.map((p) => p[0]).sort((a, b) => a - b);
+      const lngs = pts.map((p) => p[1]).sort((a, b) => a - b);
+      if (lats[lats.length - 1] - lats[0] > 6) {
+        const medLat = lats[Math.floor(lats.length / 2)];
+        const medLng = lngs[Math.floor(lngs.length / 2)];
+        const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 3 && Math.abs(p[1] - medLng) <= 4);
+        if (core.length > 0) pts = core;
+      }
+      map.fitBounds(L.latLngBounds(pts).pad(0.15), { maxZoom: 14 });
     } else if (center) {
       map.setView(center, 14);
     } else {
