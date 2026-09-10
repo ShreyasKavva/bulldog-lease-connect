@@ -445,9 +445,10 @@ export function BrowseMapView({
         {list}
       </aside>
 
-      {/* Map */}
-      <div className="relative min-w-0 flex-1">
-        <div ref={elRef} className="absolute inset-0 z-0" />
+      {/* Map — explicit non-zero box so Leaflet never measures 0x0. */}
+      <div className="relative min-h-[60vh] w-full min-w-0 flex-1 md:h-full md:min-h-[520px]">
+        <div ref={elRef} className="absolute inset-0 z-0 h-full w-full" />
+
 
         {/* Custom top-right controls */}
         <div className="absolute right-3 top-3 z-[600] flex flex-col items-end gap-2">
