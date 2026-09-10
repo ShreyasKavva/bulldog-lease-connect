@@ -41,8 +41,8 @@ export const Route = createFileRoute("/profile/$userId")({
     const name = loaderData?.displayName ?? "Student";
     const campus = loaderData?.campusName ?? "campus";
     const campusAbbrev = loaderData?.campusAbbrev ?? "";
-    const title = campusAbbrev
-      ? `${name} — Verified ${campusAbbrev} Student | LeaseUp`
+    const title = loaderData?.campusName
+      ? `${name} — ${loaderData.campusName} | LeaseUp`
       : `${name} — Student on LeaseUp`;
     const description = `View ${name}'s subleases and roommate profile at ${campus} on LeaseUp.`;
     return {

@@ -14,7 +14,6 @@ import { Route as ToursRouteImport } from './routes/tours'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedAlertsRouteImport } from './routes/saved-alerts'
 import { Route as RoommatesRouteImport } from './routes/roommates'
-import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PostRouteImport } from './routes/post'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -35,6 +34,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SavedIndexRouteImport } from './routes/saved.index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
 import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
@@ -82,11 +82,6 @@ const SavedAlertsRoute = SavedAlertsRouteImport.update({
 const RoommatesRoute = RoommatesRouteImport.update({
   id: '/roommates',
   path: '/roommates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostRoute = PostRouteImport.update({
@@ -189,6 +184,11 @@ const SavedIndexRoute = SavedIndexRouteImport.update({
   path: '/saved/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MessagesIndexRoute = MessagesIndexRouteImport.update({
   id: '/messages/',
   path: '/messages/',
@@ -210,14 +210,14 @@ const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   getParentRoute: () => RoommatesRoute,
 } as any)
 const ProfileEditRoute = ProfileEditRouteImport.update({
-  id: '/edit',
-  path: '/edit',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/edit',
+  path: '/profile/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
-  id: '/$userId',
-  path: '/$userId',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/$userId',
+  path: '/profile/$userId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesConversationIdRoute = MessagesConversationIdRouteImport.update({
   id: '/messages/$conversationId',
@@ -330,7 +330,6 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -348,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages/': typeof MessagesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id/edit': typeof ListingIdEditRoute
@@ -381,7 +381,6 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -399,6 +398,7 @@ export interface FileRoutesByTo {
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages': typeof MessagesIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/saved': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id/edit': typeof ListingIdEditRoute
@@ -433,7 +433,6 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -451,6 +450,7 @@ export interface FileRoutesById {
   '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages/': typeof MessagesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/saved/': typeof SavedIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id_/edit': typeof ListingIdEditRoute
@@ -486,7 +486,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
-    | '/profile'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -504,6 +503,7 @@ export interface FileRouteTypes {
     | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages/'
+    | '/profile/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/listing/$id/edit'
@@ -537,7 +537,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
-    | '/profile'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -555,6 +554,7 @@ export interface FileRouteTypes {
     | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages'
+    | '/profile'
     | '/saved'
     | '/api/public/stripe-webhook'
     | '/listing/$id/edit'
@@ -588,7 +588,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
-    | '/profile'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -606,6 +605,7 @@ export interface FileRouteTypes {
     | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages/'
+    | '/profile/'
     | '/saved/'
     | '/api/public/stripe-webhook'
     | '/listing/$id_/edit'
@@ -640,7 +640,6 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PostRoute: typeof PostRouteWithChildren
-  ProfileRoute: typeof ProfileRouteWithChildren
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedAlertsRoute: typeof SavedAlertsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -652,9 +651,12 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ListingIdRoute: typeof ListingIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
+  ProfileUserIdRoute: typeof ProfileUserIdRoute
+  ProfileEditRoute: typeof ProfileEditRoute
   SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
   SavedIndexRoute: typeof SavedIndexRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ListingIdEditRoute: typeof ListingIdEditRoute
@@ -702,13 +704,6 @@ declare module '@tanstack/react-router' {
       path: '/roommates'
       fullPath: '/roommates'
       preLoaderRoute: typeof RoommatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post': {
@@ -851,6 +846,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/messages/': {
       id: '/messages/'
       path: '/messages'
@@ -881,17 +883,17 @@ declare module '@tanstack/react-router' {
     }
     '/profile/edit': {
       id: '/profile/edit'
-      path: '/edit'
+      path: '/profile/edit'
       fullPath: '/profile/edit'
       preLoaderRoute: typeof ProfileEditRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/$userId': {
       id: '/profile/$userId'
-      path: '/$userId'
+      path: '/profile/$userId'
       fullPath: '/profile/$userId'
       preLoaderRoute: typeof ProfileUserIdRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/messages/$conversationId': {
       id: '/messages/$conversationId'
@@ -1037,19 +1039,6 @@ const PostRouteChildren: PostRouteChildren = {
 
 const PostRouteWithChildren = PostRoute._addFileChildren(PostRouteChildren)
 
-interface ProfileRouteChildren {
-  ProfileUserIdRoute: typeof ProfileUserIdRoute
-  ProfileEditRoute: typeof ProfileEditRoute
-}
-
-const ProfileRouteChildren: ProfileRouteChildren = {
-  ProfileUserIdRoute: ProfileUserIdRoute,
-  ProfileEditRoute: ProfileEditRoute,
-}
-
-const ProfileRouteWithChildren =
-  ProfileRoute._addFileChildren(ProfileRouteChildren)
-
 interface RoommatesRouteChildren {
   RoommatesCreateRoute: typeof RoommatesCreateRoute
 }
@@ -1082,7 +1071,6 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PostRoute: PostRouteWithChildren,
-  ProfileRoute: ProfileRouteWithChildren,
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedAlertsRoute: SavedAlertsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -1094,9 +1082,12 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ListingIdRoute: ListingIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
+  ProfileUserIdRoute: ProfileUserIdRoute,
+  ProfileEditRoute: ProfileEditRoute,
   SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
   SavedIndexRoute: SavedIndexRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ListingIdEditRoute: ListingIdEditRoute,
