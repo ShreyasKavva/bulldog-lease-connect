@@ -40,7 +40,7 @@ export const Route = createFileRoute("/profile/$userId")({
   head: ({ loaderData }) => {
     const name = loaderData?.displayName ?? "Student";
     const campus = loaderData?.campusName ?? "campus";
-    const campusAbbrev = loaderData?.campusAbbrev ?? "";
+    
     const title = loaderData?.campusName
       ? `${name} — ${loaderData.campusName} | LeaseUp`
       : `${name} — Student on LeaseUp`;
