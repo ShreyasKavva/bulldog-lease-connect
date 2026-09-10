@@ -210,9 +210,9 @@ const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   getParentRoute: () => RoommatesRoute,
 } as any)
 const ProfileEditRoute = ProfileEditRouteImport.update({
-  id: '/profile/edit',
-  path: '/profile/edit',
-  getParentRoute: () => rootRouteImport,
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ProfileRoute,
 } as any)
 const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
   id: '/profile/$userId',
@@ -652,7 +652,6 @@ export interface RootRouteChildren {
   ListingIdRoute: typeof ListingIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ProfileUserIdRoute: typeof ProfileUserIdRoute
-  ProfileEditRoute: typeof ProfileEditRoute
   SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
@@ -883,10 +882,10 @@ declare module '@tanstack/react-router' {
     }
     '/profile/edit': {
       id: '/profile/edit'
-      path: '/profile/edit'
+      path: '/edit'
       fullPath: '/profile/edit'
       preLoaderRoute: typeof ProfileEditRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ProfileRoute
     }
     '/profile/$userId': {
       id: '/profile/$userId'
@@ -1083,7 +1082,6 @@ const rootRouteChildren: RootRouteChildren = {
   ListingIdRoute: ListingIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,
-  ProfileEditRoute: ProfileEditRoute,
   SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
   MessagesIndexRoute: MessagesIndexRoute,
