@@ -57,11 +57,14 @@ async function fetchHostAvatar(path: string | null | undefined) {
 }
 
 async function fetchActiveListings(userId: string): Promise<Listing[]> {
+  const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("listings")
     .select("*")
     .eq("user_id", userId)
     .eq("is_active", true)
+    .eq("status", "active")
+    .or(`available_to.is.null,available_to.gte.${today}`)
     .order("created_at", { ascending: false });
   if (error) throw error;
   const rows = (data ?? []) as any[];
@@ -120,7 +123,20 @@ export function HostProfile({ userId }: { userId: string }) {
     return <div className="mx-auto max-w-5xl px-4 py-20 text-center text-sm text-muted-foreground">Loading…</div>;
   }
   if (!profile) {
-    return <div className="mx-auto max-w-5xl px-4 py-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold">We couldn't find that student</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This profile may have been removed, or the link is broken.
+        </p>
+        <Link
+          to="/browse"
+          className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+        >
+          Browse subleases →
+        </Link>
+      </div>
+    );
   }
 
   const name = profileDisplayName(profile);
