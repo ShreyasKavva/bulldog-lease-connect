@@ -761,6 +761,8 @@ function LiveCounter() {
           supabase.from("saved_listings").select("user_id"),
         ]);
         if (cancelled) return;
+        // eslint-disable-next-line no-console
+        console.log("LiveCounter debug", { exactErr, exactLen: exactData?.length, broadErr, broadLen: broadData?.length, msgCount, lookers: lookers.data?.length, savers: savers.data?.length });
         if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
         const listings = exactData.length;
         const distinct = new Set<string>();
@@ -776,7 +778,7 @@ function LiveCounter() {
             : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
-      } catch { if (!cancelled) setStats(null); }
+      } catch (e) { console.error("LiveCounter error", e); if (!cancelled) setStats(null); }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
