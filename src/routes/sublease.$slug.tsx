@@ -199,21 +199,41 @@ function CampusPage() {
             Find subleases posted by verified {campus.short_name} students.
           </p>
 
-          {/* Live stats bar */}
-          <dl className="mt-5 grid grid-cols-3 gap-3 max-w-2xl">
-            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Listed this semester</dt>
-              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.active}</dd>
-            </div>
-            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students helped</dt>
-              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.completed}</dd>
-            </div>
-            <div className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center">
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Students looking</dt>
-              <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{stats.looking}</dd>
-            </div>
-          </dl>
+          {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
+          {(() => {
+            const tiles = [
+              { label: "Listed this semester", value: stats.active },
+              { label: "Students helped", value: stats.completed },
+              { label: "Students looking", value: stats.looking },
+            ].filter((t) => typeof t.value === "number" && t.value > 0);
+            if (tiles.length === 0) {
+              return (
+                <p className="mt-5 text-sm text-muted-foreground">
+                  Be the first to list at {campus.short_name}.
+                </p>
+              );
+            }
+            return (
+              <dl
+                className={cn(
+                  "mt-5 grid gap-3 max-w-2xl",
+                  tiles.length === 1 ? "grid-cols-1" : tiles.length === 2 ? "grid-cols-2" : "grid-cols-3",
+                )}
+              >
+                {tiles.map((t) => (
+                  <div
+                    key={t.label}
+                    className="rounded-xl border border-border bg-background/50 px-3 py-3 text-center"
+                  >
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t.label}
+                    </dt>
+                    <dd className="mt-0.5 text-xl md:text-2xl font-black text-primary">{t.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            );
+          })()}
 
           <div className="mt-5 flex flex-wrap gap-2">
             <button onClick={handlePost} className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
