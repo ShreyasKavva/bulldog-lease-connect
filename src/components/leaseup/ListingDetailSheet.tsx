@@ -97,13 +97,7 @@ export function ListingDetailSheet({
     const prevDesc =
       document.head.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ?? "";
 
-    if (!open || !listing) {
-      document.title = DEFAULT_TITLE;
-      setMeta('meta[name="description"]', "name", "description", DEFAULT_TITLE);
-      setMeta('meta[property="og:title"]', "property", "og:title", DEFAULT_TITLE);
-      setMeta('meta[property="og:description"]', "property", "og:description", DEFAULT_TITLE);
-      return;
-    }
+    if (!open || !listing) return;
 
     const bedLabel = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = listing.area ?? "";
