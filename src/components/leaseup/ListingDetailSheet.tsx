@@ -83,7 +83,8 @@ export function ListingDetailSheet({
   /** Q141 — dynamic tab title + share meta while the slide-out is open. */
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const DEFAULT_TITLE = "LeaseUp — Student Subleases Near Your Campus";
+    if (!open || !listing) return;
+
     const setMeta = (sel: string, attr: string, name: string, content: string) => {
       let el = document.head.querySelector<HTMLMetaElement>(sel);
       if (!el) {
@@ -96,8 +97,10 @@ export function ListingDetailSheet({
     const prevTitle = document.title;
     const prevDesc =
       document.head.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ?? "";
-
-    if (!open || !listing) return;
+    const prevOgTitle =
+      document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content ?? "";
+    const prevOgDesc =
+      document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.content ?? "";
 
     const bedLabel = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = listing.area ?? "";
@@ -115,10 +118,10 @@ export function ListingDetailSheet({
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
 
     return () => {
-      document.title = prevTitle || DEFAULT_TITLE;
-      setMeta('meta[name="description"]', "name", "description", prevDesc || DEFAULT_TITLE);
-      setMeta('meta[property="og:title"]', "property", "og:title", prevTitle || DEFAULT_TITLE);
-      setMeta('meta[property="og:description"]', "property", "og:description", prevDesc || DEFAULT_TITLE);
+      if (prevTitle) document.title = prevTitle;
+      if (prevDesc) setMeta('meta[name="description"]', "name", "description", prevDesc);
+      if (prevOgTitle) setMeta('meta[property="og:title"]', "property", "og:title", prevOgTitle);
+      if (prevOgDesc) setMeta('meta[property="og:description"]', "property", "og:description", prevOgDesc);
     };
   }, [open, listing]);
 
