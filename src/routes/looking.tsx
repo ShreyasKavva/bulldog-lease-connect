@@ -706,15 +706,15 @@ function LookingForCard({
               type="button"
               onClick={onUpvote}
               disabled={upvoted}
-              aria-label="Upvote this post"
-              title="Upvote this post"
+              aria-label={upvotes > 0 ? `Upvote this post, ${upvotes} upvotes` : "Upvote this post"}
+              title={upvotes > 0 ? `Upvote this post, ${upvotes} upvotes` : "Upvote this post"}
               className={`ml-auto inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
                 upvoted
                   ? "cursor-default border-border bg-background text-muted-foreground"
                   : "border-border text-foreground hover:border-primary hover:text-primary"
               }`}
             >
-              Upvote {upvotes}
+              Upvote{upvotes > 0 ? ` ${upvotes}` : ""}
             </button>
             {/* Q157 — owner bump (once per 24h) */}
             {isMine && (
