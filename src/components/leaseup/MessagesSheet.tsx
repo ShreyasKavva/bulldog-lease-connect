@@ -25,6 +25,7 @@ import { haptic } from "@/lib/leaseup/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchConversations,
+  fetchConversationById,
   fetchMessages,
   sendMessage,
   setConversationFlag,
@@ -96,13 +97,23 @@ export function MessagesSheet({
 
   useEffect(() => { if (initialConversationId) setActiveId(initialConversationId); }, [initialConversationId]);
 
-  const { data: conversations } = useQuery({
+  const { data: conversations, isLoading: convsLoading } = useQuery({
     queryKey: ["conversations", user?.id],
     queryFn: () => fetchConversations(user!.id),
     enabled: !!user?.id && open,
   });
 
-  const active = conversations?.find(c => c.id === activeId) ?? null;
+  // The list query excludes zero-message conversations, but a freshly created
+  // thread (opened straight from "Message" on a listing) must still open.
+  // Fetch it directly when it's missing from the list.
+  const inList = !!conversations?.some((c) => c.id === activeId);
+  const { data: activeFallback } = useQuery({
+    queryKey: ["conversation", activeId],
+    queryFn: () => fetchConversationById(user!.id, activeId!),
+    enabled: !!user?.id && !!activeId && !convsLoading && !inList,
+  });
+
+  const active = conversations?.find(c => c.id === activeId) ?? activeFallback ?? null;
   const { data: messages } = useQuery({
     queryKey: ["messages", activeId],
     queryFn: () => fetchMessages(activeId!),
