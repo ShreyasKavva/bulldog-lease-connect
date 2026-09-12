@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useReactionPicker } from "./useReactionPicker";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { PriceLabelBadge } from "./PriceLabelBadge";
+import { hasSchoolEmail, SCHOOL_EMAIL_LINE } from "@/lib/leaseup/school-email";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -214,7 +215,7 @@ function ScrollCard({
       const opts: string[] = [];
       if ((l.view_count ?? 0) > 0) opts.push(`👀 ${l.view_count} students viewed this`);
       if (fire) opts.push(`🔥 Priced below campus average`);
-      if (l.profile?.verified_email) opts.push(`✓ Verified .edu student`);
+      if (hasSchoolEmail(l.profile)) opts.push(`✓ ${SCHOOL_EMAIL_LINE}`);
       if (opts.length === 0) opts.push(`📍 ${l.area ?? "Near campus"}`);
       setPulseText(opts[Math.floor(Math.random() * opts.length)]);
       const t2 = setTimeout(() => setPulseText(null), 3200);

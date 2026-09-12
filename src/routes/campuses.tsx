@@ -20,13 +20,13 @@ export const Route = createFileRoute("/campuses")({
       {
         name: "description",
         content:
-          "Browse verified student subleases at 33 universities — UGA, Georgia Tech, UF, Michigan, Ohio State, and more. Free listing, verified .edu students.",
+          "Browse verified student subleases at 33 universities — UGA, Georgia Tech, UF, Michigan, Ohio State, and more. Free to post, and you message the lister directly.",
       },
       { property: "og:title", content: "Find Student Subleases at Your College | LeaseUp" },
       {
         property: "og:description",
         content:
-          "Browse verified student subleases at 33 universities. Free listing, verified .edu students.",
+          "Browse verified student subleases at 33 universities. Free to post, and you message the lister directly.",
       },
       { property: "og:url", content: "https://leasup.co/campuses" },
       { property: "og:type", content: "website" },
@@ -86,7 +86,7 @@ function CampusDirectoryPage() {
           </h1>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             LeaseUp is live at {total || "dozens of"} colleges — and searchable at every
-            accredited US school. Verified .edu students, free to post, no scams.
+            accredited US school. Free to post, and you message the lister directly.
           </p>
           <div className="relative mt-6">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

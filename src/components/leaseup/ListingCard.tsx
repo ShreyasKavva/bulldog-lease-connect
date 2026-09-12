@@ -12,6 +12,7 @@ import { Heart, Check, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { postedAgo } from "@/lib/leaseup/constants";
 import { CardPriceBadge } from "./PriceBadge";
 import { posterName } from "@/lib/leaseup/display-name";
+import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
@@ -437,9 +438,9 @@ export function ListingCard({
 
 
         {/* Q108 — .edu verified host signal (nothing shown when unverified) */}
-        {listing.profile?.verified_email && (
+        {hasSchoolEmail(listing.profile) && (
           <span className="mt-1 inline-flex items-center gap-0.5 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
-            <Check className="h-2.5 w-2.5" /> Verified
+            <Check className="h-2.5 w-2.5" /> {SCHOOL_EMAIL_BADGE}
           </span>
         )}
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">

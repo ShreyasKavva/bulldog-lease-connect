@@ -27,6 +27,7 @@ import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
 import { CostCalculator } from "@/components/leaseup/CostCalculator";
 import { ExpiryChip } from "@/components/leaseup/ExpiryChip";
+import { hasSchoolEmail, SCHOOL_EMAIL_LINE, NO_SCHOOL_EMAIL_LINE } from "@/lib/leaseup/school-email";
 
 
 
@@ -295,9 +296,9 @@ export function ListingDetailSheet({
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white ${listing.type === "transfer" ? "bg-success" : "bg-foreground/80"}`}>
                   {listing.type === "transfer" ? "Lease Transfer" : "Sublease"}
                 </span>
-                {listing.profile?.verified_email && (
+                {hasSchoolEmail(listing.profile) && (
                   <span className="flex items-center gap-1 text-xs font-semibold text-success">
-                    <BadgeCheck className="h-4 w-4" />Verified
+                    <BadgeCheck className="h-4 w-4" />{SCHOOL_EMAIL_LINE}
                   </span>
                 )}
               </div>
@@ -352,10 +353,10 @@ export function ListingDetailSheet({
           <div className="flex items-center gap-4 rounded-xl border bg-background p-3">
             <ul className="flex-1 space-y-1 text-xs text-muted-foreground">
               {(listing.photo_urls?.length ?? 0) >= 3 && <li>✓ {listing.photo_urls!.length} photos</li>}
-              {listing.profile?.verified_email && <li>✓ .edu verified poster</li>}
+              {hasSchoolEmail(listing.profile) && <li>✓ {SCHOOL_EMAIL_LINE}</li>}
               {listing.available_from && listing.available_to && <li>✓ Exact dates listed</li>}
               {listing.description && listing.description.length >= 200 && <li>✓ Detailed description</li>}
-              {!listing.profile?.verified_email && <li>⚠ Poster not .edu verified</li>}
+              {!hasSchoolEmail(listing.profile) && <li>⚠ {NO_SCHOOL_EMAIL_LINE}</li>}
             </ul>
           </div>
 

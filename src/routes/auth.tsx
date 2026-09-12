@@ -40,7 +40,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — LeaseUp" },
       { name: "description", content: "Sign in to LeaseUp with Google or your .edu email to browse and post student subleases." },
       { property: "og:title", content: "Sign in — LeaseUp" },
-      { property: "og:description", content: "Verified .edu profiles, real student listings, zero scams." },
+      { property: "og:description", content: "Student sublease listings, direct messages, no fees." },
       { property: "og:url", content: "https://leasup.co/auth" },
       { property: "og:type", content: "website" },
     ],
@@ -185,7 +185,7 @@ function AuthPage() {
               autoComplete="email"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              .edu emails get a verified ✓ badge automatically.
+              We detect your school from your email domain.
             </p>
           </div>
           <div>
