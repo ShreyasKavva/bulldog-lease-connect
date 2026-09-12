@@ -373,7 +373,7 @@ export function ListingCard({
           </span>
           {/* Q143 — save count, hidden at zero */}
           {savesCount > 0 && (
-            <span className="text-xs font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+            <span className="rounded-full border border-white/30 bg-black/25 px-1.5 py-0.5 text-xs font-medium leading-none text-white backdrop-blur-sm shadow-sm">
               {savesCount}
             </span>
           )}
