@@ -361,9 +361,9 @@ export function BrowseFilterBar({
               value={searchInput}
               onChange={(e) => onSearchInput(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              placeholder={placeLabel === "Search subleases" ? "Search by title or description…" : `Search ${placeLabel}…`}
+              placeholder="Search subleases…"
               aria-label="Search subleases"
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              className="min-w-0 flex-1 truncate bg-transparent text-sm outline-none"
             />
             {searchInput && (
               <button
@@ -393,11 +393,11 @@ export function BrowseFilterBar({
 
 
             {/* PART E — sort dropdown */}
-            <span className="mx-2 hidden h-5 w-px shrink-0 bg-border sm:block" />
+            <span className="mx-2 h-5 w-px shrink-0 bg-border" />
             <div className="relative shrink-0">
               <button
                 onClick={() => setSortOpen((o) => !o)}
-                className="flex items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"
+                className="flex shrink-0 items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"
               >
                 <span className="hidden sm:inline">Sort:</span>{" "}
                 <span className="max-w-[6rem] truncate font-semibold text-foreground sm:max-w-none">{SORT_LABELS[sort]}</span>
