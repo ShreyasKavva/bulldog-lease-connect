@@ -15,6 +15,7 @@ import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
+import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
 
 function maskLastName(name: string | null | undefined): string {
@@ -200,9 +201,7 @@ export function ProfileView({ userId }: { userId: string }) {
   if (isLoading) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!profile) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
 
-  const isEdu = isOwn
-    ? !!user?.email?.toLowerCase().endsWith(".edu")
-    : profile.verified_email;
+  const isEdu = hasSchoolEmail(profile);
   const rating = profile.avg_rating ?? stats.avg;
   const reviewCount = profile.review_count ?? stats.count;
   const campusAbbrev = abbrevCampus(profile.campus_name);
@@ -259,7 +258,7 @@ export function ProfileView({ userId }: { userId: string }) {
                 )}
                 {isEdu && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
-                    <BadgeCheck className="h-3 w-3" /> .edu verified
+                    <BadgeCheck className="h-3 w-3" /> {SCHOOL_EMAIL_BADGE}
                   </span>
                 )}
               </div>

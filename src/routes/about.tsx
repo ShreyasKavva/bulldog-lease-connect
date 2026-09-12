@@ -51,7 +51,7 @@ function AboutPage() {
           </h2>
           <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
             LeaseUp is the student sublease marketplace built for how college housing actually
-            works. Semester-length stays. Verified .edu emails. Direct messages to real hosts — no
+            works. Semester-length stays. School email sign-up. Direct messages to real hosts — no
             agents, no middlemen, no fees. Post your sublease in 2 minutes. Find one in seconds.
           </p>
         </section>

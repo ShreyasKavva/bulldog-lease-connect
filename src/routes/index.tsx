@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
   head: () => {
     const title = "LeaseUp — Student Subleases Near Your Campus";
     const description =
-      "Find or post a semester sublease near your college campus. Verified students, direct messages, no fees. UGA, Ohio State, UT Austin, Georgia Tech, and more.";
+      "Find or post a semester sublease near your college campus. Semester-length stays, direct messages, no fees. UGA, Ohio State, UT Austin, Georgia Tech, and more.";
     return {
       meta: [
         { title },

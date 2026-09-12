@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 
 // Q152 — local memory of which Roommate Search posts this device already upvoted.
 const UPVOTED_KEY = "leasup_upvoted_posts";
@@ -577,8 +578,8 @@ function LookingForCard({
             <button onClick={onOpenProfile} className="truncate text-sm font-bold hover:underline">
               {displayName}
             </button>
-            {profile?.verified_email && (
-              <span title="Verified .edu" className="inline-flex">
+            {hasSchoolEmail(profile) && (
+              <span title={SCHOOL_EMAIL_BADGE} className="inline-flex">
                 <BadgeCheck className="h-3.5 w-3.5 text-success" />
               </span>
             )}

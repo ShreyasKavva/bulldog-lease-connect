@@ -399,7 +399,7 @@ function CampusPage() {
           <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campus.short_name}</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              { n: 1, icon: Search, title: "Browse verified listings", body: `Subleases posted by real ${campus.short_name} students. Every poster is .edu verified.` },
+              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campus.short_name} students. Posters sign up with a school email.` },
               { n: 2, icon: Handshake, title: "Message directly", body: "No middleman. Message the lister directly and arrange the handoff." },
               { n: 3, icon: CheckCircle2, title: "Mark as rented", body: "Once a deal is made, the listing is marked complete. No ghost listings." },
             ].map(({ n, icon: Icon, title, body }) => (
