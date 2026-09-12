@@ -180,6 +180,19 @@ export function ListingCard({
 
 
 
+  /**
+   * The card's title and CTA are real <a href="/listing/:id"> links so the
+   * listing is crawlable, focusable and openable in a new tab. A plain
+   * left-click keeps the existing slide-out; modified clicks fall through to
+   * the browser.
+   */
+  function handleOpenLink(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    onOpen();
+  }
+
   function step(e: React.MouseEvent, dir: 1 | -1) {
     e.stopPropagation();
     e.preventDefault();
@@ -383,7 +396,14 @@ export function ListingCard({
 
 
       <div className="px-1 py-3" onClick={onOpen}>
-        <h3 className="truncate text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
+        <Link
+          to="/listing/$id"
+          params={{ id: listing.id }}
+          onClick={handleOpenLink}
+          className="block"
+        >
+          <h3 className="truncate text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
+        </Link>
         <p className="mt-0.5 text-xs text-muted-foreground/80">
           {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
           Posted {postedAgo(listing.created_at)}
@@ -438,13 +458,14 @@ export function ListingCard({
         </p>
 
         {/* Q181 — primary CTA: unmistakably the thing to click. */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onOpen(); }}
-          className="mt-3 w-full rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:w-auto"
+        <Link
+          to="/listing/$id"
+          params={{ id: listing.id }}
+          onClick={handleOpenLink}
+          className="mt-3 block w-full rounded-full bg-[#4F46E5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:inline-block sm:w-auto"
         >
           View listing →
-        </button>
+        </Link>
       </div>
     </article>
   );
