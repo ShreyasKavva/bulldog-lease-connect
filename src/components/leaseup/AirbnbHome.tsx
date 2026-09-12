@@ -299,7 +299,7 @@ export function AirbnbHome({
             Sublease near your campus.
           </h1>
           <p className="mt-3 text-xl text-gray-500 dark:text-muted-foreground">
-            Verified students. Semester-ready dates. No Craigslist drama.
+            Campus subleases. Semester-ready dates. No Craigslist drama.
           </p>
         </div>
 
