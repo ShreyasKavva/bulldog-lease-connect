@@ -27,8 +27,6 @@ function ActivityPage() {
   const seenIds = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
 
-  if (!loading && !user) return <ActivityLoggedOut />;
-
   useEffect(() => {
     const fresh = new Set<string>();
     for (const it of items) {
