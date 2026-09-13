@@ -45,7 +45,7 @@ function replyTime(hours: number | null): string | null {
 }
 
 export function HostProfileCard({
-  hostId, poster, memberSince,
+  hostId, poster, memberSince, displayName,
 }: {
   hostId: string;
   poster?: {
@@ -56,6 +56,7 @@ export function HostProfileCard({
     created_at?: string | null;
   } | null;
   memberSince?: string | null;
+  displayName?: string | null;
 }) {
   const { data: stats } = useQuery({
     queryKey: ["host-stats", hostId],
