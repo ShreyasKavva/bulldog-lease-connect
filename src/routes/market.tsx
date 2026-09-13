@@ -82,7 +82,7 @@ function MarketPage() {
           <>
             {/* Overview cards */}
             <div className="grid grid-cols-3 gap-3">
-              <StatCard label="Active listings" value={totalListings ? totalListings.toString() : "—"} />
+              <StatCard label="Active listings" value={activeListingCount ? activeListingCount.toString() : "—"} />
               <StatCard label="Average price" value={overallAvg ? `$${overallAvg}/mo` : "—"} />
               <StatCard label="Median price" value={overallMedian ? `$${overallMedian}/mo` : "—"} />
             </div>
