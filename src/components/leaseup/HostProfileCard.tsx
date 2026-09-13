@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MessageSquare, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { cn } from "@/lib/utils";
 
 
 type HostStats = {
