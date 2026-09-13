@@ -165,9 +165,9 @@ function MarketPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border bg-surface p-4">
+    <div className="rounded-2xl border bg-surface p-3 sm:p-4">
       <div className="text-xs font-bold uppercase text-muted-foreground">{label}</div>
-      <div className="mt-2 text-2xl font-extrabold tracking-tight">{value}</div>
+      <div className="mt-2 text-base sm:text-2xl font-extrabold tracking-tight">{value}</div>
     </div>
   );
 }
