@@ -666,7 +666,7 @@ function ListingDetailPage() {
 
               {posterLabel && (
                 <>
-                  {" by "}
+                  {" · by "}
                   <Link
                     to="/profile/$userId"
                     params={{ userId: listing.user_id }}
