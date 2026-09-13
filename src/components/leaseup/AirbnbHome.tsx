@@ -137,6 +137,15 @@ export function AirbnbHome({
   const geoCampus = useNearestCampus(campuses, !userCampusId && recentIds.length < 2);
   const homeCampusId = userCampusId ?? geoCampus?.id ?? feedCampusId ?? null;
 
+  /**
+   * Q210 — "Near you" and SmartSections' "Near <campus>" row both resolve to
+   * the visitor's campus, so on a first visit they rendered the same listings
+   * twice in adjacent rails. Suppress "Near you" when it would duplicate; the
+   * SmartSections row is strictly richer (12 cards plus a See all link).
+   */
+  const nearYouCampus = geoCampus ?? campuses.find((c) => c.id === homeCampusId) ?? null;
+  const nearYouIsDuplicate = !!nearYouCampus && nearYouCampus.id === (search.campusId ?? homeCampusId);
+
 
 
   // Median price per (campus, beds) for the Best Deals filter/badge.
@@ -476,7 +485,7 @@ export function AirbnbHome({
           ) : (
             <NearYouSection
               listings={listings}
-              campus={geoCampus ?? campuses.find((c) => c.id === homeCampusId) ?? null}
+              campus={nearYouIsDuplicate ? null : nearYouCampus}
               savedIds={savedIds}
               onSave={onSave}
               onOpen={onOpen}
