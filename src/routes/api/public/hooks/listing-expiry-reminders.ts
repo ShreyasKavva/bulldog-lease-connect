@@ -59,21 +59,30 @@ export const Route = createFileRoute('/api/public/hooks/listing-expiry-reminders
       POST: async ({ request }) => {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-        const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY
 
+        // Q217 — fail closed. Without the service-role secret we cannot
+        // authenticate the caller, so we send nothing.
         if (!supabaseUrl || !serviceKey) {
-          return Response.json({ error: 'Server misconfigured' }, { status: 500 })
+          console.error('[expiry-cron] missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY')
+          return Response.json({ error: 'Service unavailable' }, { status: 503 })
         }
 
-        // Lightweight caller check — expect apikey header set to the anon key.
-        const apiKey = request.headers.get('apikey') || request.headers.get('x-api-key')
-        if (!apiKey || (anonKey && apiKey !== anonKey)) {
+        // Caller must present the service-role key as a Bearer token
+        // (same pattern as /lovable/email/queue/process). The publishable key
+        // is public and must never gate this route.
+        const authHeader = request.headers.get('Authorization')
+        if (!authHeader?.startsWith('Bearer ')) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        const token = authHeader.slice('Bearer '.length).trim()
+        if (token !== serviceKey) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
         const supabase = createClient(supabaseUrl, serviceKey, {
           auth: { autoRefreshToken: false, persistSession: false },
         })
+
 
         // Compute target date = today + 3 days (UTC).
         const target = new Date()
