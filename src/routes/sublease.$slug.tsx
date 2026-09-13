@@ -1,12 +1,13 @@
-import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, notFound, redirect } from "@tanstack/react-router";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, CAMPUS_ALIASES, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
 import { ListingCard } from "@/components/leaseup/ListingCard";
+import { ListingCardSkeletonGrid } from "@/components/leaseup/ListingCardSkeleton";
 import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
@@ -27,7 +28,18 @@ export const Route = createFileRoute("/sublease/$slug")({
       fetchCampuses(),
       fetchActiveListingCountsByCampus(),
     ]);
-    if (!campus) throw notFound();
+    if (!campus) {
+      // Short campus slugs ("uga", "gt", "osu") 301 to the canonical slug
+      // instead of dead-ending on the not-found state.
+      const key = params.slug.toLowerCase();
+      const canonical = Object.entries(CAMPUS_ALIASES).find(
+        ([, aliases]) => aliases.includes(key) || aliases.includes(key.replace(/-/g, " ")),
+      )?.[0];
+      if (canonical && canonical !== params.slug && (await fetchCampusBySlug(canonical))) {
+        throw redirect({ to: "/sublease/$slug", params: { slug: canonical }, statusCode: 301 });
+      }
+      throw notFound();
+    }
     const stats = await fetchCampusStats(campus.id);
     return { campus, allCampuses, listingCounts, stats };
   },
@@ -123,7 +135,7 @@ function CampusPage() {
   }, []);
 
 
-  const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
+  const { data: allListings = [], isLoading: listingsLoading } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = allCampuses } = useQuery<Campus[]>({
     queryKey: ["campuses"],
     queryFn: fetchCampuses,
@@ -327,7 +339,11 @@ function CampusPage() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 className="font-black">{filtered.length} listing{filtered.length === 1 ? "" : "s"} at {campus.short_name}</h2>
+          <h2 className="font-black">
+            {!listingsLoading && filtered.length > 0
+              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campus.short_name}`
+              : `Subleases at ${campus.short_name}`}
+          </h2>
           <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-0.5 text-xs">
             <button
               onClick={() => setSortBy("recent")}
@@ -350,12 +366,20 @@ function CampusPage() {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {listingsLoading ? (
+          <ListingCardSkeletonGrid count={8} />
+        ) : filtered.length === 0 ? (
           <div className="rounded-xl bg-surface p-12 text-center shadow-card">
             <div className="text-5xl">🏠</div>
-            <h3 className="mt-3 text-lg font-bold">No subleases posted yet at {campus.short_name}.</h3>
+            <h3 className="mt-3 text-lg font-bold">
+              {listings.length > 0
+                ? `No subleases match these filters at ${campus.short_name}.`
+                : `No subleases posted yet at ${campus.short_name}.`}
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
-              Be the first — post your sublease and help a fellow {campus.short_name} student.
+              {listings.length > 0
+                ? "Try removing a filter to see more subleases."
+                : `Be the first — post your sublease and help a fellow ${campus.short_name} student.`}
             </p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease →
