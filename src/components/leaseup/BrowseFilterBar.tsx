@@ -266,7 +266,7 @@ export function BrowseFilterBar({
   for (const a of AMENITIES)
     if (values[a.key] === 1) pills.push({ label: a.label, clear: { [a.key]: undefined } });
   if (values.verified === 1)
-    pills.push({ label: "✓ Verified", clear: { verified: undefined } });
+    pills.push({ label: "✓ School email", clear: { verified: undefined } });
   if (values.new) pills.push({ label: "🆕 New", clear: { new: undefined } });
   if (values.movein)
     pills.push({
@@ -580,7 +580,7 @@ export function BrowseFilterBar({
                   : "border-border hover:border-foreground",
               )}
             >
-              ✓ Verified
+              ✓ School email
             </button>
           </div>
 
@@ -760,7 +760,7 @@ export function BrowseFilterBar({
                     values.verified === 1 ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground",
                   )}
                 >
-                  ✓ Verified student
+                  ✓ School email
                 </button>
               </div>
             </section>
