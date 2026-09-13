@@ -771,7 +771,7 @@ function ListingDetailPage() {
                 messaging={messaging}
               />
               {/* Q103 Part B — host profile card */}
-              <HostProfileCard hostId={listing.user_id} poster={poster} />
+              <HostProfileCard hostId={listing.user_id} poster={poster} displayName={listing.display_name} />
 
               {/* Q104 Part D — shared-home context for room listings */}
               {((listing.type as string) === "private_room" || (listing.type as string) === "shared_room") && (

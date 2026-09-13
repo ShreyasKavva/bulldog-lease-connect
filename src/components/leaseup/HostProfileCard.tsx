@@ -45,7 +45,7 @@ function replyTime(hours: number | null): string | null {
 }
 
 export function HostProfileCard({
-  hostId, poster, memberSince,
+  hostId, poster, memberSince, displayName,
 }: {
   hostId: string;
   poster?: {
@@ -56,6 +56,7 @@ export function HostProfileCard({
     created_at?: string | null;
   } | null;
   memberSince?: string | null;
+  displayName?: string | null;
 }) {
   const { data: stats } = useQuery({
     queryKey: ["host-stats", hostId],
@@ -73,6 +74,8 @@ export function HostProfileCard({
     ? new Date(since).toLocaleDateString(undefined, { month: "long", year: "numeric" })
     : null;
   const time = replyTime(stats?.avg_response_hours ?? null);
+  const resolvedName = posterName({ display_name: displayName, profile: poster as any }, "");
+  const hostName = resolvedName || profileDisplayName(poster);
 
   return (
     <div className="mt-4 rounded-2xl border border-border bg-card p-5">
@@ -85,7 +88,7 @@ export function HostProfileCard({
         </div>
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate text-base font-bold">
-            {profileDisplayName(poster)}
+            {hostName}
             {poster?.verified_email && <BadgeCheck className="h-4 w-4 shrink-0 text-success" />}
           </p>
           {sinceLabel && <p className="text-sm text-muted-foreground">Member since {sinceLabel}</p>}
