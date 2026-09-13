@@ -2,9 +2,10 @@
  * Daily cron: send "your listing expires in 3 days" reminder to listers.
  *
  * Scheduled via pg_cron → pg_net POST to this route once per day.
- * Public route under /api/public/ so it bypasses auth on published sites;
- * we still gate with a bearer token (Supabase anon key) as a lightweight
- * check that only our own cron is calling it.
+ * Public route under /api/public/ so it bypasses site auth on published sites;
+ * the handler itself requires `Authorization: Bearer <service role key>` and
+ * fails closed (503) when that secret is absent.
+
  *
  * Finds listings where available_to = today + 3 days AND is_active AND
  * status = 'active', then renders + enqueues one listing-expiry email per
