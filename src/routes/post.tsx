@@ -47,7 +47,7 @@ function PostPage() {
           Post Your Sublease
         </h1>
         <p className="mt-2 text-base text-gray-500">
-          Sign in with your .edu email to post your listing for free.
+          Sign in to post your listing for free.
         </p>
         <button
           type="button"
