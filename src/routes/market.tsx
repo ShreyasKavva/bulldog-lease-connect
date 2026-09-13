@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
 import { fetchAllPriceStats, fetchNeighborhoodBreakdown, type CampusPriceStat } from "@/lib/leaseup/pricing";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,16 @@ function MarketPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const activeId = selected ?? campuses[0]?.id ?? null;
   const active = campuses.find((c) => c.id === activeId) ?? null;
+
+  // "Active listings" must agree with /campuses and /sublease/$slug, so it is
+  // counted live off listings.status rather than derived from the price-stats
+  // view (which drops bedroom groups with fewer than 3 comps).
+  const { data: liveCounts = {} } = useQuery({
+    queryKey: ["active-listing-counts-by-campus"],
+    queryFn: fetchActiveListingCountsByCampus,
+    staleTime: 60 * 1000,
+  });
+  const activeListingCount = activeId ? (liveCounts[activeId] ?? 0) : 0;
 
   const { data: neighborhoods = [] } = useQuery({
     queryKey: ["neighborhood-breakdown", activeId],
@@ -72,7 +82,7 @@ function MarketPage() {
           <>
             {/* Overview cards */}
             <div className="grid grid-cols-3 gap-3">
-              <StatCard label="Active listings" value={totalListings ? totalListings.toString() : "—"} />
+              <StatCard label="Active listings" value={activeListingCount ? activeListingCount.toString() : "—"} />
               <StatCard label="Average price" value={overallAvg ? `$${overallAvg}/mo` : "—"} />
               <StatCard label="Median price" value={overallMedian ? `$${overallMedian}/mo` : "—"} />
             </div>

@@ -171,8 +171,9 @@ export async function fetchActiveListingCountsByCampus(): Promise<Record<string,
   try {
     const { data, error } = await supabase
       .from("listings")
+      // status is the single source of truth for "this listing is live".
       .select("campus_id")
-      .eq("is_active", true);
+      .eq("status", "active");
     if (error) return {};
     const counts: Record<string, number> = {};
     for (const row of data ?? []) {

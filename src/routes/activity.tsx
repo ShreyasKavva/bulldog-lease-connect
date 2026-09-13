@@ -27,8 +27,6 @@ function ActivityPage() {
   const seenIds = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
 
-  if (!loading && !user) return <ActivityLoggedOut />;
-
   useEffect(() => {
     const fresh = new Set<string>();
     for (const it of items) {
@@ -43,6 +41,10 @@ function ActivityPage() {
       return () => clearTimeout(t);
     }
   }, [items]);
+
+  // Gate AFTER every hook has run — an early return here violated the rules of
+  // hooks for signed-out visitors and crashed the page (React error #300).
+  if (!loading && !user) return <ActivityLoggedOut />;
 
   return (
     <div className="min-h-screen bg-background pb-12">

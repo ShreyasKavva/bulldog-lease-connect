@@ -33,9 +33,23 @@ export const Route = createFileRoute("/sublease/$slug")({
   },
   head: ({ params, loaderData }) => {
     const c = loaderData?.campus;
-    const name = c?.short_name ?? params.slug;
-    const fullName = c?.name ?? name;
-    const city = c?.city ? `${c.city}, ${c.state}` : "";
+    // The loader throws notFound() for an unknown slug, so an absent campus
+    // means this page renders "Campus not found" — never build a title out of
+    // the raw URL slug in that case.
+    if (!c) {
+      return {
+        meta: [
+          { title: "Campus not found — LeaseUp" },
+          { name: "description", content: "We're not live on this campus yet. Browse student subleases near other campuses on LeaseUp." },
+          { name: "robots", content: "noindex" },
+          { property: "og:title", content: "Campus not found — LeaseUp" },
+          { property: "og:description", content: "We're not live on this campus yet. Browse student subleases on LeaseUp." },
+          { property: "og:type", content: "website" },
+        ],
+      };
+    }
+    const name = c.short_name ?? c.name;
+    const fullName = c.name ?? name;
     const n = loaderData?.stats?.active ?? 0;
     const cityStr = c?.city ? `${c.city}, ${c.state}` : "";
     const title = `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
@@ -96,6 +110,17 @@ function CampusPage() {
   useEffect(() => {
     try { localStorage.setItem("leaseup_campus_hint", campus.slug); } catch {}
   }, [campus.slug]);
+
+  // Toast + strip the "?notice=" flag left by the /campus/$slug 301.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("notice") === "campus-url-moved") {
+      toast.message("This campus page moved — you're on the latest version.");
+      url.searchParams.delete("notice");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []);
 
 
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });

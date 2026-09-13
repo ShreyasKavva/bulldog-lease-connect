@@ -789,11 +789,11 @@ export async function bumpListing(listingId: string): Promise<string> {
  */
 export async function fetchCampusListingCounts(): Promise<Map<string, number>> {
   // Must match the campus pill counts (fetchActiveListingCountsByCampus):
-  // simply every active listing for the campus.
+  // status is the single source of truth for "this listing is live".
   const { data, error } = await supabase
     .from("listings")
     .select("campus_id")
-    .eq("is_active", true);
+    .eq("status", "active");
   if (error) return new Map();
   const m = new Map<string, number>();
   for (const r of (data ?? []) as { campus_id: string }[]) {

@@ -13,8 +13,6 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: Entry[] = [
           { loc: `${BASE_URL}/`, priority: "1.0", changefreq: "daily" },
           { loc: `${BASE_URL}/looking`, priority: "0.7", changefreq: "daily" },
-          { loc: `${BASE_URL}/lease-analysis`, priority: "0.8", changefreq: "weekly" },
-          { loc: `${BASE_URL}/find-my-match`, priority: "0.8", changefreq: "weekly" },
           { loc: `${BASE_URL}/market`, priority: "0.8", changefreq: "daily" },
         ];
 
