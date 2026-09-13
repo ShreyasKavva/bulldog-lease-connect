@@ -459,7 +459,14 @@ function ListingDetailPage() {
 
 
   const [messaging, setMessaging] = useState(false);
-  const firstName = profileDisplayName(poster, "Host").split(" ")[0];
+  /* Q213 — one identity per listing. The byline, the "Message X" CTAs and the
+  host card must all resolve through posterName(), or a seeded listing shows
+  "Hosted by Ella M." next to "Message Maya". Empty fallback so a nameless
+  poster renders nothing rather than a placeholder. */
+
+  const posterLabel = posterName({ display_name: listing.display_name, profile: poster as any }, "");
+
+  const firstName = posterLabel ? posterLabel.split(" ")[0] : "Host";
 
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
@@ -657,7 +664,7 @@ function ListingDetailPage() {
                 </>
               )}
 
-              {poster?.name && (
+              {posterLabel && (
                 <>
                   {" by "}
                   <Link
@@ -665,7 +672,7 @@ function ListingDetailPage() {
                     params={{ userId: listing.user_id }}
                     className="font-medium text-foreground underline underline-offset-2"
                   >
-                    {poster.name}
+                    {posterLabel}
                   </Link>
                 </>
               )}
