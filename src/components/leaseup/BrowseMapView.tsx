@@ -86,6 +86,16 @@ function CompactCard({
   listing, active, onClick,
 }: { listing: Listing; active: boolean; onClick: () => void }) {
   const photo = (listing.photo_urls?.length ? listing.photo_urls : listing.photos)?.[0];
+
+  /* Q205 follow-on — the rail title and CTA are real /listing/$id anchors so the
+     map view is crawlable and cmd/ctrl-click friendly. A plain left click still
+     focuses the listing on the map exactly as before. */
+  const handleOpenLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    onClick?.();
+  };
   return (
     <div
       role="button"
@@ -103,7 +113,14 @@ function CompactCard({
         <div className="grid h-[100px] w-[100px] shrink-0 place-items-center rounded-xl bg-muted text-3xl">🏠</div>
       )}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{listing.title}</p>
+        <Link
+          to="/listing/$id"
+          params={{ id: listing.id }}
+          onClick={handleOpenLink}
+          className="block min-w-0"
+        >
+          <p className="truncate text-sm font-medium text-foreground">{listing.title}</p>
+        </Link>
         <p className="mt-0.5 text-sm text-foreground">
           <span className="font-semibold">${listing.price.toLocaleString()}</span>
           <span className="text-muted-foreground">
@@ -118,13 +135,14 @@ function CompactCard({
           {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />}
         </p>
         {/* Q181 — same primary CTA as the grid/list cards */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-          className="mt-2 rounded-full bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
+        <Link
+          to="/listing/$id"
+          params={{ id: listing.id }}
+          onClick={handleOpenLink}
+          className="mt-2 inline-block rounded-full bg-[#4F46E5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md"
         >
           View listing →
-        </button>
+        </Link>
       </div>
     </div>
   );
