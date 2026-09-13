@@ -132,7 +132,7 @@ function CompactCard({
           <span className="truncate">
             {posterName(listing)}
           </span>
-          {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="Verified" />}
+          {listing.profile?.verified_email && <Check className="h-3 w-3 shrink-0 text-success" aria-label="School email" />}
         </p>
         {/* Q181 — same primary CTA as the grid/list cards */}
         <Link
