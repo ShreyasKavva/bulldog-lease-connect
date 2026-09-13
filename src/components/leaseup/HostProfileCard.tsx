@@ -92,21 +92,44 @@ export function HostProfileCard({
         </div>
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-        <Stat
-          value={rating?.avg != null ? rating.avg.toFixed(1) : "—"}
-          label={`${rating?.count ?? 0} review${(rating?.count ?? 0) === 1 ? "" : "s"}`}
-          icon={rating?.avg != null ? <Star className="h-3 w-3 fill-current" /> : undefined}
-        />
-        <Stat
-          value={stats?.response_rate != null ? `${stats.response_rate}%` : "—"}
-          label="Reply rate"
-        />
-        <Stat
-          value={String(stats?.active_listing_count ?? 0)}
-          label={`Active listing${(stats?.active_listing_count ?? 0) === 1 ? "" : "s"}`}
-        />
-      </dl>
+      {/* Suppress unknown and zero stats - never show a renter a 0 or a placeholder */}
+      {(() => {
+        const reviewCount = rating?.count ?? 0;
+        const replyRate = stats?.response_rate ?? 0;
+        const activeCount = stats?.active_listing_count ?? 0;
+        const tiles: { key: string; value: string; label: string; icon?: React.ReactNode }[] = [];
+        if (rating?.avg != null && reviewCount > 0) {
+          tiles.push({
+            key: "rating",
+            value: rating.avg.toFixed(1),
+            label: `${reviewCount} review${reviewCount === 1 ? "" : "s"}`,
+            icon: <Star className="h-3 w-3 fill-current" />,
+          });
+        }
+        if (replyRate > 0) {
+          tiles.push({ key: "reply", value: `${replyRate}%`, label: "Reply rate" });
+        }
+        if (activeCount > 0) {
+          tiles.push({
+            key: "active",
+            value: String(activeCount),
+            label: `Active listing${activeCount === 1 ? "" : "s"}`,
+          });
+        }
+        if (tiles.length === 0) return null;
+        return (
+          <dl
+            className={cn(
+              "mt-4 grid gap-2 text-center",
+              tiles.length === 1 ? "grid-cols-1" : tiles.length === 2 ? "grid-cols-2" : "grid-cols-3",
+            )}
+          >
+            {tiles.map((t) => (
+              <Stat key={t.key} value={t.value} label={t.label} icon={t.icon} />
+            ))}
+          </dl>
+        );
+      })()}
 
       {time && (
         <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
