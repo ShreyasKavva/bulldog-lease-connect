@@ -111,6 +111,17 @@ function CampusPage() {
     try { localStorage.setItem("leaseup_campus_hint", campus.slug); } catch {}
   }, [campus.slug]);
 
+  // Toast + strip the "?notice=" flag left by the /campus/$slug 301.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("notice") === "campus-url-moved") {
+      toast.message("This campus page moved — you're on the latest version.");
+      url.searchParams.delete("notice");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []);
+
 
   const { data: allListings = [] } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { data: campuses = allCampuses } = useQuery<Campus[]>({
