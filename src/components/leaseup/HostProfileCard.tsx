@@ -74,6 +74,8 @@ export function HostProfileCard({
     ? new Date(since).toLocaleDateString(undefined, { month: "long", year: "numeric" })
     : null;
   const time = replyTime(stats?.avg_response_hours ?? null);
+  const resolvedName = posterName({ display_name: displayName, profile: poster as any }, "");
+  const hostName = resolvedName || profileDisplayName(poster);
 
   return (
     <div className="mt-4 rounded-2xl border border-border bg-card p-5">
