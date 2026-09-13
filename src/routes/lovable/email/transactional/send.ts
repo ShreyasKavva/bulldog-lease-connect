@@ -44,20 +44,45 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
-        // Verify the caller has a valid Supabase auth token.
-        // In TanStack, there is no Supabase gateway — we validate the JWT ourselves.
+        // Q217 — authorization. Two accepted callers:
+        //   1. System caller presenting the service-role key as a Bearer token
+        //      (same pattern as /lovable/email/queue/process).
+        //   2. An authenticated user who is an admin (public.is_admin).
+        // Everyone else is rejected. Fails closed: supabaseServiceKey is
+        // required above, so a missing secret can never make a check pass.
         const authHeader = request.headers.get('Authorization')
         if (!authHeader?.startsWith('Bearer ')) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         const token = authHeader.slice('Bearer '.length).trim()
-        const supabase = createClient(supabaseUrl, supabaseServiceKey)
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-
-        if (authError || !user) {
+        if (!token) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
+
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+        const isSystemCaller = token === supabaseServiceKey
+        let callerEmail: string | null = null
+
+        if (!isSystemCaller) {
+          const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+          if (authError || !user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 })
+          }
+
+          const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin', {
+            _uid: user.id,
+          })
+
+          if (adminError || isAdmin !== true) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 })
+          }
+
+          callerEmail = user.email ?? null
+        }
+
 
         // Parse request body
         let templateName: string
