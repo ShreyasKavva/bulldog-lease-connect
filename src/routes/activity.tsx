@@ -42,6 +42,10 @@ function ActivityPage() {
     }
   }, [items]);
 
+  // Gate AFTER every hook has run — an early return here violated the rules of
+  // hooks for signed-out visitors and crashed the page (React error #300).
+  if (!loading && !user) return <ActivityLoggedOut />;
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
