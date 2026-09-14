@@ -91,7 +91,7 @@ function MarketPage() {
             <section className="mt-8 rounded-2xl border bg-surface p-4">
               <h2 className="mb-3 text-lg font-extrabold">Price by bedroom — {active.short_name}</h2>
               {forCampus.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No active listings with enough comps yet. Check back soon.</p>
+                <p className="text-sm text-muted-foreground">Not enough listings of the same bedroom size yet to show price comps. Check back soon.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -154,7 +154,9 @@ function MarketPage() {
             </section>
 
             <p className="mt-6 text-xs text-muted-foreground">
-              Data updated daily. Based on {totalListings} active listings at {active.short_name} (last 90 days).
+              {totalListings > 0
+                ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
+                : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
             </p>
 
             <div className="mt-6">
