@@ -25,7 +25,6 @@ export const Route = createFileRoute("/post")({
       { name: "description", content: "Post your student sublease on LeaseUp in under 2 minutes. Free — always." },
       { property: "og:title", content: "Post your sublease — LeaseUp" },
       { property: "og:description", content: "Free to post. Reach students at your campus." },
-      { name: "twitter:description", content: "Free to post. Reach students at your campus." },
     ],
   }),
   component: PostPage,
