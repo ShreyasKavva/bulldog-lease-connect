@@ -233,7 +233,7 @@ function CampusPage() {
             {campus.name} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Find subleases posted by verified {campus.short_name} students.
+            Find subleases posted by {campus.short_name} students who signed up with a campus email.
           </p>
 
           {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
