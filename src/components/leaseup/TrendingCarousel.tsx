@@ -40,7 +40,7 @@ export function TrendingCarousel({
             </div>
             <div className="space-y-1 p-3">
               <div className="flex items-center justify-between">
-                <div className="text-base font-extrabold">${l.price}<span className="text-xs font-semibold text-muted-foreground">/mo</span></div>
+                <div className="text-base font-extrabold">${Number(l.price).toLocaleString("en-US")}<span className="text-xs font-semibold text-muted-foreground">/mo</span></div>
                 
               </div>
               <div className="line-clamp-1 text-sm font-semibold">{l.title}</div>
