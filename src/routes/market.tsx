@@ -133,18 +133,18 @@ function MarketPage() {
                     <thead>
                       <tr className="border-b text-xs uppercase text-muted-foreground">
                         <th className="py-2 text-left font-bold">Neighborhood</th>
-                        <th className="py-2 text-right font-bold">Listings</th>
-                        <th className="py-2 text-right font-bold">Avg</th>
-                        <th className="py-2 text-right font-bold">Median</th>
+                        <th className="py-2 text-right font-bold pl-2">Listings</th>
+                        <th className="py-2 text-right font-bold pl-2">Avg</th>
+                        <th className="py-2 text-right font-bold pl-2">Median</th>
                       </tr>
                     </thead>
                     <tbody>
                       {neighborhoods.map((n) => (
                         <tr key={n.area} className="border-b last:border-0">
                           <td className="py-2 font-semibold">{n.area}</td>
-                          <td className="py-2 text-right">{n.listing_count}</td>
-                          <td className="py-2 text-right">${Math.round(n.avg_price)}/mo</td>
-                          <td className="py-2 text-right font-bold text-primary">${Math.round(n.median_price)}/mo</td>
+                          <td className="py-2 text-right pl-2">{n.listing_count}</td>
+                          <td className="py-2 text-right pl-2">${Math.round(n.avg_price)}</td>
+                          <td className="py-2 text-right font-bold text-primary pl-2">${Math.round(n.median_price)}</td>
                         </tr>
                       ))}
                     </tbody>
