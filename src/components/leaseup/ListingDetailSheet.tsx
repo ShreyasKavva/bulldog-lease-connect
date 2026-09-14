@@ -102,6 +102,8 @@ export function ListingDetailSheet({
       document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content ?? "";
     const prevOgDesc =
       document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.content ?? "";
+    const prevOgUrl =
+      document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content ?? "";
 
     const bedLabel = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
     const where = listing.area ?? "";
@@ -117,12 +119,14 @@ export function ListingDetailSheet({
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", title);
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
+    setMeta('meta[property="og:url"]', "property", "og:url", `https://leasup.co/listing/${listing.id}`);
 
     return () => {
       if (prevTitle) document.title = prevTitle;
       if (prevDesc) setMeta('meta[name="description"]', "name", "description", prevDesc);
       if (prevOgTitle) setMeta('meta[property="og:title"]', "property", "og:title", prevOgTitle);
       if (prevOgDesc) setMeta('meta[property="og:description"]', "property", "og:description", prevOgDesc);
+      if (prevOgUrl) setMeta('meta[property="og:url"]', "property", "og:url", prevOgUrl);
     };
   }, [open, listing]);
 
