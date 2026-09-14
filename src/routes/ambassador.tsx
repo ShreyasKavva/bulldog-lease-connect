@@ -104,8 +104,8 @@ function AmbassadorLandingPage() {
           <h2 className="text-base font-black">Why campus-by-campus?</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Facebook Marketplace works everywhere but trusts no one. We're building the
-            opposite — a small, verified community at each school where everyone's a real
-            student. That only works if the first 20 people are real. Ambassadors are how
+            opposite — a small, close-knit community at each school built around your
+            campus. That only works if the first 20 people are real. Ambassadors are how
             we get there.
           </p>
         </section>
