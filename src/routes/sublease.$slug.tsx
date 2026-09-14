@@ -239,7 +239,11 @@ function CampusPage() {
           {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
           {(() => {
             const tiles = [
-              { label: "Listed this semester", value: stats.active },
+              // stats.active counts active rows with no expiry filter, while the grid
+              // below only renders unexpired ones. On a campus whose listings have all
+              // expired that printed a count directly above "No subleases posted yet",
+              // so suppress the tile once we know there is nothing to show.
+              { label: "Listed this semester", value: !listingsLoading && listings.length === 0 ? 0 : stats.active },
               { label: "Students helped", value: stats.completed },
               { label: "Students looking", value: stats.looking },
             ].filter((t) => typeof t.value === "number" && t.value > 0);
