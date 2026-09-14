@@ -562,7 +562,7 @@ export function ListingDetailSheet({
                 <span className="truncate font-bold text-foreground">{hostName}</span>
                 {(host?.verified_email ?? listing.profile?.verified_email) && (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
-                    <BadgeCheck className="h-3 w-3" /> Verified student
+                    <BadgeCheck className="h-3 w-3" /> School email
                   </span>
                 )}
               </div>
