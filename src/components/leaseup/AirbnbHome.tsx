@@ -887,7 +887,7 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
                   {posterName(p, "A student")}
                 </div>
                 <div className="truncate text-[11px] text-muted-foreground">
-                  {p.budget_max ? `Up to $${p.budget_max}/mo` : "Budget flexible"}
+                  {p.budget_max ? `Up to $${Number(p.budget_max).toLocaleString("en-US")}/mo` : "Budget flexible"}
                   {p.move_in_date ? ` · ${new Date(p.move_in_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
                 </div>
               </div>
