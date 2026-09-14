@@ -151,7 +151,9 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
             <div className="mt-0.5 text-xs text-muted-foreground">
               {c.city}
               {c.state ? `, ${c.state}` : ""}
-              {c.short_name && c.short_name !== c.name ? ` · ${c.short_name}` : ""}
+              {c.short_name && c.short_name !== c.name ? (
+                <span className="hidden sm:inline">{` · ${c.short_name}`}</span>
+              ) : null}
             </div>
           </div>
         </div>
