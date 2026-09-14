@@ -52,9 +52,9 @@ export const Route = createFileRoute("/looking")({
   head: () => ({
     meta: [
       { title: "Roommate Search — Post What You Need — LeaseUp" },
-      { name: "description", content: "Roommate Search: tell students what you need, get notified when a matching room or sublease is posted." },
+      { name: "description", content: "Roommate Search: tell students what you need, get notified when a room or sublease near your campus is posted." },
       { property: "og:title", content: "Roommate Search — Post What You Need" },
-      { property: "og:description", content: "Tell students what you need. Get notified when a matching listing is posted." },
+      { property: "og:description", content: "Tell students what you need. Get notified when a new listing is posted." },
       { property: "og:url", content: "https://leasup.co/looking" },
       { property: "og:type", content: "website" },
     ],
@@ -303,8 +303,8 @@ function LookingForPage() {
           <div>
             <h1 className="text-2xl font-bold">Roommate Search</h1>
             <p className="max-w-xl text-sm text-muted-foreground">
-              The reverse of browsing: students post what they need, and anyone with a
-              matching room or sublease messages them directly.
+              The reverse of browsing: students post what you need, and anyone with a
+              room or sublease to fill messages them directly.
             </p>
           </div>
 
@@ -641,7 +641,7 @@ function LookingForCard({
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             className="mt-1 inline-block cursor-pointer text-xs text-indigo-600 hover:underline"
           >
-            🔍 Browse matching subleases →
+            🔍 Browse subleases like this →
           </Link>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
