@@ -140,7 +140,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Browse and post student subleases near campus. Connect with other students at your school." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:description", content: "Browse and post student subleases near campus. Connect with other students at your school." },
       { name: "theme-color", content: "#111827" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
