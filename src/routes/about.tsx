@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const TITLE = "About LeaseUp — Student Sublease Marketplace";
 const DESC =
-  "LeaseUp is the sublease marketplace built for college students: verified .edu accounts, semester-ready dates, and direct messaging with no fees.";
+  "LeaseUp is the sublease marketplace built for college students: school email sign-up, semester-ready dates, and direct messaging with no fees.";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
