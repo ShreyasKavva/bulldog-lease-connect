@@ -47,7 +47,7 @@ import {
   buildDiscordText, buildGroupMeText, copyToClipboard, recordShare,
   shareToDiscord, shareToGroupMe, withUtm,
 } from "@/lib/leaseup/share";
-import { posterName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { posterName, posterFirstName } from "@/lib/leaseup/display-name";
 
 
 
@@ -466,7 +466,7 @@ function ListingDetailPage() {
 
   const posterLabel = posterName({ display_name: listing.display_name, profile: poster as any }, "");
 
-  const firstName = posterLabel ? posterLabel.split(" ")[0] : "Host";
+  const firstName = posterFirstName({ display_name: listing.display_name, profile: poster as any }, "Host");
 
   const isEdu = !!poster?.verified_email;
   const memberSince = poster?.created_at
@@ -1208,7 +1208,7 @@ function HostCard({
   isEdu: boolean;
   memberSince: string | null;
 }) {
-  const initial = profileDisplayName(poster, "?").trim().charAt(0).toUpperCase();
+  const initial = posterName({ display_name: listing.display_name, profile: poster as any }).trim().charAt(0).toUpperCase();
   const bannerColor = poster?.banner_color ?? "hsl(var(--primary))";
   const subtitle = [poster?.campus_name && abbrevCampus(poster.campus_name), poster?.year].filter(Boolean).join(" · ");
   const lastSeen = poster?.last_seen ? new Date(poster.last_seen).getTime() : 0;
