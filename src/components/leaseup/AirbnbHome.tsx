@@ -581,15 +581,28 @@ export function AirbnbHome({
       </section>
 
       {/* Q169 — browse by bedroom type */}
+
+      {/* Q201 — this count line was the last zero on the homepage: while the
+          listings query is in flight every tile reads "0 available", and a
+          bucket that is genuinely empty reads the same after it resolves.
+          Gate the section on !loading like the rails above, and drop
+          zero-count tiles. */}
+
+      {!loading && (() => {
+        const bedroomTypes = [
+          { emoji: "🛋️", label: "Studio", beds: 0, count: listings.filter((l) => l.beds === 0).length },
+          { emoji: "🛏", label: "1 Bedroom", beds: 1, count: listings.filter((l) => l.beds === 1).length },
+          { emoji: "🏠", label: "2 Bedrooms", beds: 2, count: listings.filter((l) => l.beds === 2).length },
+          { emoji: "🏡", label: "3+ Bedrooms", beds: 3, count: listings.filter((l) => l.beds >= 3).length },
+        ].filter((t) => t.count > 0);
+
+        if (bedroomTypes.length === 0) return null;
+
+        return (
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
         <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-foreground">🛏 Browse by bedroom type</h2>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          {[
-            { emoji: "🛋️", label: "Studio", beds: 0, count: listings.filter((l) => l.beds === 0).length },
-            { emoji: "🛏", label: "1 Bedroom", beds: 1, count: listings.filter((l) => l.beds === 1).length },
-            { emoji: "🏠", label: "2 Bedrooms", beds: 2, count: listings.filter((l) => l.beds === 2).length },
-            { emoji: "🏡", label: "3+ Bedrooms", beds: 3, count: listings.filter((l) => l.beds >= 3).length },
-          ].map((t) => (
+          {bedroomTypes.map((t) => (
             <button
               key={t.label}
               type="button"
@@ -603,6 +616,8 @@ export function AirbnbHome({
           ))}
         </div>
       </section>
+        );
+      })()}
 
       {/* Q170 — guest onboarding CTA (signed-out visitors only) */}
       {!sessionUser && (
