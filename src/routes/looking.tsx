@@ -602,7 +602,7 @@ function LookingForCard({
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
             {p.budget_max != null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-800">
-                <DollarSign className="h-3 w-3" />≤ ${p.budget_max}/mo
+                <DollarSign className="h-3 w-3" />≤ ${Number(p.budget_max).toLocaleString("en-US")}/mo
               </span>
             )}
             {dateRange && (
