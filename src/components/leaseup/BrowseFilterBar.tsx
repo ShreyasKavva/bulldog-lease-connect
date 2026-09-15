@@ -149,6 +149,7 @@ export function BrowseFilterBar({
   searchInput,
   onSearchInput,
   resultCount,
+  isLoading,
   placeLabel,
   initialFiltersOpen,
   selectedCampus,
@@ -161,6 +162,7 @@ export function BrowseFilterBar({
   searchInput: string;
   onSearchInput: (v: string) => void;
   resultCount: number;
+  isLoading?: boolean;
   placeLabel: string;
   /** Q96 — nav search on mobile deep-links here with the sheet open. */
   initialFiltersOpen?: boolean;
