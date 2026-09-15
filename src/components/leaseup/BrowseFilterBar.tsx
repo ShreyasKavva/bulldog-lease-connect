@@ -7,6 +7,7 @@
  * component only calls `onPatch` / `onClearAll`.
  */
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import { clearRecentSearches, getRecentSearches, type RecentSearch } from "@/lib/leaseup/recent-searches";
 
@@ -184,6 +185,7 @@ export function BrowseFilterBar({
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const [recents, setRecents] = useState<RecentSearch[]>([]);
   useEffect(() => { setRecents(getRecentSearches()); }, [values]);
+  const qc = useQueryClient();
   useEffect(() => {
     if (!searchOpen) return;
     const onDoc = (e: MouseEvent) => {
@@ -532,7 +534,10 @@ export function BrowseFilterBar({
           <div className="scrollbar-none -mx-1 flex flex-1 items-center gap-2 overflow-x-auto px-1 py-0.5">
             {hostId && (
               <button
-                onClick={() => onPatch({ hostId: undefined } as Partial<BrowseFilterValues>)}
+                onClick={() => {
+                  onPatch({ hostId: undefined } as Partial<BrowseFilterValues>);
+                  qc.invalidateQueries({ queryKey: ["listings"] });
+                }}
                 className={cn(
                   "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
                   "border-foreground bg-foreground text-background",
