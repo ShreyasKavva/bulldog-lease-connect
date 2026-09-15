@@ -225,6 +225,12 @@ export function AirbnbHome({
     return m;
   }, [dbCampusCounts, listings]);
 
+  const campusCount = useMemo(() => {
+    let n = 0;
+    for (const c of campusCounts.values()) if (c > 0) n++;
+    return n;
+  }, [campusCounts]);
+
   const spotlightCampuses = useMemo(() => {
     // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
     // with live listings rank first by count; the rest render "New".
@@ -625,7 +631,7 @@ export function AirbnbHome({
           <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 text-center">
             <h2 className="text-2xl font-bold text-white">Find your perfect sublease 🎓</h2>
             <p className="mb-5 mt-1 text-sm text-indigo-100">
-              LeaseUp connects students at 18+ campuses. Free to use, no broker fees.
+              LeaseUp connects students at {campusCount > 0 ? `${campusCount} campuses` : "campuses nationwide"}. Free to use, no broker fees.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
