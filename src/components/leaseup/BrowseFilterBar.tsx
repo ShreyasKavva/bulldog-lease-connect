@@ -45,6 +45,8 @@ export type BrowseFilterValues = {
   wifi?: 1;
   laundry?: 1;
   verified?: 1;
+  /** Q251 — active host filter surfaced as a removable chip. */
+  hostId?: string;
   sort?: Sort;
   /** Q159 — "New" quick filter (last 7 days). */
   new?: true;
@@ -155,6 +157,7 @@ export function BrowseFilterBar({
   selectedCampus,
   onCampusSelect,
   onCampusClear,
+  hostId,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -170,6 +173,8 @@ export function BrowseFilterBar({
   selectedCampus?: Campus | null;
   onCampusSelect?: (campus: Campus) => void;
   onCampusClear?: () => void;
+  /** Q251 — active host filter surfaced as a removable chip. */
+  hostId?: string;
 }) {
 
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
@@ -525,6 +530,17 @@ export function BrowseFilterBar({
         */}
         <div className="mt-2 flex items-center gap-2">
           <div className="scrollbar-none -mx-1 flex flex-1 items-center gap-2 overflow-x-auto px-1 py-0.5">
+            {hostId && (
+              <button
+                onClick={() => onPatch({ hostId: undefined } as Partial<BrowseFilterValues>)}
+                className={cn(
+                  "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                  "border-foreground bg-foreground text-background",
+                )}
+              >
+                Showing one host&apos;s listings
+              </button>
+            )}
             <button
               onClick={() => onPatch({ bedrooms: undefined })}
               className={cn(
