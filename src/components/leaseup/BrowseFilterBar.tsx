@@ -586,9 +586,11 @@ export function BrowseFilterBar({
             </button>
           </div>
 
-          <span className="hidden shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:block">
-            {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
-          </span>
+          {!isLoading && (
+            <span className="hidden shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:block">
+              {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+            </span>
+          )}
         </div>
 
 
