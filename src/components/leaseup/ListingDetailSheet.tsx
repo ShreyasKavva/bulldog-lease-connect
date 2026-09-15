@@ -424,7 +424,7 @@ export function ListingDetailSheet({
           />
 
           {/* Q165 — availability urgency */}
-          <ExpiryChip availableTo={listing.available_to} price={listing.price} />
+          <ExpiryChip availableFrom={listing.available_from} availableTo={listing.available_to} price={listing.price} />
 
 
           {listing.description && (
