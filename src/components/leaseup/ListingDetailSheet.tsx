@@ -178,10 +178,27 @@ export function ListingDetailSheet({
     },
   });
 
+  /** Q256 — the listing's own campus record (get_public_profile's campus_name is
+   *  the poster's school, not this listing's campus). */
+  const { data: listingCampus } = useQuery({
+    queryKey: ["campus", listing?.campus_id],
+    enabled: open && !!listing?.campus_id,
+    staleTime: 300_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("campuses")
+        .select("name, short_name")
+        .eq("id", listing!.campus_id!)
+        .maybeSingle();
+      return (data ?? null) as { name: string; short_name: string } | null;
+    },
+  });
+
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
   const hostDisplayName = (listing as Listing & { host?: { display_name?: string | null } }).host?.display_name;
   const host = hostProfile;
+  const campusName = listingCampus?.name ?? listingCampus?.short_name ?? "campus";
   const prefChips = roommatePrefChips((listing as Listing & { roommate_prefs?: unknown }).roommate_prefs);
   const hostName = posterName({ display_name: listing.display_name, profile: host as any, host: { display_name: hostDisplayName } }, "Host");
   const otherActive = Math.max(0, (host?.active_listing_count ?? 0) - 1);
@@ -578,7 +595,7 @@ export function ListingDetailSheet({
               {otherActive > 0 && (
                 <div className="text-[11px] text-muted-foreground">
                   {otherActive} other listing{otherActive === 1 ? "" : "s"}
-                  {host?.campus_name ? ` near ${host.campus_name}` : ""}
+                  {listing.campus_id ? ` near ${campusName}` : ""}
                 </div>
               )}
             </div>
@@ -604,7 +621,7 @@ export function ListingDetailSheet({
           {moreAtCampus.length > 0 && (
             <div>
               <h3 className="mb-2 mt-4 text-sm font-semibold text-gray-700 dark:text-muted-foreground">
-                🏘 More near {host?.campus_name ?? "this campus"}
+                🏘 More near {listing.campus_id ? campusName : "this campus"}
               </h3>
               <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
                 {moreAtCampus.map((l) => (
