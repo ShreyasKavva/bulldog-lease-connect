@@ -67,7 +67,7 @@ export const Route = createFileRoute("/listing/$id")({
     const range = l.available_from || l.available_to
       ? ` · Available ${sharedRange(l.available_from, l.available_to)}`
       : "";
-    const desc = `${bedStr}/${baStr} · $${l.price}/mo${range}. Message the host directly on LeaseUp.`;
+    const desc = `${bedStr}/${baStr} · $${Number(l.price).toLocaleString('en-US')}/mo${range}. Message the host directly on LeaseUp.`;
     const title = `${l.title}${l.area ? ` — ${l.area}` : ""} near ${campusName} | LeaseUp`;
 
     const img = l.photo_urls?.[0];
