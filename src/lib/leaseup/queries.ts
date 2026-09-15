@@ -37,7 +37,7 @@ async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
   }));
 }
 
-async function attachProfiles(listings: any[]): Promise<Listing[]> {
+export async function attachProfiles(listings: any[]): Promise<Listing[]> {
   const ids = Array.from(new Set(listings.map((l) => l.user_id)));
   if (ids.length === 0) return listings;
   // Only project safe, public poster columns — RLS additionally scopes rows
