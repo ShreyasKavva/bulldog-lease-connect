@@ -681,6 +681,7 @@ function Browse() {
           searchInput={searchInput}
           onSearchInput={setSearchInput}
           resultCount={filtered.length}
+          isLoading={isLoading}
           placeLabel={
             /* Q183 — show the campus being viewed; only fall back to the
                viewer's own campus when nothing is selected. */
