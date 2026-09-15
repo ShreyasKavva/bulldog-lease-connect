@@ -110,7 +110,7 @@ export function ListingDetailSheet({
     const avail = listing.available_from
       ? new Date(listing.available_from).toLocaleDateString("en-US", { month: "short", year: "numeric" })
       : "";
-    const title = `${listing.title} — $${listing.price}/mo · LeaseUp`;
+    const title = `${listing.title} — $${Number(listing.price).toLocaleString("en-US")}/mo · LeaseUp`;
     const desc = [bedLabel, where, avail && `Available ${avail}`, "LeaseUp"]
       .filter(Boolean)
       .join(" · ");
