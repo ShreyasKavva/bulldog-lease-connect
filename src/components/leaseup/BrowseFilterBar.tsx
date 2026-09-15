@@ -185,6 +185,7 @@ export function BrowseFilterBar({
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const [recents, setRecents] = useState<RecentSearch[]>([]);
   useEffect(() => { setRecents(getRecentSearches()); }, [values]);
+  const qc = useQueryClient();
   useEffect(() => {
     if (!searchOpen) return;
     const onDoc = (e: MouseEvent) => {
