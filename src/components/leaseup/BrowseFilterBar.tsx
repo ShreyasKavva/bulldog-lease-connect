@@ -45,6 +45,8 @@ export type BrowseFilterValues = {
   wifi?: 1;
   laundry?: 1;
   verified?: 1;
+  /** Q251 — active host filter surfaced as a removable chip. */
+  hostId?: string;
   sort?: Sort;
   /** Q159 — "New" quick filter (last 7 days). */
   new?: true;
