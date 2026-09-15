@@ -29,7 +29,7 @@ export function CostCalculator({
   const valid =
     start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end > start;
   const days = valid ? (end!.getTime() - start!.getTime()) / 86_400_000 : 0;
-  const months = valid ? Math.min(24, Math.max(1, Math.ceil(days / 30.44))) : null;
+  const months = valid ? Math.min(24, Math.max(1, Math.round(days / 30.44))) : null;
   const total = months ? months * price : null;
 
   return (
