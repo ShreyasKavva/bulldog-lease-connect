@@ -534,7 +534,10 @@ export function BrowseFilterBar({
           <div className="scrollbar-none -mx-1 flex flex-1 items-center gap-2 overflow-x-auto px-1 py-0.5">
             {hostId && (
               <button
-                onClick={() => onPatch({ hostId: undefined } as Partial<BrowseFilterValues>)}
+                onClick={() => {
+                  onPatch({ hostId: undefined } as Partial<BrowseFilterValues>);
+                  qc.invalidateQueries({ queryKey: ["listings"] });
+                }}
                 className={cn(
                   "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
                   "border-foreground bg-foreground text-background",
