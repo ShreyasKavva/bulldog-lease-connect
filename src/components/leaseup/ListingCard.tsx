@@ -32,13 +32,14 @@ import { formatDateRange } from "@/lib/leaseup/dates";
  */
 function availableBadge(iso: string | null | undefined) {
   if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
+  const [y, m, d] = iso.split("-").map(Number);
+  const parsed = new Date(y, m - 1, d);
+  if (Number.isNaN(parsed.getTime())) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const days = (d.getTime() - today.getTime()) / 86_400_000;
+  const days = (parsed.getTime() - today.getTime()) / 86_400_000;
   if (days < 0 || days > 45) return null;
-  return `Available ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  return `Available ${parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
 /**
