@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing } from "@/lib/leaseup/queries";
+import { markListingFilled, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing, attachProfiles } from "@/lib/leaseup/queries";
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { isDemoListing } from "@/lib/leaseup/demo";
 import { toast } from "sonner";
