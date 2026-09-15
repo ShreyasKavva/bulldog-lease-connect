@@ -374,7 +374,7 @@ export function ListingDetailSheet({
                   <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50">
                     <div className="min-w-0 flex-1 truncate">
                       <span className="font-bold">{c.title}</span>
-                      <span className="text-muted-foreground"> · {c.beds}BR · ${c.price}/mo</span>
+                      <span className="text-muted-foreground"> · {c.beds}BR · ${c.price.toLocaleString("en-US")}/mo</span>
                     </div>
                     <PriceLabelBadge price={c.price} campusId={c.campus_id ?? null} beds={c.beds} size="xs" />
                   </div>
