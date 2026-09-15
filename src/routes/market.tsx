@@ -83,8 +83,8 @@ function MarketPage() {
             {/* Overview cards */}
             <div className="grid grid-cols-3 gap-3">
               <StatCard label="Active listings" value={activeListingCount ? activeListingCount.toString() : "—"} />
-              <StatCard label="Average price" value={overallAvg ? `$${overallAvg}/mo` : "—"} />
-              <StatCard label="Median price" value={overallMedian ? `$${overallMedian}/mo` : "—"} />
+              <StatCard label="Average price" value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "—"} />
+              <StatCard label="Median price" value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "—"} />
             </div>
 
             {/* Price by bedroom */}
@@ -110,10 +110,10 @@ function MarketPage() {
                         <tr key={s.beds} className="border-b last:border-0">
                           <td className="py-2 font-bold">{s.beds}BR</td>
                           <td className="py-2 text-right">{s.listing_count}</td>
-                          <td className="py-2 text-right">${Math.round(s.min_price)}</td>
-                          <td className="py-2 text-right font-bold text-primary">${Math.round(s.median_price)}</td>
-                          <td className="py-2 text-right">${Math.round(s.avg_price)}</td>
-                          <td className="py-2 text-right">${Math.round(s.max_price)}</td>
+                          <td className="py-2 text-right">${Math.round(s.min_price).toLocaleString("en-US")}</td>
+                          <td className="py-2 text-right font-bold text-primary">${Math.round(s.median_price).toLocaleString("en-US")}</td>
+                          <td className="py-2 text-right">${Math.round(s.avg_price).toLocaleString("en-US")}</td>
+                          <td className="py-2 text-right">${Math.round(s.max_price).toLocaleString("en-US")}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -143,8 +143,8 @@ function MarketPage() {
                         <tr key={n.area} className="border-b last:border-0">
                           <td className="py-2 font-semibold">{n.area}</td>
                           <td className="py-2 text-right pl-2">{n.listing_count}</td>
-                          <td className="py-2 text-right pl-2">${Math.round(n.avg_price)}</td>
-                          <td className="py-2 text-right font-bold text-primary pl-2">${Math.round(n.median_price)}</td>
+                          <td className="py-2 text-right pl-2">${Math.round(n.avg_price).toLocaleString("en-US")}</td>
+                          <td className="py-2 text-right font-bold text-primary pl-2">${Math.round(n.median_price).toLocaleString("en-US")}</td>
                         </tr>
                       ))}
                     </tbody>
