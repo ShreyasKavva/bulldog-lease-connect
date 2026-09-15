@@ -1130,6 +1130,10 @@ const EXTRA_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   dryer: WashingMachine,
 };
 
+function normalizeAmenityLabel(s: string) {
+  return s.trim().toLowerCase().replace(/[^a-z]/g, "");
+}
+
 function AmenityChips({ listing }: { listing: Listing }) {
   const chips: Array<{ label: string; Icon: React.ComponentType<{ className?: string }> }> = [];
   for (const { key, label, Icon } of AMENITY_ICONS) {
@@ -1137,25 +1141,49 @@ function AmenityChips({ listing }: { listing: Listing }) {
   }
   const laundry = (listing as any).laundry as string | null | undefined;
   if (laundry) chips.push({ label: `Laundry — ${laundry}`, Icon: WashingMachine });
+
+  const blocked = new Set<string>([
+    "wifi",
+    "wifiincluded",
+    "furnished",
+    "parking",
+    "utilities",
+    "utilitiesincluded",
+    "laundry",
+    "petfriendly",
+    "pets",
+  ]);
+  for (const { label } of chips) blocked.add(normalizeAmenityLabel(label));
+
+  const roomTypes = new Set<string>([
+    "entire",
+    "private",
+    "shared",
+    "entireplace",
+    "privateroom",
+    "sharedroom",
+    "entireplace",
+    "privateroom",
+    "sharedroom",
+  ]);
+
   for (const raw of listing.amenities ?? []) {
     const k = raw.trim();
     if (!k) continue;
+    const norm = normalizeAmenityLabel(k);
+    if (roomTypes.has(norm)) continue;
+    if (blocked.has(norm)) continue;
     const Icon = EXTRA_ICONS[k.toLowerCase()] ?? BadgeCheck;
     chips.push({ label: k, Icon });
+    blocked.add(norm);
   }
-  const seen = new Set<string>();
-  const unique = chips.filter(({ label }) => {
-    const k = label.trim().toLowerCase();
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-  if (unique.length === 0) return null;
+  if (chips.length === 0) return null;
+
   return (
     <section className="mt-8">
       <h2 className="mb-4 text-lg font-bold">What this place offers</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {unique.map(({ label, Icon }, i) => (
+        {chips.map(({ label, Icon }, i) => (
           <div
             key={i}
             className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm font-medium"
