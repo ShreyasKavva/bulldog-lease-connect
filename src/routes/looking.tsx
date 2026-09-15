@@ -346,9 +346,12 @@ function LookingForPage() {
               className="mt-1 block h-10 w-36 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground"
             >
               <option value="">Any budget</option>
-              {[600, 800, 1000, 1200, 1500, 2000].map((v) => (
-                <option key={v} value={v}>${v}/mo</option>
-              ))}
+              <option value={600}>$600/mo</option>
+              <option value={800}>$800/mo</option>
+              <option value={1000}>$1,000/mo</option>
+              <option value={1200}>$1,200/mo</option>
+              <option value={1500}>$1,500/mo</option>
+              <option value={2000}>$2,000/mo</option>
             </select>
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
