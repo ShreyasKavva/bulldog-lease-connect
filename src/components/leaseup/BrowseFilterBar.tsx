@@ -7,6 +7,7 @@
  * component only calls `onPatch` / `onClearAll`.
  */
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import { clearRecentSearches, getRecentSearches, type RecentSearch } from "@/lib/leaseup/recent-searches";
 
