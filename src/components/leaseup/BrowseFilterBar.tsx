@@ -155,6 +155,7 @@ export function BrowseFilterBar({
   selectedCampus,
   onCampusSelect,
   onCampusClear,
+  hostId,
 }: {
   values: BrowseFilterValues;
   onPatch: (patch: Partial<BrowseFilterValues>) => void;
@@ -170,6 +171,8 @@ export function BrowseFilterBar({
   selectedCampus?: Campus | null;
   onCampusSelect?: (campus: Campus) => void;
   onCampusClear?: () => void;
+  /** Q251 — active host filter surfaced as a removable chip. */
+  hostId?: string;
 }) {
 
   const [filtersOpen, setFiltersOpen] = useState(!!initialFiltersOpen);
