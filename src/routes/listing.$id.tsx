@@ -273,7 +273,8 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
       return String(b.created_at).localeCompare(String(a.created_at));
     });
     const trimmed = rows.slice(0, 6);
-    const paths = trimmed.flatMap((r) => r.photos ?? []);
+    const withProfiles = await attachProfiles(trimmed);
+    const paths = withProfiles.flatMap((r) => r.photos ?? []);
     const urlMap = new Map<string, string>();
     if (paths.length) {
       const { data: signed } = await supabase.storage
@@ -281,7 +282,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
         .createSignedUrls(paths, 60 * 60 * 24 * 7);
       signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
     }
-    return trimmed.map((r) => ({
+    return withProfiles.map((r) => ({
       ...r,
       photo_urls: (r.photos ?? [])
         .map((p: string) => (/^https?:\/\//i.test(p) ? p : urlMap.get(p) ?? ""))
