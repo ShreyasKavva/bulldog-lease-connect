@@ -326,11 +326,6 @@ export function ListingDetailSheet({
               <h2 className="mt-1 text-2xl font-extrabold">{listing.title}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />{listing.area ?? "Near campus"}
-                {views !== null && views > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground">
-                    <Eye className="h-3 w-3" />{views} {views === 1 ? "view" : "views"}
-                  </span>
-                )}
               </div>
             </div>
             <div className="text-right">
