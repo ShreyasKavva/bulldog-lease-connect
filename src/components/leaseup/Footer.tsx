@@ -122,7 +122,6 @@ export function Footer() {
       <div className="border-t border-gray-100 dark:border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-5 text-xs text-gray-500 sm:flex-row dark:text-muted-foreground">
           <p>© 2026 LeaseUp · Built for college students.</p>
-          <p>Sublease near your campus.</p>
         </div>
       </div>
     </footer>
