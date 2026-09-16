@@ -303,7 +303,7 @@ function LookingForPage() {
           <div>
             <h1 className="text-2xl font-bold">Roommate Search</h1>
             <p className="max-w-xl text-sm text-muted-foreground">
-              The reverse of browsing: students post what you need, and anyone with a
+              The reverse of browsing: students post what they need, and anyone with a
               room or sublease to fill messages them directly.
             </p>
           </div>
