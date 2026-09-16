@@ -72,7 +72,7 @@ export function PriceContextBadge({
   }
   return (
     <span className={`${base} bg-teal-50 text-teal-600`}>
-      ≈ Near campus avg (${avg.toFixed(0)}/mo)
+      ≈ Near campus avg (${Math.round(avg).toLocaleString("en-US")}/mo)
     </span>
   );
 }
