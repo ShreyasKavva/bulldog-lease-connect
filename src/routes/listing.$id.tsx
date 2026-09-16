@@ -657,13 +657,6 @@ function ListingDetailPage() {
 
             <p className="mt-8 text-sm text-muted-foreground">
               Posted {timeAgo(listing.created_at)}
-              {viewCount >= 1 && (
-                <>
-                  {" · "}
-                  <Eye className="inline h-3.5 w-3.5 align-[-2px]" />{" "}
-                  {viewCount.toLocaleString()} {viewCount === 1 ? "view" : "views"}
-                </>
-              )}
 
               {posterLabel && (
                 <>
