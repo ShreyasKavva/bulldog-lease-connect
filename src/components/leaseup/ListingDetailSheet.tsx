@@ -386,7 +386,7 @@ export function ListingDetailSheet({
                   <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50">
                     <div className="min-w-0 flex-1 truncate">
                       <span className="font-bold">{c.title}</span>
-                      <span className="text-muted-foreground"> · {c.beds}BR · ${c.price.toLocaleString("en-US")}/mo</span>
+                      <span className="text-muted-foreground"> · {c.beds === 0 ? "Studio" : `${c.beds}BR`} · ${c.price.toLocaleString("en-US")}/mo</span>
                     </div>
                     <PriceLabelBadge price={c.price} campusId={c.campus_id ?? null} beds={c.beds} size="xs" />
                   </div>
@@ -396,7 +396,7 @@ export function ListingDetailSheet({
           )}
 
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-background p-3 text-center text-xs">
-            <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds} bed</div></div>
+            <div><Bed className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{listing.beds === 0 ? "Studio" : `${listing.beds} bed`}</div></div>
             <div><Bath className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{Number(listing.baths)} bath</div></div>
             <div><Calendar className="mx-auto h-5 w-5 text-primary" /><div className="mt-1 font-bold">{formatDay(listing.available_from) ?? "—"}</div></div>
           </div>
