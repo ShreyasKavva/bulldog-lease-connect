@@ -10,7 +10,7 @@
  * (and any user whose profile.onboarding_completed is already true)
  * go straight to `?next` or "/".
  */
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -143,9 +143,11 @@ function AuthPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md rounded-2xl bg-surface p-8 shadow-card-md">
         <div className="text-center mb-6">
-          <div className="text-3xl font-black tracking-tight">
-            <span className="text-primary">Lease</span><span>Up</span>
-          </div>
+            <Link to="/" className="inline-block">
+              <div className="text-3xl font-black tracking-tight">
+                <span className="text-primary">Lease</span><span>Up</span>
+              </div>
+            </Link>
           <p className="text-sm text-muted-foreground mt-1">
             Your campus housing — subleases, roommates, and transfers.
           </p>
