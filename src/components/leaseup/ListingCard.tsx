@@ -18,7 +18,7 @@ import { useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
-import { openSaveToCollection } from "./SaveToCollectionModal";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { openQuickInquiry } from "./QuickInquiryModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
@@ -124,6 +124,7 @@ export function ListingCard({
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
   const { user } = useSession();
+  const toggleSave = useToggleSave(user?.id);
   const rating = useListingRating(listing.id);
 
   const photo = photos[idx] ?? photos[0];
@@ -165,7 +166,7 @@ export function ListingCard({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
-    openSaveToCollection(listing.id);
+    void toggleSave(listing.id);
   }
 
   /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */

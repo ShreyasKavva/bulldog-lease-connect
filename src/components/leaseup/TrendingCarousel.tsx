@@ -3,7 +3,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
-import { openSaveToCollection } from "./SaveToCollectionModal";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { openQuickInquiry } from "./QuickInquiryModal";
 
 
@@ -19,6 +19,7 @@ export function TrendingCarousel({
   savedIds?: Set<string>;
 }) {
   const { user } = useSession();
+  const toggleSave = useToggleSave(user?.id);
   // Q105 — only a real trend counts: need at least 2 listings with views.
   const viewed = listings.filter((l) => (l.view_count ?? 0) > 0);
   if (viewed.length < 2) return null;
@@ -31,7 +32,7 @@ export function TrendingCarousel({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
-    openSaveToCollection(l.id);
+    void toggleSave(l.id);
   }
 
   function handleMessage(e: React.MouseEvent, l: Listing) {
