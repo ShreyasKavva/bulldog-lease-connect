@@ -54,7 +54,11 @@ export const submitAmbassadorApplication = createServerFn({ method: "POST" })
       process.env.SUPABASE_PUBLISHABLE_KEY!,
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
-    const { data: inserted, error } = await supabase
+    // No .select() — the read-back policy is admin-only and would reject the
+    // insert's RETURNING. The application id comes from the returned rows only
+    // if we asked; instead use a generated key for the email's idempotency.
+    const applicationKey = crypto.randomUUID();
+    const { error } = await supabase
       .from("ambassador_applications")
       .insert({
         name: data.name,
@@ -62,10 +66,8 @@ export const submitAmbassadorApplication = createServerFn({ method: "POST" })
         email: data.email,
         reason: data.reason,
         committed_to_post: data.committed_to_post,
-      })
-      .select("id")
-      .single();
+      });
     if (error) throw new Error(error.message);
-    await notifyAmbassadorApplication(inserted.id, data);
+    await notifyAmbassadorApplication(applicationKey, data);
     return { ok: true as const };
   });
