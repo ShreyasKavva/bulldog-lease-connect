@@ -775,6 +775,7 @@ function Browse() {
               listings={trendingListings}
               campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
               onOpen={setSelected}
+              savedIds={savedIds}
             />
           )}
           {view === "scroll" ? (
