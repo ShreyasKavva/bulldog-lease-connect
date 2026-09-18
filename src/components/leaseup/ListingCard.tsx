@@ -160,6 +160,7 @@ export function ListingCard({
   const savesCount = listing.saves_count ?? 0;
 
   function handleSave(e: React.MouseEvent) {
+    e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
     if (onHeart) { onHeart(); return; }
