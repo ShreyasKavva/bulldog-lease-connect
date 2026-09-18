@@ -14,6 +14,7 @@ import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import type { Listing } from "@/lib/leaseup/types";
 import { CampusMark } from "@/components/leaseup/CampusMark";
+import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
 import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -61,8 +62,8 @@ export const Route = createFileRoute("/sublease/$slug")({
         ],
       };
     }
-    const name = c.short_name ?? c.name;
-    const fullName = c.name ?? name;
+    const name = campusShortName(c);
+    const fullName = campusFullName(c);
     const n = loaderData?.stats?.active ?? 0;
     const cityStr = c?.city ? `${c.city}, ${c.state}` : "";
     const title = `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
@@ -73,6 +74,9 @@ export const Route = createFileRoute("/sublease/$slug")({
       meta: [
         { title },
         { name: "description", content: desc },
+        // Q269: zero-listing campus pages are thin content — keep them out of
+        // the index until they gain a listing (derived live from the count).
+        ...(n > 0 ? [] : [{ name: "robots", content: "noindex,follow" }]),
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
         { property: "og:url", content: `https://leasup.co/sublease/${params.slug}` },
@@ -115,6 +119,7 @@ type PriceFilter = "any" | "under700" | "under1000";
 
 function CampusPage() {
   const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
+  const campusShort = campusShortName(campus);
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
@@ -231,10 +236,10 @@ function CampusPage() {
           </div>
           <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
             <CampusMark campus={campus} className="h-12 w-12 text-base md:h-14 md:w-14 md:text-lg" />
-            {campus.name} Subleases
+            {campusFullName(campus)} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Find subleases posted by {campus.short_name} students who signed up with a campus email.
+            Find subleases posted by {campusShort} students who signed up with a campus email.
           </p>
 
           {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
@@ -251,7 +256,7 @@ function CampusPage() {
             if (tiles.length === 0) {
               return (
                 <p className="mt-5 text-sm text-muted-foreground">
-                  Be the first to list at {campus.short_name}.
+                  Be the first to list at {campusShort}.
                 </p>
               );
             }
@@ -346,8 +351,8 @@ function CampusPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-black">
             {!listingsLoading && filtered.length > 0
-              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campus.short_name}`
-              : `Subleases at ${campus.short_name}`}
+              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusShort}`
+              : `Subleases at ${campusShort}`}
           </h2>
           <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-0.5 text-xs">
             <button
@@ -378,13 +383,13 @@ function CampusPage() {
             <div className="text-5xl">🏠</div>
             <h3 className="mt-3 text-lg font-bold">
               {listings.length > 0
-                ? `No subleases match these filters at ${campus.short_name}.`
-                : `No subleases posted yet at ${campus.short_name}.`}
+                ? `No subleases match these filters at ${campusShort}.`
+                : `No subleases posted yet at ${campusShort}.`}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
               {listings.length > 0
                 ? "Try removing a filter to see more subleases."
-                : `Be the first — post your sublease and help a fellow ${campus.short_name} student.`}
+                : `Be the first — post your sublease and help a fellow ${campusShort} student.`}
             </p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease →
@@ -403,7 +408,7 @@ function CampusPage() {
         {lookingFor.length > 0 && (
           <section className="mt-12">
             <h2 className="mb-4 text-xl font-black">
-              Students actively looking for a sublease at {campus.short_name}
+              Students actively looking for a sublease at {campusShort}
             </h2>
             <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:px-0">
               {lookingFor.slice(0, 4).map((p) => {
@@ -451,10 +456,10 @@ function CampusPage() {
 
         {/* How it works */}
         <section className="mt-12 border-t pt-8">
-          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campus.short_name}</h2>
+          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campusShort}</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campus.short_name} students. Posters sign up with a school email.` },
+              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campusShort} students. Posters sign up with a school email.` },
               { n: 2, icon: Handshake, title: "Message directly", body: "No middleman. Message the lister directly and arrange the handoff." },
               { n: 3, icon: CheckCircle2, title: "Mark as rented", body: "Once a deal is made, the listing is marked complete. No ghost listings." },
             ].map(({ n, icon: Icon, title, body }) => (
@@ -493,7 +498,7 @@ function CampusPage() {
                     className="group flex flex-col rounded-xl border border-border bg-surface p-4 transition hover:border-primary hover:shadow-card"
                   >
                     <div className="text-sm font-bold text-foreground group-hover:text-primary">
-                      {c.short_name}
+                      {campusShortName(c)}
                     </div>
                     <div className="mt-0.5 text-[11px] text-muted-foreground">
                       {c.city}, {c.state}
@@ -512,7 +517,7 @@ function CampusPage() {
           const baseUrl = typeof window !== "undefined"
             ? `${window.location.origin}/sublease/${campus.slug}`
             : `https://leasup.co/sublease/${campus.slug}`;
-          const short = campus.short_name;
+          const short = campusShort;
           const gmUrl = withUtm(baseUrl, "groupme", "campus_share");
           const dcUrl = withUtm(baseUrl, "discord", "campus_share");
           const gmText = `If you're looking for a sublease at ${short} this summer/fall, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo fees, just real listings from real students 👇\n${gmUrl}`;
@@ -550,7 +555,7 @@ function CampusPage() {
 
         {/* Bottom lister CTA */}
         <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
-          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campus.short_name}?</h2>
+          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusShort}?</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
             Post it free and reach students already searching in {campus.city}.
           </p>

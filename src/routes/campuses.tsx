@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { Search, School } from "lucide-react";
 import { CampusMark } from "@/components/leaseup/CampusMark";
+import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
 
 
 export const Route = createFileRoute("/campuses")({
@@ -145,14 +146,14 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
           <CampusMark campus={c} className="h-11 w-11 text-xs" />
           <div className="min-w-0">
             <div className="text-base font-bold text-foreground group-hover:text-primary">
-              <span className="sm:hidden">{c.short_name || c.name}</span>
-              <span className="hidden sm:inline">{c.name}</span>
+              <span className="sm:hidden">{campusShortName(c) || campusFullName(c)}</span>
+              <span className="hidden sm:inline">{campusFullName(c)}</span>
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
               {c.city}
               {c.state ? `, ${c.state}` : ""}
-              {c.short_name && c.short_name !== c.name ? (
-                <span className="hidden sm:inline">{` · ${c.short_name}`}</span>
+              {campusShortName(c) && campusShortName(c) !== campusFullName(c) ? (
+                <span className="hidden sm:inline">{` · ${campusShortName(c)}`}</span>
               ) : null}
             </div>
           </div>
@@ -169,7 +170,7 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
           </span>
         </div>
         <span className="text-xs font-semibold text-primary group-hover:underline">
-          {has ? `Browse ${c.short_name || "listings"} →` : "Be the first →"}
+          {has ? `Browse ${campusShortName(c) || "listings"} →` : "Be the first →"}
         </span>
       </div>
     </Link>
