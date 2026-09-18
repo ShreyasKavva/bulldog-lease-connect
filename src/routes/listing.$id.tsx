@@ -300,6 +300,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
 function ListingDetailPage() {
   const { listing } = Route.useLoaderData() as { listing: ListingWithCampus };
   const { user } = useSession();
+  const toggleSave = useToggleSave(user?.id);
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
