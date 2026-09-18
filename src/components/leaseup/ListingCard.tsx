@@ -22,7 +22,6 @@ import { openSaveToCollection } from "./SaveToCollectionModal";
 import { openQuickInquiry } from "./QuickInquiryModal";
 import { useListingRating } from "@/lib/leaseup/ratings";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
-import { formatDateRange } from "@/lib/leaseup/dates";
 
 
 
