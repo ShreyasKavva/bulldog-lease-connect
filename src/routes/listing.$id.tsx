@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { openSaveToCollection } from "@/components/leaseup/SaveToCollectionModal";
+import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -300,6 +300,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
 function ListingDetailPage() {
   const { listing } = Route.useLoaderData() as { listing: ListingWithCampus };
   const { user } = useSession();
+  const toggleSave = useToggleSave(user?.id);
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
@@ -349,8 +350,7 @@ function ListingDetailPage() {
       openSignIn(`/listing/${listing.id}?save=1`);
       return;
     }
-    // Q91: hearts open the "Save to collection" modal.
-    openSaveToCollection(listing.id);
+    void toggleSave(listing.id);
   }
 
 

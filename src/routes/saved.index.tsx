@@ -1,56 +1,104 @@
 /**
- * /saved — saved collections grid (Q91).
+ * /saved — every listing you've hearted, newest first.
  *
- * Hearts across the app drop listings into named collections; this page lists
- * those collections with a 2x2 photo collage cover. "Saved" is always first.
+ * Hearts across the app save straight here; there are no collections.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { DEFAULT_COLLECTION, fetchCollections } from "@/lib/leaseup/collections";
+import { ListingCard } from "@/components/leaseup/ListingCard";
+import { fetchSavedListings, toggleSaved } from "@/lib/leaseup/queries";
 import type { Listing } from "@/lib/leaseup/types";
+
+/** Q161 — saved-listing sort options, persisted to localStorage. */
+const SAVED_SORT_KEY = "leasup_saved_sort";
+const SAVED_SORTS = ["recent", "price_asc", "price_desc", "ending_soon"] as const;
+type SavedSort = (typeof SAVED_SORTS)[number];
+const SAVED_SORT_LABELS: Record<SavedSort, string> = {
+  recent: "Recently saved",
+  price_asc: "Price ↑",
+  price_desc: "Price ↓",
+  ending_soon: "Ending soonest",
+};
 
 export const Route = createFileRoute("/saved/")({
   head: () => ({
     meta: [
       { title: "Saved subleases — LeaseUp" },
-      { name: "description", content: "Your saved sublease collections on LeaseUp." },
+      { name: "description", content: "Subleases you saved on LeaseUp." },
       { property: "og:title", content: "Saved subleases — LeaseUp" },
-      { property: "og:description", content: "Your saved sublease collections on LeaseUp." },
+      { property: "og:description", content: "Subleases you saved on LeaseUp." },
     ],
   }),
   component: SavedPage,
 });
 
-function photoOf(l: Listing) {
-  return (l.photo_urls?.length ? l.photo_urls : l.photos)?.[0] ?? null;
-}
-
-function Collage({ listings }: { listings: Listing[] }) {
-  const photos = listings.map(photoOf).filter(Boolean).slice(0, 4) as string[];
-  const cells = [0, 1, 2, 3];
-  return (
-    <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-2xl bg-muted">
-      {cells.map((i) =>
-        photos[i] ? (
-          <img key={i} src={photos[i]} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div key={i} className="h-full w-full bg-muted" />
-        ),
-      )}
-    </div>
-  );
-}
-
 function SavedPage() {
   const { user } = useSession();
-  const { data: collections = [], isLoading } = useQuery({
-    queryKey: ["collections", user?.id],
-    queryFn: () => fetchCollections(user!.id),
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+
+  const { data: saved = [], isLoading } = useQuery({
+    queryKey: ["saved-listings", user?.id],
+    queryFn: () => fetchSavedListings(user!.id),
     enabled: !!user?.id,
   });
+
+  const [sortBy, setSortBy] = useState<SavedSort>("recent");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(SAVED_SORT_KEY);
+      if (stored && (SAVED_SORTS as readonly string[]).includes(stored)) setSortBy(stored as SavedSort);
+    } catch { /* ignore */ }
+  }, []);
+  function changeSort(next: SavedSort) {
+    setSortBy(next);
+    try { window.localStorage.setItem(SAVED_SORT_KEY, next); } catch { /* ignore */ }
+  }
+
+  const listings: Listing[] = useMemo(() => {
+    const arr = [...saved];
+    if (sortBy === "price_asc") return arr.sort((a, b) => (a?.price ?? 0) - (b?.price ?? 0));
+    if (sortBy === "price_desc") return arr.sort((a, b) => (b?.price ?? 0) - (a?.price ?? 0));
+    if (sortBy === "ending_soon")
+      return arr.sort((a, b) => {
+        const ta = a?.available_to ? new Date(a.available_to).getTime() : Infinity;
+        const tb = b?.available_to ? new Date(b.available_to).getTime() : Infinity;
+        return ta - tb;
+      });
+    return arr;
+  }, [saved, sortBy]);
+
+  function refresh() {
+    if (!user) return;
+    qc.invalidateQueries({ queryKey: ["saved", user.id] });
+    qc.invalidateQueries({ queryKey: ["saved-listings", user.id] });
+  }
+
+  async function unsave(l: Listing) {
+    if (!user) return;
+    try {
+      await toggleSaved(user.id, l.id, true);
+      refresh();
+      toast.success("Removed from Saved", {
+        duration: 5000,
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            await toggleSaved(user.id, l.id, false);
+            refresh();
+          },
+        },
+      });
+    } catch {
+      toast.error("Couldn't remove that listing");
+    }
+  }
 
   if (!user) {
     return (
@@ -70,29 +118,26 @@ function SavedPage() {
     );
   }
 
-  const list = collections.length
-    ? collections
-    : [{ name: DEFAULT_COLLECTION, listings: [] as Listing[], savedAt: {} as Record<string, string> }];
-  const total = list.reduce((n, c) => n + c.listings.length, 0);
-
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <h1 className="text-2xl font-bold">Saved subleases</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {list.length} collection{list.length === 1 ? "" : "s"}
-        </p>
+        {listings.length > 0 && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {listings.length} sublease{listings.length === 1 ? "" : "s"}
+          </p>
+        )}
 
         {isLoading ? (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-square rounded-2xl bg-muted" />
-                <div className="mt-3 h-4 w-1/2 rounded bg-muted" />
+                <div className="aspect-[4/3] rounded-2xl bg-muted" />
+                <div className="mt-3 h-4 w-2/3 rounded bg-muted" />
               </div>
             ))}
           </div>
-        ) : total === 0 ? (
+        ) : listings.length === 0 ? (
           <div className="mx-auto max-w-md py-16 text-center">
             <Heart className="mx-auto h-12 w-12 text-gray-300" strokeWidth={1.5} />
             <h2 className="mt-3 text-lg font-semibold text-gray-900 dark:text-foreground">Nothing saved yet</h2>
@@ -107,22 +152,34 @@ function SavedPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {list.map((c) => (
-              <Link
-                key={c.name}
-                to="/saved/$collection"
-                params={{ collection: c.name }}
-                className="group block transition-transform hover:scale-[1.02]"
-              >
-                <Collage listings={c.listings} />
-                <p className="mt-3 font-semibold">{c.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {c.listings.length} sublease{c.listings.length === 1 ? "" : "s"}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <>
+            <div className="mt-6 flex items-center justify-end">
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                Sort:
+                <select
+                  value={sortBy}
+                  onChange={(e) => changeSort(e.target.value as SavedSort)}
+                  className="rounded-lg border border-gray-200 bg-background px-2 py-1 text-sm text-foreground dark:border-border"
+                >
+                  {SAVED_SORTS.map((k) => (
+                    <option key={k} value={k}>{SAVED_SORT_LABELS[k]}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {listings.map((l) => (
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  saved
+                  onSave={() => unsave(l)}
+                  onHeart={() => unsave(l)}
+                  onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
+                />
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

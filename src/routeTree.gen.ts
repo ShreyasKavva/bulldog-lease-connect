@@ -37,7 +37,6 @@ import { Route as SavedIndexRouteImport } from './routes/saved.index'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as SubleaseSlugRouteImport } from './routes/sublease.$slug'
-import { Route as SavedCollectionRouteImport } from './routes/saved.$collection'
 import { Route as RoommatesCreateRouteImport } from './routes/roommates.create'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
@@ -199,11 +198,6 @@ const SubleaseSlugRoute = SubleaseSlugRouteImport.update({
   path: '/sublease/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SavedCollectionRoute = SavedCollectionRouteImport.update({
-  id: '/saved/$collection',
-  path: '/saved/$collection',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RoommatesCreateRoute = RoommatesCreateRouteImport.update({
   id: '/create',
   path: '/create',
@@ -344,7 +338,6 @@ export interface FileRoutesByFullPath {
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
-  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages/': typeof MessagesIndexRoute
   '/profile/': typeof ProfileIndexRoute
@@ -395,7 +388,6 @@ export interface FileRoutesByTo {
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
-  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages': typeof MessagesIndexRoute
   '/profile': typeof ProfileIndexRoute
@@ -447,7 +439,6 @@ export interface FileRoutesById {
   '/profile/$userId': typeof ProfileUserIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/roommates/create': typeof RoommatesCreateRoute
-  '/saved/$collection': typeof SavedCollectionRoute
   '/sublease/$slug': typeof SubleaseSlugRoute
   '/messages/': typeof MessagesIndexRoute
   '/profile/': typeof ProfileIndexRoute
@@ -500,7 +491,6 @@ export interface FileRouteTypes {
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
-    | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages/'
     | '/profile/'
@@ -551,7 +541,6 @@ export interface FileRouteTypes {
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
-    | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages'
     | '/profile'
@@ -602,7 +591,6 @@ export interface FileRouteTypes {
     | '/profile/$userId'
     | '/profile/edit'
     | '/roommates/create'
-    | '/saved/$collection'
     | '/sublease/$slug'
     | '/messages/'
     | '/profile/'
@@ -653,7 +641,6 @@ export interface RootRouteChildren {
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ProfileUserIdRoute: typeof ProfileUserIdRoute
   ProfileEditRoute: typeof ProfileEditRoute
-  SavedCollectionRoute: typeof SavedCollectionRoute
   SubleaseSlugRoute: typeof SubleaseSlugRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
@@ -867,13 +854,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubleaseSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/saved/$collection': {
-      id: '/saved/$collection'
-      path: '/saved/$collection'
-      fullPath: '/saved/$collection'
-      preLoaderRoute: typeof SavedCollectionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/roommates/create': {
       id: '/roommates/create'
       path: '/create'
@@ -1084,7 +1064,6 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,
   ProfileEditRoute: ProfileEditRoute,
-  SavedCollectionRoute: SavedCollectionRoute,
   SubleaseSlugRoute: SubleaseSlugRoute,
   MessagesIndexRoute: MessagesIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
