@@ -20,8 +20,8 @@
  * head() sets robots=noindex — do not remove. This route must never be
  * crawlable.
  */
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import {
@@ -53,14 +53,9 @@ type Tab = "overview" | "reports" | "suspicious" | "listings" | "users" | "reven
 function AdminPage() {
   const { user, loading } = useSession();
   const { data: me, isLoading: profileLoading } = useMyProfile();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", search: { mode: "in" } });
-  }, [loading, user, navigate]);
-
-  if (loading || profileLoading) {
+  if (loading || (user && profileLoading)) {
     return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
   }
 
@@ -71,7 +66,7 @@ function AdminPage() {
           <div className="text-4xl">🚫</div>
           <h1 className="mt-2 text-xl font-black">Admins only</h1>
           <p className="mt-1 text-sm text-muted-foreground">You don't have access to this page.</p>
-          <Link to="/" className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Back home</Link>
+          <Link to="/browse" className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Browse subleases</Link>
         </div>
       </div>
     );
