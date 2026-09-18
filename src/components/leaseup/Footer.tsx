@@ -5,7 +5,7 @@
  */
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Instagram, Twitter } from "lucide-react";
+import { ArrowUpRight, Twitter } from "lucide-react";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 
