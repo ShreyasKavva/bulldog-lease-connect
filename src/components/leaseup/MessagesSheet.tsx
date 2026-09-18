@@ -47,6 +47,7 @@ import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import type { Conversation, Message, MessageReaction } from "@/lib/leaseup/types";
 import { toast } from "sonner";
 import { ScamWarningBanner } from "./ScamWarningBanner";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 const REACTION_EMOJI = ["👍", "❤️", "😂", "😮", "🙏", "🔥"];
 
@@ -329,9 +330,13 @@ export function MessagesSheet({
                   onContextMenu={(e) => { e.preventDefault(); setActionsFor(c); }}
                   className="flex w-full items-center gap-3 border-b p-3 text-left hover:bg-background"
                 >
-                  <div className="grid h-11 w-11 place-items-center rounded-full text-lg" style={{ background: c.other?.banner_color ?? "#2563EB" }}>
-                    {c.other?.avatar_emoji ?? "🙂"}
-                  </div>
+                  <UserAvatar
+                    name={c.other?.name ?? null}
+                    avatarUrl={c.other?.avatar_url}
+                    color={c.other?.banner_color ?? null}
+                    className="h-11 w-11"
+                    textClassName="text-base"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       {pinned && <Pin className="h-3 w-3 fill-primary text-primary" />}

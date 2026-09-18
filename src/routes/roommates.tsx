@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BadgeCheck, MessageCircle, Users, Sparkles, Home, Search } from "lucide-react";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/roommates")({
   head: () => ({
@@ -256,14 +257,6 @@ function FilterSelect({ label, value, onChange, options }: {
   );
 }
 
-function initialsOf(name: string | null | undefined): string {
-  if (!name) return "🙂";
-  const parts = name.trim().split(/\s+/);
-  const a = parts[0]?.[0] ?? "";
-  const b = parts[1]?.[0] ?? "";
-  return (a + b).toUpperCase() || a.toUpperCase() || "🙂";
-}
-
 function RoommateCard({ p, onMessage }: { p: RoommateProfileWithUser; onMessage: () => void }) {
   const u = p.profile;
   const mode = (p.mode ?? "looking") as RoommateMode;
@@ -280,7 +273,7 @@ function RoommateCard({ p, onMessage }: { p: RoommateProfileWithUser; onMessage:
   return (
     <article className="flex flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 transition hover:shadow-md dark:bg-surface">
       <div className="flex items-start gap-3">
-        <Avatar name={u?.name ?? null} emoji={u?.avatar_emoji ?? null} color={u?.banner_color ?? "#2563EB"} />
+        <Avatar name={u?.name ?? null} avatarUrl={u?.avatar_url ?? null} color={u?.banner_color ?? null} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <div className="truncate text-base font-semibold">{u?.name ?? "A student"}</div>
@@ -346,13 +339,14 @@ function RoommateCard({ p, onMessage }: { p: RoommateProfileWithUser; onMessage:
   );
 }
 
-function Avatar({ name, emoji, color }: { name: string | null; emoji: string | null; color: string }) {
+function Avatar({ name, avatarUrl, color }: { name: string | null; avatarUrl: string | null; color: string | null }) {
   return (
-    <div
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-sm font-bold text-white ring-2 ring-white"
-      style={{ background: color }}
-    >
-      {emoji ?? initialsOf(name)}
-    </div>
+    <UserAvatar
+      name={name}
+      avatarUrl={avatarUrl}
+      color={color}
+      className="h-12 w-12 ring-2 ring-white"
+      textClassName="text-sm"
+    />
   );
 }

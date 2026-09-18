@@ -23,6 +23,7 @@ export type Profile = {
   campus_id: string | null;
   bio: string | null;
   avatar_emoji: string | null;
+  avatar_url?: string | null;
   banner_color: string | null;
   vibe_tags: string[] | null;
   phone: string | null;

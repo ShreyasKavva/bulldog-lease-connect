@@ -24,6 +24,7 @@ const QUICK_REPLIES = [
 import { markConversationRead } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import type { Conversation, Message } from "@/lib/leaseup/types";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 function relTime(iso?: string | null) {
   if (!iso) return "";
@@ -49,16 +50,14 @@ function isSellerSide(c: Conversation, meId: string) {
 }
 
 function Avatar({ c, size = 40 }: { c: Conversation; size?: number }) {
-  const bg = c.other?.banner_color ?? "#2563EB";
-  const char = c.other?.avatar_emoji ?? displayName(c)[0]?.toUpperCase() ?? "?";
   return (
-    <span
-      className="grid shrink-0 place-items-center rounded-full text-base text-white"
-      style={{ background: bg, width: size, height: size }}
-      aria-hidden
-    >
-      {char}
-    </span>
+    <UserAvatar
+      name={displayName(c)}
+      avatarUrl={(c.other as { avatar_url?: string | null } | undefined)?.avatar_url}
+      color={c.other?.banner_color ?? null}
+      textClassName="text-base"
+      style={{ width: size, height: size }}
+    />
   );
 }
 

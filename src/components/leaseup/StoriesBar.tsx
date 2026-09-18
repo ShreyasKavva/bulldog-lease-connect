@@ -4,6 +4,7 @@ import type { Profile } from "@/lib/leaseup/types";
 import { Plus, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 type Story = {
   userId: string;
@@ -107,12 +108,13 @@ export function StoriesBar({
                   : "bg-gradient-to-tr from-muted-foreground/40 to-muted-foreground/20",
               )}
             >
-              <span
-                className="grid h-full w-full place-items-center rounded-full text-2xl ring-2 ring-white"
-                style={{ background: s.profile.banner_color ?? "#2563EB" }}
-              >
-                {s.profile.avatar_emoji ?? "🙂"}
-              </span>
+              <UserAvatar
+                name={s.profile.name}
+                avatarUrl={s.profile.avatar_url}
+                color={s.profile.banner_color ?? null}
+                className="h-full w-full ring-2 ring-white"
+                textClassName="text-xl"
+              />
               {s.profile.verified_email && (
                 <BadgeCheck className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-white text-success" />
               )}

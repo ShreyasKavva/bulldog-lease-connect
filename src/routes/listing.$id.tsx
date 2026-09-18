@@ -48,6 +48,7 @@ import {
   shareToDiscord, shareToGroupMe, withUtm,
 } from "@/lib/leaseup/share";
 import { posterName, posterFirstName } from "@/lib/leaseup/display-name";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 
@@ -1230,7 +1231,6 @@ function HostCard({
   isEdu: boolean;
   memberSince: string | null;
 }) {
-  const initial = posterName({ display_name: listing.display_name, profile: poster as any }).trim().charAt(0).toUpperCase();
   const bannerColor = poster?.banner_color ?? "hsl(var(--primary))";
   const subtitle = [poster?.campus_name && abbrevCampus(poster.campus_name), poster?.year].filter(Boolean).join(" · ");
   const lastSeen = poster?.last_seen ? new Date(poster.last_seen).getTime() : 0;
@@ -1248,16 +1248,13 @@ function HostCard({
   return (
     <div className="flex items-center gap-4">
       <Link to="/profile/$userId" params={{ userId: listing.user_id }} className="shrink-0">
-        {poster?.avatar_url ? (
-          <img src={poster.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover" />
-        ) : (
-          <div
-            className="grid h-14 w-14 place-items-center rounded-full text-2xl font-black text-white"
-            style={{ background: bannerColor }}
-          >
-            {poster?.avatar_emoji || initial}
-          </div>
-        )}
+        <UserAvatar
+          name={posterName({ display_name: listing.display_name, profile: poster as any })}
+          avatarUrl={poster?.avatar_url}
+          color={bannerColor}
+          className="h-14 w-14"
+          textClassName="text-2xl"
+        />
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -1732,17 +1729,18 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
 
 // Queue 60 — Part C: compact card for a looking-for post
 function LookingForMatchCard({ p, onMessage }: { p: LookingForPost; onMessage: () => void }) {
-  const profile = (p as any).profile as { name?: string; avatar_emoji?: string; banner_color?: string; verified_email?: boolean } | undefined;
+  const profile = (p as any).profile as { name?: string; avatar_url?: string | null; banner_color?: string; verified_email?: boolean } | undefined;
   const range = sharedRange(p.move_in_date, p.move_out_date);
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        <div
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ring-2 ring-white"
-          style={{ background: profile?.banner_color ?? "#2563EB" }}
-        >
-          {profile?.avatar_emoji ?? "🙂"}
-        </div>
+        <UserAvatar
+          name={posterName({ display_name: p.display_name, profile: profile as any })}
+          avatarUrl={profile?.avatar_url}
+          color={profile?.banner_color ?? null}
+          className="h-10 w-10 ring-2 ring-white"
+          textClassName="text-base"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="truncate text-sm font-bold">{posterName({ display_name: p.display_name, profile: profile as any })}</p>

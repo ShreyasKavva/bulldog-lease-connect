@@ -44,7 +44,7 @@ export async function attachProfiles(listings: any[]): Promise<Listing[]> {
   // to profiles that own an active listing for anonymous viewers.
   const { data } = await supabase
     .from("profiles_public")
-    .select("id,name,avatar_emoji,banner_color,verified_email")
+    .select("id,name,avatar_emoji,avatar_url,banner_color,verified_email")
     .in("id", ids);
   const map = new Map<string, Profile>((data ?? []).map((p: any) => [p.id, p]));
   return listings.map((l) => ({ ...l, profile: map.get(l.user_id) }));

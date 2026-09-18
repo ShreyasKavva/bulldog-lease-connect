@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { copyToClipboard, shareToGroupMe, withUtm } from "@/lib/leaseup/share";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 export const Route = createFileRoute("/sublease/$slug")({
@@ -418,12 +419,13 @@ function CampusPage() {
                     className="min-w-[85%] snap-start rounded-2xl border border-border bg-surface p-4 shadow-sm md:min-w-0"
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
-                        style={{ background: p.profile?.banner_color ?? "#2563EB" }}
-                      >
-                        {p.profile?.avatar_emoji ?? first[0]?.toUpperCase() ?? "🙂"}
-                      </div>
+                      <UserAvatar
+                        name={first}
+                        avatarUrl={p.profile?.avatar_url}
+                        color={p.profile?.banner_color ?? null}
+                        className="h-10 w-10"
+                        textClassName="text-sm"
+                      />
                       <div className="min-w-0">
                         <div className="truncate text-sm font-bold">{first}</div>
                         <div className="truncate text-[11px] text-muted-foreground">
