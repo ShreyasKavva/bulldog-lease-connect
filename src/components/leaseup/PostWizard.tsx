@@ -439,7 +439,7 @@ export function PostWizard({ userId }: { userId: string }) {
         )}
         {d.step === 1 ? (
           <>
-            <p className="mb-6 text-xs text-gray-400">Step 1 of 2 — Basic details</p>
+            <p className="mb-6 text-xs text-gray-400">Step 1 of 3 — Basic details</p>
             <div className="space-y-6">
               <div>
                 <label className="mb-1 block text-sm font-medium">Listing title</label>
@@ -782,8 +782,22 @@ export function PostWizard({ userId }: { userId: string }) {
                 d.photoUrls?.map((u) => u.trim()).find((u) => u && urlOk[u]) ||
                 null;
               const campusName = campuses.find((c) => c.id === d.campusId)?.name ?? null;
+              // Show the year whenever the range leaves the current year, so a
+              // lease that crosses into next year never reads as ambiguous.
+              const years = [d.availableFrom, d.availableTo]
+                .filter(Boolean)
+                .map((s) => new Date(s as string).getFullYear());
+              const showYear =
+                years.length > 0 &&
+                (new Set(years).size > 1 || years.some((y) => y !== new Date().getFullYear()));
               const fmt = (s?: string | null) =>
-                s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
+                s
+                  ? new Date(s).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      ...(showYear ? { year: "numeric" as const } : {}),
+                    })
+                  : null;
               const dates = [fmt(d.availableFrom), fmt(d.availableTo)].filter(Boolean).join(" – ");
               const photoCount = (d.photos?.length ?? 0) + (d.photoUrls?.filter((u) => u.trim() && urlOk[u.trim()]).length ?? 0);
 

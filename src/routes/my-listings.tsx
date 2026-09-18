@@ -441,7 +441,7 @@ function MyListingsPage() {
                       );
                     })()}
                     <div className="text-sm text-gray-500">
-                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price}/mo
+                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price.toLocaleString()}/mo
                     </div>
                     {(l.available_from || l.available_to) && (
                       <div className="text-xs text-gray-400">
@@ -492,7 +492,7 @@ function MyListingsPage() {
                   {!filled && <ShareToStoryButton listing={l} variant="pill" label="Share" />}
                   <button
                     onClick={() => setStatsOpen((s) => ({ ...s, [l.id]: !s[l.id] }))}
-                    title="Stats"
+                    title="Stats" aria-label="Stats"
                     className={cn("rounded-md p-2 hover:bg-background", statsOpen[l.id] && "bg-primary/10 text-primary")}
                   >
                     <BarChart3 className="h-4 w-4" />
@@ -500,7 +500,7 @@ function MyListingsPage() {
                   <Link
                     to="/listing/$id/edit"
                     params={{ id: l.id }}
-                    title="Edit listing"
+                    title="Edit listing" aria-label="Edit listing"
                     className="rounded-md p-2 hover:bg-background"
                   >
                     <Pencil className="h-4 w-4" />
@@ -508,27 +508,27 @@ function MyListingsPage() {
                   {!filled && (
                     <button
                       onClick={() => setTourFor(l)}
-                      title="Tour availability"
+                      title="Tour availability" aria-label="Tour availability"
                       className="rounded-md p-2 hover:bg-background"
                     >
                       <Calendar className="h-4 w-4" />
                     </button>
                   )}
                   {filled ? (
-                    <button onClick={() => reopen(l)} title="Reopen" className="rounded-md p-2 hover:bg-background">
+                    <button onClick={() => reopen(l)} title="Reopen" aria-label="Reopen" className="rounded-md p-2 hover:bg-background">
                       <RotateCcw className="h-4 w-4" />
                     </button>
                   ) : (
                     <>
-                      <button onClick={() => markFilled(l)} title="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
+                      <button onClick={() => markFilled(l)} title="Mark as filled" aria-label="Mark as filled" className="rounded-md p-2 text-success hover:bg-success/10">
                         <CheckCircle2 className="h-4 w-4" />
                       </button>
-                      <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} className="rounded-md p-2 hover:bg-background">
+                      <button onClick={() => toggleActive(l)} title={l.is_active ? "Hide" : "Show"} aria-label={l.is_active ? "Hide listing" : "Show listing"} className="rounded-md p-2 hover:bg-background">
                         {l.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       </button>
                     </>
                   )}
-                  <button onClick={() => remove(l)} title="Delete" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
+                  <button onClick={() => remove(l)} title="Delete" aria-label="Delete listing" className="rounded-md p-2 text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

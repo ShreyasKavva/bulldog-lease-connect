@@ -167,7 +167,9 @@ export function SaveToCollectionModal() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {c.listings.length} place{c.listings.length === 1 ? "" : "s"}
+                    {c.listings.length === 0
+                      ? "Empty"
+                      : `${c.listings.length} place${c.listings.length === 1 ? "" : "s"}`}
                   </p>
                 </div>
                 <span

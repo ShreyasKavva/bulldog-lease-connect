@@ -4,7 +4,8 @@
  * Every surface that shows "posted by X" must call posterName() so the demo
  * placeholder account ("LeaseUp Demo") can never leak into user-facing output
  * again. Seeded listings carry a realistic display_name (Q175); real listings
- * fall back to the profile name, then the email handle, then "Student".
+ * fall back to the profile name, then "Student" — never the email handle,
+ * which would leak the local part of a real address.
  */
 const BANNED = ["leaseup demo", "leasup demo", "demo account", "leaseup"];
 
@@ -27,7 +28,6 @@ export function posterName(listing?: PosterLike | null, fallback = "Student"): s
     clean(listing?.host?.display_name) ??
     clean(listing?.profile?.name) ??
     clean(listing?.host?.name) ??
-    clean(listing?.profile?.email?.split("@")[0]) ??
     fallback
   );
 }
@@ -64,7 +64,6 @@ export function profileDisplayName(
   return (
     clean(profile?.display_name) ??
     clean(profile?.name) ??
-    clean(profile?.email?.split("@")[0]) ??
     fallback
   );
 }

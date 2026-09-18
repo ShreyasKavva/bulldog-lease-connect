@@ -90,7 +90,16 @@ function ToursPage() {
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <h1 className="flex items-center gap-2 text-2xl font-black"><Calendar className="h-6 w-6 text-primary" />Your tours</h1>
-          <p className="text-sm text-muted-foreground">{upcoming.length} upcoming · {past.length} past</p>
+          <p className="text-sm text-muted-foreground">
+            {upcoming.length === 0 && past.length === 0
+              ? "No tours scheduled yet."
+              : [
+                  upcoming.length > 0 ? `${upcoming.length} upcoming` : null,
+                  past.length > 0 ? `${past.length} past` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+          </p>
         </div>
       </header>
 

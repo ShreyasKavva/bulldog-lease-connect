@@ -419,6 +419,9 @@ export async function sendMessage(conversationId: string, senderId: string, reci
           listingPrice: listing?.price ?? null,
           listingArea: listing?.area ?? null,
           conversationUrl: replyUrl,
+          // Server-side recipient verification (the endpoint mails the other
+          // participant, never a body-supplied address).
+          conversationId,
         },
       });
     }
