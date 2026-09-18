@@ -5,7 +5,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import { ProfileView } from "@/components/leaseup/ProfileView";
-import { Button } from "@/components/ui/button";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 import { GraduationCap } from "lucide-react";
 
