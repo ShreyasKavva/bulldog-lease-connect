@@ -50,7 +50,7 @@ export function SmartSections({
       // Q102 — "trending" = most-viewed of the last 30 days. minViews keeps the
       // row hidden on a fresh DB instead of listing everything at "0 views".
       key: "trending",
-      title: "🔥 Trending this week",
+      title: "Trending this week",
       seeAll: { sort: "trending" },
       minItems: 2,
       query: {
