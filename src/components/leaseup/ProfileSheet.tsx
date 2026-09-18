@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchProfile } from "@/lib/leaseup/queries";
 import { useSession } from "@/lib/leaseup/use-session";
-import { AVATAR_EMOJIS, BANNER_COLORS, VIBE_TAGS, YEARS } from "@/lib/leaseup/constants";
-import { useEffect, useState } from "react";
+import { BANNER_COLORS, VIBE_TAGS, YEARS } from "@/lib/leaseup/constants";
+import { useEffect, useRef, useState } from "react";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 import { supabase } from "@/integrations/supabase/client";
-import { BadgeCheck, Pencil, Star, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Camera, Pencil, Star, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ReviewsList } from "./ReviewsList";
@@ -39,6 +40,8 @@ export function ProfileSheet({
     currently_status: "", currently_emoji: "🔎",
   });
   const [tab, setTab] = useState<"about" | "reviews">("about");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
   // Eligibility + verified count + review summary
@@ -89,6 +92,32 @@ export function ProfileSheet({
     setEditing(false);
   }
 
+  // Q266 — upload a real profile photo. Stored in the private "avatars"
+  // bucket; the path lands on profiles.avatar_url and UserAvatar signs it.
+  async function uploadAvatar(file: File) {
+    if (!user) return;
+    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5 MB"); return; }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, {
+        contentType: file.type, upsert: true,
+      });
+      if (error) throw error;
+      const { error: upErr } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", user.id);
+      if (upErr) throw upErr;
+      toast.success("Photo updated");
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["public-profile"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function toggleVibe(v: string) {
     setForm(f => ({ ...f, vibe_tags: f.vibe_tags.includes(v) ? f.vibe_tags.filter(x => x !== v) : (f.vibe_tags.length < 3 ? [...f.vibe_tags, v] : f.vibe_tags) }));
   }
@@ -107,8 +136,38 @@ export function ProfileSheet({
               )}
             </div>
             <div className="relative px-5 pb-8">
-              <div className="-mt-10 mb-4 grid h-20 w-20 place-items-center rounded-full text-4xl ring-4 ring-surface" style={{ background: editing ? form.banner_color : (profile.banner_color ?? "#2563EB") }}>
-                {editing ? form.avatar_emoji : profile.avatar_emoji}
+              <div className="relative -mt-10 mb-4 h-20 w-20">
+                <UserAvatar
+                  name={profile.name}
+                  avatarUrl={(profile as { avatar_url?: string | null }).avatar_url}
+                  color={editing ? form.banner_color : (profile.banner_color ?? null)}
+                  className="h-20 w-20 ring-4 ring-surface"
+                  textClassName="text-3xl"
+                />
+                {isMe && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      aria-label="Upload profile photo"
+                      className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground shadow ring-2 ring-surface disabled:opacity-60"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </button>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (f) void uploadAvatar(f);
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               {!editing ? (
@@ -218,12 +277,15 @@ export function ProfileSheet({
                   <div><Label>Bio (max 120)</Label><Textarea maxLength={120} value={form.bio} onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))} /></div>
                   <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                   <div><Label>Instagram (optional)</Label><Input placeholder="@handle" value={form.instagram_handle} onChange={(e) => setForm(f => ({ ...f, instagram_handle: e.target.value }))} /></div>
-                  <div><Label>Avatar</Label>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {AVATAR_EMOJIS.map(e => (
-                        <button key={e} onClick={() => setForm(f => ({ ...f, avatar_emoji: e }))}
-                          className={cn("grid h-10 w-10 place-items-center rounded-full text-xl border-2", form.avatar_emoji === e ? "border-primary" : "border-transparent bg-background")}>{e}</button>
-                      ))}
+                  <div><Label>Profile photo</Label>
+                    <div className="mt-1">
+                      <Button type="button" variant="outline" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                        <Camera className="mr-2 h-4 w-4" />
+                        {uploading ? "Uploading…" : "Upload a photo"}
+                      </Button>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        No photo? We show the first letter of your name.
+                      </p>
                     </div>
                   </div>
                   <div><Label>Banner color</Label>
