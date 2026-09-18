@@ -229,7 +229,17 @@ export function ListingCard({
   }
 
   return (
-    <article className="lu-card-hover group cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md">
+    <article className="lu-card-hover group relative cursor-pointer overflow-hidden rounded-2xl bg-surface shadow-none transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md">
+      {/* Q268 — real crawlable/keyboard-focusable anchor for the whole card.
+          Sits under the photo and text (later siblings paint above), so the
+          existing click handlers, heart and quick actions are unaffected. */}
+      <Link
+        to="/listing/$id"
+        params={{ id: listing.id }}
+        onClick={handleOpenLink}
+        aria-label={`View ${listing.title?.trim() || "sublease"}`}
+        className="absolute inset-0 z-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+      />
       <div
         ref={picker.containerRef}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
