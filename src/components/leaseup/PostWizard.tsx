@@ -17,6 +17,7 @@ import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { EstimatedReach } from "@/components/leaseup/EstimatedReach";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection";
+import { termPresets, isQuarterSystem } from "@/lib/leaseup/academic-calendar";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
 const DRAFT_KEY = "leaseup-post-draft";
@@ -43,12 +44,6 @@ function relativeSince(ts: number) {
   return `${day} day${day === 1 ? "" : "s"} ago`;
 }
 
-const SEMESTER_PRESETS = [
-  { label: "Fall 2026", from: "2026-08-20", to: "2026-12-20" },
-  { label: "Spring 2027", from: "2027-01-10", to: "2027-05-10" },
-  { label: "Summer 2027", from: "2027-05-15", to: "2027-08-15" },
-  { label: "Full Year", from: "2026-08-20", to: "2027-05-10" },
-];
 
 
 const PLACE_TYPES = [
@@ -533,7 +528,7 @@ export function PostWizard({ userId }: { userId: string }) {
 
               <div>
                 <div className="mb-3 flex flex-wrap gap-2 [&>button]:flex-1 [&>button]:min-w-[7.5rem] sm:[&>button]:flex-none sm:[&>button]:min-w-0">
-                  {SEMESTER_PRESETS.map((p) => {
+                  {termPresets(campuses.find((c) => c.id === d.campusId)?.name).map((p) => {
                     const active = d.availableFrom === p.from && d.availableTo === p.to;
                     return (
                       <button
@@ -552,6 +547,11 @@ export function PostWizard({ userId }: { userId: string }) {
                     );
                   })}
                 </div>
+                {isQuarterSystem(campuses.find((c) => c.id === d.campusId)?.name) && (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    {campuses.find((c) => c.id === d.campusId)?.short_name ?? "This school"} runs on quarters — these dates match its quarter calendar.
+                  </p>
+                )}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Available from</label>
