@@ -1,4 +1,4 @@
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, getRequestHeader } from "@tanstack/react-start";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -11,6 +11,41 @@ const ApplySchema = z.object({
   committed_to_post: z.boolean().default(false),
 });
 
+/**
+ * Fire-and-forget: notify shreykavva@gmail.com (locked in the template's `to`)
+ * about a new ambassador application via the existing transactional email
+ * route. Called with the service-role key (system caller); a failed email
+ * never fails the application itself.
+ */
+async function notifyAmbassadorApplication(applicationId: string, data: {
+  name: string; school: string; email: string; reason: string; committed_to_post: boolean;
+}) {
+  try {
+    const host = getRequestHeader("host") ?? "localhost:8080";
+    const proto = getRequestHeader("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+    await fetch(`${proto}://${host}/lovable/email/transactional/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      },
+      body: JSON.stringify({
+        templateName: "ambassador-application",
+        idempotencyKey: `ambassador-application-${applicationId}`,
+        templateData: {
+          name: data.name,
+          school: data.school,
+          email: data.email,
+          reason: data.reason,
+          committedToPost: data.committed_to_post,
+        },
+      }),
+    });
+  } catch (err) {
+    console.warn("[ambassador-apply] notification email failed", err);
+  }
+}
+
 export const submitAmbassadorApplication = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => ApplySchema.parse(data))
   .handler(async ({ data }) => {
@@ -19,13 +54,18 @@ export const submitAmbassadorApplication = createServerFn({ method: "POST" })
       process.env.SUPABASE_PUBLISHABLE_KEY!,
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
-    const { error } = await supabase.from("ambassador_applications").insert({
-      name: data.name,
-      school: data.school,
-      email: data.email,
-      reason: data.reason,
-      committed_to_post: data.committed_to_post,
-    });
+    const { data: inserted, error } = await supabase
+      .from("ambassador_applications")
+      .insert({
+        name: data.name,
+        school: data.school,
+        email: data.email,
+        reason: data.reason,
+        committed_to_post: data.committed_to_post,
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
+    await notifyAmbassadorApplication(inserted.id, data);
     return { ok: true as const };
   });
