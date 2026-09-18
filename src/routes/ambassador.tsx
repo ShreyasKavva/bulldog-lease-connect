@@ -111,17 +111,10 @@ function AmbassadorLandingPage() {
         </section>
 
         {/* Part F: Footer CTAs */}
-        <section className="mt-10 grid gap-3 sm:grid-cols-2">
-          <Link
-            to="/sublease/$slug"
-            params={{ slug: "university-of-georgia" }}
-            className="rounded-2xl bg-surface p-4 text-sm font-semibold shadow-card-md hover:bg-primary-light"
-          >
-            Already at UGA? → Browse subleases
-          </Link>
+        <section className="mt-10">
           <Link
             to="/post"
-            className="rounded-2xl bg-primary p-4 text-sm font-bold text-primary-foreground shadow-card-md hover:bg-primary-dark"
+            className="block rounded-2xl bg-primary p-4 text-center text-sm font-bold text-primary-foreground shadow-card-md hover:bg-primary-dark"
           >
             Have a sublease to post? → Post for free
           </Link>
