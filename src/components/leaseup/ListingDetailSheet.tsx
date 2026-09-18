@@ -12,7 +12,7 @@ import { ReportListingDialog } from "./ReportListingDialog";
 import { ShareToStoryButton } from "./ShareToStoryButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchListings } from "@/lib/leaseup/queries";
+import { fetchListings, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
 import { posterName } from "@/lib/leaseup/display-name";
 import { cn } from "@/lib/utils";
 import { SecureDepositDialog } from "./SecureDepositDialog";
@@ -694,12 +694,17 @@ export function ListingDetailSheet({
                 const isActive = (listing.status ?? "active") === "active";
                 if (isActive && !window.confirm("Mark this listing as taken? It will be hidden from browse.")) return;
                 setStatusSaving(true);
-                const { error } = await supabase
-                  .from("listings")
-                  .update({ status: isActive ? "taken" : "active" })
-                  .eq("id", listing.id);
+                try {
+                  // Q267 — "taken" is not a valid listing status; the DB only
+                  // accepts active / filled / inactive.
+                  if (isActive) await markListingFilled(listing.id);
+                  else await reopenListing(listing.id);
+                } catch {
+                  setStatusSaving(false);
+                  toast.error("Couldn't update listing");
+                  return;
+                }
                 setStatusSaving(false);
-                if (error) { toast.error("Couldn't update listing"); return; }
                 toast.success(isActive ? "Listing marked as taken ✓" : "Listing reactivated ✓");
                 qc.invalidateQueries({ queryKey: ["listings"] });
                 onOpenChange(false);
