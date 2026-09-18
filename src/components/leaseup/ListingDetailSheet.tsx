@@ -674,36 +674,6 @@ export function ListingDetailSheet({
             )}
           </div>
 
-          {/* Q156 — share row: copy / WhatsApp / email */}
-          <div className="mt-2 flex gap-2">
-            <button
-              type="button"
-              onClick={async () => {
-                const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
-                try {
-                  await navigator.clipboard.writeText(`${origin}/listing/${listing.id}`);
-                  toast.success("Copied!");
-                } catch { toast.error("Couldn't copy link"); }
-              }}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
-            >
-              📋 Copy link
-            </button>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent("Check out this sublease on LeaseUp: ")}${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : "https://leasup.co"}/listing/${listing.id}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
-            >
-              📱 WhatsApp
-            </a>
-            <a
-              href={`mailto:?subject=${encodeURIComponent("Sublease on LeaseUp")}&body=${encodeURIComponent(`Hey! Found this sublease you might like: ${typeof window !== "undefined" ? window.location.origin : "https://leasup.co"}/listing/${listing.id}`)}`}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
-            >
-              📧 Email
-            </a>
-          </div>
 
           {user?.id !== listing.user_id && (
             <Button
