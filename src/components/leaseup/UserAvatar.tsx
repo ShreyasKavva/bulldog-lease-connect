@@ -91,7 +91,13 @@ export function UserAvatar({
         textClassName,
         className,
       )}
-      style={{ background: color || avatarColorFor(name), ...style }}
+      // "#2563EB" is the app-wide default banner colour, i.e. a colour the
+      // student never picked — fall back to the per-name colour so a wall of
+      // initials doesn't read as one identical blue block.
+      style={{
+        background: color && color.toLowerCase() !== "#2563eb" ? color : avatarColorFor(name),
+        ...style,
+      }}
       aria-hidden
     >
       {letter || (
