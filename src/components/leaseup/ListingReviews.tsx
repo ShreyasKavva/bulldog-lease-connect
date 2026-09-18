@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { fetchListingReviews, type Review } from "@/lib/leaseup/reviews.queries";
+import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/leaseup/use-session";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import { openSignIn } from "./SignInModal";
@@ -145,6 +146,22 @@ export function ListingReviewsSection({
   const isOwner = !!user && user.id === ownerId;
   const mine = user ? list.find((r) => r.reviewer_id === user.id) ?? null : null;
 
+  // Only someone who actually contacted the poster about this listing can
+  // review it — otherwise any passer-by could rate a place they never saw.
+  const { data: canReview = false } = useQuery({
+    queryKey: ["can-review", listingId, user?.id],
+    enabled: !!user && !isOwner,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("listing_id", listingId)
+        .or(`participant_1_id.eq.${user!.id},participant_2_id.eq.${user!.id}`)
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+  });
+
   const others = useMemo(() => list.filter((r) => r.id !== mine?.id), [list, mine]);
   const visible = useMemo(() => (showAll ? others : others.slice(0, 6)), [others, showAll]);
 
@@ -160,7 +177,7 @@ export function ListingReviewsSection({
         )}
       </div>
 
-      {!isOwner && !mine && (
+      {!isOwner && !mine && (!user || canReview) && (
         <button
           type="button"
           onClick={() => (user ? setReviewOpen(true) : openSignIn(`/listing/${listingId}`))}
