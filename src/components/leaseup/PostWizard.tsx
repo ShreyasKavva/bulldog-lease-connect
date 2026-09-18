@@ -17,6 +17,7 @@ import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
 import { EstimatedReach } from "@/components/leaseup/EstimatedReach";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";
 import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection";
+import { termPresets, isQuarterSystem } from "@/lib/leaseup/academic-calendar";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
 const DRAFT_KEY = "leaseup-post-draft";
