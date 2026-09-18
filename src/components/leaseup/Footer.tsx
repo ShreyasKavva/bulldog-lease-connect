@@ -5,7 +5,7 @@
  */
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Instagram, Twitter } from "lucide-react";
+import { ArrowUpRight, Twitter } from "lucide-react";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 
@@ -49,15 +49,6 @@ export function Footer() {
           <p className="text-lg font-bold text-gray-900 dark:text-foreground">LeaseUp</p>
           <p className="mt-1 text-sm text-gray-600 dark:text-muted-foreground">Sublease near your campus.</p>
           <div className="mt-4 flex items-center gap-3">
-            <a
-              href="https://instagram.com/leasup"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="LeaseUp on Instagram"
-              className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-muted-foreground transition-colors hover:text-foreground dark:border-border"
-            >
-              <Instagram className="h-4 w-4" />
-            </a>
             <a
               href="https://x.com/leasup"
               target="_blank"
