@@ -121,7 +121,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
           {!isHome && (
             // Only at lg+: below that the nav links crowd it and the search
             // pill collapses to a floating circle overlapping "Subleases".
-            <div className="hidden min-w-0 flex-1 lg:flex">
+            <div className="hidden min-w-0 flex-1 justify-center lg:flex">
               <NavSearchBar />
             </div>
           )}
