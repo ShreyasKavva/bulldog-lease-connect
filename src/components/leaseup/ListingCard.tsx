@@ -407,7 +407,7 @@ export function ListingCard({
 
 
 
-      <div className="px-1 py-3" onClick={onOpen}>
+      <div className="relative z-10 px-1 py-3" onClick={onOpen}>
         <Link
           to="/listing/$id"
           params={{ id: listing.id }}
