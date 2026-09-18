@@ -55,7 +55,6 @@ export type RoommateProfileWithUser = RoommateProfile & {
     year: string | null;
     major: string | null;
     verified_email: boolean;
-    is_verified?: boolean;
   } | null;
 };
 
@@ -69,7 +68,7 @@ export type RoommateInterest = {
 };
 
 const PROFILE_FIELDS =
-  "id,name,avatar_emoji,banner_color,avatar_url,year,major,verified_email,is_verified";
+  "id,name,avatar_emoji,banner_color,avatar_url,year,major,verified_email";
 
 export async function fetchMyRoommateProfile(userId: string): Promise<RoommateProfile | null> {
   const { data, error } = await supabase
