@@ -547,6 +547,11 @@ export function PostWizard({ userId }: { userId: string }) {
                     );
                   })}
                 </div>
+                {isQuarterSystem(campuses.find((c) => c.id === d.campusId)?.name) && (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    {campuses.find((c) => c.id === d.campusId)?.short_name ?? "This school"} runs on quarters — these dates match its quarter calendar.
+                  </p>
+                )}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Available from</label>
