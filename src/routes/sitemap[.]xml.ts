@@ -27,36 +27,23 @@ export const Route = createFileRoute("/sitemap.xml")({
             process.env.SUPABASE_PUBLISHABLE_KEY!,
             { auth: { persistSession: false, autoRefreshToken: false } },
           );
-          // Paginate — PostgREST caps a single response at 1000 rows and we
-          // have ~3,900 campuses.
+          // Paginate — PostgREST caps a single response at 1000 rows.
           const pageSize = 1000;
-          for (let offset = 0; ; offset += pageSize) {
-            const { data, error } = await supabase
-              .from("campuses")
-              .select("slug")
-              .order("name")
-              .range(offset, offset + pageSize - 1);
-            if (error) throw error;
-            for (const c of data ?? []) {
-              entries.push({
-                loc: `${BASE_URL}/sublease/${c.slug}`,
-                priority: "0.9",
-                changefreq: "daily",
-              });
-            }
-            if (!data || data.length < pageSize) break;
-          }
-          // Active listings — one entry each.
+          // Active listings — one entry each, and the source of truth for
+          // which campus pages are worth submitting (Q269: an empty campus
+          // page is thin content, so it stays out of the sitemap).
+          const campusIds = new Set<string>();
           for (let offset = 0; ; offset += pageSize) {
             const { data, error } = await supabase
               .from("listings")
-              .select("id")
+              .select("id,campus_id")
               .eq("is_active", true)
               .eq("status", "active")
               .order("id")
               .range(offset, offset + pageSize - 1);
             if (error) throw error;
             for (const l of data ?? []) {
+              if (l.campus_id) campusIds.add(l.campus_id as string);
               entries.push({
                 loc: `${BASE_URL}/listing/${l.id}`,
                 priority: "0.6",
@@ -64,6 +51,24 @@ export const Route = createFileRoute("/sitemap.xml")({
               });
             }
             if (!data || data.length < pageSize) break;
+          }
+          if (campusIds.size > 0) {
+            const ids = [...campusIds];
+            for (let i = 0; i < ids.length; i += 200) {
+              const { data, error } = await supabase
+                .from("campuses")
+                .select("slug")
+                .in("id", ids.slice(i, i + 200))
+                .order("name");
+              if (error) throw error;
+              for (const c of data ?? []) {
+                entries.push({
+                  loc: `${BASE_URL}/sublease/${c.slug}`,
+                  priority: "0.9",
+                  changefreq: "daily",
+                });
+              }
+            }
           }
         } catch {
           // Fail open — return base entries
