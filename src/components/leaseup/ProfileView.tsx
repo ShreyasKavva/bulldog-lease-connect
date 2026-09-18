@@ -327,10 +327,15 @@ export function ProfileView({ userId }: { userId: string }) {
         )}
 
         {/* Trust signals strip */}
-        <section className="mt-4 grid grid-cols-4 gap-2">
-          <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`Post${profile.listing_count === 1 ? "" : "s"}`} />
-          <TrustCard icon="✓" label={profile.completed_count > 0 ? `${profile.completed_count}` : "—"} sub="Completed" />
-          <TrustCard icon="✓" label={isEdu ? "✓" : "—"} sub="Verified" />
+        {/* Zero/placeholder tiles are suppressed rather than shown as "—". */}
+        <section className="mt-4 grid auto-cols-fr grid-flow-col gap-2">
+          {profile.listing_count > 0 && (
+            <TrustCard icon="🏠" label={`${profile.listing_count}`} sub={`Post${profile.listing_count === 1 ? "" : "s"}`} />
+          )}
+          {profile.completed_count > 0 && (
+            <TrustCard icon="✓" label={`${profile.completed_count}`} sub="Completed" />
+          )}
+          {isEdu && <TrustCard icon="✓" label="✓" sub="Verified" />}
           <TrustCard icon="📅" label={joinedLabel} sub="Joined" />
         </section>
 
