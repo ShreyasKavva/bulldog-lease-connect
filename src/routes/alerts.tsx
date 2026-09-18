@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SignInGate } from "@/components/leaseup/SignInGate";

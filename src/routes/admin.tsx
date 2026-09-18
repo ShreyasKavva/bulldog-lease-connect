@@ -20,8 +20,8 @@
  * head() sets robots=noindex — do not remove. This route must never be
  * crawlable.
  */
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 import {
