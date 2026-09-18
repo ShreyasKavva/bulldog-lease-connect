@@ -528,7 +528,7 @@ export function PostWizard({ userId }: { userId: string }) {
 
               <div>
                 <div className="mb-3 flex flex-wrap gap-2 [&>button]:flex-1 [&>button]:min-w-[7.5rem] sm:[&>button]:flex-none sm:[&>button]:min-w-0">
-                  {SEMESTER_PRESETS.map((p) => {
+                  {termPresets(campuses.find((c) => c.id === d.campusId)?.name).map((p) => {
                     const active = d.availableFrom === p.from && d.availableTo === p.to;
                     return (
                       <button
