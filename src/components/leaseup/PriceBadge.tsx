@@ -7,7 +7,6 @@
  *
  * Rules:
  *   <= 80% of campus avg → "Great price" (solid green)
- *   81–95%               → "Below avg"   (subtle green)
  *   anything above       → no badge (we never show negative signals)
  *   < 3 listings on the campus, or any error → no badge (fails silently)
  */
