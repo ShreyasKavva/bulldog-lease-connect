@@ -87,12 +87,6 @@ function firstName(name: string | null | undefined) {
   return (name ?? "Student").trim().split(/\s+/)[0] || "Student";
 }
 
-function initials(name: string | null | undefined) {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  return (parts[0]![0]! + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
 function responseLabel(rate: number | null | undefined) {
   if (rate == null) return null;
   if (rate >= 90) return "Responds within a few hours";

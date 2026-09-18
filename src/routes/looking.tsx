@@ -489,13 +489,6 @@ function LookingForPage() {
   );
 }
 
-const INITIAL_BGS = ["#DBEAFE", "#DCFCE7", "#FEF3C7", "#FCE7F3", "#E0E7FF", "#FFE4E6", "#CCFBF1"];
-function initialBg(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return INITIAL_BGS[h % INITIAL_BGS.length];
-}
-
 function LookingForCard({
   p, campusName, isMine, interested,
   onOpenProfile, onReply, onEdit, onDelete, onFound, onSeeMatches, onNotifyMe, onRenew,

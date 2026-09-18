@@ -1231,7 +1231,6 @@ function HostCard({
   isEdu: boolean;
   memberSince: string | null;
 }) {
-  const initial = posterName({ display_name: listing.display_name, profile: poster as any }).trim().charAt(0).toUpperCase();
   const bannerColor = poster?.banner_color ?? "hsl(var(--primary))";
   const subtitle = [poster?.campus_name && abbrevCampus(poster.campus_name), poster?.year].filter(Boolean).join(" · ");
   const lastSeen = poster?.last_seen ? new Date(poster.last_seen).getTime() : 0;
@@ -1250,7 +1249,7 @@ function HostCard({
     <div className="flex items-center gap-4">
       <Link to="/profile/$userId" params={{ userId: listing.user_id }} className="shrink-0">
         <UserAvatar
-          name={poster?.name ?? null}
+          name={posterName({ display_name: listing.display_name, profile: poster as any })}
           avatarUrl={poster?.avatar_url}
           color={bannerColor}
           className="h-14 w-14"

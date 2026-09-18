@@ -257,14 +257,6 @@ function FilterSelect({ label, value, onChange, options }: {
   );
 }
 
-function initialsOf(name: string | null | undefined): string {
-  if (!name) return "🙂";
-  const parts = name.trim().split(/\s+/);
-  const a = parts[0]?.[0] ?? "";
-  const b = parts[1]?.[0] ?? "";
-  return (a + b).toUpperCase() || a.toUpperCase() || "🙂";
-}
-
 function RoommateCard({ p, onMessage }: { p: RoommateProfileWithUser; onMessage: () => void }) {
   const u = p.profile;
   const mode = (p.mode ?? "looking") as RoommateMode;

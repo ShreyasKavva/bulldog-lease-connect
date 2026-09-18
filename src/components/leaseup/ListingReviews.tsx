@@ -18,16 +18,6 @@ import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 const CORAL = "#FF5A5F";
 
-function initials(name: string | null | undefined) {
-  const n = (name ?? "").trim();
-  if (!n) return "S";
-  return n
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 
 function StarRow({ value, size = 14 }: { value: number; size?: number }) {
   return (
