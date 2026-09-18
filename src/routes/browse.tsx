@@ -186,7 +186,9 @@ export const Route = createFileRoute("/browse")({
       ? (raw.movein as MoveIn)
       : undefined,
 
-    view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : undefined,
+    // Q267 — "grid" must survive in the URL, otherwise the remembered-view
+    // effect below reads the stored "map"/"list" back and there is no way out.
+    view: raw.view === "map" ? "map" : raw.view === "list" ? "list" : raw.view === "grid" ? "grid" : undefined,
     tenants: parseInt2(raw.tenants ?? raw.people),
     type: parseType(raw.type),
     maxDuration: parseInt2(raw.maxDuration),
