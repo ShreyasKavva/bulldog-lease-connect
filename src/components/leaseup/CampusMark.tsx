@@ -169,7 +169,8 @@ export function CampusMark({
   textClassName?: string;
 }) {
   const key = campus.id || campus.slug || campus.name || "campus";
-  const { bg, fg } = PALETTE[hash(key) % PALETTE.length];
+  const { bg, fg } =
+    brandColor(campus.name) ?? brandColor(campus.short_name) ?? PALETTE[hash(key) % PALETTE.length];
   const initials = campusInitials(campus);
   return (
     <span
