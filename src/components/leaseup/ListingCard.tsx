@@ -289,16 +289,9 @@ export function ListingCard({
           </span>
         )}
 
-        {/* Q159 — quick actions: always visible on mobile, hover-reveal on desktop */}
+        {/* Q159 — quick actions: always visible on mobile, hover-reveal on desktop.
+            Save lives on the top-right heart only — no duplicate save button. */}
         <div className="absolute bottom-0 left-0 right-0 z-20 flex gap-2 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={handleSave}
-            aria-label={saved ? "Unsave listing" : "Save listing"}
-            className="rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
-          >
-            {saved ? "❤️" : "🤍"} Save
-          </button>
           <button
             type="button"
             onClick={handleMessage}

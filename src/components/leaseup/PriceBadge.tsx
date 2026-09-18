@@ -7,7 +7,6 @@
  *
  * Rules:
  *   <= 80% of campus avg → "Great price" (solid green)
- *   81–95%               → "Below avg"   (subtle green)
  *   anything above       → no badge (we never show negative signals)
  *   < 3 listings on the campus, or any error → no badge (fails silently)
  */
@@ -43,13 +42,12 @@ export function useCampusAverage(campusId: string | null | undefined) {
   });
 }
 
-export type PriceTier = { label: string; tone: "great" | "below" } | null;
+export type PriceTier = { label: string; tone: "great" } | null;
 
 export function priceTier(price: number, avg: number | null | undefined): PriceTier {
   if (!avg || !Number.isFinite(avg) || avg <= 0 || !Number.isFinite(price) || price <= 0) return null;
   const ratio = price / avg;
   if (ratio <= 0.8) return { label: "Great price", tone: "great" };
-  if (ratio <= 0.95) return { label: "Below avg", tone: "below" };
   return null;
 }
 
@@ -62,13 +60,7 @@ export function PriceBadgePill({
 }) {
   return (
     <span
-      className={cn(
-        "rounded-full px-2 py-0.5 text-xs font-semibold",
-        tier.tone === "great"
-          ? "bg-green-500 text-white"
-          : "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-        className,
-      )}
+      className={cn("rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white", className)}
     >
       {tier.label}
     </span>
