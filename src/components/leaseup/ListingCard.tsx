@@ -155,17 +155,21 @@ export function ListingCard({
 
 
   const views = listing.view_count ?? 0;
-  const savesCount = listing.saves_count ?? 0;
+  // Q267 — the DB trigger count only refreshes on refetch, so reflect this
+  // user's own heart immediately: +1 when they save, -1 when they unsave.
+  const [saveDelta, setSaveDelta] = useState(0);
+  const savesCount = Math.max(0, (listing.saves_count ?? 0) + saveDelta);
 
   function handleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
-    if (onHeart) { onHeart(); return; }
+    if (onHeart) { setSaveDelta((d) => d + (saved ? -1 : 1)); onHeart(); return; }
     if (!user) {
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
+    setSaveDelta((d) => d + (saved ? -1 : 1));
     void toggleSave(listing.id);
   }
 

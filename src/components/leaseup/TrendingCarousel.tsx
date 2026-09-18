@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Flame, Heart, Home } from "lucide-react";
 import type { Listing } from "@/lib/leaseup/types";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ export function TrendingCarousel({
 }) {
   const { user } = useSession();
   const toggleSave = useToggleSave(user?.id);
+  // Q267 — reflect this user's own heart in the count right away.
+  const [saveDeltas, setSaveDeltas] = useState<Record<string, number>>({});
   // Q105 — only a real trend counts: need at least 2 listings with views.
   const viewed = listings.filter((l) => (l.view_count ?? 0) > 0);
   if (viewed.length < 2) return null;
@@ -32,6 +35,7 @@ export function TrendingCarousel({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
+    setSaveDeltas((m) => ({ ...m, [l.id]: (m[l.id] ?? 0) + (savedIds?.has(l.id) ? -1 : 1) }));
     void toggleSave(l.id);
   }
 
@@ -49,7 +53,7 @@ export function TrendingCarousel({
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {viewed.map((l) => {
           const saved = savedIds?.has(l.id) ?? false;
-          const savesCount = l.saves_count ?? 0;
+          const savesCount = Math.max(0, (l.saves_count ?? 0) + (saveDeltas[l.id] ?? 0));
           return (
             <div
               key={l.id}
