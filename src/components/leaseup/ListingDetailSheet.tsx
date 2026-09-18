@@ -527,7 +527,7 @@ export function ListingDetailSheet({
                     className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
                   >
                     {l.photo_urls?.[0] ? (
-                      <img src={l.photo_urls[0]} alt="" className="lu-card-img h-full w-full object-cover" />
+                      <img src={l.photo_urls[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-3xl">🏠</div>
                     )}
@@ -632,7 +632,7 @@ export function ListingDetailSheet({
                   >
                     <div className="h-28 w-full bg-muted">
                       {l.photo_urls?.[0] ? (
-                        <img src={l.photo_urls[0]} alt="" loading="lazy" className="h-28 w-full object-cover" />
+                        <img src={l.photo_urls[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
                       )}
