@@ -15,7 +15,8 @@ type CampusLike = {
   short_name?: string | null;
 } | null | undefined;
 
-const MAX_LEN = 28;
+const MAX_LEN = 34;
+const TRAILING_STOPWORDS = /\s+(of|the|and|at|in|for|&)$/i;
 
 /** "A T Still University" -> "A.T. Still University"; single trailing initials keep one period. */
 export function restoreInitials(name: string): string {
@@ -31,7 +32,7 @@ export function truncateWords(text: string, max = MAX_LEN): string {
   const cut = text.slice(0, max + 1);
   const lastSpace = cut.lastIndexOf(" ");
   const out = (lastSpace > 0 ? cut.slice(0, lastSpace) : text.slice(0, max)).trim();
-  return out.replace(/[-–—,&]$/, "").trim();
+  return out.replace(/[-–—,&]$/, "").replace(TRAILING_STOPWORDS, "").trim();
 }
 
 /** True when short_name is just a mid-word slice of the full name. */
