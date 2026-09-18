@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { computeReviewStats, fetchUserReviews } from "@/lib/leaseup/reviews.queries";
 import { timeAgo } from "@/lib/leaseup/constants";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {
   return (
@@ -81,12 +82,13 @@ export function ReviewsList({ userId }: { userId: string }) {
         {list.map((r) => (
           <div key={r.id} className="rounded-xl bg-background p-3">
             <div className="flex items-center gap-2">
-              <div
-                className="grid h-9 w-9 place-items-center rounded-full text-base"
-                style={{ background: r.reviewer?.banner_color ?? "#2563EB" }}
-              >
-                {r.reviewer?.avatar_emoji ?? "🙂"}
-              </div>
+              <UserAvatar
+                name={r.reviewer?.name ?? null}
+                avatarUrl={r.reviewer?.avatar_url}
+                color={r.reviewer?.banner_color ?? null}
+                className="h-9 w-9"
+                textClassName="text-sm"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="font-bold text-sm truncate">{r.reviewer?.name ?? "Student"}</span>

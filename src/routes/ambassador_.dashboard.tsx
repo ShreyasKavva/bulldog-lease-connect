@@ -8,6 +8,7 @@ import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Sparkles, Copy, Check, Trophy } from "lucide-react";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/ambassador_/dashboard")({
   head: () => ({
@@ -97,9 +98,13 @@ function AmbassadorPage() {
             {leaderboard.map((e, i) => (
               <li key={e.user_id} className="flex items-center gap-3 rounded-xl bg-background px-3 py-2">
                 <span className="w-6 text-sm font-extrabold text-muted-foreground">#{i + 1}</span>
-                <div className="grid h-8 w-8 place-items-center rounded-full text-base" style={{ background: e.banner_color ?? "#2563EB" }}>
-                  {e.avatar_emoji ?? "🙂"}
-                </div>
+                <UserAvatar
+                  name={e.is_me ? "You" : e.name}
+                  avatarUrl={e.avatar_url}
+                  color={e.banner_color ?? null}
+                  className="h-8 w-8"
+                  textClassName="text-sm"
+                />
                 <div className="flex-1 truncate text-sm font-semibold">
                   {e.is_me ? "You" : (e.name ?? "A student")}
                 </div>

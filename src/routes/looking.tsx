@@ -38,6 +38,7 @@ import { NEIGHBORHOODS, timeAgo } from "@/lib/leaseup/constants";
 import type { LookingForPost, Listing } from "@/lib/leaseup/types";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 // Q152 — local memory of which Roommate Search posts this device already upvoted.
 const UPVOTED_KEY = "leasup_upvoted_posts";
@@ -527,8 +528,6 @@ function LookingForCard({
   const expiringSoon = ageDays >= 55 && ageDays < 60;
   const last = activeAgo(profile?.last_seen ?? profile?.updated_at ?? null);
   const avatarUrl = (profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null;
-  const hasAvatar = !!avatarUrl || !!profile?.avatar_emoji;
-  const initial = displayName.trim().charAt(0).toUpperCase() || "S";
   /** Q159 — pull a budget out of the post body ("$850", "under $1,200") for ?maxPrice. */
   const budgetMatch = /\$\s?(\d[\d,]{1,6})/.exec(`${p.title ?? ""} ${p.description ?? ""}`);
   const budgetFromBody = budgetMatch ? Number(budgetMatch[1].replace(/,/g, "")) : null;
@@ -559,21 +558,14 @@ function LookingForCard({
       )}
 
       <div className="flex items-start gap-3">
-        <button
-          onClick={onOpenProfile}
-          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full text-xl ring-2 ring-white"
-          style={{
-            background: hasAvatar ? profile?.banner_color ?? "#2563EB" : initialBg(displayName),
-          }}
-          aria-label="View profile"
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-          ) : profile?.avatar_emoji ? (
-            profile.avatar_emoji
-          ) : (
-            <span className="text-base font-bold text-gray-700">{initial}</span>
-          )}
+        <button onClick={onOpenProfile} className="shrink-0" aria-label="View profile">
+          <UserAvatar
+            name={displayName}
+            avatarUrl={avatarUrl}
+            color={profile?.banner_color ?? null}
+            className="h-12 w-12 ring-2 ring-white"
+            textClassName="text-base"
+          />
         </button>
 
         <div className="min-w-0 flex-1 pr-14">

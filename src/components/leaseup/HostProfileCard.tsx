@@ -11,6 +11,7 @@ import { BadgeCheck, MessageSquare, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 type HostStats = {
@@ -50,7 +51,7 @@ export function HostProfileCard({
   hostId: string;
   poster?: {
     name?: string | null;
-    avatar_emoji?: string | null;
+    avatar_url?: string | null;
     banner_color?: string | null;
     verified_email?: boolean | null;
     created_at?: string | null;
@@ -80,12 +81,13 @@ export function HostProfileCard({
   return (
     <div className="mt-4 rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center gap-3">
-        <div
-          className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-2xl"
-          style={{ background: poster?.banner_color ?? "#2563EB" }}
-        >
-          {poster?.avatar_emoji ?? "🙂"}
-        </div>
+        <UserAvatar
+          name={hostName}
+          avatarUrl={poster?.avatar_url}
+          color={poster?.banner_color ?? null}
+          className="h-14 w-14"
+          textClassName="text-2xl"
+        />
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate text-base font-bold">
             {hostName}

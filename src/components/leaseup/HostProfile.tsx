@@ -12,6 +12,7 @@ import { ListingCard } from "@/components/leaseup/ListingCard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { Listing } from "@/lib/leaseup/types";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 const CAMPUS_ABBREV: Record<string, string> = {
   "University of Georgia": "UGA",
@@ -177,20 +178,13 @@ export function HostProfile({ userId }: { userId: string }) {
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         {/* Header */}
         <header className="flex items-start gap-5">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={name}
-              className="h-24 w-24 shrink-0 rounded-full border-2 border-gray-100 object-cover shadow-sm dark:border-border"
-            />
-          ) : (
-            <div
-              className="grid h-24 w-24 shrink-0 place-items-center rounded-full border-2 border-gray-100 text-2xl font-bold text-white shadow-sm dark:border-border"
-              style={{ background: profile.banner_color ?? "#111827" }}
-            >
-              {profile.avatar_emoji || initials(name)}
-            </div>
-          )}
+          <UserAvatar
+            name={name}
+            avatarUrl={avatarUrl ?? profile.avatar_url}
+            color={profile.banner_color ?? null}
+            className="h-24 w-24 border-2 border-gray-100 shadow-sm dark:border-border"
+            textClassName="text-2xl"
+          />
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-3">

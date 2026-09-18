@@ -41,6 +41,7 @@ import { ShieldCheck, AlertTriangle, Users, Home, Trash2, EyeOff, Eye, Ban, Badg
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.functions";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex" }] }),
@@ -411,9 +412,13 @@ function UsersTab() {
               <tr key={u.id} className="border-t">
                 <td className="p-2 font-semibold">
                   <div className="flex items-center gap-2">
-                    <div className="grid h-7 w-7 place-items-center rounded-full text-sm" style={{ background: u.banner_color ?? "#2563EB" }}>
-                      {u.avatar_emoji ?? "🙂"}
-                    </div>
+                    <UserAvatar
+                      name={u.name ?? u.email ?? null}
+                      avatarUrl={u.avatar_url}
+                      color={u.banner_color ?? null}
+                      className="h-7 w-7"
+                      textClassName="text-xs"
+                    />
                     {u.name ?? "—"}
                   </div>
                 </td>

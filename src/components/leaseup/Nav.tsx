@@ -7,6 +7,7 @@ import { CampusPicker } from "@/components/leaseup/CampusPicker";
 import { useUnreadCount } from "@/hooks/use-unread";
 import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export function Nav({
   onPost, onOpenMessages, onOpenProfile, search, onSearch,
@@ -89,10 +90,13 @@ export function Nav({
               )}
             </button>
             <button onClick={onOpenProfile} className="flex items-center gap-2 rounded-full bg-background py-1 pr-3 pl-1 hover:bg-border">
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-full text-base"
-                style={{ background: profile?.banner_color ?? "#2563EB" }}
-              >{profile?.avatar_emoji ?? "🙂"}</div>
+              <UserAvatar
+                name={profile?.name ?? null}
+                avatarUrl={profile?.avatar_url}
+                color={profile?.banner_color ?? null}
+                className="h-8 w-8"
+                textClassName="text-sm"
+              />
               <span className="hidden sm:inline text-sm font-bold">{profile?.name?.split(" ")[0] ?? "Me"}</span>
             </button>
             <button onClick={signOut} className="hidden md:inline text-xs text-muted-foreground hover:text-foreground">

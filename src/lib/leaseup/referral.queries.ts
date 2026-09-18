@@ -10,7 +10,7 @@ export type CampusOverview = {
 export type LeaderboardEntry = {
   user_id: string;
   name: string | null;
-  avatar_emoji: string | null;
+  avatar_url: string | null;
   banner_color: string | null;
   referral_count: number;
   is_me: boolean;
@@ -48,7 +48,7 @@ export async function fetchCampusOverview(userId: string, campusId: string): Pro
 export async function fetchCampusLeaderboard(campusId: string, meId: string): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase
     .from("profiles_public")
-    .select("id, name, avatar_emoji, banner_color, referral_count")
+    .select("id, name, avatar_url, banner_color, referral_count")
     .eq("campus_id", campusId)
     .gt("referral_count", 0)
     .order("referral_count", { ascending: false })
@@ -57,7 +57,7 @@ export async function fetchCampusLeaderboard(campusId: string, meId: string): Pr
   return (data ?? []).map((p: any) => ({
     user_id: p.id,
     name: p.name,
-    avatar_emoji: p.avatar_emoji,
+    avatar_url: p.avatar_url,
     banner_color: p.banner_color,
     referral_count: p.referral_count ?? 0,
     is_me: p.id === meId,

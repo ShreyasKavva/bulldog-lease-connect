@@ -38,6 +38,7 @@ import { openSignIn } from "./SignInModal";
 import { CountUp } from "./CountUp";
 import { useSession } from "@/lib/leaseup/use-session";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 type Cat =
@@ -882,12 +883,13 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
             className="min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl bg-surface p-4 shadow-card hover:shadow-card-md"
           >
             <div className="flex items-center gap-2">
-              <div
-                className="grid h-9 w-9 place-items-center rounded-full text-base"
-                style={{ background: p.profile?.banner_color ?? "#2563EB" }}
-              >
-                {p.profile?.avatar_emoji ?? "🙂"}
-              </div>
+              <UserAvatar
+                name={posterName(p, "A student")}
+                avatarUrl={p.profile?.avatar_url}
+                color={p.profile?.banner_color ?? null}
+                className="h-9 w-9"
+                textClassName="text-sm"
+              />
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold">
                   {posterName(p, "A student")}

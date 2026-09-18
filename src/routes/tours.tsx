@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Calendar, Check, X, MessageSquare, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { openSignIn } from "@/components/leaseup/SignInModal";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/tours")({
   head: () => ({ meta: [{ title: "My tours — LeaseUp" }] }),
@@ -174,9 +175,13 @@ function TourCard({
   return (
     <div className={cn("rounded-xl bg-surface p-4 shadow-card", highlight && "ring-2 ring-primary")}>
       <div className="flex items-start gap-3">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl" style={{ background: other?.banner_color ?? "#2563EB" }}>
-          {other?.avatar_emoji ?? "🙂"}
-        </div>
+        <UserAvatar
+          name={other?.name ?? other?.email?.split("@")[0] ?? null}
+          avatarUrl={(other as { avatar_url?: string | null } | undefined)?.avatar_url}
+          color={other?.banner_color ?? null}
+          className="h-12 w-12"
+          textClassName="text-lg"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-sm">
             <span className="font-bold">{other?.name ?? other?.email?.split("@")[0] ?? "Student"}</span>

@@ -28,6 +28,7 @@ import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
 import { CostCalculator } from "@/components/leaseup/CostCalculator";
 import { ExpiryChip } from "@/components/leaseup/ExpiryChip";
 import { hasSchoolEmail, SCHOOL_EMAIL_LINE, NO_SCHOOL_EMAIL_LINE } from "@/lib/leaseup/school-email";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 
@@ -445,9 +446,13 @@ export function ListingDetailSheet({
               onClick={() => onViewProfile(listing.user_id)}
               className="flex w-full items-center gap-3 rounded-xl border p-3 text-left hover:bg-background"
             >
-              <div className="grid h-12 w-12 place-items-center rounded-full text-xl" style={{ background: listing.profile.banner_color ?? "#2563EB" }}>
-                {listing.profile.avatar_emoji ?? "🙂"}
-              </div>
+              <UserAvatar
+                name={posterName(listing)}
+                avatarUrl={listing.profile.avatar_url}
+                color={listing.profile.banner_color ?? null}
+                className="h-12 w-12"
+                textClassName="text-lg"
+              />
               <div className="flex-1">
                 <div className="flex items-center gap-1 font-bold">
                   {posterName(listing)}

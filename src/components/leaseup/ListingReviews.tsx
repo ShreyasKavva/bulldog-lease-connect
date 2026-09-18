@@ -14,6 +14,7 @@ import { useSession } from "@/lib/leaseup/use-session";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import { openSignIn } from "./SignInModal";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 const CORAL = "#FF5A5F";
 
@@ -109,13 +110,13 @@ function ReviewCard({ review }: { review: Review }) {
   return (
     <article className="mb-3 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2">
-        <div
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold"
-          style={review.reviewer?.banner_color ? { background: review.reviewer.banner_color, color: "#fff" } : undefined}
-          aria-hidden
-        >
-          {review.reviewer?.avatar_emoji ?? initials(review.reviewer?.name)}
-        </div>
+        <UserAvatar
+          name={review.reviewer?.name ?? null}
+          avatarUrl={review.reviewer?.avatar_url}
+          color={review.reviewer?.banner_color ?? null}
+          className="h-7 w-7"
+          textClassName="text-[11px]"
+        />
         <span className="truncate text-sm font-medium">{review.reviewer?.name ?? "Student"}</span>
         <span className="text-xs text-muted-foreground">· {daysAgo(review.created_at)}</span>
       </div>
