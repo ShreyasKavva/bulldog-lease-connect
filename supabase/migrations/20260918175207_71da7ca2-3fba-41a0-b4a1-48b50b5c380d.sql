@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "notify_signup_insert_self" ON public.campus_notify_signups;
