@@ -58,7 +58,7 @@ export function TrendingCarousel({
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {viewed.map((l) => {
           const saved = savedIds?.has(l.id) ?? false;
-          const savesCount = Math.max(0, (l.saves_count ?? 0) + (saveDeltas[l.id] ?? 0));
+          const savesCount = savesOverrides[l.id] ?? Math.max(0, l.saves_count ?? 0);
           return (
             <div
               key={l.id}
