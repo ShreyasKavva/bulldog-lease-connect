@@ -427,10 +427,12 @@ export function BrowseMapView({
       // (points within a few degrees of the median) instead.
       const lats = pts.map((p) => p[0]).sort((a, b) => a - b);
       const lngs = pts.map((p) => p[1]).sort((a, b) => a - b);
-      if (lats[lats.length - 1] - lats[0] > 6) {
+      // A multi-state spread (e.g. the whole Southeast) is just as unreadable
+      // as a continental one, so cluster tightly around the median.
+      if (lats[lats.length - 1] - lats[0] > 1.5 || lngs[lngs.length - 1] - lngs[0] > 1.5) {
         const medLat = lats[Math.floor(lats.length / 2)];
         const medLng = lngs[Math.floor(lngs.length / 2)];
-        const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 3 && Math.abs(p[1] - medLng) <= 4);
+        const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 0.6 && Math.abs(p[1] - medLng) <= 0.8);
         if (core.length > 0) pts = core;
       }
       if (pts.length === 1) map.setView(pts[0], 14);
