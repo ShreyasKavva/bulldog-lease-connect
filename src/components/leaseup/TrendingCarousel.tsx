@@ -37,7 +37,10 @@ export function TrendingCarousel({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
-    setSaveDeltas((m) => ({ ...m, [l.id]: (m[l.id] ?? 0) + (savedIds?.has(l.id) ? -1 : 1) }));
+    setSavesOverrides((m) => ({
+      ...m,
+      [l.id]: Math.max(0, (m[l.id] ?? l.saves_count ?? 0) + (savedIds?.has(l.id) ? -1 : 1)),
+    }));
     void toggleSave(l.id);
   }
 
