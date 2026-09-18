@@ -127,13 +127,13 @@ export async function toggleSaved(userId: string, listingId: string, saved: bool
   }
 }
 
-export async function getOrCreateConversation(
-  meId: string,
-  otherId: string,
+/** Existing thread for this pair + context, or null. */
+async function findConversation(
+  a: string,
+  b: string,
   listingId: string | null,
-  lookingPostId: string | null = null,
-): Promise<string> {
-  const [a, b] = [meId, otherId].sort();
+  lookingPostId: string | null,
+): Promise<string | null> {
   const { data: rows } = await supabase
     .from("conversations")
     .select("id, listing_id, looking_post_id")
@@ -146,14 +146,57 @@ export async function getOrCreateConversation(
       (r.listing_id ?? null) === (listingId ?? null) &&
       (r.looking_post_id ?? null) === (lookingPostId ?? null),
   );
-  if (match) return match.id;
+  return match?.id ?? null;
+}
+
+/**
+ * Q267 — in-flight guard: two clicks (or two components) asking for the same
+ * thread at the same time share one promise, so they can't both insert.
+ */
+const convInFlight = new Map<string, Promise<string>>();
+
+export function getOrCreateConversation(
+  meId: string,
+  otherId: string,
+  listingId: string | null,
+  lookingPostId: string | null = null,
+): Promise<string> {
+  const [a, b] = [meId, otherId].sort();
+  const key = `${a}|${b}|${listingId ?? ""}|${lookingPostId ?? ""}`;
+  const existing = convInFlight.get(key);
+  if (existing) return existing;
+  const p = resolveConversation(a, b, listingId, lookingPostId).finally(() => {
+    convInFlight.delete(key);
+  });
+  convInFlight.set(key, p);
+  return p;
+}
+
+async function resolveConversation(
+  a: string,
+  b: string,
+  listingId: string | null,
+  lookingPostId: string | null,
+): Promise<string> {
+  const found = await findConversation(a, b, listingId, lookingPostId);
+  if (found) return found;
+
   const { data: created, error } = await supabase
     .from("conversations")
     .insert({ participant_1_id: a, participant_2_id: b, listing_id: listingId, looking_post_id: lookingPostId })
     .select("id")
     .single();
-  if (error) throw error;
-  return created.id;
+  if (!error && created) return created.id;
+
+  // 23505 — someone else inserted the same thread between our SELECT and
+  // INSERT. Re-run the lookup and use the row that now exists.
+  if ((error as { code?: string } | null)?.code === "23505") {
+    const raced = await findConversation(a, b, listingId, lookingPostId);
+    if (raced) return raced;
+  }
+  // Never surface a raw Postgres message to the UI.
+  console.error("getOrCreateConversation failed", error);
+  throw new Error("Couldn't open that conversation — try again");
 }
 
 export async function fetchConversations(userId: string): Promise<Conversation[]> {
