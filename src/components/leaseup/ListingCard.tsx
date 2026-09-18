@@ -155,21 +155,28 @@ export function ListingCard({
 
 
   const views = listing.view_count ?? 0;
-  // Q267 — the DB trigger count only refreshes on refetch, so reflect this
-  // user's own heart immediately: +1 when they save, -1 when they unsave.
-  const [saveDelta, setSaveDelta] = useState(0);
-  const savesCount = Math.max(0, (listing.saves_count ?? 0) + saveDelta);
+  // Q267 — once this user hearts, we own the number: +1 on save, -1 on
+  // unsave, computed from the last displayed count so a background refetch
+  // (which already includes their save) can't double-count.
+  const [savesOverride, setSavesOverride] = useState<number | null>(null);
+  const savesCount = savesOverride ?? Math.max(0, listing.saves_count ?? 0);
+
+  function bumpSaveCount(savedBefore: boolean) {
+    setSavesOverride((c) =>
+      Math.max(0, (c ?? listing.saves_count ?? 0) + (savedBefore ? -1 : 1)),
+    );
+  }
 
   function handleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
-    if (onHeart) { setSaveDelta((d) => d + (saved ? -1 : 1)); onHeart(); return; }
+    if (onHeart) { bumpSaveCount(saved); onHeart(); return; }
     if (!user) {
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
-    setSaveDelta((d) => d + (saved ? -1 : 1));
+    bumpSaveCount(saved);
     void toggleSave(listing.id);
   }
 

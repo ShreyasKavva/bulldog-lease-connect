@@ -21,8 +21,10 @@ export function TrendingCarousel({
 }) {
   const { user } = useSession();
   const toggleSave = useToggleSave(user?.id);
-  // Q267 — reflect this user's own heart in the count right away.
-  const [saveDeltas, setSaveDeltas] = useState<Record<string, number>>({});
+  // Q267 — once this user hearts, we own the number: +1 on save, -1 on
+  // unsave, computed from the last displayed count so a background refetch
+  // (which already includes their save) can't double-count.
+  const [savesOverrides, setSavesOverrides] = useState<Record<string, number>>({});
   // Q105 — only a real trend counts: need at least 2 listings with views.
   const viewed = listings.filter((l) => (l.view_count ?? 0) > 0);
   if (viewed.length < 2) return null;
