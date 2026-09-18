@@ -416,7 +416,7 @@ export function AirbnbHome({
                   >
                     <span className="absolute right-1.5 top-1.5 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] text-white">Today</span>
                     {l.photo_urls?.[0] ? (
-                      <img src={l.photo_urls[0]} alt="" className="h-24 w-full object-cover" />
+                      <img src={l.photo_urls[0]} alt={l.title} className="h-24 w-full object-cover" />
                     ) : (
                       <div className="grid h-24 w-full place-items-center bg-gray-100 text-2xl dark:bg-muted">🏠</div>
                     )}
