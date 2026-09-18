@@ -72,6 +72,9 @@ export function UserAvatar({
 }: UserAvatarProps) {
   const { data: url } = useAvatarUrl(avatarUrl);
   const letter = avatarInitial(name);
+  // "#2563EB" is the app-wide default banner colour — i.e. a colour the
+  // student never actually picked — so fall back to the per-name colour and
+  // avoid a wall of identical blue tiles.
 
   if (url) {
     return (
