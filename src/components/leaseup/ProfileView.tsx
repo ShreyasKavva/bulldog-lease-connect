@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
 import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 function maskLastName(name: string | null | undefined): string {
   if (!name) return "Student";
@@ -221,9 +222,13 @@ export function ProfileView({ userId }: { userId: string }) {
               {avatarUrl ? (
                 <img src={avatarUrl} alt={profile.name ?? ""} className="h-20 w-20 rounded-full object-cover ring-4 ring-surface" />
               ) : (
-                <div className="grid h-20 w-20 place-items-center rounded-full text-4xl ring-4 ring-surface" style={{ background: profile.banner_color ?? "#2563EB" }}>
-                  {profile.avatar_emoji ?? "🙂"}
-                </div>
+                <UserAvatar
+                  name={profile.name}
+                  avatarUrl={profile.avatar_url ?? null}
+                  color={profile.banner_color ?? undefined}
+                  className="h-20 w-20 ring-4 ring-surface"
+                  textClassName="text-3xl"
+                />
               )}
               {isOwn && (
                 <button

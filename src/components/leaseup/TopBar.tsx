@@ -19,6 +19,7 @@ import { NotificationsBell } from "@/components/leaseup/NotificationsBell";
 import { NavSearchBar } from "@/components/leaseup/NavSearchBar";
 import { SignInModal } from "@/components/leaseup/SignInModal";
 import { useUnreadCount } from "@/hooks/use-unread";
+import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 type LegacyProps = { onOpenMessages?: () => void; transparent?: boolean };
 
@@ -106,7 +107,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
   }
 
   const avatarBg = profile?.banner_color ?? "#2563EB";
-  const avatarChar = profile?.avatar_emoji ?? "🙂";
+  const avatarName = profile?.name ?? user?.email ?? null;
 
   return (
     <>
@@ -204,10 +205,13 @@ export function TopBar(_legacy: LegacyProps = {}) {
                   {user ? (
                     <>
                       <div className="flex items-center gap-2 px-4 py-2">
-                        <span
-                          className="grid h-8 w-8 place-items-center rounded-full text-sm"
-                          style={{ background: avatarBg }}
-                        >{avatarChar}</span>
+                        <UserAvatar
+                          name={avatarName}
+                          avatarUrl={profile?.avatar_url ?? null}
+                          color={avatarBg}
+                          className="h-8 w-8"
+                          textClassName="text-sm"
+                        />
                         <span className="truncate text-sm font-semibold">
                           {profile?.name ?? user.email}
                         </span>
@@ -254,10 +258,13 @@ export function TopBar(_legacy: LegacyProps = {}) {
                     className="flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1 pr-2 shadow-sm hover:shadow dark:border-border dark:bg-background"
                     aria-label="Account menu"
                   >
-                    <span
-                      className="grid h-8 w-8 place-items-center rounded-full text-base"
-                      style={{ background: avatarBg }}
-                    >{avatarChar}</span>
+                    <UserAvatar
+                      name={avatarName}
+                      avatarUrl={profile?.avatar_url ?? null}
+                      color={avatarBg}
+                      className="h-8 w-8"
+                      textClassName="text-sm"
+                    />
                     <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
                   </button>
 
