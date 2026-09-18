@@ -116,7 +116,7 @@ export async function setBookingSurvey(id: string, field: "poster_survey" | "sub
 export async function fetchMyTours(userId: string) {
   const { data, error } = await supabase
     .from("tour_bookings" as any)
-    .select("*, listing:listings(id,title,area,photo_urls,user_id), poster:profiles_public!tour_bookings_poster_id_fkey(id,name,avatar_emoji,banner_color), subletter:profiles_public!tour_bookings_subletter_id_fkey(id,name,avatar_emoji,banner_color)")
+    .select("*, listing:listings(id,title,area,photos,user_id), poster:profiles_public!tour_bookings_poster_id_fkey(id,name,avatar_emoji,banner_color), subletter:profiles_public!tour_bookings_subletter_id_fkey(id,name,avatar_emoji,banner_color)")
     .or(`poster_id.eq.${userId},subletter_id.eq.${userId}`)
     .order("scheduled_date", { ascending: true });
   if (error) throw error;

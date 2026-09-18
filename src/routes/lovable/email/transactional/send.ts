@@ -44,12 +44,18 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
-        // Q217 — authorization. Two accepted callers:
+        // Q217 — authorization. Accepted callers:
         //   1. System caller presenting the service-role key as a Bearer token
         //      (same pattern as /lovable/email/queue/process).
         //   2. An authenticated user who is an admin (public.is_admin).
+        //   3. An authenticated user sending one of USER_TRIGGERED_TEMPLATES.
+        //      Their recipient is always derived server-side (own address, or
+        //      the verified counterpart of a conversation they belong to), so
+        //      the request body can never aim our domain at a third party.
         // Everyone else is rejected. Fails closed: supabaseServiceKey is
         // required above, so a missing secret can never make a check pass.
+        const USER_TRIGGERED_TEMPLATES = new Set(['welcome', 'new-message'])
+
         const authHeader = request.headers.get('Authorization')
         if (!authHeader?.startsWith('Bearer ')) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -64,6 +70,8 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
 
         const isSystemCaller = token === supabaseServiceKey
         let callerEmail: string | null = null
+        let callerUserId: string | null = null
+        let isAdminCaller = false
 
         if (!isSystemCaller) {
           const { data: { user }, error: authError } = await supabase.auth.getUser(token)
@@ -72,14 +80,12 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
           }
 
-          const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin', {
+          const { data: isAdmin } = await supabase.rpc('is_admin', {
             _uid: user.id,
           })
 
-          if (adminError || isAdmin !== true) {
-            return Response.json({ error: 'Forbidden' }, { status: 403 })
-          }
-
+          isAdminCaller = isAdmin === true
+          callerUserId = user.id
           callerEmail = user.email ?? null
         }
 
@@ -126,12 +132,55 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
+        // Non-admin users may only trigger the user-triggered templates.
+        const isPrivilegedCaller = isSystemCaller || isAdminCaller
+        if (!isPrivilegedCaller && !USER_TRIGGERED_TEMPLATES.has(templateName)) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
+        // For a user-sent "new message" notification the recipient is the other
+        // participant of the conversation — verified here, never trusted from
+        // the body.
+        let derivedRecipient: string | null = null
+        if (!isPrivilegedCaller && templateName === 'new-message') {
+          const conversationId = typeof templateData.conversationId === 'string'
+            ? templateData.conversationId
+            : null
+          if (!conversationId) {
+            return Response.json({ error: 'conversationId is required' }, { status: 400 })
+          }
+          const { data: conv } = await supabase
+            .from('conversations')
+            .select('participant_1_id,participant_2_id')
+            .eq('id', conversationId)
+            .maybeSingle()
+          if (
+            !conv ||
+            (conv.participant_1_id !== callerUserId && conv.participant_2_id !== callerUserId)
+          ) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 })
+          }
+          const otherId = conv.participant_1_id === callerUserId
+            ? conv.participant_2_id
+            : conv.participant_1_id
+          const { data: otherProfile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', otherId)
+            .maybeSingle()
+          derivedRecipient = otherProfile?.email ?? null
+          if (!derivedRecipient) {
+            return Response.json({ error: 'Recipient not found' }, { status: 404 })
+          }
+        }
+
         // Resolve effective recipient: template-level `to` always wins. A
         // caller-supplied recipient is only honoured for the system (service
-        // role) caller; a user caller can only ever mail their own address,
-        // so the request body can never aim our domain at a third party.
+        // role) or admin caller; any other caller can only ever mail their own
+        // address or a server-derived one, so the request body can never aim
+        // our domain at a third party.
         const effectiveRecipient = template.to
-          || (isSystemCaller ? recipientEmail : callerEmail)
+          || (isPrivilegedCaller ? recipientEmail : (derivedRecipient ?? callerEmail))
 
 
         if (!effectiveRecipient) {

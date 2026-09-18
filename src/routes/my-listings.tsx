@@ -441,7 +441,7 @@ function MyListingsPage() {
                       );
                     })()}
                     <div className="text-sm text-gray-500">
-                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price}/mo
+                      {l.area ?? "Near campus"} · {l.beds === 0 ? "Studio" : `${l.beds}bd`} · {l.baths}ba · ${l.price.toLocaleString()}/mo
                     </div>
                     {(l.available_from || l.available_to) && (
                       <div className="text-xs text-gray-400">

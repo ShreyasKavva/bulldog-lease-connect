@@ -390,7 +390,7 @@ function InquiriesList({
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold text-gray-900 dark:text-foreground">{g.listing.title}</div>
               <div className="truncate text-xs text-gray-500">
-                {g.listing.price != null ? `$${g.listing.price}/mo · ` : ""}
+                {g.listing.price != null ? `$${g.listing.price.toLocaleString()}/mo · ` : ""}
                 {g.convs.length} inquir{g.convs.length === 1 ? "y" : "ies"}
               </div>
             </div>
@@ -509,11 +509,14 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
     return () => clearTimeout(t);
   }, [conversationId]);
 
-  const { data: serverMessages = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: () => fetchMessages(conversationId),
     enabled: !!conversationId,
   });
+  // Stable identity: a fresh `[]` default on every render re-ran the effects
+  // below, and one of them sets state — an infinite render loop.
+  const serverMessages = useMemo(() => data ?? [], [data]);
 
   // Q105 — optimistic sends: the bubble shows instantly, then the row from the
   // server replaces it (matched on body + sender) once the query refetches.
@@ -526,9 +529,12 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
     return [...serverMessages, ...live];
   }, [serverMessages, pending]);
   useEffect(() => {
-    setPending((prev) =>
-      prev.filter((p) => !serverMessages.some((m) => m.sender_id === p.sender_id && m.content === p.content)),
-    );
+    setPending((prev) => {
+      const next = prev.filter(
+        (p) => !serverMessages.some((m) => m.sender_id === p.sender_id && m.content === p.content),
+      );
+      return next.length === prev.length ? prev : next;
+    });
   }, [serverMessages]);
 
 
@@ -684,7 +690,7 @@ function Thread({ conversationId, conv }: { conversationId: string; conv: Conver
               </div>
               <div className="truncate text-xs text-gray-500">
                 {[
-                  conv.listing.price != null ? `$${conv.listing.price}/mo` : null,
+                  conv.listing.price != null ? `$${conv.listing.price.toLocaleString()}/mo` : null,
                   conv.listing.beds != null ? `${conv.listing.beds || "Studio"}${conv.listing.beds ? "BR" : ""}` : null,
                   conv.listing.area || null,
                 ].filter(Boolean).join(" · ")}

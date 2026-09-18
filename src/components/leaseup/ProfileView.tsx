@@ -660,7 +660,7 @@ function OwnListingRow({ listing }: { listing: any }) {
           return <div className="mt-0.5 text-xs text-muted-foreground">{parts.join(" · ")}</div>;
         })()}
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          <span>${listing.price}/mo</span>
+          <span>${listing.price.toLocaleString()}/mo</span>
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-bold",
