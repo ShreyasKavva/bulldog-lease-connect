@@ -21,9 +21,8 @@ async function notifyAmbassadorApplication(applicationId: string, data: {
   name: string; school: string; email: string; reason: string; committed_to_post: boolean;
 }) {
   try {
-    const host = getRequestHeader("host") ?? "localhost:8080";
-    const proto = getRequestHeader("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-    await fetch(`${proto}://${host}/lovable/email/transactional/send`, {
+    const origin = new URL(getRequest().url).origin;
+    await fetch(`${origin}/lovable/email/transactional/send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
