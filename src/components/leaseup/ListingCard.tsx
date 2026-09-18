@@ -130,7 +130,6 @@ export function ListingCard({
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
 
-  const dates = formatDateRange(listing.available_from, listing.available_to);
   const availableLabel = availableBadge(listing.available_from);
   const isActive = (listing.status ?? "active") === "active";
   const daysLeft = isActive ? daysLeftBadge(listing.available_to) : null;
@@ -155,7 +154,6 @@ export function ListingCard({
 
 
 
-  const location = [listing.area, listing.profile ? null : null].filter(Boolean).join(" · ") || "Near campus";
   const views = listing.view_count ?? 0;
   const savesCount = listing.saves_count ?? 0;
 
@@ -415,8 +413,6 @@ export function ListingCard({
           {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
           Posted {postedAgo(listing.created_at)}
         </p>
-        <p className="mt-0.5 truncate text-sm text-muted-foreground">{location}</p>
-        {dates && <p className="mt-0.5 text-sm text-muted-foreground/70">{dates}</p>}
         <p className="mt-1 text-sm text-foreground">
           <span className="font-semibold">${listing.price.toLocaleString()}</span>
           <span className="font-normal">
