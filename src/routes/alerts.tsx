@@ -24,7 +24,6 @@ export const Route = createFileRoute("/alerts")({
 
 function AlertsPage() {
   const { user, loading } = useSession();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const [posting, setPosting] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);

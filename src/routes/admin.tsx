@@ -53,7 +53,6 @@ type Tab = "overview" | "reports" | "suspicious" | "listings" | "users" | "reven
 function AdminPage() {
   const { user, loading } = useSession();
   const { data: me, isLoading: profileLoading } = useMyProfile();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
 
   if (loading || (user && profileLoading)) {
