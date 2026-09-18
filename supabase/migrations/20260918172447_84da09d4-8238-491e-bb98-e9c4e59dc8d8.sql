@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.user_in_message_convo(uuid, uuid) TO authenticated, service_role;
