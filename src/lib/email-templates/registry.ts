@@ -4,6 +4,7 @@ import { template as newMessageTemplate } from './new-message'
 import { template as priceDropTemplate } from './price-drop'
 import { template as matchAlertTemplate } from './match-alert'
 import { template as listingExpiryTemplate } from './listing-expiry'
+import { template as ambassadorApplicationTemplate } from './ambassador-application'
 
 
 export interface TemplateEntry {
@@ -21,5 +22,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'price-drop': priceDropTemplate,
   'match-alert': matchAlertTemplate,
   'listing-expiry': listingExpiryTemplate,
+  'ambassador-application': ambassadorApplicationTemplate,
 }
 
