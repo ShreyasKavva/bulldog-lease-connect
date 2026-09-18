@@ -19,6 +19,7 @@ export const Route = createFileRoute("/notifications")({
     meta: [
       { title: "Notifications — LeaseUp" },
       { name: "description", content: "Your LeaseUp activity, alerts, and messages in one place." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: NotificationsPage,

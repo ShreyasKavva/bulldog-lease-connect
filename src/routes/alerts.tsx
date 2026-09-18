@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/leaseup/use-session";
+import { SignInGate } from "@/components/leaseup/SignInGate";
 import { supabase } from "@/integrations/supabase/client";
 import type { SavedSearch } from "@/lib/leaseup/types";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/alerts")({
     meta: [
       { title: "Search alerts — LeaseUp" },
       { name: "description", content: "Get notified the moment a new sublease matches your saved filters." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: AlertsPage,
@@ -41,7 +43,15 @@ function AlertsPage() {
   });
 
   if (loading) return <div className="min-h-screen bg-background" />;
-  if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return null; }
+  if (!user) {
+    return (
+      <SignInGate
+        title="Sign in to manage your search alerts"
+        body="Sign in to see the saved searches you're getting alerts for."
+        next="/alerts"
+      />
+    );
+  }
 
   async function toggle(a: SavedSearch) {
     qc.setQueryData<SavedSearch[]>(["saved-searches", user!.id], (prev) =>

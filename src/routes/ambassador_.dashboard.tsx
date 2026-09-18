@@ -9,6 +9,7 @@ import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Sparkles, Copy, Check, Trophy } from "lucide-react";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
+import { SignInGate } from "@/components/leaseup/SignInGate";
 
 export const Route = createFileRoute("/ambassador_/dashboard")({
   head: () => ({
@@ -30,7 +31,7 @@ function AmbassadorPage() {
 
   useEffect(() => {
     if (loading || profileLoading) return;
-    if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
+    if (!user) return; // signed-out visitors get the sign-in gate below
     if (profile && !(profile as any).is_ambassador) { navigate({ to: "/" }); return; }
   }, [loading, profileLoading, user, profile, navigate]);
 
@@ -50,6 +51,16 @@ function AmbassadorPage() {
     queryFn: () => fetchCampusLeaderboard(campusId!, user!.id),
     enabled: !!campusId && !!user?.id,
   });
+
+  if (!loading && !user) {
+    return (
+      <SignInGate
+        title="Sign in to open your ambassador dashboard"
+        body="Sign in to see how LeaseUp is performing at your school."
+        next="/ambassador/dashboard"
+      />
+    );
+  }
 
   if (loading || profileLoading || !user || !profile || !(profile as any).is_ambassador) {
     return <div className="min-h-screen bg-background" />;
