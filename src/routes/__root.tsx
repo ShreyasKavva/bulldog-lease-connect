@@ -58,7 +58,13 @@ function AppShell() {
     <>
       <TopBar />
       <PullToRefresh onRefresh={handleRefresh}>
-        <div key={path} className="lu-page-enter min-h-[calc(100dvh-3.5rem)] pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <div
+          key={path}
+          className={
+            "lu-page-enter min-h-[calc(100dvh-3.5rem)] md:pb-0 " +
+            (isBottomNavHidden(path) ? "pb-0" : "pb-[calc(5rem+env(safe-area-inset-bottom))]")
+          }
+        >
           <Outlet />
           <Footer />
         </div>
