@@ -290,6 +290,16 @@ export function AirbnbHome({
   };
 
   function pickCategory(k: Cat) {
+    if (k === "near-campus") {
+      // "Near Campus" means near YOUR campus — which every account sets during
+      // onboarding. Signed out → sign in; signed in without one → onboarding.
+      if (!sessionUser) { openSignIn("/onboarding"); return; }
+      if (!userCampusId) { navigate({ to: "/onboarding" }); return; }
+      setCat(k);
+      const mine = campuses.find((c) => c.id === userCampusId);
+      navigate({ to: "/browse", search: { campus: mine?.slug ?? userCampusId } as any });
+      return;
+    }
     setCat(k);
     if (k === "all") {
       setSearch(EMPTY_SEARCH);
