@@ -128,7 +128,11 @@ export function ListingDetailSheet({
     const avail = listing.available_from
       ? new Date(listing.available_from).toLocaleDateString("en-US", { month: "short", year: "numeric" })
       : "";
-    const title = listingPageTitle({ title: listing.title, area: listing.area, campus: listingCampus ?? null });
+    const title = listingPageTitle({
+      title: listing.title,
+      area: listing.area,
+      campus: listingCampus ?? null,
+    });
     const desc = [bedLabel, where, avail && `Available ${avail}`, "LeaseUp"]
       .filter(Boolean)
       .join(" · ");
