@@ -226,6 +226,14 @@ function CampusPage() {
   }
 
 
+  // Q266 — hero badge only when the campus record has a curated abbreviation
+  // (UGA, GT, UVA). Never derive initials from the name: "University of
+  // Kansas" would print "UK", which is Kentucky's abbreviation.
+  const curatedAbbrev = (() => {
+    const short = (campus.short_name ?? "").trim();
+    return !!short && short.length <= 4 && /^[A-Za-z&.\s]+$/.test(short) && short === short.toUpperCase();
+  })();
+
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
       {/* Hero */}
@@ -235,7 +243,7 @@ function CampusPage() {
             <MapPin className="h-3.5 w-3.5" /> {campus.city}, {campus.state}
           </div>
           <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
-            <CampusMark campus={campus} className="h-12 w-12 text-base md:h-14 md:w-14 md:text-lg" />
+            {curatedAbbrev && <CampusMark campus={campus} className="h-12 w-12 text-base md:h-14 md:w-14 md:text-lg" />}
             {campusFullName(campus)} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
