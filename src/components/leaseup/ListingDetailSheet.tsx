@@ -185,8 +185,6 @@ export function ListingDetailSheet({
       .slice(0, 4);
   }, [allListings, listing]);
 
-
-
   const { data: hostProfile } = useQuery({
     queryKey: ["public-profile", listing?.user_id],
     enabled: open && !!listing?.user_id,
