@@ -32,6 +32,9 @@ import { cn } from "@/lib/utils";
 import { CampusMark } from "@/components/leaseup/CampusMark";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
+
+/** Q279 — the "Recently viewed" rail appears only after 4 listings viewed. */
+const RECENT_RAIL_MIN = 4;
 import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
 
 import { openSignIn } from "./SignInModal";

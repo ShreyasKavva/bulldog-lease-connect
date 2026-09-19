@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 
 export const RECENT_VIEWS_KEY = "leasup_recent_views";
-const MAX_RECENT = 5;
+const MAX_RECENT = 10;
 
 export function getRecentViews(): string[] {
   if (typeof window === "undefined") return [];
