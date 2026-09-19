@@ -11,13 +11,6 @@ import { Share2, Link2, Mail, MessageSquare, Check } from "lucide-react";
 import { copyToClipboard, recordShare, withUtm } from "@/lib/leaseup/share";
 import { cn } from "@/lib/utils";
 
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className} fill="currentColor">
-      <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2Zm5.2 14c-.2.7-1.3 1.3-1.8 1.3-.5.1-1 .1-1.7-.1a12 12 0 0 1-5.5-4.8c-.4-.7-.7-1.5-.7-2.2 0-.8.4-1.4.7-1.7.2-.2.4-.3.6-.3h.5c.2 0 .4 0 .5.4l.8 1.8c.1.2 0 .4-.1.5l-.4.5c-.1.1-.2.3-.1.5.4.8 1.4 2 2.6 2.6.2.1.4.1.5-.1l.6-.7c.1-.2.3-.2.5-.1l1.7.8c.2.1.3.2.3.4 0 .1 0 .4-.1.6Z" />
-    </svg>
-  );
-}
 
 export function ShareSheet({
   url,
@@ -110,16 +103,6 @@ export function ShareSheet({
               <Link2 className="h-4 w-4 text-muted-foreground" />
             )}
             {copied ? "✓ Copied!" : "Copy link"}
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              openExternal(`https://wa.me/?text=${encodeURIComponent(`Check out this sublease: ${shareUrl}`)}`)
-            }
-            className={rowClass}
-          >
-            <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
-            WhatsApp
           </button>
           <button
             type="button"
