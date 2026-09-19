@@ -85,12 +85,16 @@ function CampusDirectoryPage() {
     });
   }, [campuses, searchResults, counts, debounced]);
 
-  // Only the majors that aren't already in the grid above, alphabetical.
+  // Only the schools that aren't already in the grid above, alphabetical.
+  // Rendered in chunks so ~3,900 cards don't all mount at once.
+  const CHUNK = 300;
+  const [visibleCount, setVisibleCount] = useState(CHUNK);
   const moreSchools = useMemo(() => {
     if (debounced.trim()) return [];
     const shown = new Set(sorted.map((c) => c.id));
     return majors.filter((c) => !shown.has(c.id)).sort((a, b) => a.name.localeCompare(b.name));
   }, [majors, sorted, debounced]);
+  const visibleSchools = moreSchools.slice(0, visibleCount);
 
   const total = campuses.length;
 
