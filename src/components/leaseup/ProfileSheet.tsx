@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { ReviewsList } from "./ReviewsList";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import { canLeaveReview, fetchVerifiedSubleaseCount, computeReviewStats, fetchUserReviews } from "@/lib/leaseup/reviews.queries";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 
 export function ProfileSheet({
   userId, open, onOpenChange, onMessage,
