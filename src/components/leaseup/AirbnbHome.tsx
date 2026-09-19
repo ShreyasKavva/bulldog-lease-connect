@@ -1138,7 +1138,7 @@ function NewThisWeekSection({
 }
 
 
-/* ---------------- Q149 — Recently viewed ---------------- */
+/* ---------------- Q149/Q279 — Recently viewed ---------------- */
 
 function RecentlyViewedSection({
   savedIds, onSave, onOpen,
@@ -1151,7 +1151,7 @@ function RecentlyViewedSection({
 
   const { data: recent = [] } = useQuery({
     queryKey: ["home-recently-viewed", recentIds.join(",")],
-    enabled: recentIds.length >= 2,
+    enabled: recentIds.length >= RECENT_RAIL_MIN,
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from("listings").select("*").in("id", recentIds);
@@ -1162,7 +1162,8 @@ function RecentlyViewedSection({
     },
   });
 
-  if (recentIds.length < 2 || recent.length < 2) return null;
+  if (recentIds.length < RECENT_RAIL_MIN || recent.length < RECENT_RAIL_MIN) return null;
+
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
