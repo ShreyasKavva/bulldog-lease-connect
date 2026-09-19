@@ -122,8 +122,10 @@ function parseFlag(v: unknown): 1 | undefined {
   return v === 1 || v === "1" || v === true || v === "true" ? 1 : undefined;
 }
 function parseBeds(v: unknown): string | undefined {
-  if (typeof v !== "string") return undefined;
-  const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
+  // Query values parse JSON-first, so ?bedrooms=2 arrives as a number.
+  const t = typeof v === "number" ? String(v) : v;
+  if (typeof t !== "string") return undefined;
+  const parts = t.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
   return parts.length ? parts.join(",") : undefined;
 }
 /** Q124 — shareable alias: ?bed=studio|1br|2br|3plus */
@@ -475,56 +477,75 @@ function Browse() {
     };
   }, [s.rm_looking, s.rm_study, s.rm_pets, s.rm_smoking]);
 
-  const filtered = useMemo(() => {
-    const qLower = (s.q ?? "").toLowerCase();
-    let r = listings.filter((l) => {
-      if (qLower && !(
-        l.title.toLowerCase().includes(qLower) ||
-        (l.area ?? "").toLowerCase().includes(qLower) ||
-        (l.description ?? "").toLowerCase().includes(qLower)
-      )) return false;
-      if (s.hostId && l.user_id !== s.hostId) return false;
-      if (campusId && l.campus_id !== campusId) return false;
-      if (area && l.area !== area) return false;
-      if (furnishedOnly && !l.furnished) return false;
-      if (s.utilities === 1 && !l.utilities_included) return false;
-      if (s.parking === 1 && !l.parking) return false;
-      if (s.pets === 1 && !l.pet_friendly) return false;
-      if (s.wifi === 1 && !(l as any).wifi_included) return false;
-      if (s.laundry === 1 && !(l as any).laundry) return false;
-      if (s.verified === 1 && !l.profile?.verified_email) return false;
-      if (s.baths != null && (l.baths ?? 0) < s.baths) return false;
+  /**
+   * One keyed predicate — the visible filter uses it with skip=null; the
+   * zero-results recovery re-runs it skipping one filter at a time to name
+   * the culprit. Semantics unchanged ("3 baths" still means 3 or more).
+   */
+  type RelaxKey =
+    | "q" | "area" | "price" | "beds" | "baths" | "dates" | "furnished"
+    | "utilities" | "parking" | "pets" | "wifi" | "laundry" | "verified"
+    | "movein" | "new" | "tenants" | "type" | "maxDuration" | "availableSoon"
+    | "postedToday" | "nearCampus" | "roommate";
+
+  function matchesListing(l: Listing, skip: RelaxKey | null): boolean {
+    const qLower = skip === "q" ? "" : (s.q ?? "").toLowerCase();
+    if (qLower && !(
+      l.title.toLowerCase().includes(qLower) ||
+      (l.area ?? "").toLowerCase().includes(qLower) ||
+      (l.description ?? "").toLowerCase().includes(qLower)
+    )) return false;
+    if (s.hostId && l.user_id !== s.hostId) return false;
+    if (campusId && l.campus_id !== campusId) return false;
+    if (skip !== "area" && area && l.area !== area) return false;
+    if (skip !== "furnished" && furnishedOnly && !l.furnished) return false;
+    if (skip !== "utilities" && s.utilities === 1 && !l.utilities_included) return false;
+    if (skip !== "parking" && s.parking === 1 && !l.parking) return false;
+    if (skip !== "pets" && s.pets === 1 && !l.pet_friendly) return false;
+    if (skip !== "wifi" && s.wifi === 1 && !(l as any).wifi_included) return false;
+    if (skip !== "laundry" && s.laundry === 1 && !(l as any).laundry) return false;
+    if (skip !== "verified" && s.verified === 1 && !l.profile?.verified_email) return false;
+    if (skip !== "baths" && s.baths != null && (l.baths ?? 0) < s.baths) return false;
+    if (skip !== "price") {
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
-      if (!matchesBeds(l)) return false;
-      // Q180 — OVERLAP, not containment: a listing matches when its availability
-      // overlaps the requested window at all.
+    }
+    if (skip !== "beds" && !matchesBeds(l)) return false;
+    // Q180 — OVERLAP, not containment: a listing matches when its availability
+    // overlaps the requested window at all.
+    if (skip !== "dates") {
       if (toDate && l.available_from && new Date(l.available_from) > toDate) return false;
       if (fromDate && l.available_to && new Date(l.available_to) < fromDate) return false;
+    }
 
-      // Q96 — search-bar / category-pill params
-      if (s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+    // Q96 — search-bar / category-pill params
+    if (skip !== "tenants" && s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+    if (skip !== "type") {
       if (s.type === "studio" && (l.beds ?? 0) !== 0) return false;
       if (s.type === "private_room" && (l.beds ?? 0) !== 1) return false;
       if (s.type === "entire" && (l.beds ?? 0) < 1) return false;
-      if (s.maxDuration != null) {
-        if (!l.available_from || !l.available_to) return false;
-        const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
-        if (!(days > 0 && days <= s.maxDuration)) return false;
-      }
-      if (s.availableSoon === 1) {
-        if (!l.available_from) return false;
-        if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
-      }
-      if (s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
-      if (s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
+    }
+    if (skip !== "maxDuration" && s.maxDuration != null) {
+      if (!l.available_from || !l.available_to) return false;
+      const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
+      if (!(days > 0 && days <= s.maxDuration)) return false;
+    }
+    if (skip !== "availableSoon" && s.availableSoon === 1) {
+      if (!l.available_from) return false;
+      if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
+    }
+    if (skip !== "new" && s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
+    if (skip !== "movein" && s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
 
-      if (s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
-      if (s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
-      if (!matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
+    if (skip !== "postedToday" && s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
+    if (skip !== "nearCampus" && s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+    if (skip !== "roommate" && !matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
 
-      return true;
-    });
+    return true;
+  }
+
+  const filtered = useMemo(() => {
+    let r = listings.filter((l) => matchesListing(l, null));
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
@@ -542,6 +563,64 @@ function Browse() {
   }, [listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet, s.from, s.to, sort,
       s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
+
+  /**
+   * Zero-results recovery: the single active filter whose removal brings back
+   * the most listings, plus the count that would return. Most restrictive wins.
+   */
+  const culprit = useMemo(() => {
+    if (filtered.length > 0) return null;
+    const bedsLabel = [...bedSet]
+      .map((b) => (b === "0" ? "studio" : `${b} bed`))
+      .join(" or ");
+    const candidates: {
+      key: RelaxKey;
+      active: boolean;
+      heading: string;
+      button: string;
+      patch: Partial<BrowseSearch>;
+    }[] = [
+      { key: "baths", active: s.baths != null, heading: `No subleases with ${s.baths}+ bathrooms`, button: "Remove bathroom filter", patch: { baths: undefined } },
+      { key: "price", active: minPrice != null || maxPrice != null, heading: "No subleases in that price range", button: "Remove price filter", patch: { min_price: undefined, max_price: undefined } },
+      { key: "beds", active: bedSet.size > 0, heading: `No subleases with ${bedsLabel}`, button: "Remove bedroom filter", patch: { bedrooms: undefined } },
+      { key: "dates", active: !!(s.from || s.to), heading: "No subleases available in those dates", button: "Remove date filter", patch: { from: undefined, to: undefined } },
+      { key: "q", active: !!s.q, heading: `No subleases matching “${s.q}”`, button: "Clear the search", patch: { q: undefined } },
+      { key: "furnished", active: furnishedOnly, heading: "No furnished subleases", button: "Remove furnished filter", patch: { furnished: undefined } },
+      { key: "utilities", active: s.utilities === 1, heading: "No subleases with utilities included", button: "Remove utilities filter", patch: { utilities: undefined } },
+      { key: "parking", active: s.parking === 1, heading: "No subleases with parking", button: "Remove parking filter", patch: { parking: undefined } },
+      { key: "pets", active: s.pets === 1, heading: "No pet-friendly subleases", button: "Remove pets filter", patch: { pets: undefined } },
+      { key: "wifi", active: s.wifi === 1, heading: "No subleases with WiFi included", button: "Remove WiFi filter", patch: { wifi: undefined } },
+      { key: "laundry", active: s.laundry === 1, heading: "No subleases with laundry", button: "Remove laundry filter", patch: { laundry: undefined } },
+      { key: "verified", active: s.verified === 1, heading: "No subleases from verified posters", button: "Remove verified filter", patch: { verified: undefined } },
+      { key: "area", active: !!area, heading: `No subleases in ${area}`, button: "Remove neighborhood filter", patch: { area: undefined } },
+      { key: "movein", active: !!s.movein, heading: "No subleases for that move-in window", button: "Remove move-in filter", patch: { movein: undefined } },
+      { key: "type", active: !!s.type, heading: "No subleases of that type", button: "Remove type filter", patch: { type: undefined } },
+      { key: "maxDuration", active: s.maxDuration != null, heading: "No subleases within that duration", button: "Remove duration filter", patch: { maxDuration: undefined } },
+      { key: "availableSoon", active: s.availableSoon === 1, heading: "No subleases available soon", button: "Remove availability filter", patch: { availableSoon: undefined } },
+      { key: "postedToday", active: s.postedToday === 1, heading: "No subleases posted today", button: "Remove posted-today filter", patch: { postedToday: undefined } },
+      { key: "nearCampus", active: s.nearCampus === 1, heading: "No subleases near campus", button: "Remove near-campus filter", patch: { nearCampus: undefined } },
+      { key: "new", active: s.new === true, heading: "No new subleases this week", button: "Remove new-this-week filter", patch: { new: undefined } },
+      { key: "tenants", active: s.tenants != null, heading: `No subleases for ${s.tenants} tenants`, button: "Remove tenant filter", patch: { tenants: undefined } },
+      { key: "roommate", active: !!(rmFilters.looking_for || rmFilters.study_style || rmFilters.pets || rmFilters.smoking), heading: "No subleases match those roommate preferences", button: "Remove roommate filters", patch: { rm_looking: undefined, rm_study: undefined, rm_pets: undefined, rm_smoking: undefined } },
+    ];
+    let best: ((typeof candidates)[number] & { count: number }) | null = null;
+    for (const c of candidates) {
+      if (!c.active) continue;
+      const count = listings.filter((l) => matchesListing(l, c.key)).length;
+      if (count > 0 && (!best || count > best.count)) best = { ...c, count };
+    }
+    return best;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered.length, listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet,
+      s.from, s.to, s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
+      s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new,
+      s.movein, rmFilters]);
+
+  function relaxCulprit() {
+    if (!culprit) return;
+    if (culprit.key === "q") setSearchInput("");
+    patchSearch(culprit.patch);
+  }
 
   /** Q180 — how many live listings the selected campus has before any filters. */
   const campusTotal = useMemo(
@@ -762,6 +841,16 @@ function Browse() {
               center={searchedCampus ? campusCoords[searchedCampus.id] ?? null : null}
               centerLabel={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : undefined}
               campusCoords={campusCoords}
+              emptyRecovery={
+                culprit
+                  ? {
+                      heading: `${culprit.heading}.`,
+                      detail: `${culprit.count} match your other filters.`,
+                      button: `${culprit.button} — show ${culprit.count}`,
+                      onRelax: relaxCulprit,
+                    }
+                  : null
+              }
             />
           </div>
         ) : (
@@ -803,27 +892,28 @@ function Browse() {
               </div>
               {campusTotal > 0 ? (
                 <>
-                  {/* Q180 — hidden-by-filters recovery, never a dead end. */}
-                  <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                    No listings with these filters
-                  </h3>
-                  <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
-                    {(s.from || s.to) && (
-                      <li>Dates: {[s.from, s.to].filter(Boolean).join(" – ")}</li>
-                    )}
-                    {(minPrice != null || maxPrice != null) && (
-                      <li>Price: {minPrice != null ? `$${minPrice}` : "$0"}–{maxPrice != null ? `$${maxPrice}` : "any"}/mo</li>
-                    )}
-                    {bedSet.size > 0 && <li>Beds: {[...bedSet].join(", ")}</li>}
-                    {s.q && <li>Keyword: “{s.q}”</li>}
-                  </ul>
-                  {(s.from || s.to) && (
-                    <button
-                      onClick={() => patchSearch({ from: undefined, to: undefined })}
-                      className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
-                    >
-                      Clear dates and show all listings
-                    </button>
+                  {/* Q180 — hidden-by-filters recovery, never a dead end.
+                      Q282 — name the single most-restrictive filter and offer
+                      a one-tap relax that keeps every other filter. */}
+                  {culprit ? (
+                    <>
+                      <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                        {culprit.heading}.
+                      </h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {culprit.count} match your other filters.
+                      </p>
+                      <button
+                        onClick={relaxCulprit}
+                        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                      >
+                        {culprit.button} — show {culprit.count}
+                      </button>
+                    </>
+                  ) : (
+                    <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                      No listings with these filters
+                    </h3>
                   )}
                   <button
                     onClick={clearFilters}
