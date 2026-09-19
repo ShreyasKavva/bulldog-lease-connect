@@ -144,7 +144,7 @@ export function AirbnbHome({
    * twice in adjacent rails. Suppress "Near you" when it would duplicate; the
    * SmartSections row is strictly richer (12 cards plus a See all link).
    */
-  const nearYouCampus = geoCampus ?? campuses.find((c) => c.id === homeCampusId) ?? null;
+  const nearYouCampus = geoCampus ?? campuses.find((c) => c.id === userCampusId) ?? null;
   const nearYouIsDuplicate = !!nearYouCampus && nearYouCampus.id === (search.campusId ?? homeCampusId);
 
 
@@ -539,7 +539,7 @@ export function AirbnbHome({
         {!loading && (
           <SmartSections
             campuses={campuses}
-            userCampusId={search.campusId ?? homeCampusId}
+            userCampusId={search.campusId ?? userCampusId ?? geoCampus?.id ?? null}
 
             savedIds={savedIds}
             onSave={onSave}
