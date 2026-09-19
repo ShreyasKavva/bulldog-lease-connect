@@ -167,7 +167,7 @@ export function ListingCard({
     );
   }
 
-  function handleSave(e: React.MouseEvent) {
+  async function handleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
@@ -176,8 +176,8 @@ export function ListingCard({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
-    bumpSaveCount(saved);
-    void toggleSave(listing.id);
+    const result = await toggleSave(listing.id);
+    if (result) bumpSaveCount(result === "unsaved");
   }
 
   /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */

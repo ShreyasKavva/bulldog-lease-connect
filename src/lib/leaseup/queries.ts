@@ -121,9 +121,11 @@ export async function fetchSavedIds(userId: string): Promise<Set<string>> {
 
 export async function toggleSaved(userId: string, listingId: string, saved: boolean) {
   if (saved) {
-    await supabase.from("saved_listings").delete().eq("user_id", userId).eq("listing_id", listingId);
+    const { error } = await supabase.from("saved_listings").delete().eq("user_id", userId).eq("listing_id", listingId);
+    if (error) throw error;
   } else {
-    await supabase.from("saved_listings").insert({ user_id: userId, listing_id: listingId });
+    const { error } = await supabase.from("saved_listings").insert({ user_id: userId, listing_id: listingId });
+    if (error) throw error;
   }
 }
 

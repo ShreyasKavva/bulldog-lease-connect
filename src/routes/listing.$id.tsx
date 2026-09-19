@@ -327,6 +327,8 @@ function ListingDetailPage() {
     enabled: !!user,
   });
   const isSaved = savedIds.has(listing.id);
+  const [savedCountOverride, setSavedCountOverride] = useState<number | null>(null);
+  const displayedSavedCount = savedCountOverride ?? savedCount;
 
   // Owner-only activity panel data
   const { data: dailyStats = [] } = useQuery({
@@ -345,12 +347,16 @@ function ListingDetailPage() {
     - dailyStats.slice(-14, -7).reduce((s, d) => s + (d.views ?? 0), 0);
   const unanswered = msgStats ? Math.max(0, msgStats.inbound - msgStats.replies) : 0;
 
-  function handleToggleSave() {
+  async function handleToggleSave() {
     if (!user) {
       openSignIn(`/listing/${listing.id}?save=1`);
       return;
     }
-    void toggleSave(listing.id);
+    const result = await toggleSave(listing.id);
+    if (!result) return;
+    setSavedCountOverride((count) =>
+      Math.max(0, (count ?? savedCount) + (result === "unsaved" ? -1 : 1)),
+    );
   }
 
 
@@ -792,9 +798,9 @@ function ListingDetailPage() {
                     <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString()} {viewCount === 1 ? "view" : "views"}
                   </span>
                 )}
-                {savedCount >= 3 && (
+                {displayedSavedCount >= 3 && (
                   <span className="inline-flex items-center gap-1">
-                    🔖 {savedCount.toLocaleString()} people saved this
+                    🔖 {displayedSavedCount.toLocaleString()} people saved this
                   </span>
                 )}
 
@@ -832,7 +838,7 @@ function ListingDetailPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <dt className="text-muted-foreground">Saves</dt>
-                      <dd className="font-semibold">{savedCount.toLocaleString()}</dd>
+                      <dd className="font-semibold">{displayedSavedCount.toLocaleString()}</dd>
                     </div>
                     {msgStats && (
                       <div className="flex items-center justify-between">

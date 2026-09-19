@@ -29,7 +29,7 @@ export function TrendingCarousel({
   const viewed = listings.filter((l) => (l.view_count ?? 0) > 0);
   if (viewed.length < 2) return null;
 
-  function handleSave(e: React.MouseEvent, l: Listing) {
+  async function handleSave(e: React.MouseEvent, l: Listing) {
     e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
@@ -37,11 +37,12 @@ export function TrendingCarousel({
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
     }
+    const result = await toggleSave(l.id);
+    if (!result) return;
     setSavesOverrides((m) => ({
       ...m,
-      [l.id]: Math.max(0, (m[l.id] ?? l.saves_count ?? 0) + (savedIds?.has(l.id) ? -1 : 1)),
+      [l.id]: Math.max(0, (m[l.id] ?? l.saves_count ?? 0) + (result === "unsaved" ? -1 : 1)),
     }));
-    void toggleSave(l.id);
   }
 
   function handleMessage(e: React.MouseEvent, l: Listing) {
