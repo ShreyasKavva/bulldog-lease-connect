@@ -97,10 +97,11 @@ export function SmartSections({
 }
 
 function Section({
-  id, title, seeAll, query, divider, minItems, savedIds, onSave, onOpen, filter,
+  id, title, fallbackTitle, seeAll, query, divider, minItems, savedIds, onSave, onOpen, filter,
 }: RowProps & {
   id: string;
   title: string;
+  fallbackTitle?: string;
   minItems?: number;
   seeAll: Record<string, unknown>;
   query: Parameters<typeof fetchCuratedListings>[0];
@@ -108,11 +109,21 @@ function Section({
 }) {
   const { data, isLoading } = useQuery({
     queryKey: ["home-section", id, query],
-    queryFn: () => fetchCuratedListings(query),
     staleTime: 60_000,
+    queryFn: async () => {
+      const rows = await fetchCuratedListings(query);
+      // Campus with nothing to show → widen rather than leave a blank homepage.
+      if (rows.length === 0 && query.campusId) {
+        const { campusId: _drop, ...wide } = query;
+        return { rows: await fetchCuratedListings(wide), fellBack: true };
+      }
+      return { rows, fellBack: false };
+    },
   });
 
-  const items = (data ?? []).filter((l) => (filter ? filter(l) : true));
+  const items = (data?.rows ?? []).filter((l) => (filter ? filter(l) : true));
+  const heading = data?.fellBack ? (fallbackTitle ?? title) : title;
+  const seeAllSearch = data?.fellBack ? (({ campus: _c, ...rest }) => rest)(seeAll as any) : seeAll;
 
   if (isLoading) {
     return (
