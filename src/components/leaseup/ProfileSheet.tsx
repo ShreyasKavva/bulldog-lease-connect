@@ -96,6 +96,7 @@ export function ProfileSheet({
       currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
       currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,
     };
+    if (campusTouched) payload.campus_id = campus?.id ?? null;
     const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
