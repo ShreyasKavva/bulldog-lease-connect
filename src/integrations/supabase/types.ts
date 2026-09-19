@@ -3179,6 +3179,7 @@ export type Database = {
           title: string
         }[]
       }
+      has_interacted: { Args: { _a: string; _b: string }; Returns: boolean }
       increment_listing_share: {
         Args: { _listing_id: string }
         Returns: number
