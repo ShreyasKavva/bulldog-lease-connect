@@ -45,6 +45,16 @@ export function ProfileSheet({
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [campus, setCampus] = useState<Campus | null>(null);
+  const [campusTouched, setCampusTouched] = useState(false);
+  const { data: profileCampus = [] } = useQuery({
+    queryKey: ["campus-by-id", profile?.campus_id],
+    queryFn: () => fetchCampusesByIds(profile?.campus_id ? [profile.campus_id] : []),
+    enabled: !!profile?.campus_id,
+  });
+  useEffect(() => {
+    if (!campusTouched && !campus && profileCampus[0]) setCampus(profileCampus[0]);
+  }, [campus, campusTouched, profileCampus]);
 
   // Eligibility + verified count + review summary
   const { data: eligible } = useQuery({
