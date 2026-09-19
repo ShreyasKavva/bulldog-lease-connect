@@ -84,6 +84,7 @@ export function SmartSections({
           key={s.key}
           id={s.key}
           title={s.title}
+          fallbackTitle={s.title.replace(at, "")}
           seeAll={s.seeAll}
           query={s.query}
           minItems={s.minItems}
