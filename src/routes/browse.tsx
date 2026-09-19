@@ -122,8 +122,10 @@ function parseFlag(v: unknown): 1 | undefined {
   return v === 1 || v === "1" || v === true || v === "true" ? 1 : undefined;
 }
 function parseBeds(v: unknown): string | undefined {
-  if (typeof v !== "string") return undefined;
-  const parts = v.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
+  // Query values parse JSON-first, so ?bedrooms=2 arrives as a number.
+  const t = typeof v === "number" ? String(v) : v;
+  if (typeof t !== "string") return undefined;
+  const parts = t.split(",").map((s) => s.trim()).filter((s) => (BED_VALUES as readonly string[]).includes(s));
   return parts.length ? parts.join(",") : undefined;
 }
 /** Q124 — shareable alias: ?bed=studio|1br|2br|3plus */
