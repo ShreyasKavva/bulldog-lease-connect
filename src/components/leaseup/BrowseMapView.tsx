@@ -199,6 +199,7 @@ export function BrowseMapView({
   center,
   centerLabel,
   campusCoords,
+  emptyRecovery,
 }: {
   listings: Listing[];
   /** Campus coordinates for the current search — the map opens here. */
@@ -206,6 +207,8 @@ export function BrowseMapView({
   centerLabel?: string;
   /** campus id -> coordinates, so pins land near the right school. */
   campusCoords?: Record<string, [number, number]>;
+  /** Q282 — zero-results recovery: names the culprit filter, one-tap relax. */
+  emptyRecovery?: { heading: string; detail: string; button: string; onRelax: () => void } | null;
 }) {
   const mapCenter = useMemo<[number, number]>(
     () => center ?? DEFAULT_CENTER,

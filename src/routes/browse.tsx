@@ -839,6 +839,16 @@ function Browse() {
               center={searchedCampus ? campusCoords[searchedCampus.id] ?? null : null}
               centerLabel={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : undefined}
               campusCoords={campusCoords}
+              emptyRecovery={
+                culprit
+                  ? {
+                      heading: `${culprit.heading}.`,
+                      detail: `${culprit.count} match your other filters.`,
+                      button: `${culprit.button} — show ${culprit.count}`,
+                      onRelax: relaxCulprit,
+                    }
+                  : null
+              }
             />
           </div>
         ) : (
