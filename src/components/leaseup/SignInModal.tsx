@@ -146,7 +146,7 @@ export function SignInModal({
             <Label>Email</Label>
             <Input
               type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              required placeholder="yourname@uga.edu" autoComplete="email"
+              required placeholder="you@yourschool.edu" autoComplete="email"
             />
           </div>
           <div>

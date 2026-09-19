@@ -16,7 +16,6 @@ import { ListingCard } from "./ListingCard";
 import type { Campus } from "@/lib/leaseup/campuses";
 import type { Listing } from "@/lib/leaseup/types";
 
-const UGA_SLUG = "university-of-georgia";
 
 function isoDaysFromNow(days: number) {
   return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
@@ -32,8 +31,8 @@ type RowProps = {
 export function SmartSections({
   campuses, userCampusId, savedIds, onSave, onOpen, filter,
 }: RowProps & { campuses: Campus[]; userCampusId?: string | null }) {
-  const uga = campuses.find((c) => c.slug === UGA_SLUG) ?? null;
-  const nearCampus = campuses.find((c) => c.id === userCampusId) ?? uga;
+  // Never default to a specific school: no campus known → no "Near" rail.
+  const nearCampus = campuses.find((c) => c.id === userCampusId) ?? null;
   const nearLabel = nearCampus ? `Near ${nearCampus.short_name || nearCampus.name}` : "Near your campus";
   const rowProps = { savedIds, onSave, onOpen, filter };
 
