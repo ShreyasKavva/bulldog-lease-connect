@@ -9,6 +9,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchMajorCampuses } from "@/lib/leaseup/major-campuses";
 import { Search, School } from "lucide-react";
 import { CampusMark } from "@/components/leaseup/CampusMark";
 import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
