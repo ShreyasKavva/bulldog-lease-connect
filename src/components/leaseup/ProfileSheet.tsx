@@ -260,6 +260,17 @@ export function ProfileSheet({
               ) : (
                 <div className="space-y-3">
                   <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+                  <div>
+                    <Label>University</Label>
+                    <div className="mt-1 rounded-md border bg-surface px-3 py-2">
+                      <CampusAutocomplete
+                        value={campus?.name ?? ""}
+                        placeholder="Search your school…"
+                        onSelect={(c) => { setCampusTouched(true); setCampus(c); }}
+                        onClear={() => { setCampusTouched(true); setCampus(null); }}
+                      />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div><Label>Year</Label>
                       <select value={form.year} onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))} className="h-10 w-full rounded-md border bg-surface px-3 text-sm">
