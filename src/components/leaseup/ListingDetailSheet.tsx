@@ -82,6 +82,22 @@ export function ListingDetailSheet({
     })();
   }, [open, listing]);
 
+  /** Q256 — the listing's own campus record (get_public_profile's campus_name is
+   *  the poster's school, not this listing's campus). */
+  const { data: listingCampus } = useQuery({
+    queryKey: ["campus", listing?.campus_id],
+    enabled: open && !!listing?.campus_id,
+    staleTime: 300_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("campuses")
+        .select("name, short_name")
+        .eq("id", listing!.campus_id!)
+        .maybeSingle();
+      return (data ?? null) as { name: string; short_name: string } | null;
+    },
+  });
+
   /** Q141 — dynamic tab title + share meta while the slide-out is open. */
   useEffect(() => {
     if (typeof document === "undefined") return;

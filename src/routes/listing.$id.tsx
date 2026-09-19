@@ -65,7 +65,6 @@ export const Route = createFileRoute("/listing/$id")({
     }
     const bedStr = l.beds === 0 ? "Studio" : `${l.beds}bd`;
     const baStr = `${Number(l.baths)}ba`;
-    const campusName = (l as any).campus?.short_name ?? (l as any).campus?.name ?? "campus";
     const range = l.available_from || l.available_to
       ? ` · Available ${sharedRange(l.available_from, l.available_to)}`
       : "";
