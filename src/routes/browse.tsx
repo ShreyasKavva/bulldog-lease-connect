@@ -823,7 +823,7 @@ function Browse() {
                       onClick={() => patchSearch({ from: undefined, to: undefined })}
                       className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
                     >
-                      Clear dates and show all {campusTotal}
+                      Clear dates and show all listings
                     </button>
                   )}
                   <button
