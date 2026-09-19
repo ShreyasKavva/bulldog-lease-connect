@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, markListingFilled, reopenListing } from "@/lib/leaseup/queries";
 import { posterName } from "@/lib/leaseup/display-name";
+import { listingPageTitle } from "@/lib/leaseup/listing-title";
 import { cn } from "@/lib/utils";
 import { SecureDepositDialog } from "./SecureDepositDialog";
 import { SecureDepositBadge } from "./SecureDepositBadge";
@@ -82,6 +83,22 @@ export function ListingDetailSheet({
     })();
   }, [open, listing]);
 
+  /** Q256 — the listing's own campus record (get_public_profile's campus_name is
+   *  the poster's school, not this listing's campus). */
+  const { data: listingCampus } = useQuery({
+    queryKey: ["campus", listing?.campus_id],
+    enabled: open && !!listing?.campus_id,
+    staleTime: 300_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("campuses")
+        .select("name, short_name")
+        .eq("id", listing!.campus_id!)
+        .maybeSingle();
+      return (data ?? null) as { name: string; short_name: string } | null;
+    },
+  });
+
   /** Q141 — dynamic tab title + share meta while the slide-out is open. */
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -111,7 +128,11 @@ export function ListingDetailSheet({
     const avail = listing.available_from
       ? new Date(listing.available_from).toLocaleDateString("en-US", { month: "short", year: "numeric" })
       : "";
-    const title = `${listing.title} — $${Number(listing.price).toLocaleString("en-US")}/mo · LeaseUp`;
+    const title = listingPageTitle({
+      title: listing.title,
+      area: listing.area,
+      campus: listingCampus ?? null,
+    });
     const desc = [bedLabel, where, avail && `Available ${avail}`, "LeaseUp"]
       .filter(Boolean)
       .join(" · ");
@@ -129,7 +150,7 @@ export function ListingDetailSheet({
       if (prevOgDesc) setMeta('meta[property="og:description"]', "property", "og:description", prevOgDesc);
       if (prevOgUrl) setMeta('meta[property="og:url"]', "property", "og:url", prevOgUrl);
     };
-  }, [open, listing]);
+  }, [open, listing, listingCampus]);
 
 
   // Comp listings (same campus, ±1 bed)
@@ -164,8 +185,6 @@ export function ListingDetailSheet({
       .slice(0, 4);
   }, [allListings, listing]);
 
-
-
   const { data: hostProfile } = useQuery({
     queryKey: ["public-profile", listing?.user_id],
     enabled: open && !!listing?.user_id,
@@ -179,21 +198,6 @@ export function ListingDetailSheet({
     },
   });
 
-  /** Q256 — the listing's own campus record (get_public_profile's campus_name is
-   *  the poster's school, not this listing's campus). */
-  const { data: listingCampus } = useQuery({
-    queryKey: ["campus", listing?.campus_id],
-    enabled: open && !!listing?.campus_id,
-    staleTime: 300_000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("campuses")
-        .select("name, short_name")
-        .eq("id", listing!.campus_id!)
-        .maybeSingle();
-      return (data ?? null) as { name: string; short_name: string } | null;
-    },
-  });
 
   if (!listing) return null;
   const photos = listing.photo_urls ?? [];
