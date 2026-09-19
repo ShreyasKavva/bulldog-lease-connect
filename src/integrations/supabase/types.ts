@@ -1405,6 +1405,35 @@ export type Database = {
           },
         ]
       }
+      looking_for_upvotes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "looking_for_upvotes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "looking_for_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -3156,6 +3185,7 @@ export type Database = {
       }
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_banned: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
