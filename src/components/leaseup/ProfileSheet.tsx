@@ -20,12 +20,13 @@ import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 
 export function ProfileSheet({
-  userId, open, onOpenChange, onMessage,
+  userId, open, onOpenChange, onMessage, startEditing,
 }: {
   userId: string | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onMessage?: (otherId: string) => void;
+  startEditing?: boolean;
 }) {
   const { user } = useSession();
   const isMe = !!user && user.id === userId;
