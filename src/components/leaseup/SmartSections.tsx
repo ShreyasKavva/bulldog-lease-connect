@@ -12,6 +12,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchCuratedListings } from "@/lib/leaseup/queries";
+import { useAffinityCampusId } from "@/lib/leaseup/campus-affinity";
 import { ListingCard } from "./ListingCard";
 import type { Campus } from "@/lib/leaseup/campuses";
 import type { Listing } from "@/lib/leaseup/types";
@@ -147,10 +148,10 @@ function Section({
   return (
     <section className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="text-lg font-semibold">{heading}</h2>
         <Link
           to="/browse"
-          search={seeAll as never}
+          search={seeAllSearch as never}
           className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
         >
           See all
