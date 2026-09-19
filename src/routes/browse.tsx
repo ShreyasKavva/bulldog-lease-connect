@@ -880,27 +880,28 @@ function Browse() {
               </div>
               {campusTotal > 0 ? (
                 <>
-                  {/* Q180 — hidden-by-filters recovery, never a dead end. */}
-                  <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                    No listings with these filters
-                  </h3>
-                  <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
-                    {(s.from || s.to) && (
-                      <li>Dates: {[s.from, s.to].filter(Boolean).join(" – ")}</li>
-                    )}
-                    {(minPrice != null || maxPrice != null) && (
-                      <li>Price: {minPrice != null ? `$${minPrice}` : "$0"}–{maxPrice != null ? `$${maxPrice}` : "any"}/mo</li>
-                    )}
-                    {bedSet.size > 0 && <li>Beds: {[...bedSet].join(", ")}</li>}
-                    {s.q && <li>Keyword: “{s.q}”</li>}
-                  </ul>
-                  {(s.from || s.to) && (
-                    <button
-                      onClick={() => patchSearch({ from: undefined, to: undefined })}
-                      className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
-                    >
-                      Clear dates and show all listings
-                    </button>
+                  {/* Q180 — hidden-by-filters recovery, never a dead end.
+                      Q282 — name the single most-restrictive filter and offer
+                      a one-tap relax that keeps every other filter. */}
+                  {culprit ? (
+                    <>
+                      <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                        {culprit.heading}.
+                      </h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {culprit.count} match your other filters.
+                      </p>
+                      <button
+                        onClick={relaxCulprit}
+                        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                      >
+                        {culprit.button} — show {culprit.count}
+                      </button>
+                    </>
+                  ) : (
+                    <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                      No listings with these filters
+                    </h3>
                   )}
                   <button
                     onClick={clearFilters}
