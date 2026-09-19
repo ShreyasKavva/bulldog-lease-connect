@@ -9,7 +9,7 @@
  * deposit, tour booking, report) stay in the slide-in sheet.
  */
 import { formatDateRange as sharedRange, formatDay, toDate } from "@/lib/leaseup/dates";
-import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -1580,12 +1580,31 @@ function formatDuration(from: string | null | undefined, to: string | null | und
  * result) and therefore has no in-app history to go back to.
  */
 function DeepLinkBackLink() {
-  // Q108 — always offer a way back to browse, preserving ?campus when present.
+  // Q108 — always offer a way back; prefer the page the visitor actually came
+  // from, and only fall back to /browse on a genuine deep link (no history).
+  const router = useRouter();
   const [campus, setCampus] = useState<string | undefined>(undefined);
+  const [canGoBack, setCanGoBack] = useState(false);
   useEffect(() => {
     const c = new URLSearchParams(window.location.search).get("campus");
     setCampus(c ?? undefined);
-  }, []);
+    setCanGoBack(router.history.canGoBack());
+  }, [router]);
+
+  if (canGoBack) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => router.history.back()}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 lg:px-8">
       <Link

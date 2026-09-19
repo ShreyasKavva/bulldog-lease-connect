@@ -25,7 +25,7 @@ export function leaseTermLabel(
   const s = from.getMonth(); // 0-indexed
   const e = to.getMonth();
 
-  if (s <= 1 && e >= 3 && e <= 5) return "❄️ Spring semester";
+  if (s <= 1 && e >= 3 && e <= 5) return "☀️ Spring semester";
   if (s >= 4 && s <= 5 && e >= 6 && e <= 7) return "🌞 Summer";
   if (s >= 6 && s <= 8 && (e >= 10 || e === 0)) return "🍂 Fall semester";
   return null;
