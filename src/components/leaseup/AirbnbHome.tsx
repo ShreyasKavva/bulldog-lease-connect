@@ -32,6 +32,9 @@ import { cn } from "@/lib/utils";
 import { CampusMark } from "@/components/leaseup/CampusMark";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
+
+/** Q279 — the "Recently viewed" rail appears only after 4 listings viewed. */
+const RECENT_RAIL_MIN = 4;
 import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
 
 import { openSignIn } from "./SignInModal";
@@ -500,6 +503,19 @@ export function AirbnbHome({
         </>
       ) : (
         <>
+          {/* Q279 — once a visitor has viewed 4+ listings, "Recently viewed"
+              is always the first rail on the homepage. */}
+          {recentIds.length >= RECENT_RAIL_MIN && (
+            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+          )}
+          {/* Q177 — "Near you", based on campus/location */}
+          <NearYouSection
+            listings={listings}
+            campus={nearYouIsDuplicate ? null : nearYouCampus}
+            savedIds={savedIds}
+            onSave={onSave}
+            onOpen={onOpen}
+          />
           {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
           <NewThisWeekSection
             listings={listings}
@@ -508,18 +524,6 @@ export function AirbnbHome({
             onSave={onSave}
             onOpen={onOpen}
           />
-          {/* Q149/Q177 — recently viewed, or "near you" for first-time visitors */}
-          {recentIds.length >= 2 ? (
-            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
-          ) : (
-            <NearYouSection
-              listings={listings}
-              campus={nearYouIsDuplicate ? null : nearYouCampus}
-              savedIds={savedIds}
-              onSave={onSave}
-              onOpen={onOpen}
-            />
-          )}
         </>
       )}
 
@@ -1137,7 +1141,7 @@ function NewThisWeekSection({
 }
 
 
-/* ---------------- Q149 — Recently viewed ---------------- */
+/* ---------------- Q149/Q279 — Recently viewed ---------------- */
 
 function RecentlyViewedSection({
   savedIds, onSave, onOpen,
@@ -1150,7 +1154,7 @@ function RecentlyViewedSection({
 
   const { data: recent = [] } = useQuery({
     queryKey: ["home-recently-viewed", recentIds.join(",")],
-    enabled: recentIds.length >= 2,
+    enabled: recentIds.length >= RECENT_RAIL_MIN,
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from("listings").select("*").in("id", recentIds);
@@ -1161,7 +1165,8 @@ function RecentlyViewedSection({
     },
   });
 
-  if (recentIds.length < 2 || recent.length < 2) return null;
+  if (recentIds.length < RECENT_RAIL_MIN || recent.length < RECENT_RAIL_MIN) return null;
+
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
