@@ -48,6 +48,7 @@ import {
   shareToDiscord, shareToGroupMe, withUtm,
 } from "@/lib/leaseup/share";
 import { posterName, posterFirstName } from "@/lib/leaseup/display-name";
+import { listingPageTitle } from "@/lib/leaseup/listing-title";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
@@ -69,7 +70,7 @@ export const Route = createFileRoute("/listing/$id")({
       ? ` · Available ${sharedRange(l.available_from, l.available_to)}`
       : "";
     const desc = `${bedStr}/${baStr} · $${Number(l.price).toLocaleString('en-US')}/mo${range}. Message the host directly on LeaseUp.`;
-    const title = `${l.title}${l.area ? ` — ${l.area}` : ""} near ${campusName} | LeaseUp`;
+    const title = listingPageTitle(l);
 
     const img = l.photo_urls?.[0];
     const meta: Array<Record<string, string>> = [
