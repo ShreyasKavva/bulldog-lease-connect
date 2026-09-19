@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { ReviewsList } from "./ReviewsList";
 import { LeaveReviewDialog } from "./LeaveReviewDialog";
 import { canLeaveReview, fetchVerifiedSubleaseCount, computeReviewStats, fetchUserReviews } from "@/lib/leaseup/reviews.queries";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
+import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 
 export function ProfileSheet({
   userId, open, onOpenChange, onMessage,
@@ -43,6 +45,16 @@ export function ProfileSheet({
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [campus, setCampus] = useState<Campus | null>(null);
+  const [campusTouched, setCampusTouched] = useState(false);
+  const { data: profileCampus = [] } = useQuery({
+    queryKey: ["campus-by-id", profile?.campus_id],
+    queryFn: () => fetchCampusesByIds(profile?.campus_id ? [profile.campus_id] : []),
+    enabled: !!profile?.campus_id,
+  });
+  useEffect(() => {
+    if (!campusTouched && !campus && profileCampus[0]) setCampus(profileCampus[0]);
+  }, [campus, campusTouched, profileCampus]);
 
   // Eligibility + verified count + review summary
   const { data: eligible } = useQuery({
@@ -84,6 +96,7 @@ export function ProfileSheet({
       currently_emoji: form.currently_status.trim() ? form.currently_emoji : null,
       currently_updated_at: form.currently_status.trim() ? new Date().toISOString() : null,
     };
+    if (campusTouched) payload.campus_id = campus?.id ?? null;
     const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");
@@ -247,6 +260,17 @@ export function ProfileSheet({
               ) : (
                 <div className="space-y-3">
                   <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+                  <div>
+                    <Label>University</Label>
+                    <div className="mt-1 rounded-md border bg-surface px-3 py-2">
+                      <CampusAutocomplete
+                        value={campus?.name ?? ""}
+                        placeholder="Search your school…"
+                        onSelect={(c) => { setCampusTouched(true); setCampus(c); }}
+                        onClear={() => { setCampusTouched(true); setCampus(null); }}
+                      />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div><Label>Year</Label>
                       <select value={form.year} onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))} className="h-10 w-full rounded-md border bg-surface px-3 text-sm">
