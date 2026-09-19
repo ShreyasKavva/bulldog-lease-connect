@@ -548,7 +548,6 @@ function Browse() {
     () => (campusId ? listings.filter((l) => l.campus_id === campusId).length : listings.length),
     [listings, campusId],
   );
-  const campusLabel = searchedCampus?.name ?? searchedCampus?.short_name ?? "this campus";
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -806,7 +805,7 @@ function Browse() {
                 <>
                   {/* Q180 — hidden-by-filters recovery, never a dead end. */}
                   <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                    {campusTotal} sublease{campusTotal === 1 ? "" : "s"} at {campusLabel} {campusTotal === 1 ? "is" : "are"} hidden by your filters
+                    No listings with these filters
                   </h3>
                   <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
                     {(s.from || s.to) && (
@@ -823,7 +822,7 @@ function Browse() {
                       onClick={() => patchSearch({ from: undefined, to: undefined })}
                       className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
                     >
-                      Clear dates and show all {campusTotal}
+                      Clear dates and show all listings
                     </button>
                   )}
                   <button
