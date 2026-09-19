@@ -23,6 +23,7 @@ import { PriceLabelBadge } from "./PriceLabelBadge";
 import { Lock } from "lucide-react";
 import { haptic } from "@/lib/leaseup/haptics";
 import { pushRecentView } from "@/lib/leaseup/recent-views";
+import { pushCampusView } from "@/lib/leaseup/campus-affinity";
 import { isDemoListing } from "@/lib/leaseup/demo";
 import { leaseTermLabel } from "@/lib/leaseup/lease-term";
 import { PriceContextBadge } from "@/components/leaseup/PriceContextBadge";
@@ -62,6 +63,7 @@ export function ListingDetailSheet({
     setActivePhoto(0);
     setViews(listing.view_count ?? null);
     pushRecentView(listing.id);
+    pushCampusView(listing.campus_id);
     const key = `viewed:${listing.id}`;
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, "1");
