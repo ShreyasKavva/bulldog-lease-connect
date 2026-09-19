@@ -85,12 +85,16 @@ function CampusDirectoryPage() {
     });
   }, [campuses, searchResults, counts, debounced]);
 
-  // Only the majors that aren't already in the grid above, alphabetical.
+  // Only the schools that aren't already in the grid above, alphabetical.
+  // Rendered in chunks so ~3,900 cards don't all mount at once.
+  const CHUNK = 300;
+  const [visibleCount, setVisibleCount] = useState(CHUNK);
   const moreSchools = useMemo(() => {
     if (debounced.trim()) return [];
     const shown = new Set(sorted.map((c) => c.id));
     return majors.filter((c) => !shown.has(c.id)).sort((a, b) => a.name.localeCompare(b.name));
   }, [majors, sorted, debounced]);
+  const visibleSchools = moreSchools.slice(0, visibleCount);
 
   const total = campuses.length;
 
@@ -145,17 +149,31 @@ function CampusDirectoryPage() {
           </div>
         )}
 
-        {moreSchools.length > 0 && (
+        {visibleSchools.length > 0 && (
           <section className="mt-14">
-            <h2 className="text-lg font-black tracking-tight sm:text-xl">More schools on LeaseUp</h2>
+            <h2 className="text-lg font-black tracking-tight sm:text-xl">
+              More schools on LeaseUp
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Major US universities you can post at today — be the first to list at yours.
+              Every US school in our directory — four-year universities and community colleges. Be
+              the first to list at yours.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {moreSchools.map((c) => (
+              {visibleSchools.map((c) => (
                 <CampusCard key={c.id} campus={c} count={counts[c.id] ?? 0} />
               ))}
             </div>
+            {visibleCount < moreSchools.length && (
+              <div className="mt-8 text-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((n) => n + CHUNK)}
+                  className="rounded-full border border-border bg-surface px-6 py-2.5 text-sm font-semibold text-primary transition hover:border-primary hover:shadow-card"
+                >
+                  Show more schools ({(moreSchools.length - visibleCount).toLocaleString("en-US")} remaining)
+                </button>
+              </div>
+            )}
           </section>
         )}
       </div>
