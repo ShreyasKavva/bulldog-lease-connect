@@ -40,7 +40,7 @@ import { OnboardingModal } from "@/components/leaseup/OnboardingModal";
 import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
+import { BottomNav, isBottomNavHidden } from "@/components/leaseup/BottomNav";
 import { Footer } from "@/components/leaseup/Footer";
 import { QuickInquiryModal } from "@/components/leaseup/QuickInquiryModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
@@ -58,7 +58,13 @@ function AppShell() {
     <>
       <TopBar />
       <PullToRefresh onRefresh={handleRefresh}>
-        <div key={path} className="lu-page-enter min-h-[calc(100dvh-3.5rem)] pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <div
+          key={path}
+          className={
+            "lu-page-enter min-h-[calc(100dvh-3.5rem)] md:pb-0 " +
+            (isBottomNavHidden(path) ? "pb-0" : "pb-[calc(5rem+env(safe-area-inset-bottom))]")
+          }
+        >
           <Outlet />
           <Footer />
         </div>
