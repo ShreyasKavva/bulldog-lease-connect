@@ -383,8 +383,12 @@ export function AirbnbHome({
         <div
           className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
-          {CATEGORIES.map(({ k, label, emoji }) => {
+          {CATEGORIES.map(({ k, label: baseLabel, emoji }) => {
             const active = cat === k;
+            const myCampus = k === "near-campus" && userCampusId
+              ? campuses.find((c) => c.id === userCampusId)
+              : null;
+            const label = myCampus ? `Near ${myCampus.short_name || myCampus.name}` : baseLabel;
             return (
               <button
                 key={k}
