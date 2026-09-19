@@ -144,6 +144,20 @@ function CampusDirectoryPage() {
             ))}
           </div>
         )}
+
+        {moreSchools.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-lg font-black tracking-tight sm:text-xl">More schools on LeaseUp</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Major US universities you can post at today — be the first to list at yours.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {moreSchools.map((c) => (
+                <CampusCard key={c.id} campus={c} count={counts[c.id] ?? 0} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
