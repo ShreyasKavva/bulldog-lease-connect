@@ -230,7 +230,7 @@ export function ListingDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0 pb-24">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
 
         <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
 
