@@ -40,7 +40,7 @@ import { OnboardingModal } from "@/components/leaseup/OnboardingModal";
 import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
-import { BottomNav } from "@/components/leaseup/BottomNav";
+import { BottomNav, isBottomNavHidden } from "@/components/leaseup/BottomNav";
 import { Footer } from "@/components/leaseup/Footer";
 import { QuickInquiryModal } from "@/components/leaseup/QuickInquiryModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";

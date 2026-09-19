@@ -19,6 +19,16 @@ import type { LucideIcon } from "lucide-react";
 
 type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () => void };
 
+/** Full-screen flows own the viewport on mobile — no tab bar, and no space reserved for it. */
+export function isBottomNavHidden(path: string) {
+  return (
+    path === "/post" ||
+    path.startsWith("/post/") ||
+    path.includes("message") ||
+    path.includes("conversation")
+  );
+}
+
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
