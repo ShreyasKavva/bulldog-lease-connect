@@ -143,7 +143,7 @@ function ShareListingSheet({ listing, onClose }: { listing: Listing; onClose: ()
               >
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary"><Send className="h-5 w-5" /></div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-base font-bold">Share via… (iMessage, WhatsApp, Reddit)</div>
+                  <div className="text-base font-bold">Share via…</div>
                   <div className="text-xs text-muted-foreground">Opens your phone's share sheet</div>
                 </div>
               </button>
