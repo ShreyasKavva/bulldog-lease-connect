@@ -12,6 +12,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchCuratedListings } from "@/lib/leaseup/queries";
+import { useAffinityCampusId } from "@/lib/leaseup/campus-affinity";
 import { ListingCard } from "./ListingCard";
 import type { Campus } from "@/lib/leaseup/campuses";
 import type { Listing } from "@/lib/leaseup/types";
@@ -31,58 +32,45 @@ type RowProps = {
 export function SmartSections({
   campuses, userCampusId, savedIds, onSave, onOpen, filter,
 }: RowProps & { campuses: Campus[]; userCampusId?: string | null }) {
-  // Never default to a specific school: no campus known → no "Near" rail.
-  const nearCampus = campuses.find((c) => c.id === userCampusId) ?? null;
-  const nearLabel = nearCampus ? `Near ${nearCampus.short_name || nearCampus.name}` : "Near your campus";
+  /**
+   * Q280 — recommendation base. Profile/geo campus is the starting point for a
+   * new user; once they keep opening listings at one school, that campus takes
+   * over. Never default to a specific school when nothing is known.
+   */
+  const affinityId = useAffinityCampusId();
+  const activeId = (affinityId && campuses.some((c) => c.id === affinityId) ? affinityId : null) ?? userCampusId ?? null;
+  const campus = campuses.find((c) => c.id === activeId) ?? null;
+  const at = campus ? ` at ${campus.short_name || campus.name}` : "";
+  const scope = campus ? { campusId: campus.id } : {};
+  const seeAllCampus = campus ? { campus: campus.slug } : {};
   const rowProps = { savedIds, onSave, onOpen, filter };
 
   const sections = [
-    nearCampus
-      ? {
-          key: "near",
-          title: nearLabel,
-          seeAll: { campus: nearCampus.slug },
-          query: { campusId: nearCampus.id, limit: 12 },
-        }
-      : null,
-    {
-      // Q102 — "trending" = most-viewed of the last 30 days. minViews keeps the
-      // row hidden on a fresh DB instead of listing everything at "0 views".
-      key: "trending",
-      title: "Trending this week",
-      seeAll: { sort: "trending" },
-      minItems: 2,
-      query: {
-        createdAfter: new Date(Date.now() - 30 * 86400000).toISOString(),
-        minViews: 1,
-        orderBy: "view_count" as const,
-        limit: 12,
-      },
-    },
     {
       key: "new",
-      title: "Just posted",
-      seeAll: { sort: "newest" },
-      query: { limit: 12 },
+      title: `Just posted${at}`,
+      seeAll: { ...seeAllCampus, sort: "newest" },
+      query: { ...scope, limit: 12 },
     },
     {
       key: "cheap",
-      title: "Under $600/mo",
-      seeAll: { max_price: 600 },
-      query: { maxPrice: 600, limit: 12 },
+      title: `Under $600/mo${at}`,
+      seeAll: { ...seeAllCampus, max_price: 600 },
+      query: { ...scope, maxPrice: 600, limit: 12 },
     },
     {
       key: "soon",
-      title: "Available this month",
-      seeAll: { from: isoDaysFromNow(31) },
+      title: `Available this month${at}`,
+      seeAll: { ...seeAllCampus, from: isoDaysFromNow(31) },
       query: {
+        ...scope,
         availableBefore: isoDaysFromNow(31),
         orderBy: "available_from" as const,
         ascending: true,
         limit: 12,
       },
     },
-  ].filter(Boolean) as Array<{
+  ] as Array<{
     key: string;
     title: string;
     minItems?: number;
@@ -97,6 +85,7 @@ export function SmartSections({
           key={s.key}
           id={s.key}
           title={s.title}
+          fallbackTitle={s.title.replace(at, "")}
           seeAll={s.seeAll}
           query={s.query}
           minItems={s.minItems}
@@ -109,10 +98,11 @@ export function SmartSections({
 }
 
 function Section({
-  id, title, seeAll, query, divider, minItems, savedIds, onSave, onOpen, filter,
+  id, title, fallbackTitle, seeAll, query, divider, minItems, savedIds, onSave, onOpen, filter,
 }: RowProps & {
   id: string;
   title: string;
+  fallbackTitle?: string;
   minItems?: number;
   seeAll: Record<string, unknown>;
   query: Parameters<typeof fetchCuratedListings>[0];
@@ -120,11 +110,21 @@ function Section({
 }) {
   const { data, isLoading } = useQuery({
     queryKey: ["home-section", id, query],
-    queryFn: () => fetchCuratedListings(query),
     staleTime: 60_000,
+    queryFn: async () => {
+      const rows = await fetchCuratedListings(query);
+      // Campus with nothing to show → widen rather than leave a blank homepage.
+      if (rows.length === 0 && query.campusId) {
+        const { campusId: _drop, ...wide } = query;
+        return { rows: await fetchCuratedListings(wide), fellBack: true };
+      }
+      return { rows, fellBack: false };
+    },
   });
 
-  const items = (data ?? []).filter((l) => (filter ? filter(l) : true));
+  const items = (data?.rows ?? []).filter((l) => (filter ? filter(l) : true));
+  const heading = data?.fellBack ? (fallbackTitle ?? title) : title;
+  const seeAllSearch = data?.fellBack ? (({ campus: _c, ...rest }) => rest)(seeAll as any) : seeAll;
 
   if (isLoading) {
     return (
@@ -148,10 +148,10 @@ function Section({
   return (
     <section className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="text-lg font-semibold">{heading}</h2>
         <Link
           to="/browse"
-          search={seeAll as never}
+          search={seeAllSearch as never}
           className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
         >
           See all
