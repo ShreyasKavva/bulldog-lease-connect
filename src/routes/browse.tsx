@@ -806,7 +806,7 @@ function Browse() {
                 <>
                   {/* Q180 — hidden-by-filters recovery, never a dead end. */}
                   <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                    {campusTotal} sublease{campusTotal === 1 ? "" : "s"} at {campusLabel} {campusTotal === 1 ? "is" : "are"} hidden by your filters
+                    No listings with these filters
                   </h3>
                   <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
                     {(s.from || s.to) && (
