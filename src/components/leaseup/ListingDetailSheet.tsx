@@ -152,6 +152,26 @@ export function ListingDetailSheet({
     };
   }, [open, listing, listingCampus]);
 
+  /**
+   * Q282 — browser Back must close the slide-out, not leave the page the
+   * visitor was browsing. Push a throwaway history entry while the sheet is
+   * open and pop it again when it closes, so Back and the in-app close land
+   * on the same page (and scroll position) the listing was opened from.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined" || !open) return;
+    window.history.pushState({ ...(window.history.state ?? {}), luListingSheet: true }, "");
+    const onPop = () => onOpenChange(false);
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      if ((window.history.state as { luListingSheet?: boolean } | null)?.luListingSheet) {
+        window.history.back();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
 
   // Comp listings (same campus, ±1 bed)
   const { data: allListings = [] } = useQuery({
