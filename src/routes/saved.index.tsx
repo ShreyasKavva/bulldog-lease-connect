@@ -81,7 +81,7 @@ function SavedPage() {
   }
 
   async function unsave(l: Listing) {
-    if (!user) return;
+    if (!user) return null;
     try {
       await toggleSaved(user.id, l.id, true);
       refresh();
@@ -95,8 +95,10 @@ function SavedPage() {
           },
         },
       });
+      return "unsaved" as const;
     } catch {
       toast.error("Couldn't remove that listing");
+      return null;
     }
   }
 

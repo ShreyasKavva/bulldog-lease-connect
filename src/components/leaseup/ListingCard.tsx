@@ -109,7 +109,7 @@ export function ListingCard({
   onSave: () => void;
   onOpen: () => void;
   /** Q91: overrides the default "Save to collection" modal (e.g. remove-from-collection). */
-  onHeart?: () => void;
+  onHeart?: () => Promise<"saved" | "unsaved" | null>;
   /** Q159: quick-action message button; falls back to opening the listing. */
   onMessage?: () => void;
   pinned?: boolean;
@@ -171,7 +171,11 @@ export function ListingCard({
     e.preventDefault();
     e.stopPropagation();
     import("@/lib/haptics").then((m) => m.haptic(10));
-    if (onHeart) { bumpSaveCount(saved); onHeart(); return; }
+    if (onHeart) {
+      const result = await onHeart();
+      if (result) bumpSaveCount(result === "unsaved");
+      return;
+    }
     if (!user) {
       openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
       return;
