@@ -184,7 +184,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
                 onClick={() => setMobileOpen((v) => !v)}
                 aria-label="Open menu"
                 aria-expanded={mobileOpen}
-                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white dark:border-border dark:bg-background"
+                className="grid h-11 w-11 place-items-center rounded-full border border-gray-200 bg-white dark:border-border dark:bg-background"
               >
                 {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
