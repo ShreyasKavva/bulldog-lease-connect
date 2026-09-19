@@ -183,7 +183,7 @@ function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="yourname@uga.edu"
+              placeholder="you@yourschool.edu"
               autoComplete="email"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
