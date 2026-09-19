@@ -67,6 +67,14 @@ function CampusDirectoryPage() {
     placeholderData: (prev) => prev,
   });
 
+  // Q279 — the browsable set of major US schools, shown under the campuses
+  // that already have subleases so the directory isn't a dozen cards long.
+  const { data: majors = [] } = useQuery({
+    queryKey: ["major-campuses"],
+    queryFn: fetchMajorCampuses,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const sorted = useMemo(() => {
     const base = debounced.trim() ? searchResults : campuses;
     return [...base].sort((a, b) => {
@@ -76,6 +84,13 @@ function CampusDirectoryPage() {
       return a.name.localeCompare(b.name);
     });
   }, [campuses, searchResults, counts, debounced]);
+
+  // Only the majors that aren't already in the grid above, alphabetical.
+  const moreSchools = useMemo(() => {
+    if (debounced.trim()) return [];
+    const shown = new Set(sorted.map((c) => c.id));
+    return majors.filter((c) => !shown.has(c.id)).sort((a, b) => a.name.localeCompare(b.name));
+  }, [majors, sorted, debounced]);
 
   const total = campuses.length;
 
