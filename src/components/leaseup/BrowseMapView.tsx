@@ -474,7 +474,20 @@ export function BrowseMapView({
         </p>
       )}
       {listings.length === 0 ? (
-        <p className="p-6 text-center text-sm text-muted-foreground">No subleases match those filters.</p>
+        emptyRecovery ? (
+          <div className="flex flex-col items-center p-6 text-center">
+            <p className="text-sm font-semibold text-foreground">{emptyRecovery.heading}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{emptyRecovery.detail}</p>
+            <button
+              onClick={emptyRecovery.onRelax}
+              className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+            >
+              {emptyRecovery.button}
+            </button>
+          </div>
+        ) : (
+          <p className="p-6 text-center text-sm text-muted-foreground">No subleases match those filters.</p>
+        )
       ) : (
         listings.map((l) => (
           <CompactCard key={l.id} listing={l} active={l.id === activeId} onClick={() => focus(l)} />
