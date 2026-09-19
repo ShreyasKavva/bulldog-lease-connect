@@ -548,7 +548,6 @@ function Browse() {
     () => (campusId ? listings.filter((l) => l.campus_id === campusId).length : listings.length),
     [listings, campusId],
   );
-  const campusLabel = searchedCampus?.name ?? searchedCampus?.short_name ?? "this campus";
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
