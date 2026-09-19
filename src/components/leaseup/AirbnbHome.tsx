@@ -391,6 +391,14 @@ export function AirbnbHome({
               </button>
             );
           })}
+          {cat !== "all" && (
+            <button
+              onClick={() => pickCategory("all")}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 underline-offset-2 hover:bg-gray-50 hover:underline dark:border-border dark:bg-surface dark:text-foreground"
+            >
+              Clear filter
+            </button>
+          )}
         </div>
       </div>
 
