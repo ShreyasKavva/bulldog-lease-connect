@@ -529,7 +529,7 @@ export function AirbnbHome({
           listings={listings}
           campuses={campuses}
           onOpen={onOpen}
-          campusId={search.campusId ?? homeCampusId}
+          campusId={search.campusId ?? userCampusId ?? geoCampus?.id ?? null}
         />
       )}
 
