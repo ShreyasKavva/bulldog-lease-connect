@@ -20,12 +20,13 @@ import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { fetchCampusesByIds, type Campus } from "@/lib/leaseup/campuses";
 
 export function ProfileSheet({
-  userId, open, onOpenChange, onMessage,
+  userId, open, onOpenChange, onMessage, startEditing,
 }: {
   userId: string | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onMessage?: (otherId: string) => void;
+  startEditing?: boolean;
 }) {
   const { user } = useSession();
   const isMe = !!user && user.id === userId;
@@ -74,6 +75,13 @@ export function ProfileSheet({
   });
   const stats = computeReviewStats(reviews);
 
+
+  // Open straight into the edit form when the caller asked for it ("Edit
+  // Profile" button); reset to view mode once the sheet closes.
+  useEffect(() => {
+    if (open && startEditing) setEditing(true);
+    if (!open) setEditing(false);
+  }, [open, startEditing]);
 
   useEffect(() => {
     if (profile) setForm({

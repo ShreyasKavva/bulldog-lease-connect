@@ -525,7 +525,7 @@ export function ProfileView({ userId }: { userId: string }) {
       </main>
 
       {isOwn && (
-        <ProfileSheet userId={editOpen ? userId : null} open={editOpen} onOpenChange={setEditOpen} />
+        <ProfileSheet userId={editOpen ? userId : null} open={editOpen} onOpenChange={setEditOpen} startEditing />
       )}
     </div>
   );
