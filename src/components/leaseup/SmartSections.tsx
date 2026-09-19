@@ -31,58 +31,45 @@ type RowProps = {
 export function SmartSections({
   campuses, userCampusId, savedIds, onSave, onOpen, filter,
 }: RowProps & { campuses: Campus[]; userCampusId?: string | null }) {
-  // Never default to a specific school: no campus known → no "Near" rail.
-  const nearCampus = campuses.find((c) => c.id === userCampusId) ?? null;
-  const nearLabel = nearCampus ? `Near ${nearCampus.short_name || nearCampus.name}` : "Near your campus";
+  /**
+   * Q280 — recommendation base. Profile/geo campus is the starting point for a
+   * new user; once they keep opening listings at one school, that campus takes
+   * over. Never default to a specific school when nothing is known.
+   */
+  const affinityId = useAffinityCampusId();
+  const activeId = (affinityId && campuses.some((c) => c.id === affinityId) ? affinityId : null) ?? userCampusId ?? null;
+  const campus = campuses.find((c) => c.id === activeId) ?? null;
+  const at = campus ? ` at ${campus.short_name || campus.name}` : "";
+  const scope = campus ? { campusId: campus.id } : {};
+  const seeAllCampus = campus ? { campus: campus.slug } : {};
   const rowProps = { savedIds, onSave, onOpen, filter };
 
   const sections = [
-    nearCampus
-      ? {
-          key: "near",
-          title: nearLabel,
-          seeAll: { campus: nearCampus.slug },
-          query: { campusId: nearCampus.id, limit: 12 },
-        }
-      : null,
-    {
-      // Q102 — "trending" = most-viewed of the last 30 days. minViews keeps the
-      // row hidden on a fresh DB instead of listing everything at "0 views".
-      key: "trending",
-      title: "Trending this week",
-      seeAll: { sort: "trending" },
-      minItems: 2,
-      query: {
-        createdAfter: new Date(Date.now() - 30 * 86400000).toISOString(),
-        minViews: 1,
-        orderBy: "view_count" as const,
-        limit: 12,
-      },
-    },
     {
       key: "new",
-      title: "Just posted",
-      seeAll: { sort: "newest" },
-      query: { limit: 12 },
+      title: `Just posted${at}`,
+      seeAll: { ...seeAllCampus, sort: "newest" },
+      query: { ...scope, limit: 12 },
     },
     {
       key: "cheap",
-      title: "Under $600/mo",
-      seeAll: { max_price: 600 },
-      query: { maxPrice: 600, limit: 12 },
+      title: `Under $600/mo${at}`,
+      seeAll: { ...seeAllCampus, max_price: 600 },
+      query: { ...scope, maxPrice: 600, limit: 12 },
     },
     {
       key: "soon",
-      title: "Available this month",
-      seeAll: { from: isoDaysFromNow(31) },
+      title: `Available this month${at}`,
+      seeAll: { ...seeAllCampus, from: isoDaysFromNow(31) },
       query: {
+        ...scope,
         availableBefore: isoDaysFromNow(31),
         orderBy: "available_from" as const,
         ascending: true,
         limit: 12,
       },
     },
-  ].filter(Boolean) as Array<{
+  ] as Array<{
     key: string;
     title: string;
     minItems?: number;
