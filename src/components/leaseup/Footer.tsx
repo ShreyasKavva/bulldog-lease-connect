@@ -85,7 +85,7 @@ export function Footer() {
               {topCampuses.map((c) => (
                 <Link
                   key={c.id}
-                  to="/campus/$slug"
+                  to="/sublease/$slug"
                   params={{ slug: c.slug }}
                   className={linkCls}
                 >
