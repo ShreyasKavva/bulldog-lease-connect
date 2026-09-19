@@ -76,6 +76,13 @@ export function ProfileSheet({
   const stats = computeReviewStats(reviews);
 
 
+  // Open straight into the edit form when the caller asked for it ("Edit
+  // Profile" button); reset to view mode once the sheet closes.
+  useEffect(() => {
+    if (open && startEditing) setEditing(true);
+    if (!open) setEditing(false);
+  }, [open, startEditing]);
+
   useEffect(() => {
     if (profile) setForm({
       name: profile.name ?? "", year: profile.year ?? "", major: profile.major ?? "",
