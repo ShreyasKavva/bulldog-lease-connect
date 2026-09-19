@@ -9,6 +9,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { fetchMajorCampuses } from "@/lib/leaseup/major-campuses";
 import { Search, School } from "lucide-react";
 import { CampusMark } from "@/components/leaseup/CampusMark";
 import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
@@ -66,6 +67,14 @@ function CampusDirectoryPage() {
     placeholderData: (prev) => prev,
   });
 
+  // Q279 — the browsable set of major US schools, shown under the campuses
+  // that already have subleases so the directory isn't a dozen cards long.
+  const { data: majors = [] } = useQuery({
+    queryKey: ["major-campuses"],
+    queryFn: fetchMajorCampuses,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const sorted = useMemo(() => {
     const base = debounced.trim() ? searchResults : campuses;
     return [...base].sort((a, b) => {
@@ -75,6 +84,13 @@ function CampusDirectoryPage() {
       return a.name.localeCompare(b.name);
     });
   }, [campuses, searchResults, counts, debounced]);
+
+  // Only the majors that aren't already in the grid above, alphabetical.
+  const moreSchools = useMemo(() => {
+    if (debounced.trim()) return [];
+    const shown = new Set(sorted.map((c) => c.id));
+    return majors.filter((c) => !shown.has(c.id)).sort((a, b) => a.name.localeCompare(b.name));
+  }, [majors, sorted, debounced]);
 
   const total = campuses.length;
 
@@ -127,6 +143,20 @@ function CampusDirectoryPage() {
               <CampusCard key={c.id} campus={c} count={counts[c.id] ?? 0} />
             ))}
           </div>
+        )}
+
+        {moreSchools.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-lg font-black tracking-tight sm:text-xl">More schools on LeaseUp</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Major US universities you can post at today — be the first to list at yours.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {moreSchools.map((c) => (
+                <CampusCard key={c.id} campus={c} count={counts[c.id] ?? 0} />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </div>
