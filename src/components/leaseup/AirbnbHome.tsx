@@ -19,7 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -131,7 +132,18 @@ export function AirbnbHome({
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  /** Label for a category, with "Near Campus" personalised to the user's school. */
+  const catLabel = (k: Cat): string => {
+    const c = CATEGORIES.find((x) => x.k === k);
+    if (k === "near-campus" && userCampusId) {
+      const myCampus = campuses.find((c2) => c2.id === userCampusId);
+      if (myCampus) return `Near ${myCampus.short_name || myCampus.name}`;
+    }
+    return c?.label ?? "All";
+  };
 
   /**
    * Q177 — when we don't know the visitor's campus, ask the browser where they
