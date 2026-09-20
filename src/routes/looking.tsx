@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
   Plus, Trash2, Pencil, Check, MessageSquare, BadgeCheck, Calendar, DollarSign,
@@ -102,6 +103,9 @@ function LookingForPage() {
 
   // Filters — campus scope. Q136: "All" is the default so the pill strip matches.
   const [campusFilter, setCampusFilter] = useState<string>("all");
+  // Display name of a specifically-picked campus (the full campus list covers
+  // ~3,900 schools, so the filter is a search box, not a fixed dropdown).
+  const [campusName, setCampusName] = useState<string>("");
 
   // Q138 — campus pills, fixed order: UGA, GT, Ohio State, UT Austin, Auburn, Clemson, Duke, FSU.
   const PILL_SLUGS = [
@@ -327,18 +331,25 @@ function LookingForPage() {
         <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-3">
           <label className="text-xs font-semibold text-muted-foreground">
             Campus
-            <select
-              value={campusFilter}
-              onChange={(e) => setCampusFilter(e.target.value)}
-              className="mt-1 block h-10 w-56 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground"
-            >
-              <option value="all">All campuses</option>
-              <option value="mine">My campus</option>
-              {campuses.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <div className="mt-1 flex h-10 w-64 items-center rounded-lg border border-border bg-surface px-3">
+              <CampusAutocomplete
+                className="flex-1"
+                value={campusFilter === "all" ? "" : campusFilter === "mine" ? "My campus" : campusName}
+                placeholder="All campuses"
+                onSelect={(c) => { setCampusFilter(c.id); setCampusName(c.name); }}
+                onClear={() => { setCampusFilter("all"); setCampusName(""); }}
+              />
+            </div>
           </label>
+          {myProfile?.campus_id && campusFilter !== "mine" && (
+            <button
+              type="button"
+              onClick={() => { setCampusFilter("mine"); setCampusName(""); }}
+              className="h-10 rounded-full border border-border px-4 text-sm font-semibold hover:bg-background"
+            >
+              My campus
+            </button>
+          )}
           <label className="text-xs font-semibold text-muted-foreground">
             Budget up to
             <select
@@ -367,7 +378,7 @@ function LookingForPage() {
           {(budgetFilter || moveInBy || campusFilter !== "all") && (
             <button
               type="button"
-              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("all"); }}
+              onClick={() => { setBudgetFilter(""); setMoveInBy(""); setCampusFilter("all"); setCampusName(""); }}
               className="h-10 rounded-lg px-3 text-sm font-semibold text-primary hover:underline"
             >
               Clear filters
