@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
+import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import {
   Plus, Trash2, Pencil, Check, MessageSquare, BadgeCheck, Calendar, DollarSign,
@@ -102,6 +103,9 @@ function LookingForPage() {
 
   // Filters — campus scope. Q136: "All" is the default so the pill strip matches.
   const [campusFilter, setCampusFilter] = useState<string>("all");
+  // Display name of a specifically-picked campus (the full campus list covers
+  // ~3,900 schools, so the filter is a search box, not a fixed dropdown).
+  const [campusName, setCampusName] = useState<string>("");
 
   // Q138 — campus pills, fixed order: UGA, GT, Ohio State, UT Austin, Auburn, Clemson, Duke, FSU.
   const PILL_SLUGS = [
