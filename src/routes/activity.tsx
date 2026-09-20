@@ -22,7 +22,7 @@ export const Route = createFileRoute("/activity")({
 
 function ActivityPage() {
   const { user, loading } = useSession();
-  const { data: items = [], isLoading } = useActivity();
+  const { data: items = [], isLoading } = useActivity(user?.id);
   const [visible, setVisible] = useState(50);
   const seenIds = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());

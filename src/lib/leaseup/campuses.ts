@@ -112,6 +112,25 @@ export async function searchCampuses(query: string, limit = 8): Promise<Campus[]
   return (data ?? []) as Campus[];
 }
 
+/** Homepage "Explore campuses" grid: campuses with live listings first
+ *  (sorted by count), padded with large well-known schools so the grid
+ *  stays full even when few campuses have inventory yet. */
+export async function fetchSpotlightCampuses(limit = 16): Promise<Campus[]> {
+  const withListings = await fetchCampuses();
+  const sorted = withListings
+    .slice()
+    .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0));
+  if (sorted.length >= limit) return sorted.slice(0, limit);
+  const { data, error } = await supabase
+    .from("campuses")
+    .select("id, name, short_name, city, state, lat, lng, domain, slug, level")
+    .order("ipeds_unitid", { ascending: true })
+    .limit(limit * 2);
+  if (error) throw error;
+  const seen = new Set(sorted.map((c) => c.id));
+  return sorted.concat(((data ?? []) as Campus[]).filter((c) => !seen.has(c.id))).slice(0, limit);
+}
+
 /** Campuses near a given campus that DO have listings — used for the
  *  "Nearby campuses" rail on an empty campus page. */
 export async function fetchNearbyCampuses(campusId: string, limit = 4): Promise<(Campus & { distance_miles: number })[]> {

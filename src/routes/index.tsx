@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
-import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchSpotlightCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
 import { AirbnbHome } from "@/components/leaseup/AirbnbHome";
@@ -74,7 +74,7 @@ function Home() {
     enabled: !!user?.id,
   });
   const { data: listings = [], isLoading: listingsLoading } = useQuery({ queryKey: ["listings"], queryFn: fetchListings });
-  const { data: campuses = [] } = useQuery({ queryKey: ["campuses"], queryFn: fetchCampuses, staleTime: Infinity });
+  const { data: campuses = [] } = useQuery({ queryKey: ["spotlight-campuses"], queryFn: () => fetchSpotlightCampuses(16), staleTime: Infinity });
 
   // "Latest subleases" feed scope: user's campus, else most active campus.
   const userCampusId = profile?.campus_id ?? null;
