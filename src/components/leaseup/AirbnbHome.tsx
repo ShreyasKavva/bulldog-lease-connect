@@ -19,7 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { MapPin, Flame, Sparkles, ArrowRight, Search } from "lucide-react";
+import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -131,7 +132,18 @@ export function AirbnbHome({
 
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  /** Label for a category, with "Near Campus" personalised to the user's school. */
+  const catLabel = (k: Cat): string => {
+    const c = CATEGORIES.find((x) => x.k === k);
+    if (k === "near-campus" && userCampusId) {
+      const myCampus = campuses.find((c2) => c2.id === userCampusId);
+      if (myCampus) return `Near ${myCampus.short_name || myCampus.name}`;
+    }
+    return c?.label ?? "All";
+  };
 
   /**
    * Q177 — when we don't know the visitor's campus, ask the browser where they
@@ -381,41 +393,62 @@ export function AirbnbHome({
       <GuestWelcomeStrip />
 
 
-      {/* CATEGORY PILLS */}
+      {/* CATEGORY FILTER — single Filters button on the right; the pills live
+          inside its popover instead of sprawling across the page. */}
       <div className={cn("z-50 border-b border-gray-200 bg-white dark:bg-surface", pastRails ? "relative" : "sticky top-14")}>
-        <div
-          className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
-        >
-          {CATEGORIES.map(({ k, label: baseLabel, emoji }) => {
-            const active = cat === k;
-            const myCampus = k === "near-campus" && userCampusId
-              ? campuses.find((c) => c.id === userCampusId)
-              : null;
-            const label = myCampus ? `Near ${myCampus.short_name || myCampus.name}` : baseLabel;
-            return (
+        <div className="mx-auto flex max-w-7xl items-center justify-end px-4 py-3 sm:px-6">
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
               <button
-                key={k}
-                onClick={() => pickCategory(k)}
+                type="button"
+                aria-label="Filters"
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
-                  active
+                  "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
+                  cat !== "all"
                     ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
                     : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >
-                <span aria-hidden>{emoji}</span>
-                {label}
+                <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                {cat === "all" ? "Filters" : `Filters · ${catLabel(cat)}`}
               </button>
-            );
-          })}
-          {cat !== "all" && (
-            <button
-              onClick={() => pickCategory("all")}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 underline-offset-2 hover:bg-gray-50 hover:underline dark:border-border dark:bg-surface dark:text-foreground"
-            >
-              Clear filter
-            </button>
-          )}
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-1.5">
+              {CATEGORIES.map(({ k, label: baseLabel, emoji }) => {
+                const active = cat === k;
+                const myCampus = k === "near-campus" && userCampusId
+                  ? campuses.find((c) => c.id === userCampusId)
+                  : null;
+                const label = myCampus ? `Near ${myCampus.short_name || myCampus.name}` : baseLabel;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => { pickCategory(k); setFilterOpen(false); }}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm transition",
+                      active
+                        ? "bg-gray-900 font-semibold text-white dark:bg-foreground dark:text-background"
+                        : "font-medium text-gray-700 hover:bg-gray-50 dark:text-foreground dark:hover:bg-accent",
+                    )}
+                  >
+                    <span aria-hidden>{emoji}</span>
+                    <span className="flex-1">{label}</span>
+                    {active && <Check className="h-4 w-4" aria-hidden />}
+                  </button>
+                );
+              })}
+              {cat !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => { pickCategory("all"); setFilterOpen(false); }}
+                  className="mt-1 flex w-full items-center gap-2.5 rounded-lg border-t border-gray-100 px-3 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-accent"
+                >
+                  Clear filter
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
