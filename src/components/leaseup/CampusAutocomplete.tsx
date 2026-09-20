@@ -48,7 +48,7 @@ export function CampusAutocomplete({
   const canSearch = q.length === 0 || q.length >= 2;
   const { data: results = [], isFetching } = useQuery({
     queryKey: ["campus-search", q.toLowerCase()],
-    queryFn: () => searchCampuses(q, q ? 8 : 5),
+    queryFn: () => searchCampuses(q, q ? 8 : 14),
     enabled: canSearch,
     staleTime: 60_000,
     placeholderData: (prev) => prev,
