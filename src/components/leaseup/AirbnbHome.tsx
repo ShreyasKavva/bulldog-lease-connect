@@ -397,7 +397,7 @@ export function AirbnbHome({
           inside its popover instead of sprawling across the page. */}
       <div className={cn("z-50 border-b border-gray-200 bg-white dark:bg-surface", pastRails ? "relative" : "sticky top-14")}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <span className="truncate text-sm font-semibold text-foreground">
+          <span className="truncate text-lg font-bold text-foreground">
             {cat === "all" ? "Subleases" : catLabel(cat)}
           </span>
           <Popover open={filterOpen} onOpenChange={setFilterOpen}>
