@@ -613,45 +613,6 @@ export function AirbnbHome({
         </div>
       </section>
 
-      {/* Q169 — browse by bedroom type */}
-
-      {/* Q201 — this count line was the last zero on the homepage: while the
-          listings query is in flight every tile reads "0 available", and a
-          bucket that is genuinely empty reads the same after it resolves.
-          Gate the section on !loading like the rails above, and drop
-          zero-count tiles. */}
-
-      {!loading && (() => {
-        const bedroomTypes = [
-          { emoji: "🛋️", label: "Studio", beds: 0, count: listings.filter((l) => l.beds === 0).length },
-          { emoji: "🛏", label: "1 Bedroom", beds: 1, count: listings.filter((l) => l.beds === 1).length },
-          { emoji: "🏠", label: "2 Bedrooms", beds: 2, count: listings.filter((l) => l.beds === 2).length },
-          { emoji: "🏡", label: "3+ Bedrooms", beds: 3, count: listings.filter((l) => l.beds >= 3).length },
-        ].filter((t) => t.count > 0);
-
-        if (bedroomTypes.length === 0) return null;
-
-        return (
-      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
-        <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-foreground">🛏 Browse by bedroom type</h2>
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          {bedroomTypes.map((t) => (
-            <button
-              key={t.label}
-              type="button"
-              onClick={() => navigate({ to: "/browse", search: { bedrooms: String(t.beds) } as any })}
-              className="flex min-w-[100px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border border-gray-150 bg-white px-5 py-4 transition hover:border-indigo-300 hover:shadow-sm dark:border-border dark:bg-surface"
-            >
-              <span className="text-2xl">{t.emoji}</span>
-              <span className="text-sm font-medium text-gray-700 dark:text-foreground">{t.label}</span>
-              <span className="text-xs text-gray-400">{t.count} available</span>
-            </button>
-          ))}
-        </div>
-      </section>
-        );
-      })()}
-
       {/* Q170 — guest onboarding CTA (signed-out visitors only) */}
       {!sessionUser && (
         <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
