@@ -48,7 +48,7 @@ export function CampusAutocomplete({
   const canSearch = q.length === 0 || q.length >= 2;
   const { data: results = [], isFetching } = useQuery({
     queryKey: ["campus-search", q.toLowerCase()],
-    queryFn: () => searchCampuses(q, q ? 8 : 5),
+    queryFn: () => searchCampuses(q, q ? 8 : 14),
     enabled: canSearch,
     staleTime: 60_000,
     placeholderData: (prev) => prev,
@@ -126,10 +126,10 @@ export function CampusAutocomplete({
       </div>
 
       {open && (
-        <div id="campus-autocomplete-results" role="listbox" className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 min-w-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
+        <div id="campus-autocomplete-results" role="listbox" className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 min-w-72 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
           {!q && visibleResults.length > 0 && (
             <div className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Campuses with subleases
+              Suggested campuses
             </div>
           )}
           {!canSearch ? (

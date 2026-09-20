@@ -91,10 +91,21 @@ export async function searchCampuses(query: string, limit = 8): Promise<Campus[]
   const q = (query ?? "").trim();
   if (!q) {
     const withListings = await fetchCampuses();
-    return withListings
+    const sorted = withListings
       .slice()
-      .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0))
-      .slice(0, limit);
+      .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0));
+    if (sorted.length >= limit) return sorted.slice(0, limit);
+    // Pad with large well-known schools so the empty-state dropdown always
+    // offers a useful scrollable list, even when few campuses have listings.
+    const { data, error } = await supabase
+      .from("campuses")
+      .select("id, name, short_name, city, state, lat, lng, domain, slug, level")
+      .order("ipeds_unitid", { ascending: true })
+      .limit(limit * 2);
+    if (error) throw error;
+    const seen = new Set(sorted.map((c) => c.id));
+    const padded = sorted.concat(((data ?? []) as Campus[]).filter((c) => !seen.has(c.id)));
+    return padded.slice(0, limit);
   }
   const { data, error } = await supabase.rpc("search_campuses", { _q: q, _limit: limit });
   if (error) throw error;
