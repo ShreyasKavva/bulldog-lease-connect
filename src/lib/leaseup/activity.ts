@@ -142,31 +142,32 @@ export async function fetchActivity(userId: string, limit = 50): Promise<Activit
 }
 
 
-export function useActivity() {
+export function useActivity(userId: string | undefined) {
   const qc = useQueryClient();
   const query = useQuery({
-    queryKey: ["activity"],
-    queryFn: () => fetchActivity(50),
+    queryKey: ["activity", userId],
+    queryFn: () => fetchActivity(userId!, 50),
+    enabled: !!userId,
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
+    if (!userId) return;
+    const key = ["activity", userId];
     const channel = supabase
-      .channel("activity-feed")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "listings" }, () => {
-        qc.invalidateQueries({ queryKey: ["activity"] });
-      })
+      .channel(`activity-feed-${userId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "listings" }, (payload) => {
         const oldRow = payload.old as any;
         const newRow = payload.new as any;
-        if (!oldRow || !newRow) { qc.invalidateQueries({ queryKey: ["activity"] }); return; }
+        if (!oldRow || !newRow) { qc.invalidateQueries({ queryKey: key }); return; }
+        if (newRow.user_id !== userId) return; // only my own listings
         if (newRow.price < oldRow.price) {
-          qc.setQueryData<ActivityItem[]>(["activity"], (prev) => {
+          qc.setQueryData<ActivityItem[]>(key, (prev) => {
             const item: ActivityItem = {
               id: `pd-${newRow.id}-${Date.now()}`,
               kind: "price_drop",
               emoji: "📉",
-              text: `A listing in ${area(newRow.area)} just dropped to $${Number(newRow.price).toLocaleString()}/mo`,
+              text: `Your listing in ${area(newRow.area)} just dropped to $${Number(newRow.price).toLocaleString()}/mo`,
               area: newRow.area,
               created_at: new Date().toISOString(),
               listing_id: newRow.id,
@@ -175,24 +176,21 @@ export function useActivity() {
           });
         }
         if (oldRow.is_active && !newRow.is_active) {
-          qc.invalidateQueries({ queryKey: ["activity"] });
+          qc.invalidateQueries({ queryKey: key });
         }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "saved_listings" }, () => {
-        qc.invalidateQueries({ queryKey: ["activity"] });
+        qc.invalidateQueries({ queryKey: key });
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "listing_reactions" }, () => {
-        qc.invalidateQueries({ queryKey: ["activity"] });
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "looking_for_posts" }, () => {
-        qc.invalidateQueries({ queryKey: ["activity"] });
+        qc.invalidateQueries({ queryKey: key });
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "closed_deals" }, () => {
-        qc.invalidateQueries({ queryKey: ["activity"] });
+        qc.invalidateQueries({ queryKey: key });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [qc]);
+  }, [qc, userId]);
 
   return query;
 }
