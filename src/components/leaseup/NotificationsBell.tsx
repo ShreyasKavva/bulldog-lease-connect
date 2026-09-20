@@ -294,7 +294,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 }
 
 function ActivityTab() {
-  const { data: items = [], isLoading } = useActivity();
+  const { user } = useSession();
+  const { data: items = [], isLoading } = useActivity(user?.id);
   return (
     <>
       <ScrollArea className="max-h-[380px]">
