@@ -21,6 +21,7 @@ import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -36,6 +37,8 @@ import { useRecentViews } from "@/lib/leaseup/recent-views";
 
 /** Q279 — the "Recently viewed" rail appears only after 4 listings viewed. */
 const RECENT_RAIL_MIN = 4;
+const PRICE_CEILING = 3000;
+const PRICE_BUCKETS = 24;
 import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
 
 import { openSignIn } from "./SignInModal";
@@ -133,6 +136,7 @@ export function AirbnbHome({
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, PRICE_CEILING]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   /** Label for a category, with "Near Campus" personalised to the user's school. */
@@ -196,11 +200,31 @@ export function AirbnbHome({
     });
   }, [listings, search]);
 
-  const inCat = useMemo(
+  const categoryMatches = useMemo(
     () => searched.filter((l) => matchesCategory(l, cat, medianFor)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searched, cat, priceMedian],
   );
+
+  const priceIsActive = priceRange[0] > 0 || priceRange[1] < PRICE_CEILING;
+  const inCat = useMemo(
+    () => categoryMatches.filter((l) =>
+      l.price >= priceRange[0] && (priceRange[1] >= PRICE_CEILING || l.price <= priceRange[1]),
+    ),
+    [categoryMatches, priceRange],
+  );
+  const priceHistogram = useMemo(() => {
+    const buckets = Array.from({ length: PRICE_BUCKETS }, () => 0);
+    for (const listing of categoryMatches) {
+      const index = Math.min(
+        PRICE_BUCKETS - 1,
+        Math.floor((Math.max(0, listing.price) / PRICE_CEILING) * PRICE_BUCKETS),
+      );
+      buckets[index] += 1;
+    }
+    return buckets;
+  }, [categoryMatches]);
+  const tallestPriceBucket = Math.max(1, ...priceHistogram);
 
   // Rails
   const nearCampus = useMemo(() => {
@@ -293,17 +317,6 @@ export function AirbnbHome({
   }
 
 
-  /** Category pills: "All" filters in place, the rest deep-link into /browse. */
-  const CAT_SEARCH: Partial<Record<Cat, Record<string, string | number>>> = {
-    "near-campus": { nearCampus: 1 },
-    furnished: { furnished: 1 },
-    studio: { type: "studio" },
-    "private-room": { type: "private_room" },
-    "short-term": { maxDuration: 90 },
-    "best-deals": { sort: "lowest" },
-    "new-today": { sort: "newest", postedToday: 1 },
-  };
-
   function pickCategory(k: Cat) {
     if (k === "near-campus") {
       // "Near Campus" means near YOUR campus — which every account sets during
@@ -312,7 +325,11 @@ export function AirbnbHome({
       if (!userCampusId) { navigate({ to: "/onboarding" }); return; }
       setCat(k);
       const mine = campuses.find((c) => c.id === userCampusId);
-      navigate({ to: "/browse", search: { campus: mine?.slug ?? userCampusId } as any });
+      setSearch((current) => ({
+        ...current,
+        campusId: userCampusId,
+        where: mine?.short_name ?? mine?.name ?? current.where,
+      }));
       return;
     }
     setCat(k);
@@ -320,7 +337,6 @@ export function AirbnbHome({
       setSearch(EMPTY_SEARCH);
       return;
     }
-    navigate({ to: "/browse", search: CAT_SEARCH[k] as any });
   }
 
   const chipLabel = [
@@ -407,49 +423,129 @@ export function AirbnbHome({
                 aria-label="Filters"
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
-                  cat !== "all"
+                  cat !== "all" || priceIsActive
                     ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
                     : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
                 )}
               >
                 <SlidersHorizontal className="h-4 w-4" aria-hidden />
-                {cat === "all" ? "Filters" : `Filters · ${catLabel(cat)}`}
+                {cat === "all" && !priceIsActive ? "Filters" : "Filters · Active"}
               </button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-56 p-1.5">
-              {CATEGORIES.map(({ k, label: baseLabel, emoji }) => {
-                const active = cat === k;
-                const myCampus = k === "near-campus" && userCampusId
-                  ? campuses.find((c) => c.id === userCampusId)
-                  : null;
-                const label = myCampus ? `Near ${myCampus.short_name || myCampus.name}` : baseLabel;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => { pickCategory(k); setFilterOpen(false); }}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm transition",
-                      active
-                        ? "bg-gray-900 font-semibold text-white dark:bg-foreground dark:text-background"
-                        : "font-medium text-gray-700 hover:bg-gray-50 dark:text-foreground dark:hover:bg-accent",
+            <PopoverContent align="end" sideOffset={10} className="w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl p-0 shadow-card-lg">
+              <div className="border-b border-border px-5 py-4">
+                <h2 className="text-base font-bold text-foreground">Filters</h2>
+              </div>
+
+              <div className="max-h-[65vh] overflow-y-auto px-5 py-5">
+                <section>
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-foreground">Monthly price</h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {inCat.length > 0
+                          ? `${inCat.length} sublease${inCat.length === 1 ? "" : "s"} in this range`
+                          : "No subleases in this range"}
+                      </p>
+                    </div>
+                    {priceIsActive && (
+                      <button
+                        type="button"
+                        onClick={() => setPriceRange([0, PRICE_CEILING])}
+                        className="shrink-0 text-sm font-semibold text-foreground underline underline-offset-4"
+                      >
+                        Reset
+                      </button>
                     )}
-                  >
-                    <span aria-hidden>{emoji}</span>
-                    <span className="flex-1">{label}</span>
-                    {active && <Check className="h-4 w-4" aria-hidden />}
-                  </button>
-                );
-              })}
-              {cat !== "all" && (
+                  </div>
+
+                  <div className="mt-5 flex h-20 items-end gap-0.5" aria-hidden="true">
+                    {priceHistogram.map((count, index) => {
+                      const bucketMin = (index / PRICE_BUCKETS) * PRICE_CEILING;
+                      const bucketMax = ((index + 1) / PRICE_BUCKETS) * PRICE_CEILING;
+                      const selected = bucketMax >= priceRange[0] && bucketMin <= priceRange[1];
+                      return (
+                        <span
+                          key={index}
+                          className={cn("min-h-1 flex-1 rounded-t-sm", selected ? "bg-foreground" : "bg-border")}
+                          style={{ height: `${Math.max(5, (count / tallestPriceBucket) * 100)}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <Slider
+                    className="-mt-0.5"
+                    value={priceRange}
+                    min={0}
+                    max={PRICE_CEILING}
+                    step={50}
+                    minStepsBetweenThumbs={1}
+                    onValueChange={(value) => setPriceRange([value[0] ?? 0, value[1] ?? PRICE_CEILING])}
+                    aria-label="Monthly price range"
+                  />
+                  <div className="mt-5 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-border px-3 py-2">
+                      <span className="block text-xs text-muted-foreground">Minimum</span>
+                      <span className="text-sm font-semibold text-foreground">${priceRange[0].toLocaleString()}</span>
+                    </div>
+                    <div className="rounded-xl border border-border px-3 py-2">
+                      <span className="block text-xs text-muted-foreground">Maximum</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {priceRange[1] >= PRICE_CEILING ? `$${PRICE_CEILING.toLocaleString()}+` : `$${priceRange[1].toLocaleString()}`}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="mt-6 border-t border-border pt-5">
+                  <h3 className="mb-3 font-bold text-foreground">Type of place</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {CATEGORIES.map(({ k, label: baseLabel, emoji }) => {
+                      const active = cat === k;
+                      const myCampus = k === "near-campus" && userCampusId
+                        ? campuses.find((c) => c.id === userCampusId)
+                        : null;
+                      const label = myCampus ? `Near ${myCampus.short_name || myCampus.name}` : baseLabel;
+                      return (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => pickCategory(k)}
+                          className={cn(
+                            "grid min-h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm transition",
+                            active
+                              ? "border-foreground bg-foreground font-semibold text-background"
+                              : "border-border font-medium text-foreground hover:border-foreground",
+                          )}
+                        >
+                          <span aria-hidden>{emoji}</span>
+                          <span className="min-w-0 truncate">{label}</span>
+                          {active && <Check className="h-4 w-4 shrink-0" aria-hidden />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+
+              <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-t border-border p-4">
                 <button
                   type="button"
-                  onClick={() => { pickCategory("all"); setFilterOpen(false); }}
-                  className="mt-1 flex w-full items-center gap-2.5 rounded-lg border-t border-gray-100 px-3 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-border dark:text-foreground dark:hover:bg-accent"
+                  onClick={() => { pickCategory("all"); setPriceRange([0, PRICE_CEILING]); }}
+                  className="min-h-11 px-2 text-sm font-semibold text-foreground underline underline-offset-4"
                 >
-                  Clear filter
+                  Clear all
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen(false)}
+                  className="min-h-11 rounded-lg bg-foreground px-4 text-sm font-bold text-background"
+                >
+                  {inCat.length > 0
+                    ? `Show ${inCat.length} sublease${inCat.length === 1 ? "" : "s"}`
+                    : "Adjust filters"}
+                </button>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -458,9 +554,11 @@ export function AirbnbHome({
       {/* Q167 — "Listed today" rail */}
       {!loading && (() => {
         const today = new Date().toISOString().slice(0, 10);
+        const visibleIds = new Set(inCat.map((listing) => listing.id));
         const todayListings = listings
           .filter((l) => String(l.created_at ?? "").slice(0, 10) >= today)
           .filter((l) => !search.campusId || l.campus_id === search.campusId)
+          .filter((l) => visibleIds.has(l.id))
           .slice(0, 6);
         if (todayListings.length < 2) return null;
         return (
@@ -497,7 +595,7 @@ export function AirbnbHome({
 
       {/* Q165 — smart results summary (only with an active filter) */}
       {!loading &&
-        (cat !== "all" || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
+        (cat !== "all" || priceIsActive || !!search.campusId || !!search.where.trim() || search.guests > 1) && (
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             {inCat.length === 0 ? (
               <p className="mb-2 px-1 text-sm text-gray-400">
@@ -542,11 +640,20 @@ export function AirbnbHome({
           {/* Q279 — once a visitor has viewed 4+ listings, "Recently viewed"
               is always the first rail on the homepage. */}
           {recentIds.length >= RECENT_RAIL_MIN && (
-            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+            <RecentlyViewedSection
+              savedIds={savedIds}
+              onSave={onSave}
+              onOpen={onOpen}
+              filter={(listing) =>
+                matchesCategory(listing, cat, medianFor) &&
+                listing.price >= priceRange[0] &&
+                (priceRange[1] >= PRICE_CEILING || listing.price <= priceRange[1])
+              }
+            />
           )}
           {/* Q177 — "Near you", based on campus/location */}
           <NearYouSection
-            listings={listings}
+            listings={inCat}
             campus={nearYouIsDuplicate ? null : nearYouCampus}
             savedIds={savedIds}
             onSave={onSave}
@@ -554,7 +661,7 @@ export function AirbnbHome({
           />
           {/* Q111 — "New this week" (hidden unless 3+ fresh listings) */}
           <NewThisWeekSection
-            listings={listings}
+            listings={inCat}
             campuses={campuses}
             savedIds={savedIds}
             onSave={onSave}
@@ -566,7 +673,7 @@ export function AirbnbHome({
       {/* Q148 — featured listing hero card, scoped to the visitor's campus */}
       {!loading && (
         <FeaturedListingCard
-          listings={listings}
+          listings={inCat}
           campuses={campuses}
           onOpen={onOpen}
           campusId={search.campusId ?? userCampusId ?? geoCampus?.id ?? null}
@@ -584,16 +691,20 @@ export function AirbnbHome({
             savedIds={savedIds}
             onSave={onSave}
             onOpen={onOpen}
-            filter={(l: Listing) => matchesCategory(l, cat, medianFor)}
+            filter={(l: Listing) =>
+              matchesCategory(l, cat, medianFor) &&
+              l.price >= priceRange[0] &&
+              (priceRange[1] >= PRICE_CEILING || l.price <= priceRange[1])
+            }
           />
         )}
 
         {!loading && inCat.length === 0 && (
           <div className="mx-auto max-w-md px-6 py-16 text-center">
             <div className="text-6xl">🏠</div>
-            <h2 className="mt-4 text-xl font-bold">No subleases here yet</h2>
+            <h2 className="mt-4 text-xl font-bold">No listings with these filters</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              LeaseUp is just getting started. Be the first to post — it takes 2 minutes.
+              Try changing the price range or type of place.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <button
@@ -601,7 +712,7 @@ export function AirbnbHome({
                 className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
               >Post a sublease →</button>
               <button
-                onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); }}
+                onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); setPriceRange([0, PRICE_CEILING]); }}
                 className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
               >Clear filters</button>
             </div>
@@ -1102,7 +1213,8 @@ function NewThisWeekSection({
   }, [listings]);
 
   const personalised = lastCampus && campusFresh && campusFresh.length > 0;
-  const items = personalised ? campusFresh! : fresh;
+  const visibleIds = new Set(listings.map((listing) => listing.id));
+  const items = personalised ? (campusFresh ?? []).filter((listing) => visibleIds.has(listing.id)) : fresh;
   const label = lastCampus?.short_name || lastCampus?.name;
 
   if (!personalised && fresh.length < 3) return null;
@@ -1141,11 +1253,12 @@ function NewThisWeekSection({
 /* ---------------- Q149/Q279 — Recently viewed ---------------- */
 
 function RecentlyViewedSection({
-  savedIds, onSave, onOpen,
+  savedIds, onSave, onOpen, filter,
 }: {
   savedIds: Set<string>;
   onSave: (l: Listing) => void;
   onOpen: (l: Listing) => void;
+  filter: (l: Listing) => boolean;
 }) {
   const recentIds = useRecentViews();
 
@@ -1162,14 +1275,16 @@ function RecentlyViewedSection({
     },
   });
 
-  if (recentIds.length < RECENT_RAIL_MIN || recent.length < RECENT_RAIL_MIN) return null;
+  const visibleRecent = recent.filter(filter);
+
+  if (recentIds.length < RECENT_RAIL_MIN || visibleRecent.length === 0) return null;
 
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
       <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">Recently viewed</h2>
       <ScrollRow>
-        {recent.map((l) => (
+        {visibleRecent.map((l) => (
           <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
             <ListingCard
               listing={l}
