@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      _audit_tmp: {
+        Row: {
+          msg: string | null
+        }
+        Insert: {
+          msg?: string | null
+        }
+        Update: {
+          msg?: string | null
+        }
+        Relationships: []
+      }
       ambassador_applications: {
         Row: {
           committed_to_post: boolean
