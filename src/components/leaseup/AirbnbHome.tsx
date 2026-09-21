@@ -317,17 +317,6 @@ export function AirbnbHome({
   }
 
 
-  /** Category pills: "All" filters in place, the rest deep-link into /browse. */
-  const CAT_SEARCH: Partial<Record<Cat, Record<string, string | number>>> = {
-    "near-campus": { nearCampus: 1 },
-    furnished: { furnished: 1 },
-    studio: { type: "studio" },
-    "private-room": { type: "private_room" },
-    "short-term": { maxDuration: 90 },
-    "best-deals": { sort: "lowest" },
-    "new-today": { sort: "newest", postedToday: 1 },
-  };
-
   function pickCategory(k: Cat) {
     if (k === "near-campus") {
       // "Near Campus" means near YOUR campus — which every account sets during
@@ -336,7 +325,11 @@ export function AirbnbHome({
       if (!userCampusId) { navigate({ to: "/onboarding" }); return; }
       setCat(k);
       const mine = campuses.find((c) => c.id === userCampusId);
-      navigate({ to: "/browse", search: { campus: mine?.slug ?? userCampusId } as any });
+      setSearch((current) => ({
+        ...current,
+        campusId: userCampusId,
+        where: mine?.short_name ?? mine?.name ?? current.where,
+      }));
       return;
     }
     setCat(k);
@@ -344,7 +337,6 @@ export function AirbnbHome({
       setSearch(EMPTY_SEARCH);
       return;
     }
-    navigate({ to: "/browse", search: CAT_SEARCH[k] as any });
   }
 
   const chipLabel = [
@@ -562,9 +554,11 @@ export function AirbnbHome({
       {/* Q167 — "Listed today" rail */}
       {!loading && (() => {
         const today = new Date().toISOString().slice(0, 10);
+        const visibleIds = new Set(inCat.map((listing) => listing.id));
         const todayListings = listings
           .filter((l) => String(l.created_at ?? "").slice(0, 10) >= today)
           .filter((l) => !search.campusId || l.campus_id === search.campusId)
+          .filter((l) => visibleIds.has(l.id))
           .slice(0, 6);
         if (todayListings.length < 2) return null;
         return (
@@ -708,9 +702,9 @@ export function AirbnbHome({
         {!loading && inCat.length === 0 && (
           <div className="mx-auto max-w-md px-6 py-16 text-center">
             <div className="text-6xl">🏠</div>
-            <h2 className="mt-4 text-xl font-bold">No subleases here yet</h2>
+            <h2 className="mt-4 text-xl font-bold">No listings with these filters</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              LeaseUp is just getting started. Be the first to post — it takes 2 minutes.
+              Try changing the price range or type of place.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <button
