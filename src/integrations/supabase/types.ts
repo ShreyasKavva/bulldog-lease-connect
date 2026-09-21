@@ -14,18 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _audit_tmp: {
-        Row: {
-          msg: string | null
-        }
-        Insert: {
-          msg?: string | null
-        }
-        Update: {
-          msg?: string | null
-        }
-        Relationships: []
-      }
       ambassador_applications: {
         Row: {
           committed_to_post: boolean
@@ -3121,6 +3109,7 @@ export type Database = {
     Functions: {
       auto_approve_pending_listings: { Args: never; Returns: undefined }
       bump_listing: { Args: { _listing_id: string }; Returns: string }
+      campus_for_email_domain: { Args: { _domain: string }; Returns: string }
       campuses_with_listings: {
         Args: never
         Returns: {
