@@ -21,6 +21,7 @@ import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import type { Listing, LookingForPost } from "@/lib/leaseup/types";
 import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
@@ -36,6 +37,8 @@ import { useRecentViews } from "@/lib/leaseup/recent-views";
 
 /** Q279 — the "Recently viewed" rail appears only after 4 listings viewed. */
 const RECENT_RAIL_MIN = 4;
+const PRICE_CEILING = 3000;
+const PRICE_BUCKETS = 24;
 import { useNearestCampus } from "@/lib/leaseup/use-nearest-campus";
 
 import { openSignIn } from "./SignInModal";
@@ -133,6 +136,7 @@ export function AirbnbHome({
   const [search, setSearch] = useState<SearchState>(EMPTY_SEARCH);
   const [cat, setCat] = useState<Cat>("all");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, PRICE_CEILING]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   /** Label for a category, with "Near Campus" personalised to the user's school. */
@@ -196,11 +200,31 @@ export function AirbnbHome({
     });
   }, [listings, search]);
 
-  const inCat = useMemo(
+  const categoryMatches = useMemo(
     () => searched.filter((l) => matchesCategory(l, cat, medianFor)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searched, cat, priceMedian],
   );
+
+  const priceIsActive = priceRange[0] > 0 || priceRange[1] < PRICE_CEILING;
+  const inCat = useMemo(
+    () => categoryMatches.filter((l) =>
+      l.price >= priceRange[0] && (priceRange[1] >= PRICE_CEILING || l.price <= priceRange[1]),
+    ),
+    [categoryMatches, priceRange],
+  );
+  const priceHistogram = useMemo(() => {
+    const buckets = Array.from({ length: PRICE_BUCKETS }, () => 0);
+    for (const listing of categoryMatches) {
+      const index = Math.min(
+        PRICE_BUCKETS - 1,
+        Math.floor((Math.max(0, listing.price) / PRICE_CEILING) * PRICE_BUCKETS),
+      );
+      buckets[index] += 1;
+    }
+    return buckets;
+  }, [categoryMatches]);
+  const tallestPriceBucket = Math.max(1, ...priceHistogram);
 
   // Rails
   const nearCampus = useMemo(() => {
