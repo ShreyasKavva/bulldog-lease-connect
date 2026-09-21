@@ -404,10 +404,7 @@ export async function sendAttachmentMessage(
     attachment_size: file.size,
   });
   if (error) throw error;
-  await supabase.from("conversations").update({
-    last_message: label,
-    last_message_at: new Date().toISOString(),
-  }).eq("id", conversationId);
+  // Inbox preview is set by the trg_sync_conversation_preview trigger.
 }
 
 export async function sendMessage(conversationId: string, senderId: string, recipientId: string, content: string, listingId?: string | null) {
@@ -415,9 +412,9 @@ export async function sendMessage(conversationId: string, senderId: string, reci
     conversation_id: conversationId, sender_id: senderId, recipient_id: recipientId, content,
   });
   if (error) throw error;
-  await supabase.from("conversations").update({
-    last_message: content, last_message_at: new Date().toISOString(),
-  }).eq("id", conversationId);
+  // The inbox preview (last_message / last_message_at) is maintained by the
+  // trg_sync_conversation_preview trigger on messages, so it can never drift
+  // if a follow-up client write fails.
   // Q77: notify UI so the push-permission prompt can appear after first send.
   if (typeof window !== "undefined") {
     try { window.dispatchEvent(new CustomEvent("lu:message-sent", { detail: { conversationId } })); } catch {}
