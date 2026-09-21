@@ -646,7 +646,16 @@ export function AirbnbHome({
           {/* Q279 — once a visitor has viewed 4+ listings, "Recently viewed"
               is always the first rail on the homepage. */}
           {recentIds.length >= RECENT_RAIL_MIN && (
-            <RecentlyViewedSection savedIds={savedIds} onSave={onSave} onOpen={onOpen} />
+            <RecentlyViewedSection
+              savedIds={savedIds}
+              onSave={onSave}
+              onOpen={onOpen}
+              filter={(listing) =>
+                matchesCategory(listing, cat, medianFor) &&
+                listing.price >= priceRange[0] &&
+                (priceRange[1] >= PRICE_CEILING || listing.price <= priceRange[1])
+              }
+            />
           )}
           {/* Q177 — "Near you", based on campus/location */}
           <NearYouSection
@@ -1210,7 +1219,8 @@ function NewThisWeekSection({
   }, [listings]);
 
   const personalised = lastCampus && campusFresh && campusFresh.length > 0;
-  const items = personalised ? campusFresh! : fresh;
+  const visibleIds = new Set(listings.map((listing) => listing.id));
+  const items = personalised ? (campusFresh ?? []).filter((listing) => visibleIds.has(listing.id)) : fresh;
   const label = lastCampus?.short_name || lastCampus?.name;
 
   if (!personalised && fresh.length < 3) return null;
@@ -1249,11 +1259,12 @@ function NewThisWeekSection({
 /* ---------------- Q149/Q279 — Recently viewed ---------------- */
 
 function RecentlyViewedSection({
-  savedIds, onSave, onOpen,
+  savedIds, onSave, onOpen, filter,
 }: {
   savedIds: Set<string>;
   onSave: (l: Listing) => void;
   onOpen: (l: Listing) => void;
+  filter: (l: Listing) => boolean;
 }) {
   const recentIds = useRecentViews();
 
@@ -1270,14 +1281,16 @@ function RecentlyViewedSection({
     },
   });
 
-  if (recentIds.length < RECENT_RAIL_MIN || recent.length < RECENT_RAIL_MIN) return null;
+  const visibleRecent = recent.filter(filter);
+
+  if (recentIds.length < RECENT_RAIL_MIN || visibleRecent.length === 0) return null;
 
 
   return (
     <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
       <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-foreground">Recently viewed</h2>
       <ScrollRow>
-        {recent.map((l) => (
+        {visibleRecent.map((l) => (
           <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
             <ListingCard
               listing={l}
