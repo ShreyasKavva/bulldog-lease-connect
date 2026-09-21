@@ -404,10 +404,7 @@ export async function sendAttachmentMessage(
     attachment_size: file.size,
   });
   if (error) throw error;
-  await supabase.from("conversations").update({
-    last_message: label,
-    last_message_at: new Date().toISOString(),
-  }).eq("id", conversationId);
+  // Inbox preview is set by the trg_sync_conversation_preview trigger.
 }
 
 export async function sendMessage(conversationId: string, senderId: string, recipientId: string, content: string, listingId?: string | null) {
