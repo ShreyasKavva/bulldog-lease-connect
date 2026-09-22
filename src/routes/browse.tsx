@@ -427,6 +427,26 @@ function Browse() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
 
+  /**
+   * Q367 — while the slide-out is open, the throwaway history entry the sheet
+   * pushed as its Back-guard (ListingDetailSheet's Q282 effect, pushed with an
+   * empty URL) must carry the canonical listing path, so the address bar —
+   * and anything copied, shared or bookmarked from it — points at the open
+   * listing. This rewrites that SAME entry in place; pushing a second entry
+   * would make Back need two presses. Closing the overlay, by the Close
+   * button or by browser Back, pops the entry and restores the original
+   * /browse URL — search string included — exactly as before.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined" || !selected) return;
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `/listing/${selected.id}${window.location.search}`,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
+
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const pinnedListings = useMemo(
     () => pinned.map(id => listings.find(l => l.id === id)).filter(Boolean) as Listing[],
