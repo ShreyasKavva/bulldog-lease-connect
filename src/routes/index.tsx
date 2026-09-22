@@ -100,7 +100,8 @@ export const Route = createFileRoute("/")({
       ascending: true,
       limit: 12,
     }),
-  ]);
+    ]);
+  },
 
   component: Home,
 });
