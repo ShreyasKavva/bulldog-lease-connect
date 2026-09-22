@@ -24,11 +24,16 @@ import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 
 export const Route = createFileRoute("/sublease/$slug")({
-  loader: async ({ params }) => {
+  loader: async ({ params, context }) => {
     const [campus, allCampuses, listingCounts] = await Promise.all([
       fetchCampusBySlug(params.slug),
       fetchCampuses(),
       fetchActiveListingCountsByCampus(),
+      // Same seed the homepage (/ Q384) and /browse loaders use: the listing
+      // grid below runs useQuery(["listings"], fetchListings), so seeding that
+      // exact key here makes the campus grid server-render instead of starting
+      // empty on the client.
+      context.queryClient.ensureQueryData({ queryKey: ["listings"], queryFn: fetchListings }),
     ]);
     if (!campus) {
       // Short campus slugs ("uga", "gt", "osu") 301 to the canonical slug
