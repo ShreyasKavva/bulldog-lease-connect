@@ -227,7 +227,7 @@ async function resolveConversation(
   // Never surface a raw Postgres message to the UI. This also covers a 23505
   // whose re-SELECT still came back empty.
   console.error("getOrCreateConversation failed", error);
-  throw new Error("Couldn't open that conversation. Please try again.");
+  throw new Error("Couldn't open that conversation. Try again.");
 }
 
 export async function fetchConversations(userId: string): Promise<Conversation[]> {
