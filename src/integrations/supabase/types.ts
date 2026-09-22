@@ -2778,9 +2778,9 @@ export type Database = {
           currently_status?: string | null
           currently_updated_at?: string | null
           id?: string | null
-          instagram_handle?: string | null
+          instagram_handle?: never
           is_ambassador?: boolean | null
-          last_seen?: string | null
+          last_seen?: never
           major?: string | null
           name?: string | null
           referral_count?: number | null
@@ -2801,9 +2801,9 @@ export type Database = {
           currently_status?: string | null
           currently_updated_at?: string | null
           id?: string | null
-          instagram_handle?: string | null
+          instagram_handle?: never
           is_ambassador?: boolean | null
-          last_seen?: string | null
+          last_seen?: never
           major?: string | null
           name?: string | null
           referral_count?: number | null
