@@ -737,9 +737,10 @@ export async function fetchCuratedListings(opts: {
     .order(opts.orderBy ?? "created_at", { ascending: opts.ascending ?? false, nullsFirst: false })
     .limit(opts.limit ?? 12);
   if (error) throw error;
-  // Q175 — curated rails are prime real estate: photo-less rows are dropped.
-  const rows = (data ?? []).filter((l: any) => (l.photos?.length ?? 0) > 0);
-  const withProfiles = await attachProfiles(rows);
+  // Q421 — photo-less listings stay in the rails; /browse and the detail
+  // page already ship a "No photos yet" placeholder, so a photo gate here
+  // only ever hid real inventory from the homepage.
+  const withProfiles = await attachProfiles(data ?? []);
   return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
