@@ -10,6 +10,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDateRange } from "@/lib/leaseup/dates";
 
 const DOW = ["S", "M", "T", "W", "T", "F", "S"];
 const MONTHS = [
@@ -66,7 +67,7 @@ export function AvailabilityCalendar({
           <h2 className="text-lg font-bold">Availability</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {start && end
-              ? `Open ${start.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
+              ? `Open ${formatDateRange(from, to) ?? ""}`
               : start
                 ? `Open from ${start.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
                 : `Open until ${end!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`}
