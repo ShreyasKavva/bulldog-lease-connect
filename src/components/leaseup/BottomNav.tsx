@@ -1,8 +1,8 @@
 /**
  * Q97 — mobile bottom tab bar: Home · Browse · Post (center hero) · Saved · Account.
  *
- * Mobile only (md:hidden). Hidden entirely on full-screen flows (/post wizard,
- * a single message thread) and while the soft keyboard is open.
+ * Mobile only (md:hidden). Hidden entirely on full-screen flows (a single
+ * message thread) and while the soft keyboard is open.
  * Legacy props (onPost, onChat, onProfile) are accepted-but-ignored so older
  * call sites keep compiling.
  */

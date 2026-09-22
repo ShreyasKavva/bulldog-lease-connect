@@ -1,7 +1,7 @@
 /**
  * Q106 Part C — global footer. 4 columns on desktop, 2 on tablet, stacked on
  * mobile. Campus column is data-driven: top 6 campuses by active listings.
- * Hidden on full-screen flows (/post wizard, a single message thread).
+ * Hidden on full-screen flows (a single message thread).
  */
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
