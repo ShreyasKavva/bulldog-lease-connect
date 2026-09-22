@@ -58,9 +58,7 @@ export function buildDiscordText(l: ShareListingInput, url: string): string {
     ? `${fmtDate(l.availableFrom)}–${fmtDate(l.availableTo)}`
     : "";
   const line2 = ["📍 " + where, "🛏 " + bedStr, range && "📅 " + range].filter(Boolean).join(" · ");
-  const verified = l.campusShortName
-    ? `Verified ${l.campusShortName} student on LeaseUp`
-    : `Verified student on LeaseUp`;
+  const verified = `Posted by a student on LeaseUp`;
   return `**${l.title} — $${l.price}/mo**\n${line2}\n${verified}\n\n${url}`;
 }
 
