@@ -135,7 +135,7 @@ function Tab({
       className={cn(
         "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 transition-transform active:scale-90",
         accent || active
-          ? "text-[#FF5A5F]"
+          ? "text-[#4F46E5]"
           : "text-gray-400",
         active && "font-semibold",
       )}
