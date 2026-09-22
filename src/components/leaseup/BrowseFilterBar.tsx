@@ -616,6 +616,13 @@ export function BrowseFilterBar({
           )}
         </div>
 
+        {!isLoading && resultCount > 0 && (
+          <div className="sm:hidden px-4 pt-2 text-sm text-muted-foreground">
+            {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
+          </div>
+        )}
+
+
 
       </div>
 
