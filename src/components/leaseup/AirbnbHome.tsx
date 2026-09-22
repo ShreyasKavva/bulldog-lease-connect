@@ -272,6 +272,18 @@ export function AirbnbHome({
     return n;
   }, [campusCounts]);
 
+  // Q368 — the closing band quotes the same directory total the hero stat
+  // uses (campuses head-count), so the page never states two conflicting
+  // campus numbers.
+  const { data: totalCampuses } = useQuery({
+    queryKey: ["total-campus-count"],
+    queryFn: async () => {
+      const { count } = await supabase.from("campuses").select("id", { count: "exact", head: true });
+      return count ?? 0;
+    },
+    staleTime: Infinity,
+  });
+
   const spotlightCampuses = useMemo(() => {
     // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
     // with live listings rank first by count; the rest render "New".
@@ -767,7 +779,11 @@ export function AirbnbHome({
           <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 text-center">
             <h2 className="text-2xl font-bold text-white">Find your perfect sublease 🎓</h2>
             <p className="mb-5 mt-1 text-sm text-indigo-100">
-              LeaseUp connects students at {campusCount > 0 ? `${campusCount} campuses` : "campuses nationwide"}. Free to use, no broker fees.
+              {totalCampuses
+                ? campusCount > 0
+                  ? `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses - ${campusCount} ${campusCount === 1 ? "has" : "have"} live subleases right now.`
+                  : `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses. Be the first to post at yours.`
+                : "Free to use, no broker fees."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -973,7 +989,7 @@ function LiveCounter() {
   const showInquiryNumber = stats.inquiries >= 25;
   const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
-    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses supported" },
+    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses covered" },
     showInquiryNumber
       ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
       : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
