@@ -26,13 +26,17 @@ export function restoreInitials(name: string): string {
   }).replace(/\s+/g, " ").trim();
 }
 
-/** Truncate to `max` characters without ever cutting inside a word. */
+/** Truncate to `max` characters without ever cutting inside a word; signals the cut with an ellipsis. */
 export function truncateWords(text: string, max = MAX_LEN): string {
   if (text.length <= max) return text;
   const cut = text.slice(0, max + 1);
   const lastSpace = cut.lastIndexOf(" ");
-  const out = (lastSpace > 0 ? cut.slice(0, lastSpace) : text.slice(0, max)).trim();
-  return out.replace(/[-–—,&]$/, "").replace(TRAILING_STOPWORDS, "").trim();
+  const out = (lastSpace > 0 ? cut.slice(0, lastSpace) : text.slice(0, max))
+    .trim()
+    .replace(/[-–—,&]$/, "")
+    .replace(TRAILING_STOPWORDS, "")
+    .trim();
+  return `${out}…`;
 }
 
 /** True when short_name is just a mid-word slice of the full name. */
