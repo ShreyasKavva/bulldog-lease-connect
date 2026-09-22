@@ -596,7 +596,7 @@ function CampusPage() {
         <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
           <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusShort}?</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Post it free and reach students already searching in {campus.city}.
+            Post it free. Your listing goes live on the {campus.city} page and in browse the moment you submit it.
           </p>
           <button
             onClick={handlePost}
