@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchUserReviews, computeReviewStats } from "@/lib/leaseup/reviews.queries";
-import { getOrCreateConversation } from "@/lib/leaseup/queries";
+import { getOrCreateConversation, publicLocationLabel } from "@/lib/leaseup/queries";
 import { fetchMyRoommateProfile } from "@/lib/leaseup/roommates";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
@@ -87,7 +87,9 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   if (activeOnly) q = q.eq("is_active", true);
   const { data, error } = await q;
   if (error) throw error;
-  const rows = data ?? [];
+  let rows = data ?? [];
+  // Q438 — scrub raw area for non-owners only; owners keep their own text.
+  if (activeOnly) rows = await publicLocationLabel(rows);
   const paths = rows.flatMap((l: any) => (l.photos ?? []).filter((p: string) => !/^https?:\/\//.test(p)));
   const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
   return rows.map((l: any) => ({

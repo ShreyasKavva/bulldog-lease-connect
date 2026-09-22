@@ -8,7 +8,7 @@ import { BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
-import { getOrCreateConversation } from "@/lib/leaseup/queries";
+import { getOrCreateConversation, publicLocationLabel } from "@/lib/leaseup/queries";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { Listing } from "@/lib/leaseup/types";
@@ -66,7 +66,8 @@ async function fetchActiveListings(userId: string): Promise<Listing[]> {
     .or(`available_to.is.null,available_to.gte.${today}`)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  const rows = (data ?? []) as any[];
+  // Q438 — public profile: replace raw area text with the campus label.
+  const rows = await publicLocationLabel((data ?? []) as any[]);
   const paths = rows.flatMap((l) => l.photos ?? []);
   const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
   return rows.map((l) => ({
