@@ -51,6 +51,9 @@ function MarketPage() {
   const overallAvg = forCampus.length
     ? Math.round(forCampus.reduce((sum, s) => sum + Number(s.avg_price) * Number(s.listing_count), 0) / Math.max(1, totalListings))
     : 0;
+  // True only when the average and median tiles render real numbers
+  // (the price-stats view already suppresses groups below the comps threshold).
+  const hasComps = overallAvg > 0 && overallMedian > 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -58,8 +61,27 @@ function MarketPage() {
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Sublease market data</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Live pricing trends across active student subleases. Updated daily.
+            {active && !hasComps
+              ? `Not enough listings at ${active.short_name} yet to show price trends. Here's what we have so far.`
+              : "Live pricing trends across active student subleases. Updated daily."}
           </p>
+          {active && !hasComps && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              <Link
+                to="/post"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                Post a sublease
+              </Link>
+              <Link
+                to="/sublease/$slug"
+                params={{ slug: active.slug }}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                Browse listings at {active.short_name} →
+              </Link>
+            </div>
+          )}
         </header>
 
         {/* Campus selector pills */}
@@ -163,21 +185,25 @@ function MarketPage() {
               })()}
             </section>
 
-            <p className="mt-6 text-xs text-muted-foreground">
-              {totalListings > 0
-                ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
-                : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
-            </p>
+            {hasComps && (
+              <p className="mt-6 text-xs text-muted-foreground">
+                {totalListings > 0
+                  ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
+                  : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
+              </p>
+            )}
 
-            <div className="mt-6">
-              <Link
-                to="/sublease/$slug"
-                params={{ slug: active.slug }}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-              >
-                Browse listings at {active.short_name} →
-              </Link>
-            </div>
+            {hasComps && (
+              <div className="mt-6">
+                <Link
+                  to="/sublease/$slug"
+                  params={{ slug: active.slug }}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                >
+                  Browse listings at {active.short_name} →
+                </Link>
+              </div>
+            )}
           </>
         )}
       </main>
