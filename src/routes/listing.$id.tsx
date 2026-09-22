@@ -225,7 +225,11 @@ async function fetchListingDetail(id: string): Promise<ListingLoadResult | null>
     .select("name, short_name, slug")
     .eq("id", row.campus_id)
     .maybeSingle();
-  return { listing: { ...row, photo_urls, campus: campus ?? null } };
+  // Q420 — same scrub as publicLocationLabel() in queries.ts: the free-text
+  // `area` is often a real street address, so the public single-listing read
+  // replaces it with the campus name before it reaches the client payload.
+  const areaLabel = campus?.short_name || campus?.name || "Near campus";
+  return { listing: { ...row, area: areaLabel, photo_urls, campus: campus ?? null } };
 }
 
 async function fetchPoster(userId: string): Promise<PublicPoster | null> {
