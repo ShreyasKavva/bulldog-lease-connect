@@ -61,9 +61,9 @@ function AboutPage() {
             Who we are
           </h2>
           <p className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground">
-            We're students who lived this problem. LeaseUp started at the University of Georgia, and
-            right now we're focused on doing each campus right — real listings, real students, real
-            trust — before we grow.
+            We're students who lived this problem. LeaseUp started at the University of Georgia. We
+            go deep before we go wide — we're focused on doing each campus right, with real listings
+            and real students, before we grow.
           </p>
         </section>
       </div>
