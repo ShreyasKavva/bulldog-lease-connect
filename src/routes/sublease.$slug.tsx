@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, notFound, redirect } from "@tanstack/react-router";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, CAMPUS_ALIASES, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
@@ -116,6 +116,16 @@ export const Route = createFileRoute("/sublease/$slug")({
 
 type BedFilter = "any" | "0" | "1" | "2" | "3+";
 type PriceFilter = "any" | "under700" | "under1000";
+
+// Q369 — per-campus accent colour ONLY. Colour values, never a logo, crest,
+// wordmark or mascot. `fg` is picked per accent for >= 4.5:1 contrast:
+// #B3A369 (gold) needs near-black; #8C1D40 (maroon) takes white.
+const CAMPUS_ACCENTS: Record<string, { accent: string; fg: string; dark: string }> = {
+  "georgia-tech": { accent: "#B3A369", fg: "#111827", dark: "#8E8150" },
+  "arizona-state-university": { accent: "#8C1D40", fg: "#FFFFFF", dark: "#6B1531" },
+};
+const DEFAULT_ACCENT = { accent: "#4F46E5", fg: "#FFFFFF", dark: "#4338CA" };
+
 
 function CampusPage() {
   const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
@@ -234,8 +244,18 @@ function CampusPage() {
     return !!short && short.length <= 4 && /^[A-Za-z&.\s]+$/.test(short) && short === short.toUpperCase();
   })();
 
+  // Q369 — scoped to this page wrapper only; nothing else in the app inherits it.
+  const theme = CAMPUS_ACCENTS[campus.slug] ?? DEFAULT_ACCENT;
+  const accentStyle = {
+    "--primary": theme.accent,
+    "--primary-foreground": theme.fg,
+    "--primary-dark": theme.dark,
+  } as CSSProperties;
+
+
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-0">
+    <div className="min-h-screen bg-background pb-24 md:pb-0" style={accentStyle}>
+
       {/* Hero */}
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
