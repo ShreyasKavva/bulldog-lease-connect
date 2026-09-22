@@ -235,7 +235,8 @@ function CampusPage() {
   })();
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-0">
+    <div className="min-h-screen bg-background pb-24 md:pb-0" style={accentStyle}>
+
       {/* Hero */}
       <header className="border-b bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
