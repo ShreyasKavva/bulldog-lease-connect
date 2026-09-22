@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ImagePlus, Loader2, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
@@ -178,10 +179,8 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
     queryKey: ["listing-edit-photos", listingId, form.photos.join(",")],
     enabled: form.photos.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.storage.from("listing-photos").createSignedUrls(form.photos, SIGNED_TTL);
-      const map: Record<string, string> = {};
-      data?.forEach((d) => { if (d.path && d.signedUrl) map[d.path] = d.signedUrl; });
-      return map;
+      const signed = await signPaths("listing-photos", form.photos, { ttl: SIGNED_TTL });
+      return Object.fromEntries(signed) as Record<string, string>;
     },
   });
 

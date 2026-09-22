@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
@@ -79,12 +80,7 @@ function EditProfilePage() {
 
   const { data: avatarUrl } = useQuery({
     queryKey: ["avatar-url", avatarPath],
-    queryFn: async () => {
-      if (!avatarPath) return null;
-      if (avatarPath.startsWith("http")) return avatarPath;
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarPath, 60 * 60);
-      return data?.signedUrl ?? null;
-    },
+    queryFn: () => signPath("avatars", avatarPath, { ttl: 60 * 60 }),
     enabled: !!avatarPath,
   });
 

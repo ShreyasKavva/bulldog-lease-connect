@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
 import { ListingCard } from "@/components/leaseup/ListingCard";
@@ -51,10 +52,7 @@ export async function fetchHostProfile(userId: string): Promise<HostProfileData 
 }
 
 async function fetchHostAvatar(path: string | null | undefined) {
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 7);
-  return data?.signedUrl ?? null;
+  return signPath("avatars", path, { ttl: 60 * 60 * 24 * 7 });
 }
 
 async function fetchActiveListings(userId: string): Promise<Listing[]> {
@@ -70,13 +68,7 @@ async function fetchActiveListings(userId: string): Promise<Listing[]> {
   if (error) throw error;
   const rows = (data ?? []) as any[];
   const paths = rows.flatMap((l) => l.photos ?? []);
-  const urlMap = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
-  }
+  const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
   return rows.map((l) => ({
     ...l,
     photo_urls: (l.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),

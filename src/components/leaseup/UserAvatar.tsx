@@ -12,6 +12,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath } from "@/lib/leaseup/signed-urls";
 import { cn } from "@/lib/utils";
 
 const LETTER_COLORS = [
@@ -38,12 +39,7 @@ export function avatarInitial(name?: string | null): string {
 export function useAvatarUrl(path?: string | null) {
   return useQuery({
     queryKey: ["avatar-url", path],
-    queryFn: async () => {
-      if (!path) return null;
-      if (path.startsWith("http")) return path;
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 7);
-      return data?.signedUrl ?? null;
-    },
+    queryFn: () => signPath("avatars", path, { ttl: 60 * 60 * 24 * 7 }),
     enabled: !!path,
     staleTime: 60 * 60 * 1000,
   });

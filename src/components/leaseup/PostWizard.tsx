@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath } from "@/lib/leaseup/signed-urls";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
 import { CampusAvgPriceHint } from "@/components/leaseup/CampusAvgPriceHint";
@@ -287,8 +288,8 @@ export function PostWizard({ userId }: { userId: string }) {
       for (const file of files) {
         setUploading(file.name);
         const [path] = await uploadListingPhotos(userId, [file]);
-        const { data } = await supabase.storage.from("listing-photos").createSignedUrl(path, 60 * 60 * 24);
-        setD((p) => ({ ...p, photos: [...p.photos, { path, url: data?.signedUrl ?? "" }] }));
+        const url = await signPath("listing-photos", path, { ttl: 60 * 60 * 24 });
+        setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
       }
     } catch (e: any) {
       setPhotoError(e?.message ?? "Upload failed");
