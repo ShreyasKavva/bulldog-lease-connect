@@ -1,0 +1,1 @@
+REVOKE SELECT ON TABLE public.saved_searches FROM anon;
