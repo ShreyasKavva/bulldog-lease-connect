@@ -244,6 +244,15 @@ function CampusPage() {
     return !!short && short.length <= 4 && /^[A-Za-z&.\s]+$/.test(short) && short === short.toUpperCase();
   })();
 
+  // Q369 — scoped to this page wrapper only; nothing else in the app inherits it.
+  const theme = CAMPUS_ACCENTS[campus.slug] ?? DEFAULT_ACCENT;
+  const accentStyle = {
+    "--primary": theme.accent,
+    "--primary-foreground": theme.fg,
+    "--primary-dark": theme.dark,
+  } as CSSProperties;
+
+
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0" style={accentStyle}>
 
