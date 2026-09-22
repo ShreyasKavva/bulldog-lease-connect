@@ -53,6 +53,7 @@ import { Route as MyListingsListingIdAnalyticsRouteImport } from './routes/my-li
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ListingIdEditRouteImport } from './routes/listing.$id_.edit'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicCspReportRouteImport } from './routes/api/public/csp-report'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -282,6 +283,11 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCspReportRoute = ApiPublicCspReportRouteImport.update({
+  id: '/api/public/csp-report',
+  path: '/api/public/csp-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/messages/': typeof MessagesIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/saved/': typeof SavedIndexRoute
+  '/api/public/csp-report': typeof ApiPublicCspReportRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -415,6 +422,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/saved': typeof SavedIndexRoute
+  '/api/public/csp-report': typeof ApiPublicCspReportRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -469,6 +477,7 @@ export interface FileRoutesById {
   '/messages/': typeof MessagesIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/saved/': typeof SavedIndexRoute
+  '/api/public/csp-report': typeof ApiPublicCspReportRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/listing/$id_/edit': typeof ListingIdEditRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -524,6 +533,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/profile/'
     | '/saved/'
+    | '/api/public/csp-report'
     | '/api/public/stripe-webhook'
     | '/listing/$id/edit'
     | '/lovable/email/suppression'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/profile'
     | '/saved'
+    | '/api/public/csp-report'
     | '/api/public/stripe-webhook'
     | '/listing/$id/edit'
     | '/lovable/email/suppression'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/profile/'
     | '/saved/'
+    | '/api/public/csp-report'
     | '/api/public/stripe-webhook'
     | '/listing/$id_/edit'
     | '/lovable/email/suppression'
@@ -683,6 +695,7 @@ export interface RootRouteChildren {
   MessagesIndexRoute: typeof MessagesIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   SavedIndexRoute: typeof SavedIndexRoute
+  ApiPublicCspReportRoute: typeof ApiPublicCspReportRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ListingIdEditRoute: typeof ListingIdEditRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -1005,6 +1018,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/csp-report': {
+      id: '/api/public/csp-report'
+      path: '/api/public/csp-report'
+      fullPath: '/api/public/csp-report'
+      preLoaderRoute: typeof ApiPublicCspReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -1130,6 +1150,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIndexRoute: MessagesIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   SavedIndexRoute: SavedIndexRoute,
+  ApiPublicCspReportRoute: ApiPublicCspReportRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ListingIdEditRoute: ListingIdEditRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
