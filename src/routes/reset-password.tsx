@@ -115,6 +115,7 @@ function ResetPasswordPage() {
             </p>
             <Link
               to="/auth"
+              search={{ mode: "in" as const }}
               className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
             >
               Back to sign in
