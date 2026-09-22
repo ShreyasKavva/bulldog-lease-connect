@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { SignInGate } from "@/components/leaseup/SignInGate";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";

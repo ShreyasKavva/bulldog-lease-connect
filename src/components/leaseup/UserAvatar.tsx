@@ -12,6 +12,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath } from "@/lib/leaseup/signed-urls";
 import { cn } from "@/lib/utils";
 
 const LETTER_COLORS = [

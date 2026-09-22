@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useMemo, useState } from "react";
+import { signPaths } from "@/lib/leaseup/signed-urls";
 import { NEIGHBORHOODS, AMENITIES } from "@/lib/leaseup/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadListingPhotos } from "@/lib/leaseup/queries";

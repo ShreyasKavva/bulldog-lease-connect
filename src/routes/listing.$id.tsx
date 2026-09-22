@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";

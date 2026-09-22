@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
 import { ListingCard } from "@/components/leaseup/ListingCard";

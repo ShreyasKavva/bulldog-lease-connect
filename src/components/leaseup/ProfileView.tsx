@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchUserReviews, computeReviewStats } from "@/lib/leaseup/reviews.queries";
 import { getOrCreateConversation } from "@/lib/leaseup/queries";
