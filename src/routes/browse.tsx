@@ -633,6 +633,29 @@ function Browse() {
     [listings, campusId],
   );
 
+  /** Q375 — is at least one filter active? Same active flags as relaxOptions. */
+  const hasActiveFilters =
+    s.baths != null || minPrice != null || maxPrice != null || bedSet.size > 0 ||
+    !!(s.from || s.to) || !!s.q || furnishedOnly ||
+    s.utilities === 1 || s.parking === 1 || s.pets === 1 || s.wifi === 1 || s.laundry === 1 ||
+    s.verified === 1 || !!area || !!s.movein || !!s.type || s.maxDuration != null ||
+    s.availableSoon === 1 || s.postedToday === 1 || s.nearCampus === 1 || s.new === true ||
+    s.tenants != null ||
+    !!(rmFilters.looking_for || rmFilters.study_style || rmFilters.pets || rmFilters.smoking);
+
+  /** Q375 — the zero-results-with-active-filters state the rail moves below. */
+  const emptyWithFilters = !isLoading && !isError && filtered.length === 0 && hasActiveFilters;
+
+  const trendingRail = view === "grid" ? (
+    <TrendingCarousel
+      listings={trendingListings}
+      campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
+      onOpen={setSelected}
+      savedIds={savedIds}
+      heading={emptyWithFilters ? "Not matching your filters — trending this week" : undefined}
+    />
+  ) : null;
+
   const activeFilterCount =
     (s.q ? 1 : 0) +
     (campusSlug ? 1 : 0) +
