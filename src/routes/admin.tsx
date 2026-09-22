@@ -44,7 +44,7 @@ import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.fu
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminPage,
 });
 
@@ -59,14 +59,14 @@ function AdminPage() {
     return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
   }
 
-  if (!me?.is_admin) {
+  if (!user || !me?.is_admin) {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-md mt-24 rounded-2xl bg-surface p-8 shadow-card-md text-center">
           <div className="text-4xl">🚫</div>
-          <h1 className="mt-2 text-xl font-black">Admins only</h1>
-          <p className="mt-1 text-sm text-muted-foreground">You don't have access to this page.</p>
-          <Link to="/browse" className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Browse subleases</Link>
+          <h1 className="mt-2 text-xl font-black">Admin access only</h1>
+          <p className="mt-1 text-sm text-muted-foreground">You don't have permission to view this page.</p>
+          <Link to="/" className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Back to LeaseUp</Link>
         </div>
       </div>
     );
