@@ -4,6 +4,7 @@ Disallow: /admin
 Disallow: /api/
 Disallow: /profile
 Disallow: /messages
+Disallow: /tours
 Disallow: /saved
 Disallow: /post
 Disallow: /notifications
