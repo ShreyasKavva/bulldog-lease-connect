@@ -117,6 +117,16 @@ export const Route = createFileRoute("/sublease/$slug")({
 type BedFilter = "any" | "0" | "1" | "2" | "3+";
 type PriceFilter = "any" | "under700" | "under1000";
 
+// Q369 — per-campus accent colour ONLY. Colour values, never a logo, crest,
+// wordmark or mascot. `fg` is picked per accent for >= 4.5:1 contrast:
+// #B3A369 (gold) needs near-black; #8C1D40 (maroon) takes white.
+const CAMPUS_ACCENTS: Record<string, { accent: string; fg: string; dark: string }> = {
+  "georgia-tech": { accent: "#B3A369", fg: "#111827", dark: "#8E815071" },
+  "arizona-state-university": { accent: "#8C1D40", fg: "#FFFFFF", dark: "#6B1531" },
+};
+const DEFAULT_ACCENT = { accent: "#4F46E5", fg: "#FFFFFF", dark: "#4338CA" };
+
+
 function CampusPage() {
   const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
   const campusShort = campusShortName(campus);
