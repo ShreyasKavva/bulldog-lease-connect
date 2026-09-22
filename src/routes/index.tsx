@@ -209,7 +209,7 @@ function Home() {
     }
   }, [listings, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (sessionLoading) return <div className="min-h-screen bg-background" />;
+  if (sessionGateArmed && sessionLoading) return <div className="min-h-screen bg-background" />;
 
   return (
     <>
