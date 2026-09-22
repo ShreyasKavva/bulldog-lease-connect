@@ -23,8 +23,13 @@ export function withUtm(url: string, source: ShareSource, campaign = "listing_sh
   }
 }
 
-const fmtDate = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtDate = (iso: string | null | undefined) => {
+  if (!iso) return "";
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return "";
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+};
 
 export type ShareListingInput = {
   title: string;
