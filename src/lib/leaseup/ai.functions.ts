@@ -164,7 +164,11 @@ function normalizeLeaseReview(parsed: Partial<LeaseReviewResult>): LeaseReviewRe
   };
 }
 
+// SECURITY (Q280): must stay behind requireSupabaseAuth. Without it this is an
+// open, unauthenticated AI endpoint anyone on the internet can call to burn
+// model credits (50k chars per request).
 export const analyzeLeaseText = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => LeaseReviewInput.parse(d))
   .handler(async ({ data }): Promise<LeaseReviewResult> => {
     const provider = gateway();

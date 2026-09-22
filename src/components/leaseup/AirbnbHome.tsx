@@ -911,6 +911,7 @@ function LiveCounter() {
           { count: msgCount },
           lookers,
           savers,
+          { count: supportedCampuses },
         ] = await Promise.all([
           // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
           supabase
@@ -924,6 +925,9 @@ function LiveCounter() {
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
+          // Q280 — campuses we SUPPORT (the full school directory), not just the
+          // handful that already have listings. Honest and self-updating.
+          supabase.from("campuses").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
         if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
@@ -934,11 +938,14 @@ function LiveCounter() {
         const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
           listings,
-          // Q192 — preserve the previously approved campus count; fall back to the
-          // exact-query set only if the broader read fails.
-          campuses: broadErr || !broadData
-            ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
-            : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
+          // Q280 — campuses SUPPORTED (whole directory). Falls back to campuses
+          // that actually have listings if the directory count is unavailable.
+          campuses:
+            supportedCampuses && supportedCampuses > 0
+              ? supportedCampuses
+              : broadErr || !broadData
+                ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
+                : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
@@ -965,7 +972,7 @@ function LiveCounter() {
   const showInquiryNumber = stats.inquiries >= 25;
   const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
-    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses" },
+    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses supported" },
     showInquiryNumber
       ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
       : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
