@@ -36,11 +36,27 @@ async function attachSignedUrls(
   const transform = opts?.fullSize
     ? undefined
     : { width: 640, quality: 75, resize: "contain" as const };
-  const { data } = await supabase.storage
-    .from("listing-photos")
-    .createSignedUrls(allPaths, SIGNED_URL_TTL, { transform });
   const map = new Map<string, string>();
-  data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
+  if (transform) {
+    // Same call shape as the og route's already-compiling createSignedUrl —
+    // the batch createSignedUrls overload in this client version has no
+    // transform option, so sign each path individually with the transform.
+    const signed = await Promise.all(
+      allPaths.map((p) =>
+        supabase.storage
+          .from("listing-photos")
+          .createSignedUrl(p, SIGNED_URL_TTL, { transform }),
+      ),
+    );
+    signed.forEach((r, i) => {
+      if (r.data?.signedUrl) map.set(allPaths[i], r.data.signedUrl);
+    });
+  } else {
+    const { data } = await supabase.storage
+      .from("listing-photos")
+      .createSignedUrls(allPaths, SIGNED_URL_TTL);
+    data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
+  }
   const missing = allPaths.filter((p) => !map.has(p));
   if (missing.length > 0 && !opts?.fullSize) {
     // Fallback: untransformed sign for any path the transform pass missed.
