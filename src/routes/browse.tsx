@@ -584,7 +584,7 @@ function Browse() {
   const relaxOptions = useMemo(() => {
     if (filtered.length > 0) return [];
     const bedsLabel = [...bedSet]
-      .map((b) => (b === "0" ? "studio" : `${b} bed`))
+      .map((b) => (b === "0" ? "studio" : b === "1" ? "1 bedroom" : `${b} bedrooms`))
       .join(" or ");
     const candidates: {
       key: RelaxKey;
@@ -933,7 +933,7 @@ function Browse() {
                         {relaxOptions[0].heading}.
                       </h3>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        That's the filter ruling the most out — or relax a different one:
+                        That filter is ruling out the most listings. Remove it, or relax a different one:
                       </p>
                       <div className="mt-6 flex flex-col items-center gap-2">
                         {relaxOptions.map((opt) => (
