@@ -743,7 +743,7 @@ export function AirbnbHome({
               >
                 <CampusMark campus={c} className="h-11 w-11 text-xs shadow-sm sm:h-14 sm:w-14 sm:text-sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold leading-tight break-words sm:text-base">{c.short_name ?? c.name}</div>
+                  <div className="text-sm font-bold leading-tight break-words sm:text-base">{campusShortName(c)}</div>
                   <div className="text-xs text-muted-foreground">
                     <span className="sm:hidden">{c.state}</span>
                     <span className="hidden sm:inline">{c.city}, {c.state}</span>
