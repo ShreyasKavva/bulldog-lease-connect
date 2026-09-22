@@ -71,10 +71,10 @@ export const Route = createFileRoute("/sublease/$slug")({
     const fullName = campusFullName(c);
     const n = loaderData?.stats?.active ?? 0;
     const cityStr = c?.city ? `${c.city}, ${c.state}` : "";
-    const title = `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
+    const title = name.endsWith("…") ? `${fullName} Subleases | LeaseUp` : `${name} Subleases — Find Sublets Near ${fullName} | LeaseUp`;
     const desc = n > 0
-      ? `Browse ${n} sublease${n === 1 ? "" : "s"} posted by ${fullName} students who signed up with a campus email${cityStr ? `, in ${cityStr}` : ""}. Find furnished rooms, apartments, and houses near ${name} campus.`
-      : `Student subleases at ${fullName}${cityStr ? ` in ${cityStr}` : ""}. Post your sublease and connect with other ${name} students.`;
+      ? `Browse ${n} sublease${n === 1 ? "" : "s"} posted by ${fullName} students who signed up with a campus email${cityStr ? `, in ${cityStr}` : ""}. Find furnished rooms, apartments, and houses near ${fullName} campus.`
+      : `Student subleases at ${fullName}${cityStr ? ` in ${cityStr}` : ""}. Post your sublease and connect with other ${fullName} students.`;
     return {
       meta: [
         { title },
@@ -135,6 +135,7 @@ const DEFAULT_ACCENT = { accent: "#4F46E5", fg: "#FFFFFF", dark: "#4338CA" };
 function CampusPage() {
   const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
   const campusShort = campusShortName(campus);
+  const campusFull = campusFullName(campus);
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
@@ -272,7 +273,7 @@ function CampusPage() {
             {campusFullName(campus)} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Find subleases posted by {campusShort} students who signed up with a campus email.
+            Find subleases posted by {campusFull} students who signed up with a campus email.
           </p>
 
           {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
@@ -289,7 +290,7 @@ function CampusPage() {
             if (tiles.length === 0) {
               return (
                 <p className="mt-5 text-sm text-muted-foreground">
-                  Be the first to list at {campusShort}.
+                  Be the first to list at {campusFull}.
                 </p>
               );
             }
@@ -387,8 +388,8 @@ function CampusPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-black">
             {!listingsLoading && filtered.length > 0
-              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusShort}`
-              : `Subleases at ${campusShort}`}
+              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusFull}`
+              : `Subleases at ${campusFull}`}
           </h2>
           {/* Sort control — also dead with nothing to sort. */}
           {listings.length > 0 && (
@@ -422,13 +423,13 @@ function CampusPage() {
             <div className="text-5xl">🏠</div>
             <h3 className="mt-3 text-lg font-bold">
               {listings.length > 0
-                ? `No subleases match these filters at ${campusShort}.`
-                : `No subleases posted yet at ${campusShort}.`}
+                ? `No subleases match these filters at ${campusFull}.`
+                : `No subleases posted yet at ${campusFull}.`}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
               {listings.length > 0
                 ? "Try removing a filter to see more subleases."
-                : `Be the first — post your sublease and help a fellow ${campusShort} student.`}
+                : `Be the first — post your sublease and help a fellow ${campusFull} student.`}
             </p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease →
@@ -447,7 +448,7 @@ function CampusPage() {
         {lookingFor.length > 0 && (
           <section className="mt-12">
             <h2 className="mb-4 text-xl font-black">
-              Students actively looking for a sublease at {campusShort}
+              Students actively looking for a sublease at {campusFull}
             </h2>
             <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:px-0">
               {lookingFor.slice(0, 4).map((p) => {
@@ -495,10 +496,10 @@ function CampusPage() {
 
         {/* How it works */}
         <section className="mt-12 border-t pt-8">
-          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campusShort}</h2>
+          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campusFull}</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campusShort} students. Posters sign up with a school email.` },
+              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campusFull} students. Posters sign up with a school email.` },
               { n: 2, icon: Handshake, title: "Message directly", body: "No middleman. Message the lister directly and arrange the handoff." },
               { n: 3, icon: CheckCircle2, title: "Mark as rented", body: "Once a deal is made, the listing is marked complete. No ghost listings." },
             ].map(({ n, icon: Icon, title, body }) => (
@@ -564,10 +565,10 @@ function CampusPage() {
           return (
             <section className="mt-12 rounded-2xl border border-border bg-surface p-6 md:p-8">
               <h2 className="text-lg md:text-xl font-black">
-                Know students looking for housing? Share LeaseUp with your {short} GroupMe.
+                Know students looking for housing? Share LeaseUp with your {campusFull} GroupMe.
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Pre-written and ready to paste — one tap and you're helping other {short} students find housing.
+                Pre-written and ready to paste — one tap and you're helping other {campusFull} students find housing.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
@@ -594,7 +595,7 @@ function CampusPage() {
 
         {/* Bottom lister CTA */}
         <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
-          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusShort}?</h2>
+          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusFull}?</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
             Post it free. Your listing goes live on the {campus.city} page and in browse the moment you submit it.
           </p>
