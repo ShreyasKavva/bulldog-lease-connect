@@ -954,7 +954,13 @@ function Browse() {
                   </button>
                 </>
               )}
+              {/* Q375 — the rail moves below the empty state here, as the
+                  only content on a zero-results page with active filters. */}
+              {emptyWithFilters && (
+                <div className="w-full">{trendingRail}</div>
+              )}
             </div>
+
 
 
           ) : (
