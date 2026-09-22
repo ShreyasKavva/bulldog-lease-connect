@@ -770,7 +770,15 @@ function Browse() {
     setPosting(true);
   }
 
-  if (sessionLoading) {
+  // Q382 — this gate used to blank the whole page during the server pass and
+  // the first client render (sessionLoading starts true and only an effect can
+  // clear it), so the SSR HTML carried the listing data but no cards. Render
+  // the full page until after mount; the blank gate then applies exactly as
+  // before, only while the client is actually resolving the session.
+  const [sessionGateArmed, setSessionGateArmed] = useState(false);
+  useEffect(() => { setSessionGateArmed(true); }, []);
+
+  if (sessionLoading && sessionGateArmed) {
     return <div className="min-h-screen bg-background" />;
   }
 
