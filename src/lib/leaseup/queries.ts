@@ -15,6 +15,7 @@
  *   service-role privileges belongs in a server fn, not this file.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { signPaths } from "./signed-urls";
 import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSearch } from "./types";
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -31,40 +32,13 @@ async function attachSignedUrls(
   }
   // Q385 — card/list contexts sign with a transform (640w, q75) so phones
   // don't download full camera files; the detail gallery/lightbox keeps the
-  // original via { fullSize: true }. If a transformed sign fails, fall back
-  // to an untransformed signed URL — a large photo beats a missing one.
+  // original via { fullSize: true }.
+  // Q410 — signing happens server-side now: the browser no longer holds read
+  // access to storage.objects.
   const transform = opts?.fullSize
     ? undefined
     : { width: 640, quality: 75, resize: "contain" as const };
-  const map = new Map<string, string>();
-  if (transform) {
-    // Same call shape as the og route's already-compiling createSignedUrl —
-    // the batch createSignedUrls overload in this client version has no
-    // transform option, so sign each path individually with the transform.
-    const signed = await Promise.all(
-      allPaths.map((p) =>
-        supabase.storage
-          .from("listing-photos")
-          .createSignedUrl(p, SIGNED_URL_TTL, { transform }),
-      ),
-    );
-    signed.forEach((r, i) => {
-      if (r.data?.signedUrl) map.set(allPaths[i], r.data.signedUrl);
-    });
-  } else {
-    const { data } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(allPaths, SIGNED_URL_TTL);
-    data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
-  }
-  const missing = allPaths.filter((p) => !map.has(p));
-  if (missing.length > 0 && !opts?.fullSize) {
-    // Fallback: untransformed sign for any path the transform pass missed.
-    const { data: fb } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(missing, SIGNED_URL_TTL);
-    fb?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
-  }
+  const map = await signPaths("listing-photos", allPaths, { ttl: SIGNED_URL_TTL, transform });
   return listings.map((l) => ({
     ...l,
     photo_urls: (l.photos ?? []).map((p) => (isUrl(p) ? p : map.get(p) ?? "")).filter(Boolean),
