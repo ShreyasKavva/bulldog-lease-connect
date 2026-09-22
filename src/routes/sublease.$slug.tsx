@@ -390,6 +390,8 @@ function CampusPage() {
               ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusShort}`
               : `Subleases at ${campusShort}`}
           </h2>
+          {/* Sort control — also dead with nothing to sort. */}
+          {listings.length > 0 && (
           <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-0.5 text-xs">
             <button
               onClick={() => setSortBy("recent")}
@@ -410,6 +412,7 @@ function CampusPage() {
               Lowest price
             </button>
           </div>
+          )}
         </div>
 
         {listingsLoading ? (
