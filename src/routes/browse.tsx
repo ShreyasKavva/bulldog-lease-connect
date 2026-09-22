@@ -852,7 +852,7 @@ function Browse() {
                       heading: `${culprit.heading}.`,
                       detail: `${culprit.count} match your other filters.`,
                       button: `${culprit.button} — show ${culprit.count}`,
-                      onRelax: relaxCulprit,
+                      onRelax: () => relaxOption(culprit),
                     }
                   : null
               }
