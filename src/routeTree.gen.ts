@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ToursRouteImport } from './routes/tours'
+import { Route as SubleasesRouteImport } from './routes/subleases'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedAlertsRouteImport } from './routes/saved-alerts'
 import { Route as RoommatesRouteImport } from './routes/roommates'
@@ -66,6 +67,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const ToursRoute = ToursRouteImport.update({
   id: '/tours',
   path: '/tours',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubleasesRoute = SubleasesRouteImport.update({
+  id: '/subleases',
+  path: '/subleases',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -327,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subleases': typeof SubleasesRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subleases': typeof SubleasesRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador/dashboard': typeof AmbassadorDashboardRoute
@@ -428,6 +436,7 @@ export interface FileRoutesById {
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subleases': typeof SubleasesRoute
   '/tours': typeof ToursRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/ambassador_/dashboard': typeof AmbassadorDashboardRoute
@@ -480,6 +489,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
+    | '/subleases'
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
@@ -530,6 +540,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
+    | '/subleases'
     | '/tours'
     | '/unsubscribe'
     | '/ambassador/dashboard'
@@ -580,6 +591,7 @@ export interface FileRouteTypes {
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
+    | '/subleases'
     | '/tours'
     | '/unsubscribe'
     | '/ambassador_/dashboard'
@@ -631,6 +643,7 @@ export interface RootRouteChildren {
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedAlertsRoute: typeof SavedAlertsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SubleasesRoute: typeof SubleasesRoute
   ToursRoute: typeof ToursRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AmbassadorDashboardRoute: typeof AmbassadorDashboardRoute
@@ -670,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/tours'
       fullPath: '/tours'
       preLoaderRoute: typeof ToursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subleases': {
+      id: '/subleases'
+      path: '/subleases'
+      fullPath: '/subleases'
+      preLoaderRoute: typeof SubleasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -1054,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedAlertsRoute: SavedAlertsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SubleasesRoute: SubleasesRoute,
   ToursRoute: ToursRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AmbassadorDashboardRoute: AmbassadorDashboardRoute,
