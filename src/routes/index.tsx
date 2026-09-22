@@ -52,6 +52,23 @@ export const Route = createFileRoute("/")({
     };
   },
 
+  // Q384 — seed the first-paint queries on the server (same pattern as the
+  // /browse loader) so the SSR HTML already contains the listing rails and
+  // the "Explore campuses" grid. Same query keys and functions the page's
+  // useQuery calls use below; the client hydrates from this data instead of
+  // starting empty.
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["listings"],
+        queryFn: fetchListings,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["spotlight-campuses"],
+        queryFn: () => fetchSpotlightCampuses(16),
+      }),
+    ]),
+
   component: Home,
 });
 
