@@ -268,13 +268,16 @@ export function ListingCard({
           <img
             src={photo}
             alt={listing.title}
+            width={640}
+            height={480}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
             loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-muted dark:to-background">
-            <span className="text-xs font-medium text-gray-500 dark:text-muted-foreground">No photo yet</span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-muted dark:to-background">
+            <Home className="h-5 w-5 text-gray-400 dark:text-muted-foreground/60" aria-hidden />
+            <span className="text-xs font-medium text-gray-500 dark:text-muted-foreground">No photos yet</span>
           </div>
         )}
 
