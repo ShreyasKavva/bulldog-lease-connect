@@ -1,0 +1,1 @@
+REVOKE INSERT, DELETE ON TABLE public.listings FROM anon;
