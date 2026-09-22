@@ -13,11 +13,14 @@ export function TrendingCarousel({
   campusName,
   onOpen,
   savedIds,
+  heading,
 }: {
   listings: Listing[];
   campusName?: string | null;
   onOpen: (l: Listing) => void;
   savedIds?: Set<string>;
+  /** Q375 — alternate heading when the results are empty because of filters. */
+  heading?: string;
 }) {
   const { user } = useSession();
   const toggleSave = useToggleSave(user?.id);
@@ -54,7 +57,7 @@ export function TrendingCarousel({
   return (
     <section className="mb-5">
       <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-extrabold">
-        🔥 Trending {campusName ? `at ${campusName}` : "this week"}
+        {heading ?? `🔥 Trending ${campusName ? `at ${campusName}` : "this week"}`}
       </h2>
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {viewed.map((l) => {
