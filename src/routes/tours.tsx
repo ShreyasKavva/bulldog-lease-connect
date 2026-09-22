@@ -34,7 +34,13 @@ function ToursPage() {
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-md p-12 text-center">
           <h2 className="text-xl font-bold">Sign in to see your tours</h2>
-          <button type="button" onClick={() => openSignIn("/tours")} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</button>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Tours you schedule with a poster show up here, on every device you sign in on.
+          </p>
+          <button type="button" onClick={() => openSignIn("/tours")} className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary-dark">Sign in with Google →</button>
+          <Link to="/browse" className="mt-3 inline-block text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground">
+            Browse subleases
+          </Link>
         </div>
       </div>
     );
