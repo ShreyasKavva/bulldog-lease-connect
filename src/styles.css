@@ -343,4 +343,8 @@ button, a, label, [role="button"], input, select, textarea {
  * BottomNav toggles data-kbd="1" via visualViewport. */
 nav[data-kbd="1"] { display: none !important; }
 
+/* Hide Lovable editor badge - not for public visitors */
+#lovable-badge { display: none !important; }
+
+
 
