@@ -97,7 +97,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .order("sort_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(photosFirst(data ?? []));
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 
@@ -106,8 +106,9 @@ export async function fetchListing(id: string): Promise<Listing | null> {
   if (error) throw error;
   if (!data) return null;
   const [withProfile] = await attachProfiles([data]);
+  const [scrubbed] = await publicLocationLabel([withProfile]);
   // Detail gallery/lightbox: sign the untransformed original.
-  const [withUrls] = await attachSignedUrls([withProfile], { fullSize: true });
+  const [withUrls] = await attachSignedUrls([scrubbed], { fullSize: true });
   return withUrls;
 }
 
@@ -674,7 +675,7 @@ export async function fetchMatchingListingsForPost(post: LookingForPost): Promis
   if (post.move_out_date) q = q.or(`available_from.is.null,available_from.lte.${post.move_out_date}`);
   const { data, error } = await q.order("sort_at", { ascending: false }).limit(50);
   if (error) throw error;
-  return await attachProfiles(data ?? []);
+  return await publicLocationLabel(await attachProfiles(data ?? []));
 }
 
 
@@ -689,7 +690,7 @@ export async function fetchSavedListings(userId: string): Promise<Listing[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 /** Hydrate a set of listing ids (used by saved collections). */
@@ -701,7 +702,7 @@ export async function fetchListingsByIds(ids: string[]): Promise<Listing[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 /**
@@ -739,7 +740,7 @@ export async function fetchCuratedListings(opts: {
   // Q175 — curated rails are prime real estate: photo-less rows are dropped.
   const rows = (data ?? []).filter((l: any) => (l.photos?.length ?? 0) > 0);
   const withProfiles = await attachProfiles(rows);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 
