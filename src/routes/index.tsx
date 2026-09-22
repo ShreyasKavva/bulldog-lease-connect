@@ -52,6 +52,23 @@ export const Route = createFileRoute("/")({
     };
   },
 
+  // Q384 — seed the first-paint queries on the server (same pattern as the
+  // /browse loader) so the SSR HTML already contains the listing rails and
+  // the "Explore campuses" grid. Same query keys and functions the page's
+  // useQuery calls use below; the client hydrates from this data instead of
+  // starting empty.
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["listings"],
+        queryFn: fetchListings,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["spotlight-campuses"],
+        queryFn: () => fetchSpotlightCampuses(16),
+      }),
+    ]),
+
   component: Home,
 });
 
@@ -60,6 +77,14 @@ function Home() {
   const qc = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useMyProfile();
+
+  // Q384 — the session hook starts with loading=true and only clears it in a
+  // browser effect, so gating on it during the server pass (or the first
+  // client render) renders an empty page and strips all listing/campus
+  // markup from the SSR HTML. Arm the blank gate only after mount; before
+  // that, server and first client render produce the full page identically.
+  const [sessionGateArmed, setSessionGateArmed] = useState(false);
+  useEffect(() => setSessionGateArmed(true), []);
 
   // Onboarding gate for authed users only.
   useEffect(() => {
@@ -184,7 +209,7 @@ function Home() {
     }
   }, [listings, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (sessionLoading) return <div className="min-h-screen bg-background" />;
+  if (sessionGateArmed && sessionLoading) return <div className="min-h-screen bg-background" />;
 
   return (
     <>
