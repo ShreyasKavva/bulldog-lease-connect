@@ -10,7 +10,7 @@ import { openSignIn } from "@/components/leaseup/SignInModal";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/tours")({
-  head: () => ({ meta: [{ title: "My tours — LeaseUp" }] }),
+  head: () => ({ meta: [{ title: "My tours — LeaseUp" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>): { survey?: string } => ({
     survey: typeof s.survey === "string" ? s.survey : undefined,
   }),
