@@ -224,6 +224,17 @@ export const Route = createFileRoute("/browse")({
     };
   },
 
+  // Q378 — seed the ["listings"] query on the server so the SSR HTML already
+  // contains the listing cards. The client keeps the exact same query/key it
+  // uses today; it is hydrated from this loader data instead of starting
+  // empty. No filters, active + unexpired — the same defaults the page uses
+  // on first paint.
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: ["listings"],
+      queryFn: fetchListings,
+    }),
+
   component: Browse,
 });
 
