@@ -125,32 +125,42 @@ function MarketPage() {
             {/* Neighborhood breakdown */}
             <section className="mt-6 rounded-2xl border bg-surface p-4">
               <h2 className="mb-3 text-lg font-extrabold">Neighborhood breakdown</h2>
-              {neighborhoods.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Not enough neighborhood-tagged data yet.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-xs uppercase text-muted-foreground">
-                        <th className="py-2 text-left font-bold">Neighborhood</th>
-                        <th className="py-2 text-right font-bold pl-2">Listings</th>
-                        <th className="py-2 text-right font-bold pl-2">Avg</th>
-                        <th className="py-2 text-right font-bold pl-2">Median</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {neighborhoods.map((n) => (
-                        <tr key={n.area} className="border-b last:border-0">
-                          <td className="py-2 font-semibold">{n.area}</td>
-                          <td className="py-2 text-right pl-2">{n.listing_count}</td>
-                          <td className="py-2 text-right pl-2">${Math.round(n.avg_price).toLocaleString("en-US")}</td>
-                          <td className="py-2 text-right font-bold text-primary pl-2">${Math.round(n.median_price).toLocaleString("en-US")}</td>
+              {(() => {
+                const cleanNeighborhoods = neighborhoods.filter((n) => {
+                  const a = (n.area ?? "").trim();
+                  if (a.length < 3) return false;
+                  if (/^\d/.test(a)) return false;
+                  if (/\b(dr|st|ave|blvd|rd|ln|ct|way|pl|drive|street|avenue|boulevard|road|lane|court)\b/i.test(a)) return false;
+                  return true;
+                });
+                if (cleanNeighborhoods.length === 0) {
+                  return <p className="text-sm text-muted-foreground">Not enough neighborhood-tagged data yet.</p>;
+                }
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs uppercase text-muted-foreground">
+                          <th className="py-2 text-left font-bold">Neighborhood</th>
+                          <th className="py-2 text-right font-bold pl-2">Listings</th>
+                          <th className="py-2 text-right font-bold pl-2">Avg</th>
+                          <th className="py-2 text-right font-bold pl-2">Median</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {cleanNeighborhoods.map((n) => (
+                          <tr key={n.area} className="border-b last:border-0">
+                            <td className="py-2 font-semibold">{n.area}</td>
+                            <td className="py-2 text-right pl-2">{n.listing_count}</td>
+                            <td className="py-2 text-right pl-2">${Math.round(n.avg_price).toLocaleString("en-US")}</td>
+                            <td className="py-2 text-right font-bold text-primary pl-2">${Math.round(n.median_price).toLocaleString("en-US")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </section>
 
             <p className="mt-6 text-xs text-muted-foreground">
