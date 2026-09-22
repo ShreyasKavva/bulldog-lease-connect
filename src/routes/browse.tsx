@@ -567,11 +567,11 @@ function Browse() {
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
 
   /**
-   * Zero-results recovery: the single active filter whose removal brings back
-   * the most listings, plus the count that would return. Most restrictive wins.
+   * Zero-results recovery: every active filter whose removal alone would
+   * bring back results, each with the computed count. Most results first.
    */
-  const culprit = useMemo(() => {
-    if (filtered.length > 0) return null;
+  const relaxOptions = useMemo(() => {
+    if (filtered.length > 0) return [];
     const bedsLabel = [...bedSet]
       .map((b) => (b === "0" ? "studio" : `${b} bed`))
       .join(" or ");
