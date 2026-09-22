@@ -31,7 +31,7 @@ export function SignInModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [busy, setBusy] = useState<"in" | "up" | "google" | null>(null);
+  const [busy, setBusy] = useState<"in" | "up" | "google" | "reset" | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -83,6 +83,21 @@ export function SignInModal({
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Sign in failed");
     } finally { setBusy(null); }
+  }
+
+  async function handleForgot() {
+    if (!email) { toast.error("Enter your email first, then tap Forgot password"); return; }
+    setBusy("reset");
+    try {
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+    } catch {
+      // swallow — never reveal whether an account exists
+    } finally {
+      setBusy(null);
+      toast.success("If that email has an account, a reset link is on its way.");
+    }
   }
 
   async function handleCreate() {
@@ -164,6 +179,12 @@ export function SignInModal({
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
               >{showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
             </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button" onClick={handleForgot} disabled={busy !== null}
+              className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+            >{busy === "reset" ? "Sending…" : "Forgot password?"}</button>
           </div>
           <Button
             type="submit" disabled={busy !== null}

@@ -53,7 +53,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState<"in" | "up" | "google" | null>(null);
+  const [busy, setBusy] = useState<"in" | "up" | "google" | "reset" | null>(null);
   const dest = safeNext(next ?? redirect);
 
   useEffect(() => {
@@ -106,6 +106,23 @@ function AuthPage() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Sign in failed";
       toast.error(msg);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleForgot() {
+    if (!email) { toast.error("Enter your email first, then tap Forgot password"); return; }
+    setBusy("reset");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("If that email has an account, a reset link is on its way.");
+    } catch {
+      // Never reveal whether an account exists.
+      toast.success("If that email has an account, a reset link is on its way.");
     } finally {
       setBusy(null);
     }
@@ -200,6 +217,16 @@ function AuthPage() {
               minLength={6}
               autoComplete="current-password"
             />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleForgot}
+              disabled={busy !== null}
+              className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+            >
+              {busy === "reset" ? "Sending…" : "Forgot password?"}
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Button
