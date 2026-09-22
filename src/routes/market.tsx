@@ -83,8 +83,8 @@ function MarketPage() {
             {/* Overview cards */}
             <div className="grid grid-cols-3 gap-3">
               <StatCard label="Active listings" value={activeListingCount ? activeListingCount.toString() : "—"} />
-              <StatCard label="Average price" value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "—"} />
-              <StatCard label="Median price" value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "—"} />
+              <StatCard label="Average price" value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "Not enough listings yet"} />
+              <StatCard label="Median price" value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "Not enough listings yet"} />
             </div>
 
             {/* Price by bedroom */}
