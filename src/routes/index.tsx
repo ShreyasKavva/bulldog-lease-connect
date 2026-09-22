@@ -67,39 +67,39 @@ export const Route = createFileRoute("/")({
   // render; the seeded queryFn is byte-for-byte the section's own.
   loader: ({ context }) => {
     const seedSection = (id: string, query: Parameters<typeof fetchCuratedListings>[0]) =>
-    context.queryClient.ensureQueryData({
-      queryKey: ["home-section", id, query],
-      queryFn: async () => {
-        const rows = await fetchCuratedListings(query);
-        // Same widen-on-empty fallback the section queryFn applies.
-        if (rows.length === 0 && query.campusId) {
-          const { campusId: _drop, ...wide } = query;
-          return { rows: await fetchCuratedListings(wide), fellBack: true };
-        }
-        return { rows, fellBack: false };
-      },
-    });
+      context.queryClient.ensureQueryData({
+        queryKey: ["home-section", id, query],
+        queryFn: async () => {
+          const rows = await fetchCuratedListings(query);
+          // Same widen-on-empty fallback the section queryFn applies.
+          if (rows.length === 0 && query.campusId) {
+            const { campusId: _drop, ...wide } = query;
+            return { rows: await fetchCuratedListings(wide), fellBack: true };
+          }
+          return { rows, fellBack: false };
+        },
+      });
 
-  const isoDaysFromNow = (days: number) =>
-    new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+    const isoDaysFromNow = (days: number) =>
+      new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 
-  return Promise.all([
-    context.queryClient.ensureQueryData({
-      queryKey: ["listings"],
-      queryFn: fetchListings,
-    }),
-    context.queryClient.ensureQueryData({
-      queryKey: ["spotlight-campuses"],
-      queryFn: () => fetchSpotlightCampuses(16),
-    }),
-    seedSection("new", { limit: 12 }),
-    seedSection("cheap", { maxPrice: 600, limit: 12 }),
-    seedSection("soon", {
-      availableBefore: isoDaysFromNow(31),
-      orderBy: "available_from" as const,
-      ascending: true,
-      limit: 12,
-    }),
+    return Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["listings"],
+        queryFn: fetchListings,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["spotlight-campuses"],
+        queryFn: () => fetchSpotlightCampuses(16),
+      }),
+      seedSection("new", { limit: 12 }),
+      seedSection("cheap", { maxPrice: 600, limit: 12 }),
+      seedSection("soon", {
+        availableBefore: isoDaysFromNow(31),
+        orderBy: "available_from" as const,
+        ascending: true,
+        limit: 12,
+      }),
     ]);
   },
 
