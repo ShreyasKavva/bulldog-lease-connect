@@ -329,7 +329,9 @@ function CampusPage() {
 
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        {/* Filter pills */}
+        {/* Filter pills — only when the campus has listings; dead controls above
+            an empty state read as broken on the ~3,880 zero-listing campuses. */}
+        {listings.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {([
             ["any", "All"],
