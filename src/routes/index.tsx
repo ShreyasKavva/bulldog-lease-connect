@@ -15,7 +15,7 @@ import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
+import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount, fetchCuratedListings } from "@/lib/leaseup/queries";
 import { fetchSpotlightCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
@@ -52,13 +52,38 @@ export const Route = createFileRoute("/")({
     };
   },
 
-  // Q384 — seed the first-paint queries on the server (same pattern as the
-  // /browse loader) so the SSR HTML already contains the listing rails and
-  // the "Explore campuses" grid. Same query keys and functions the page's
-  // useQuery calls use below; the client hydrates from this data instead of
-  // starting empty.
-  loader: ({ context }) =>
-    Promise.all([
+  // Q384/Q391 — seed the first-paint queries on the server (same pattern as
+  // the /browse loader) so the SSR HTML already contains the listing rails
+  // and the "Explore campuses" grid. Same query keys and functions the
+  // page's useQuery calls use below; the client hydrates from this data
+  // instead of starting empty.
+  //
+  // Q391 — the "Just posted" / "Under $600/mo" / "Available this month"
+  // rails are SmartSections rows, each with its own query keyed
+  // ["home-section", id, query] (see SmartSections.tsx). Seed those exact
+  // queries too. At first paint the section scope is empty — campus
+  // affinity is SSR-null and the profile hasn't loaded — so the keys below
+  // match what SmartSections computes on the server and on the first client
+  // render; the seeded queryFn is byte-for-byte the section's own.
+  loader: ({ context }) => {
+    const seedSection = (id: string, query: Parameters<typeof fetchCuratedListings>[0]) =>
+      context.queryClient.ensureQueryData({
+        queryKey: ["home-section", id, query],
+        queryFn: async () => {
+          const rows = await fetchCuratedListings(query);
+          // Same widen-on-empty fallback the section queryFn applies.
+          if (rows.length === 0 && query.campusId) {
+            const { campusId: _drop, ...wide } = query;
+            return { rows: await fetchCuratedListings(wide), fellBack: true };
+          }
+          return { rows, fellBack: false };
+        },
+      });
+
+    const isoDaysFromNow = (days: number) =>
+      new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
+    return Promise.all([
       context.queryClient.ensureQueryData({
         queryKey: ["listings"],
         queryFn: fetchListings,
@@ -67,7 +92,16 @@ export const Route = createFileRoute("/")({
         queryKey: ["spotlight-campuses"],
         queryFn: () => fetchSpotlightCampuses(16),
       }),
-    ]),
+      seedSection("new", { limit: 12 }),
+      seedSection("cheap", { maxPrice: 600, limit: 12 }),
+      seedSection("soon", {
+        availableBefore: isoDaysFromNow(31),
+        orderBy: "available_from" as const,
+        ascending: true,
+        limit: 12,
+      }),
+    ]);
+  },
 
   component: Home,
 });
