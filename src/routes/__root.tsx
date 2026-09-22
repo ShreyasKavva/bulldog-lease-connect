@@ -42,6 +42,8 @@ import { NotificationToastListener } from "@/components/leaseup/NotificationToas
 import { TopBar } from "@/components/leaseup/TopBar";
 import { BottomNav, isBottomNavHidden } from "@/components/leaseup/BottomNav";
 import { Footer } from "@/components/leaseup/Footer";
+import { fetchCampuses } from "@/lib/leaseup/campuses";
+import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 import { QuickInquiryModal } from "@/components/leaseup/QuickInquiryModal";
 import { PullToRefresh } from "@/components/leaseup/PullToRefresh";
 import { useRouterState } from "@tanstack/react-router";
@@ -135,6 +137,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Q405 — seed the Footer's two queries on the server so the "Top Campuses"
+  // column renders the same campus links in the SSR HTML as the hydrated
+  // client (fixes React #418 hydration mismatch). Same keys/fns as Footer.
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["campuses"],
+        queryFn: fetchCampuses,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["campus-listing-counts"],
+        queryFn: fetchCampusListingCounts,
+      }),
+    ]),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
