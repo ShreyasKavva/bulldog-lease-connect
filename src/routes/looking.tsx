@@ -328,6 +328,8 @@ function LookingForPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         {/* One filter row: campus · budget · move-in · sort. No duplicate chip rows. */}
+        {/* Q436 — hide the whole row when nothing is posted to filter (same shape as the campus route's guard). */}
+        {allPosts.length > 0 && (
         <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-3">
           <label className="text-xs font-semibold text-muted-foreground">
             Campus
@@ -404,6 +406,7 @@ function LookingForPage() {
             </span>
           </div>
         </div>
+        )}
 
 
 
