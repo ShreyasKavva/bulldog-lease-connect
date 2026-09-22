@@ -382,6 +382,7 @@ function CampusPage() {
             </button>
           ))}
         </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-black">
