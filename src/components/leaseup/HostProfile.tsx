@@ -51,10 +51,7 @@ export async function fetchHostProfile(userId: string): Promise<HostProfileData 
 }
 
 async function fetchHostAvatar(path: string | null | undefined) {
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 7);
-  return data?.signedUrl ?? null;
+  return signPath("avatars", path, { ttl: 60 * 60 * 24 * 7 });
 }
 
 async function fetchActiveListings(userId: string): Promise<Listing[]> {

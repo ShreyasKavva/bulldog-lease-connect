@@ -274,11 +274,7 @@ async function enrichConversations(userId: string, visible: Conversation[]): Pro
   const firstPaths = (lists ?? [])
     .map((l: any) => (l.photos && l.photos[0]) || null)
     .filter((p: string | null): p is string => !!p && !/^https?:\/\//.test(p));
-  const signedMap = new Map<string, string>();
-  if (firstPaths.length) {
-    const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(firstPaths, SIGNED_URL_TTL);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) signedMap.set(s.path, s.signedUrl); });
-  }
+  const signedMap = await signPaths("listing-photos", firstPaths, { ttl: SIGNED_URL_TTL });
   const pMap = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
   const lMap = new Map<string, any>((lists ?? []).map((l: any) => {
     const first = l.photos && l.photos[0];

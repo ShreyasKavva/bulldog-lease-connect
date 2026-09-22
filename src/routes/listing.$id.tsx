@@ -214,11 +214,9 @@ async function fetchListingDetail(id: string): Promise<ListingLoadResult | null>
   const paths = all.filter((p) => !isUrl(p));
   let photo_urls: string[] = [];
   if (all.length) {
-    const { data: signed } = paths.length
-      ? await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7)
-      : { data: null };
+    const signed = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
     photo_urls = all
-      .map((p) => (isUrl(p) ? p : signed?.find((sg) => sg.path === p)?.signedUrl ?? ""))
+      .map((p) => (isUrl(p) ? p : signed.get(p) ?? ""))
       .filter(Boolean);
   }
   const { data: campus } = await supabase
@@ -278,13 +276,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
     const trimmed = rows.slice(0, 6);
     const withProfiles = await attachProfiles(trimmed);
     const paths = withProfiles.flatMap((r) => r.photos ?? []);
-    const urlMap = new Map<string, string>();
-    if (paths.length) {
-      const { data: signed } = await supabase.storage
-        .from("listing-photos")
-        .createSignedUrls(paths, 60 * 60 * 24 * 7);
-      signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
-    }
+    const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
     return withProfiles.map((r) => ({
       ...r,
       photo_urls: (r.photos ?? [])

@@ -178,10 +178,8 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
     queryKey: ["listing-edit-photos", listingId, form.photos.join(",")],
     enabled: form.photos.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.storage.from("listing-photos").createSignedUrls(form.photos, SIGNED_TTL);
-      const map: Record<string, string> = {};
-      data?.forEach((d) => { if (d.path && d.signedUrl) map[d.path] = d.signedUrl; });
-      return map;
+      const signed = await signPaths("listing-photos", form.photos, { ttl: SIGNED_TTL });
+      return Object.fromEntries(signed) as Record<string, string>;
     },
   });
 

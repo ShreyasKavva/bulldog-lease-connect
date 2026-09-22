@@ -79,12 +79,7 @@ function EditProfilePage() {
 
   const { data: avatarUrl } = useQuery({
     queryKey: ["avatar-url", avatarPath],
-    queryFn: async () => {
-      if (!avatarPath) return null;
-      if (avatarPath.startsWith("http")) return avatarPath;
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarPath, 60 * 60);
-      return data?.signedUrl ?? null;
-    },
+    queryFn: () => signPath("avatars", avatarPath, { ttl: 60 * 60 }),
     enabled: !!avatarPath,
   });
 

@@ -287,8 +287,8 @@ export function PostWizard({ userId }: { userId: string }) {
       for (const file of files) {
         setUploading(file.name);
         const [path] = await uploadListingPhotos(userId, [file]);
-        const { data } = await supabase.storage.from("listing-photos").createSignedUrl(path, 60 * 60 * 24);
-        setD((p) => ({ ...p, photos: [...p.photos, { path, url: data?.signedUrl ?? "" }] }));
+        const url = await signPath("listing-photos", path, { ttl: 60 * 60 * 24 });
+        setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
       }
     } catch (e: any) {
       setPhotoError(e?.message ?? "Upload failed");

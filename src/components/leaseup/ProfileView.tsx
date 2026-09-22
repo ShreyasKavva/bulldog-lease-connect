@@ -88,11 +88,7 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
   if (error) throw error;
   const rows = data ?? [];
   const paths = rows.flatMap((l: any) => (l.photos ?? []).filter((p: string) => !/^https?:\/\//.test(p)));
-  let urlMap = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage.from("listing-photos").createSignedUrls(paths, 60 * 60 * 24 * 7);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
-  }
+  const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
   return rows.map((l: any) => ({
     ...l,
     photo_urls: (l.photos ?? [])
@@ -105,12 +101,7 @@ async function fetchUserListings(userId: string, activeOnly: boolean) {
 function useAvatarSignedUrl(path: string | null | undefined) {
   return useQuery({
     queryKey: ["avatar-url", path],
-    queryFn: async () => {
-      if (!path) return null;
-      if (path.startsWith("http")) return path;
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 7);
-      return data?.signedUrl ?? null;
-    },
+    queryFn: () => signPath("avatars", path, { ttl: 60 * 60 * 24 * 7 }),
     enabled: !!path,
     staleTime: 60 * 60 * 1000,
   });

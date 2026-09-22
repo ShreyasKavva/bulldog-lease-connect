@@ -138,12 +138,10 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
       }));
       const paths = (s.photos ?? []) as string[];
       if (paths.length) {
-        const { data: signed } = await supabase.storage
-          .from("listing-photos")
-          .createSignedUrls(paths, 60 * 60 * 24 * 7);
+        const signed = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
         if (cancelled) return;
         const items = paths
-          .map((p) => ({ path: p, url: signed?.find((s) => s.path === p)?.signedUrl ?? "" }))
+          .map((p) => ({ path: p, url: signed.get(p) ?? "" }))
           .filter((x) => !!x.url);
         setExistingPhotos(items);
       }
