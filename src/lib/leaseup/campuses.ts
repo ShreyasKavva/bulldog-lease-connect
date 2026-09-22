@@ -120,15 +120,33 @@ export async function fetchSpotlightCampuses(limit = 16): Promise<Campus[]> {
   const sorted = withListings
     .slice()
     .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0));
-  if (sorted.length >= limit) return sorted.slice(0, limit);
+  // Q380 — padding rows must be recognisable schools, not the first rows of
+  // the table (which happens to be alphabetical-by-state, i.e. all Alabama).
+  // Explicit allow-list of well-known campus slugs, in display order; skip any
+  // already shown from step 1 and any with no row in the table. If the
+  // allow-list runs out before `limit`, stop short rather than falling back
+  // to table order.
+  const WELL_KNOWN_SLUGS = [
+    "uga", "georgia-state", "florida", "florida-state", "auburn", "alabama",
+    "tennessee", "south-carolina", "clemson", "ucf", "usf", "michigan",
+    "ohio-state", "texas", "texas-am", "ucla", "berkeley", "nyu",
+    "penn-state", "wisconsin",
+  ];
+  const seen = new Set(sorted.map((c) => c.slug));
+  const needed = WELL_KNOWN_SLUGS.filter((s) => !seen.has(s)).slice(0, limit - sorted.length);
+  if (needed.length === 0) return sorted;
   const { data, error } = await supabase
     .from("campuses")
     .select("id, name, short_name, city, state, lat, lng, domain, slug, level")
-    .order("ipeds_unitid", { ascending: true })
-    .limit(limit * 2);
-  if (error) throw error;
-  const seen = new Set(sorted.map((c) => c.id));
-  return sorted.concat(((data ?? []) as Campus[]).filter((c) => !seen.has(c.id))).slice(0, limit);
+    .in("slug", needed);
+  if (error) return sorted;
+  const bySlug = new Map(((data ?? []) as Campus[]).map((c) => [c.slug, c]));
+  const padded = [...sorted];
+  for (const slug of needed) {
+    const c = bySlug.get(slug);
+    if (c) padded.push(c);
+  }
+  return padded.slice(0, limit);
 }
 
 /** Campuses near a given campus that DO have listings — used for the
