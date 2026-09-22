@@ -185,21 +185,25 @@ function MarketPage() {
               })()}
             </section>
 
-            <p className="mt-6 text-xs text-muted-foreground">
-              {totalListings > 0
-                ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
-                : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
-            </p>
+            {hasComps && (
+              <p className="mt-6 text-xs text-muted-foreground">
+                {totalListings > 0
+                  ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
+                  : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
+              </p>
+            )}
 
-            <div className="mt-6">
-              <Link
-                to="/sublease/$slug"
-                params={{ slug: active.slug }}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-              >
-                Browse listings at {active.short_name} →
-              </Link>
-            </div>
+            {hasComps && (
+              <div className="mt-6">
+                <Link
+                  to="/sublease/$slug"
+                  params={{ slug: active.slug }}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                >
+                  Browse listings at {active.short_name} →
+                </Link>
+              </div>
+            )}
           </>
         )}
       </main>
