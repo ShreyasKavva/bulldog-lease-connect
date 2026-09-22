@@ -101,7 +101,26 @@ export function ListingDetailSheet({
     },
   });
 
-  /** Q141 — dynamic tab title + share meta while the slide-out is open. */
+  /** Q397 — capture the tab title that was in effect the moment the sheet
+   *  opens and restore exactly that value when it closes or unmounts. Keyed on
+   *  `open` alone and declared before the title effect below, so re-runs of
+   *  that effect (the campus lookup resolving while the sheet is open) can
+   *  never recapture the overlay's own title as the "previous" one. */
+  const prevTitleRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!open) return;
+    const saved = document.title;
+    prevTitleRef.current = saved;
+    return () => {
+      prevTitleRef.current = null;
+      if (saved) document.title = saved;
+    };
+  }, [open]);
+
+  /** Q141 — dynamic tab title + share meta while the slide-out is open. The
+   *  document title itself is owned by the Q397 capture effect above; this
+   *  effect only writes it while open and restores the share metas on exit. */
   useEffect(() => {
     if (typeof document === "undefined") return;
     if (!open || !listing) return;
@@ -115,7 +134,6 @@ export function ListingDetailSheet({
       }
       el.setAttribute("content", content);
     };
-    const prevTitle = document.title;
     const prevDesc =
       document.head.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ?? "";
     const prevOgTitle =
@@ -146,7 +164,6 @@ export function ListingDetailSheet({
     setMeta('meta[property="og:url"]', "property", "og:url", `https://leasup.co/listing/${listing.id}`);
 
     return () => {
-      if (prevTitle) document.title = prevTitle;
       if (prevDesc) setMeta('meta[name="description"]', "name", "description", prevDesc);
       if (prevOgTitle) setMeta('meta[property="og:title"]', "property", "og:title", prevOgTitle);
       if (prevOgDesc) setMeta('meta[property="og:description"]', "property", "og:description", prevOgDesc);
