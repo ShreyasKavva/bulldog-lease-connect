@@ -48,9 +48,9 @@ function MarketPage() {
   const overallMedian = forCampus.length
     ? Math.round(forCampus.reduce((sum, s) => sum + Number(s.median_price) * Number(s.listing_count), 0) / Math.max(1, totalListings))
     : 0;
-  const overallAvg = forCampus.length
-    ? Math.round(forCampus.reduce((sum, s) => sum + Number(s.avg_price) * Number(s.listing_count), 0) / Math.max(1, totalListings))
-    : 0;
+  // True only when the average and median tiles above render real numbers
+  // (the price-stats view already suppresses groups below the comps threshold).
+  const hasComps = overallAvg > 0 && overallMedian > 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
