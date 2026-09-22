@@ -567,11 +567,11 @@ function Browse() {
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new, s.movein, rmFilters]);
 
   /**
-   * Zero-results recovery: the single active filter whose removal brings back
-   * the most listings, plus the count that would return. Most restrictive wins.
+   * Zero-results recovery: every active filter whose removal alone would
+   * bring back results, each with the computed count. Most results first.
    */
-  const culprit = useMemo(() => {
-    if (filtered.length > 0) return null;
+  const relaxOptions = useMemo(() => {
+    if (filtered.length > 0) return [];
     const bedsLabel = [...bedSet]
       .map((b) => (b === "0" ? "studio" : `${b} bed`))
       .join(" or ");
@@ -605,23 +605,26 @@ function Browse() {
       { key: "tenants", active: s.tenants != null, heading: `No subleases for ${s.tenants} tenants`, button: "Remove tenant filter", patch: { tenants: undefined } },
       { key: "roommate", active: !!(rmFilters.looking_for || rmFilters.study_style || rmFilters.pets || rmFilters.smoking), heading: "No subleases match those roommate preferences", button: "Remove roommate filters", patch: { rm_looking: undefined, rm_study: undefined, rm_pets: undefined, rm_smoking: undefined } },
     ];
-    let best: ((typeof candidates)[number] & { count: number }) | null = null;
+    const options: ((typeof candidates)[number] & { count: number })[] = [];
     for (const c of candidates) {
       if (!c.active) continue;
       const count = listings.filter((l) => matchesListing(l, c.key)).length;
-      if (count > 0 && (!best || count > best.count)) best = { ...c, count };
+      if (count > 0) options.push({ ...c, count });
     }
-    return best;
+    options.sort((a, b) => b.count - a.count);
+    return options;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered.length, listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet,
       s.from, s.to, s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new,
       s.movein, rmFilters]);
 
-  function relaxCulprit() {
-    if (!culprit) return;
-    if (culprit.key === "q") setSearchInput("");
-    patchSearch(culprit.patch);
+  /** The single most-restrictive filter (used by the map empty state). */
+  const culprit = relaxOptions[0] ?? null;
+
+  function relaxOption(option: (typeof relaxOptions)[number]) {
+    if (option.key === "q") setSearchInput("");
+    patchSearch(option.patch);
   }
 
   /** Q180 — how many live listings the selected campus has before any filters. */
@@ -849,7 +852,7 @@ function Browse() {
                       heading: `${culprit.heading}.`,
                       detail: `${culprit.count} match your other filters.`,
                       button: `${culprit.button} — show ${culprit.count}`,
-                      onRelax: relaxCulprit,
+                      onRelax: () => relaxOption(culprit),
                     }
                   : null
               }
@@ -887,20 +890,25 @@ function Browse() {
                   {/* Q180 — hidden-by-filters recovery, never a dead end.
                       Q282 — name the single most-restrictive filter and offer
                       a one-tap relax that keeps every other filter. */}
-                  {culprit ? (
+                  {relaxOptions.length > 0 ? (
                     <>
                       <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                        {culprit.heading}.
+                        {relaxOptions[0].heading}.
                       </h3>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {culprit.count} match your other filters.
+                        That's the filter ruling the most out — or relax a different one:
                       </p>
-                      <button
-                        onClick={relaxCulprit}
-                        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
-                      >
-                        {culprit.button} — show {culprit.count}
-                      </button>
+                      <div className="mt-6 flex flex-col items-center gap-2">
+                        {relaxOptions.map((opt) => (
+                          <button
+                            key={opt.key}
+                            onClick={() => relaxOption(opt)}
+                            className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                          >
+                            {opt.button} — show {opt.count}
+                          </button>
+                        ))}
+                      </div>
                     </>
                   ) : (
                     <h3 className="mt-5 max-w-lg text-xl font-semibold">
