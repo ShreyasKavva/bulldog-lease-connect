@@ -989,7 +989,7 @@ function LiveCounter() {
   const showInquiryNumber = stats.inquiries >= 25;
   const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
-    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses covered" },
+    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses supported" },
     showInquiryNumber
       ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
       : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
