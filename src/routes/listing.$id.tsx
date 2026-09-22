@@ -83,10 +83,12 @@ export const Route = createFileRoute("/listing/$id")({
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: desc },
     ];
-    if (img) {
-      meta.push({ property: "og:image", content: img });
-      meta.push({ name: "twitter:image", content: img });
-    }
+    // Q366 — og:image must be a stable URL, not a 7-day signed storage URL:
+    // share platforms cache the string and re-fetch it weeks later. This
+    // endpoint mints a fresh signed URL per request and 302s to it.
+    const ogImage = `https://leasup.co/api/public/og/listing/${params.id}`;
+    meta.push({ property: "og:image", content: ogImage });
+    meta.push({ name: "twitter:image", content: ogImage });
     return {
       meta,
       links: [{ rel: "canonical", href: url }],
