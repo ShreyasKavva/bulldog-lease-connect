@@ -400,7 +400,7 @@ function LookingForPage() {
               ))}
             </div>
             <span className="text-xs text-muted-foreground">
-              {isLoading ? "" : `${posts.length} student${posts.length === 1 ? "" : "s"} looking`}
+              {!isLoading && posts.length > 0 ? `${posts.length} student${posts.length === 1 ? "" : "s"} looking` : ""}
             </span>
           </div>
         </div>
