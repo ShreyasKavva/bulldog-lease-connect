@@ -129,6 +129,9 @@ export function ListingCard({
 
   const photo = photos[idx] ?? photos[0];
   const multi = photos.length > 1;
+  // Q411 — public listing reads (Q419) replace the raw `area` text with the
+  // campus label; that label is the card's location line. Empty stays empty.
+  const campusLabel = listing.area?.trim() ?? "";
 
   const availableLabel = availableBadge(listing.available_from);
   const isActive = (listing.status ?? "active") === "active";
@@ -427,6 +430,9 @@ export function ListingCard({
         >
           <h3 className="truncate text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
         </Link>
+        {campusLabel ? (
+          <p className="mt-1 truncate text-sm text-muted-foreground">{campusLabel}</p>
+        ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground/80">
           {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
           Posted {postedAgo(listing.created_at)}
