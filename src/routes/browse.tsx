@@ -890,20 +890,25 @@ function Browse() {
                   {/* Q180 — hidden-by-filters recovery, never a dead end.
                       Q282 — name the single most-restrictive filter and offer
                       a one-tap relax that keeps every other filter. */}
-                  {culprit ? (
+                  {relaxOptions.length > 0 ? (
                     <>
                       <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                        {culprit.heading}.
+                        {relaxOptions[0].heading}.
                       </h3>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {culprit.count} match your other filters.
+                        That's the filter ruling the most out — or relax a different one:
                       </p>
-                      <button
-                        onClick={relaxCulprit}
-                        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
-                      >
-                        {culprit.button} — show {culprit.count}
-                      </button>
+                      <div className="mt-6 flex flex-col items-center gap-2">
+                        {relaxOptions.map((opt) => (
+                          <button
+                            key={opt.key}
+                            onClick={() => relaxOption(opt)}
+                            className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                          >
+                            {opt.button} — show {opt.count}
+                          </button>
+                        ))}
+                      </div>
                     </>
                   ) : (
                     <h3 className="mt-5 max-w-lg text-xl font-semibold">
