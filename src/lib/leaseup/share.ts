@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateRange } from "@/lib/leaseup/dates";
 import { toast } from "sonner";
 
 export type ShareSource = "groupme" | "discord" | "native_share" | "clipboard";
@@ -22,8 +23,13 @@ export function withUtm(url: string, source: ShareSource, campaign = "listing_sh
   }
 }
 
-const fmtDate = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtDate = (iso: string | null | undefined) => {
+  if (!iso) return "";
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return "";
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+};
 
 export type ShareListingInput = {
   title: string;
@@ -38,13 +44,11 @@ export type ShareListingInput = {
 export function buildGroupMeText(l: ShareListingInput, url: string): string {
   const where = l.area ?? l.campusShortName ?? "";
   const range = l.availableFrom && l.availableTo
-    ? `${fmtDate(l.availableFrom)}–${fmtDate(l.availableTo)}`
+    ? (formatDateRange(l.availableFrom, l.availableTo) ?? "")
     : "";
   const parts = [`$${l.price}/mo`, where, range].filter(Boolean).join(" · ");
-  const verified = l.campusShortName
-    ? `Listed by a verified ${l.campusShortName} student on LeaseUp`
-    : `Listed by a verified student on LeaseUp`;
-  return `${l.title} — ${parts}\n${verified}\n${url}`;
+  const posted = `Posted by a student on LeaseUp`;
+  return `${l.title} — ${parts}\n${posted}\n${url}`;
 }
 
 export function buildDiscordText(l: ShareListingInput, url: string): string {
