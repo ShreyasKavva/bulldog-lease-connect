@@ -61,8 +61,27 @@ function MarketPage() {
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Sublease market data</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Live pricing trends across active student subleases. Updated daily.
+            {active && !hasComps
+              ? `Not enough listings at ${active.short_name} yet to show price trends. Here's what we have so far.`
+              : "Live pricing trends across active student subleases. Updated daily."}
           </p>
+          {active && !hasComps && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              <Link
+                to="/post"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                Post a sublease
+              </Link>
+              <Link
+                to="/sublease/$slug"
+                params={{ slug: active.slug }}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                Browse listings at {active.short_name} →
+              </Link>
+            </div>
+          )}
         </header>
 
         {/* Campus selector pills */}
