@@ -152,7 +152,7 @@ export async function toggleSaved(userId: string, listingId: string, saved: bool
     const { error } = await supabase.from("saved_listings").delete().eq("user_id", userId).eq("listing_id", listingId);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("saved_listings").insert({ user_id: userId, listing_id: listingId });
+    const { error } = await supabase.from("saved_listings").upsert({ user_id: userId, listing_id: listingId }, { onConflict: "user_id,listing_id", ignoreDuplicates: true });
     if (error) throw error;
   }
 }
