@@ -12,7 +12,6 @@ import { ListingDetailSheet } from "@/components/leaseup/ListingDetailSheet";
 import { PostListingDialog } from "@/components/leaseup/PostListingDialog";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { MessagesSheet } from "@/components/leaseup/MessagesSheet";
-import { ScrollView } from "@/components/leaseup/ScrollView";
 import { CompareBar } from "@/components/leaseup/CompareBar";
 import { CompareSheet } from "@/components/leaseup/CompareSheet";
 import { BrowseFilterBar, type BrowseFilterValues } from "@/components/leaseup/BrowseFilterBar";
@@ -411,7 +410,10 @@ function Browse() {
     }
     let stored: string | null = null;
     try { stored = window.localStorage.getItem("leasup_browse_view"); } catch { /* ignore */ }
-    if (stored === "list" || stored === "map") patchSearch({ view: stored });
+    // Q355 — allowlist: only a real view value is restored; anything else is
+    // treated as absent. Grid is now recognised, so a stored "map" can no
+    // longer swallow a visitor's explicit grid choice.
+    if (stored === "grid" || stored === "list" || stored === "map") patchSearch({ view: stored });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.view]);
 
@@ -866,17 +868,7 @@ function Browse() {
               savedIds={savedIds}
             />
           )}
-          {view === "scroll" ? (
-            <ScrollView
-              listings={filtered}
-              savedIds={savedIds}
-              onSave={handleSave}
-              onMessage={handleMessage}
-              onOpen={setSelected}
-              pinnedIds={pinnedSet}
-              onPin={togglePin}
-            />
-          ) : isError ? (
+          {isError ? (
             <p className="py-16 text-center text-sm text-gray-500 dark:text-muted-foreground">
               Something went wrong loading listings. Try refreshing.
             </p>
