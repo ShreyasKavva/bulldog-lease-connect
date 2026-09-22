@@ -15,7 +15,7 @@ import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { openSignIn } from "@/components/leaseup/SignInModal";
-import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount } from "@/lib/leaseup/queries";
+import { fetchListings, getOrCreateConversation, fetchSavedIds, fetchLookingFor, fetchRecentFilledCount, fetchCuratedListings } from "@/lib/leaseup/queries";
 import { fetchSpotlightCampuses } from "@/lib/leaseup/campuses";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
 
