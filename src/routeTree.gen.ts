@@ -15,6 +15,7 @@ import { Route as SubleasesRouteImport } from './routes/subleases'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SavedAlertsRouteImport } from './routes/saved-alerts'
 import { Route as RoommatesRouteImport } from './routes/roommates'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PostRouteImport } from './routes/post'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -90,6 +91,11 @@ const SavedAlertsRoute = SavedAlertsRouteImport.update({
 const RoommatesRoute = RoommatesRouteImport.update({
   id: '/roommates',
   path: '/roommates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostRoute = PostRouteImport.update({
@@ -349,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -458,6 +466,7 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/roommates': typeof RoommatesRouteWithChildren
   '/saved-alerts': typeof SavedAlertsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
+    | '/reset-password'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
+    | '/reset-password'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -622,6 +633,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/post'
+    | '/reset-password'
     | '/roommates'
     | '/saved-alerts'
     | '/sitemap.xml'
@@ -677,6 +689,7 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PostRoute: typeof PostRouteWithChildren
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RoommatesRoute: typeof RoommatesRouteWithChildren
   SavedAlertsRoute: typeof SavedAlertsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -750,6 +763,13 @@ declare module '@tanstack/react-router' {
       path: '/roommates'
       fullPath: '/roommates'
       preLoaderRoute: typeof RoommatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post': {
@@ -1132,6 +1152,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PostRoute: PostRouteWithChildren,
+  ResetPasswordRoute: ResetPasswordRoute,
   RoommatesRoute: RoommatesRouteWithChildren,
   SavedAlertsRoute: SavedAlertsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
