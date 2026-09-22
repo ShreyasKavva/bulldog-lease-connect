@@ -16,6 +16,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { signPaths } from "./signed-urls";
+import { fetchCampusesByIds } from "./campuses";
 import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSearch } from "./types";
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -67,6 +68,23 @@ function photosFirst<T extends { photos?: string[] | null }>(rows: T[]): T[] {
   });
 }
 
+/**
+ * Q419 — the `area` column holds free-text the poster typed, which in practice
+ * is often a real street address. Public listing reads must never serialize it.
+ * Every public read replaces it with the listing's campus name (already shown
+ * on the same pages), falling back to the generic "Near campus" label.
+ * Owner-scoped reads (fetchMyListings, the edit form) keep the raw value.
+ */
+async function publicLocationLabel<T extends { campus_id?: string | null }>(rows: T[]): Promise<T[]> {
+  if (rows.length === 0) return rows;
+  const campuses = await fetchCampusesByIds(rows.map((r) => r.campus_id ?? "").filter(Boolean));
+  const names = new Map(campuses.map((c) => [c.id, c.short_name || c.name]));
+  return rows.map((r) => ({
+    ...r,
+    area: (r.campus_id ? names.get(r.campus_id) : null) ?? "Near campus",
+  }));
+}
+
 export async function fetchListings(): Promise<Listing[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
@@ -79,7 +97,7 @@ export async function fetchListings(): Promise<Listing[]> {
     .order("sort_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(photosFirst(data ?? []));
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 
@@ -88,8 +106,9 @@ export async function fetchListing(id: string): Promise<Listing | null> {
   if (error) throw error;
   if (!data) return null;
   const [withProfile] = await attachProfiles([data]);
+  const [scrubbed] = await publicLocationLabel([withProfile]);
   // Detail gallery/lightbox: sign the untransformed original.
-  const [withUrls] = await attachSignedUrls([withProfile], { fullSize: true });
+  const [withUrls] = await attachSignedUrls([scrubbed], { fullSize: true });
   return withUrls;
 }
 
@@ -656,7 +675,7 @@ export async function fetchMatchingListingsForPost(post: LookingForPost): Promis
   if (post.move_out_date) q = q.or(`available_from.is.null,available_from.lte.${post.move_out_date}`);
   const { data, error } = await q.order("sort_at", { ascending: false }).limit(50);
   if (error) throw error;
-  return await attachProfiles(data ?? []);
+  return await publicLocationLabel(await attachProfiles(data ?? []));
 }
 
 
@@ -671,7 +690,7 @@ export async function fetchSavedListings(userId: string): Promise<Listing[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 /** Hydrate a set of listing ids (used by saved collections). */
@@ -683,7 +702,7 @@ export async function fetchListingsByIds(ids: string[]): Promise<Listing[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   const withProfiles = await attachProfiles(data ?? []);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 /**
@@ -721,7 +740,7 @@ export async function fetchCuratedListings(opts: {
   // Q175 — curated rails are prime real estate: photo-less rows are dropped.
   const rows = (data ?? []).filter((l: any) => (l.photos?.length ?? 0) > 0);
   const withProfiles = await attachProfiles(rows);
-  return attachSignedUrls(withProfiles);
+  return attachSignedUrls(await publicLocationLabel(withProfiles));
 }
 
 

@@ -396,7 +396,8 @@ function ListingDetailPage() {
     if (typeof window === "undefined") return;
     const url = withUtm(baseListingUrl(), "native_share");
     const bedStr = listing.beds === 0 ? "Studio" : `${listing.beds}BR`;
-    const where = [listing.area, listing.campus?.short_name].filter(Boolean).join(", ");
+    // Q419 — `area` is now the campus-derived label; don't repeat the campus.
+    const where = [...new Set([listing.area, listing.campus?.short_name].filter(Boolean))].join(", ");
     const range = listing.available_from || listing.available_to
       ? ` · ${sharedRange(listing.available_from, listing.available_to)}`
       : "";
