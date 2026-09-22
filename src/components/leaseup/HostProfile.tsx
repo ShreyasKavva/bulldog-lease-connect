@@ -67,13 +67,7 @@ async function fetchActiveListings(userId: string): Promise<Listing[]> {
   if (error) throw error;
   const rows = (data ?? []) as any[];
   const paths = rows.flatMap((l) => l.photos ?? []);
-  const urlMap = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage
-      .from("listing-photos")
-      .createSignedUrls(paths, 60 * 60 * 24 * 7);
-    signed?.forEach((s) => { if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl); });
-  }
+  const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
   return rows.map((l) => ({
     ...l,
     photo_urls: (l.photos ?? []).map((p: string) => urlMap.get(p) ?? "").filter(Boolean),
