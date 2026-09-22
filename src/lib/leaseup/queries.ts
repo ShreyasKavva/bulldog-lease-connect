@@ -75,7 +75,7 @@ function photosFirst<T extends { photos?: string[] | null }>(rows: T[]): T[] {
  * on the same pages), falling back to the generic "Near campus" label.
  * Owner-scoped reads (fetchMyListings, the edit form) keep the raw value.
  */
-async function publicLocationLabel<T extends { campus_id?: string | null }>(rows: T[]): Promise<T[]> {
+export async function publicLocationLabel<T extends { campus_id?: string | null }>(rows: T[]): Promise<T[]> {
   if (rows.length === 0) return rows;
   const campuses = await fetchCampusesByIds(rows.map((r) => r.campus_id ?? "").filter(Boolean));
   const names = new Map(campuses.map((c) => [c.id, c.short_name || c.name]));

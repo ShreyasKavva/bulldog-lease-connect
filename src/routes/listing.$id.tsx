@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { markListingFilled, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing, attachProfiles } from "@/lib/leaseup/queries";
+import { markListingFilled, fetchSavedIds, fetchLookingForMatchesForListing, getOrCreateConversation, bumpListing, attachProfiles, publicLocationLabel } from "@/lib/leaseup/queries";
 import { fetchListingDailyStats, fetchListingMessageStats } from "@/lib/leaseup/analytics.queries";
 import { isDemoListing } from "@/lib/leaseup/demo";
 import { toast } from "sonner";
@@ -279,7 +279,11 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
       return String(b.created_at).localeCompare(String(a.created_at));
     });
     const trimmed = rows.slice(0, 6);
-    const withProfiles = await attachProfiles(trimmed);
+    // Q437 — same scrub as the public reads (Q419): the raw `area` is often a
+    // real street address, so the Similar rail's rows carry the campus label
+    // ("Near campus" fallback) before reaching ListingCard. Never the raw text.
+    const scrubbed = await publicLocationLabel(trimmed);
+    const withProfiles = await attachProfiles(scrubbed);
     const paths = withProfiles.flatMap((r) => r.photos ?? []);
     const urlMap = await signPaths("listing-photos", paths, { ttl: 60 * 60 * 24 * 7 });
     return withProfiles.map((r) => ({
