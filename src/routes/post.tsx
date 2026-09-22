@@ -41,7 +41,7 @@ function PostPage() {
 
   if (!user) {
     return (
-      <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-6 text-center">
+      <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-6 pb-20 text-center md:pb-0">
         <div className="text-6xl">🏡</div>
         <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900">
           Post Your Sublease

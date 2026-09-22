@@ -15,7 +15,6 @@ const linkCls = "block py-1 text-sm text-gray-600 transition-colors hover:text-f
 export function Footer() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const hidden =
-    path === "/post" ||
     path.startsWith("/post/") ||
     (path.startsWith("/messages/") && path !== "/messages");
 
