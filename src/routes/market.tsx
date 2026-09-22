@@ -105,8 +105,16 @@ function MarketPage() {
             {/* Overview cards */}
             <div className="grid grid-cols-3 gap-3">
               <StatCard label="Active listings" value={activeListingCount ? activeListingCount.toString() : "—"} />
-              <StatCard label="Average price" value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "Not enough listings yet"} />
-              <StatCard label="Median price" value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "Not enough listings yet"} />
+              <StatCard
+                label="Average price"
+                value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "—"}
+                caption={overallAvg ? undefined : "Not enough listings yet"}
+              />
+              <StatCard
+                label="Median price"
+                value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "—"}
+                caption={overallMedian ? undefined : "Not enough listings yet"}
+              />
             </div>
 
             {/* Price by bedroom */}
@@ -211,11 +219,12 @@ function MarketPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, caption }: { label: string; value: string; caption?: string }) {
   return (
     <div className="rounded-2xl border bg-surface p-3 sm:p-4">
       <div className="text-xs font-bold uppercase text-muted-foreground">{label}</div>
       <div className="mt-2 text-base sm:text-2xl font-extrabold tracking-tight">{value}</div>
+      {caption && <div className="mt-1 text-xs leading-snug text-muted-foreground">{caption}</div>}
     </div>
   );
 }
