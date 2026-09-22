@@ -78,6 +78,14 @@ function Home() {
   const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useMyProfile();
 
+  // Q384 — the session hook starts with loading=true and only clears it in a
+  // browser effect, so gating on it during the server pass (or the first
+  // client render) renders an empty page and strips all listing/campus
+  // markup from the SSR HTML. Arm the blank gate only after mount; before
+  // that, server and first client render produce the full page identically.
+  const [sessionGateArmed, setSessionGateArmed] = useState(false);
+  useEffect(() => setSessionGateArmed(true), []);
+
   // Onboarding gate for authed users only.
   useEffect(() => {
     if (user && profile && profile.onboarding_completed === false) {
