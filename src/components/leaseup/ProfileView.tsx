@@ -15,7 +15,7 @@ import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { BadgeCheck, Instagram, Pencil, Star, Plus, MessageCircle, Users, Camera, Home } from "lucide-react";
-import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
+import { SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
@@ -202,7 +202,7 @@ export function ProfileView({ userId }: { userId: string }) {
   if (isLoading) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!profile) return <div className="mx-auto max-w-2xl px-4 pt-20 text-center text-sm text-muted-foreground">Profile not found.</div>;
 
-  const isEdu = hasSchoolEmail(profile);
+  const isEdu = !!profile.verified_email;
   const rating = profile.avg_rating ?? stats.avg;
   const reviewCount = profile.review_count ?? stats.count;
   const campusAbbrev = abbrevCampus(profile.campus_name);
