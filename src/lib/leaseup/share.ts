@@ -42,7 +42,7 @@ export type ShareListingInput = {
 };
 
 export function buildGroupMeText(l: ShareListingInput, url: string): string {
-  const where = l.area ?? l.campusShortName ?? "";
+  const where = l.campusShortName ?? l.area ?? "";
   const range = l.availableFrom && l.availableTo
     ? (formatDateRange(l.availableFrom, l.availableTo) ?? "")
     : "";
@@ -53,7 +53,7 @@ export function buildGroupMeText(l: ShareListingInput, url: string): string {
 
 export function buildDiscordText(l: ShareListingInput, url: string): string {
   const bedStr = l.beds === 0 ? "Studio" : `${l.beds}BR`;
-  const where = l.area ?? l.campusShortName ?? "";
+  const where = l.campusShortName ?? l.area ?? "";
   const range = l.availableFrom && l.availableTo
     ? `${fmtDate(l.availableFrom)}–${fmtDate(l.availableTo)}`
     : "";
