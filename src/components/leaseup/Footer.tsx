@@ -63,6 +63,7 @@ export function Footer() {
         <div>
           <h2 className={headingCls}>Company</h2>
           <Link to="/about" className={linkCls}>About</Link>
+          <Link to="/faq" className={linkCls}>FAQ</Link>
           <Link to="/ambassador" className={linkCls}>Ambassador</Link>
           <a href="mailto:hi@leasup.co" className={linkCls}>Contact</a>
           <a
