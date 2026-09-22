@@ -52,9 +52,16 @@ export const Route = createFileRoute('/api/public/og/listing/$id')({
         const firstPhoto = Array.isArray(listing?.photos) ? listing.photos[0] : null
         if (!firstPhoto) return fallback()
 
+        // Q387 — request the transform AT SIGN TIME: appending width/quality
+        // to an already-signed URL is a no-op, so the resize must ride along
+        // with the signing call. 1200x630 is the standard social-card size;
+        // X/Twitter rejects images over 5 MB and the full camera original is
+        // far larger than any platform will fetch.
         const { data: signed } = await supabase.storage
           .from('listing-photos')
-          .createSignedUrl(firstPhoto, SIGNED_TTL_SECONDS)
+          .createSignedUrl(firstPhoto, SIGNED_TTL_SECONDS, {
+            transform: { width: 1200, height: 630, quality: 75, resize: 'cover' },
+          })
         if (!signed?.signedUrl) return fallback()
 
         const target = signed.signedUrl.startsWith('http')
