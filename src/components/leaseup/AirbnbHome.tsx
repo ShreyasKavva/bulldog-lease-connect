@@ -762,7 +762,7 @@ export function AirbnbHome({
                     <span className="hidden sm:inline">{c.city}, {c.state}</span>
                   </div>
                   <div className={`mt-1 text-xs font-semibold ${count > 0 ? "text-primary" : "text-muted-foreground"}`}>
-                    {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "New"}
+                    {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Be the first"}
                   </div>
                 </div>
                 <ArrowRight className="hidden h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground sm:block" />
