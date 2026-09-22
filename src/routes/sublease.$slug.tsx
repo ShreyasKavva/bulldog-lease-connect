@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, notFound, redirect } from "@tanstack/react-router";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { fetchCampusBySlug, fetchCampuses, fetchActiveListingCountsByCampus, fetchCampusStats, CAMPUS_ALIASES, type Campus } from "@/lib/leaseup/campuses";
 import { fetchListings, fetchSavedIds, getOrCreateConversation, fetchLookingFor } from "@/lib/leaseup/queries";
