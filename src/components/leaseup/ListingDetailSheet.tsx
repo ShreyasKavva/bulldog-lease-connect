@@ -101,21 +101,23 @@ export function ListingDetailSheet({
     },
   });
 
-  /** Q397 — capture the tab title that was in effect the moment the sheet
-   *  opens and restore exactly that value when it closes or unmounts. Keyed on
-   *  `open` alone and declared before the title effect below, so re-runs of
-   *  that effect (the campus lookup resolving while the sheet is open) can
-   *  never recapture the overlay's own title as the "previous" one. */
+  /** Q397/Q402 — capture the tab title that was in effect the moment the sheet
+   *  opens and restore exactly that value both during cleanup and explicitly
+   *  after the sheet transitions closed. */
   const prevTitleRef = useRef<string | null>(null);
   useEffect(() => {
     if (typeof document === "undefined") return;
-    if (!open) return;
-    const saved = document.title;
-    prevTitleRef.current = saved;
-    return () => {
+    if (open) {
+      if (prevTitleRef.current === null) prevTitleRef.current = document.title;
+      return () => {
+        if (prevTitleRef.current !== null) document.title = prevTitleRef.current;
+      };
+    }
+
+    if (prevTitleRef.current !== null) {
+      document.title = prevTitleRef.current;
       prevTitleRef.current = null;
-      if (saved) document.title = saved;
-    };
+    }
   }, [open]);
 
   /** Q141 — dynamic tab title + share meta while the slide-out is open. The
