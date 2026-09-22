@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
+import { campusShortName } from "@/lib/leaseup/campus-name";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
