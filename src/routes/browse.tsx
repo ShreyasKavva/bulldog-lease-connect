@@ -605,13 +605,14 @@ function Browse() {
       { key: "tenants", active: s.tenants != null, heading: `No subleases for ${s.tenants} tenants`, button: "Remove tenant filter", patch: { tenants: undefined } },
       { key: "roommate", active: !!(rmFilters.looking_for || rmFilters.study_style || rmFilters.pets || rmFilters.smoking), heading: "No subleases match those roommate preferences", button: "Remove roommate filters", patch: { rm_looking: undefined, rm_study: undefined, rm_pets: undefined, rm_smoking: undefined } },
     ];
-    let best: ((typeof candidates)[number] & { count: number }) | null = null;
+    const options: ((typeof candidates)[number] & { count: number })[] = [];
     for (const c of candidates) {
       if (!c.active) continue;
       const count = listings.filter((l) => matchesListing(l, c.key)).length;
-      if (count > 0 && (!best || count > best.count)) best = { ...c, count };
+      if (count > 0) options.push({ ...c, count });
     }
-    return best;
+    options.sort((a, b) => b.count - a.count);
+    return options;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered.length, listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet,
       s.from, s.to, s.utilities, s.parking, s.pets, s.wifi, s.laundry, s.baths, s.verified,
