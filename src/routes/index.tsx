@@ -65,7 +65,8 @@ export const Route = createFileRoute("/")({
   // affinity is SSR-null and the profile hasn't loaded — so the keys below
   // match what SmartSections computes on the server and on the first client
   // render; the seeded queryFn is byte-for-byte the section's own.
-  const seedSection = (id: string, query: Parameters<typeof fetchCuratedListings>[0]) =>
+  loader: ({ context }) => {
+    const seedSection = (id: string, query: Parameters<typeof fetchCuratedListings>[0]) =>
     context.queryClient.ensureQueryData({
       queryKey: ["home-section", id, query],
       queryFn: async () => {
