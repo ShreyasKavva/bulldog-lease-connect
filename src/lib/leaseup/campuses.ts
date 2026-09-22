@@ -127,13 +127,20 @@ export async function fetchSpotlightCampuses(limit = 16): Promise<Campus[]> {
   // allow-list runs out before `limit`, stop short rather than falling back
   // to table order.
   const WELL_KNOWN_SLUGS = [
-    "uga", "georgia-state", "florida", "florida-state", "auburn", "alabama",
-    "tennessee", "south-carolina", "clemson", "ucf", "usf", "michigan",
-    "ohio-state", "texas", "texas-am", "ucla", "berkeley", "nyu",
-    "penn-state", "wisconsin",
+    "university-of-georgia", "georgia-state-university", "university-of-florida",
+    "florida-state-university", "auburn-university", "university-of-alabama",
+    "university-of-south-carolina", "clemson-university", "university-of-central-florida",
+    "university-of-south-florida", "university-of-michigan", "ohio-state-university",
+    "university-of-texas-at-austin", "texas-a-m-university", "university-of-california-los-angeles",
+    "university-of-california-berkeley", "new-york-university",
   ];
-  const seen = new Set(sorted.map((c) => c.slug));
-  const needed = WELL_KNOWN_SLUGS.filter((s) => !seen.has(s)).slice(0, limit - sorted.length);
+  // Q383 — slugs are full-name slugs in the table; dedupe by display name as
+  // well as slug so two table rows for the same university never both render.
+  const seenSlugs = new Set(sorted.map((c) => c.slug));
+  const seenNames = new Set(sorted.map((c) => c.name.trim().toLowerCase()));
+  const needed = WELL_KNOWN_SLUGS.filter(
+    (s) => !seenSlugs.has(s),
+  ).slice(0, limit - sorted.length);
   if (needed.length === 0) return sorted;
   const { data, error } = await supabase
     .from("campuses")
@@ -144,7 +151,11 @@ export async function fetchSpotlightCampuses(limit = 16): Promise<Campus[]> {
   const padded = [...sorted];
   for (const slug of needed) {
     const c = bySlug.get(slug);
-    if (c) padded.push(c);
+    if (!c) continue;
+    const name = c.name.trim().toLowerCase();
+    if (seenNames.has(name)) continue;
+    seenNames.add(name);
+    padded.push(c);
   }
   return padded.slice(0, limit);
 }
