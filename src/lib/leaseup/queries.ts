@@ -196,9 +196,10 @@ async function resolveConversation(
     const raced = await findConversation(a, b, listingId, lookingPostId);
     if (raced) return raced;
   }
-  // Never surface a raw Postgres message to the UI.
+  // Never surface a raw Postgres message to the UI. This also covers a 23505
+  // whose re-SELECT still came back empty.
   console.error("getOrCreateConversation failed", error);
-  throw new Error("Couldn't open that conversation — try again");
+  throw new Error("Couldn't open that conversation. Please try again.");
 }
 
 export async function fetchConversations(userId: string): Promise<Conversation[]> {
