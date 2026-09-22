@@ -19,18 +19,36 @@ import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSear
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
-async function attachSignedUrls(listings: Listing[]): Promise<Listing[]> {
+async function attachSignedUrls(
+  listings: Listing[],
+  opts?: { fullSize?: boolean },
+): Promise<Listing[]> {
   const isUrl = (p: string) => /^https?:\/\//i.test(p);
   // Seeded/demo listings can hold absolute URLs; only storage paths need signing.
   const allPaths = listings.flatMap((l) => (l.photos ?? []).filter((p) => !isUrl(p)));
   if (allPaths.length === 0) {
     return listings.map((l) => ({ ...l, photo_urls: (l.photos ?? []).filter(isUrl) }));
   }
+  // Q385 — card/list contexts sign with a transform (640w, q75) so phones
+  // don't download full camera files; the detail gallery/lightbox keeps the
+  // original via { fullSize: true }. If a transformed sign fails, fall back
+  // to an untransformed signed URL — a large photo beats a missing one.
+  const transform = opts?.fullSize
+    ? undefined
+    : { width: 640, quality: 75, resize: "contain" as const };
   const { data } = await supabase.storage
     .from("listing-photos")
-    .createSignedUrls(allPaths, SIGNED_URL_TTL);
+    .createSignedUrls(allPaths, SIGNED_URL_TTL, { transform });
   const map = new Map<string, string>();
   data?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
+  const missing = allPaths.filter((p) => !map.has(p));
+  if (missing.length > 0 && !opts?.fullSize) {
+    // Fallback: untransformed sign for any path the transform pass missed.
+    const { data: fb } = await supabase.storage
+      .from("listing-photos")
+      .createSignedUrls(missing, SIGNED_URL_TTL);
+    fb?.forEach((d) => { if (d.path && d.signedUrl) map.set(d.path, d.signedUrl); });
+  }
   return listings.map((l) => ({
     ...l,
     photo_urls: (l.photos ?? []).map((p) => (isUrl(p) ? p : map.get(p) ?? "")).filter(Boolean),
@@ -80,7 +98,8 @@ export async function fetchListing(id: string): Promise<Listing | null> {
   if (error) throw error;
   if (!data) return null;
   const [withProfile] = await attachProfiles([data]);
-  const [withUrls] = await attachSignedUrls([withProfile]);
+  // Detail gallery/lightbox: sign the untransformed original.
+  const [withUrls] = await attachSignedUrls([withProfile], { fullSize: true });
   return withUrls;
 }
 
