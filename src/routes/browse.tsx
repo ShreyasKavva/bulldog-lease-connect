@@ -619,10 +619,12 @@ function Browse() {
       s.tenants, s.type, s.maxDuration, s.availableSoon, s.postedToday, s.nearCampus, s.new,
       s.movein, rmFilters]);
 
-  function relaxCulprit() {
-    if (!culprit) return;
-    if (culprit.key === "q") setSearchInput("");
-    patchSearch(culprit.patch);
+  /** The single most-restrictive filter (used by the map empty state). */
+  const culprit = relaxOptions[0] ?? null;
+
+  function relaxOption(option: (typeof relaxOptions)[number]) {
+    if (option.key === "q") setSearchInput("");
+    patchSearch(option.patch);
   }
 
   /** Q180 — how many live listings the selected campus has before any filters. */
