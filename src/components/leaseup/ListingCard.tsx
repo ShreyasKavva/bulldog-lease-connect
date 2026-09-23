@@ -14,7 +14,7 @@ import { CardPriceBadge } from "./PriceBadge";
 import { posterName } from "@/lib/leaseup/display-name";
 import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
