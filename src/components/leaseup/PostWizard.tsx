@@ -287,6 +287,15 @@ export function PostWizard({ userId }: { userId: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   /** Q451 — in-flight guard: state updates are async, a ref is not. */
   const publishingRef = useRef(false);
+  /**
+   * Q479 — once the listing is live the draft is dead. Without this flag the
+   * unmount save() below (it runs when publish navigates away) re-wrote the
+   * draft that publish had just deleted, so the next visit to /post offered
+   * "Resume your draft" for a listing the student had already posted.
+   */
+  const publishedRef = useRef(false);
+  /** Q479 — one photo batch at a time; picker, drag-drop and paste share it. */
+  const uploadingRef = useRef(false);
 
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
