@@ -26,6 +26,7 @@ export const Route = createFileRoute("/ambassador")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://leasup.co/ambassador" }],
   }),
   component: AmbassadorLandingPage,
 });
