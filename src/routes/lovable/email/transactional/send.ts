@@ -188,6 +188,31 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         const effectiveRecipient = template.to
           || (isPrivilegedCaller ? recipientEmail : (derivedRecipient ?? callerEmail))
 
+        // Q456 — template data allowlist. A non-privileged caller can only
+        // supply the fields its template actually renders; everything else is
+        // dropped, strings are length-capped, and any link is rewritten onto
+        // our own origin so the body can never smuggle arbitrary copy or an
+        // off-site URL into mail from our domain.
+        if (!isPrivilegedCaller) {
+          const allowed = USER_TEMPLATE_FIELDS[templateName] ?? {}
+          const safe: Record<string, any> = {}
+          for (const [key, kind] of Object.entries(allowed)) {
+            const value = templateData[key]
+            if (value === undefined || value === null) continue
+            if (kind === 'url') {
+              const url = safeSiteUrl(value)
+              if (url) safe[key] = url
+            } else if (kind === 'number') {
+              if (typeof value === 'number' && Number.isFinite(value)) safe[key] = value
+            } else if (kind === 'id') {
+              if (typeof value === 'string') safe[key] = value.slice(0, 64)
+            } else {
+              if (typeof value === 'string') safe[key] = value.slice(0, MAX_TEXT_FIELD)
+            }
+          }
+          templateData = safe
+        }
+
 
         if (!effectiveRecipient) {
           return Response.json(
