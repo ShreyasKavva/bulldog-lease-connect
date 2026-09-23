@@ -247,8 +247,11 @@
   .lu-card-hover, .lu-card-img { transition: none !important; }
 }
 
-/* Prevent accidental horizontal scroll on narrow mobile viewports */
-html, body { overflow-x: hidden; }
+/* Prevent accidental horizontal scroll on narrow mobile viewports.
+   Q481 — `overflow-x: hidden` here forced overflow-y to `auto`, which turned
+   the root box into a scroll container and broke window scrolling. `clip`
+   blocks sideways scroll without creating a scroll container. */
+html { overflow-x: clip; }
 
 /* Route enter animation — applied by AppShell on pathname change */
 @keyframes lu-page-enter {
