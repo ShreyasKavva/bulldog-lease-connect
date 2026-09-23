@@ -779,11 +779,9 @@ export function AirbnbHome({
           <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 text-center">
             <h2 className="text-2xl font-bold text-white">Find your perfect sublease 🎓</h2>
             <p className="mb-5 mt-1 text-sm text-indigo-100">
-              {totalCampuses
-                ? campusCount > 0
-                  ? `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses - ${campusCount} ${campusCount === 1 ? "has" : "have"} live subleases right now.`
-                  : `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses. Be the first to post at yours.`
-                : "Free to use, no broker fees."}
+              {/* Q445 — the hero stat already states the live-campus number; this
+                  band stays on the value proposition so the page never says it twice. */}
+              Free to use, no broker fees. Message any poster directly.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
