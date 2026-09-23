@@ -632,6 +632,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 <label className="mb-1 block text-sm font-medium">Address or neighborhood</label>
                 <input
                   className={inputCls()}
+                  maxLength={120}
                   value={d.area}
                   onChange={(e) => set({ area: e.target.value })}
                   placeholder="e.g. 120 W 21st St or West Campus"
