@@ -159,14 +159,15 @@ function MarketPage() {
               <StatCard
                 label="Average price"
                 value={overallAvg ? `$${Math.round(overallAvg).toLocaleString("en-US")}/mo` : "—"}
-                caption={overallAvg ? undefined : "Not enough listings yet"}
+                caption={overallAvg ? `Based on ${totalListings} listing${totalListings === 1 ? "" : "s"}` : "Not enough listings yet"}
               />
               <StatCard
                 label="Median price"
                 value={overallMedian ? `$${Math.round(overallMedian).toLocaleString("en-US")}/mo` : "—"}
-                caption={overallMedian ? undefined : "Not enough listings yet"}
+                caption={overallMedian ? `Based on ${totalListings} listing${totalListings === 1 ? "" : "s"}` : "Not enough listings yet"}
               />
             </div>
+
 
             {/* Price by bedroom */}
             <section className="mt-8 rounded-2xl border bg-surface p-4">
