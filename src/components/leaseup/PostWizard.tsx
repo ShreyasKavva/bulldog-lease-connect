@@ -358,36 +358,49 @@ export function PostWizard({ userId }: { userId: string }) {
 
 
   async function handleFiles(list: FileList | File[]) {
-    const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
-    if (picked.length && picked.length < Array.from(list).length) {
-      setPhotoError("Only photos can be uploaded — skipped the other files.");
+    const all = Array.from(list);
+    const picked = all.filter((f) => f.type.startsWith("image/"));
+    const notes: string[] = [];
+    if (picked.length < all.length) {
+      notes.push("Only photos can be uploaded — skipped the other files.");
     }
     // Q447 — phone photos are routinely 10–15 MB; reject before the upload
     // so the student gets a sentence instead of a stalled spinner.
     const tooBig = picked.filter((f) => f.size > MAX_PHOTO_BYTES);
-    const files = picked
-      .filter((f) => f.size <= MAX_PHOTO_BYTES)
-      .slice(0, MAX_PHOTOS - d.photos.length);
     if (tooBig.length) {
-      setPhotoError(
+      notes.push(
         `${tooBig.length === 1 ? "That photo is" : `${tooBig.length} photos are`} over ${MAX_PHOTO_MB} MB. Try a smaller photo, or screenshot it first.`,
       );
     }
-    if (!files.length) return;
-    if (!tooBig.length) setPhotoError(null);
-    try {
-      for (const file of files) {
+    const room = Math.max(0, MAX_PHOTOS - d.photos.length);
+    const okSize = picked.filter((f) => f.size <= MAX_PHOTO_BYTES);
+    const files = okSize.slice(0, room);
+    // Q464 — silently dropping extras looked like a failed upload.
+    if (okSize.length > files.length) {
+      notes.push(`You can add ${MAX_PHOTOS} photos — the extra ${okSize.length - files.length === 1 ? "one wasn't" : "ones weren't"} added.`);
+    }
+    if (!files.length) {
+      setPhotoError(notes.length ? notes.join(" ") : null);
+      return;
+    }
+    // Q464 — one bad file used to abort the whole batch. Upload each on its
+    // own so the good photos still land and only the failures are reported.
+    let failed = 0;
+    for (const file of files) {
+      try {
         setUploading(file.name);
         const [path] = await uploadListingPhotos(userId, [file]);
         const url = await signPath("listing-photos", path, { ttl: 60 * 60 * 24 });
         setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
+      } catch (e: any) {
+        failed += 1;
+        // Q447 — never surface the raw storage error to a student.
+        if (failed === 1) notes.push(friendlyPhotoError(e));
       }
-    } catch (e: any) {
-      // Q447 — never surface the raw storage error to a student.
-      setPhotoError(friendlyPhotoError(e));
-    } finally {
-      setUploading(null);
     }
+    setUploading(null);
+    if (failed > 1) notes.push(`${failed} photos didn't upload — the rest were added.`);
+    setPhotoError(notes.length ? notes.join(" ") : null);
   }
 
   function next() {
