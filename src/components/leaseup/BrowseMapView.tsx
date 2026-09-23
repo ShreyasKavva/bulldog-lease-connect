@@ -603,7 +603,15 @@ export function BrowseMapView({
       )}
     </div>
     <p className="px-4 py-2 text-xs text-muted-foreground">
-      Map shows approximate areas. Exact address is shared by the host after you connect.
+      Map shows approximate areas. Exact address is shared by the host after you connect.{" "}
+      {/* Q480 — the in-map credit can sit under the fixed bottom bar on a phone,
+          so the same credit is repeated here where it is always readable. */}
+      <span className="whitespace-nowrap">
+        Map data &copy;{" "}
+        <a href={BASEMAP_ATTRIBUTION_HREF} target="_blank" rel="noreferrer" className="underline">
+          {BASEMAP_ATTRIBUTION_TEXT}
+        </a>
+      </span>
     </p>
     </div>
   );
