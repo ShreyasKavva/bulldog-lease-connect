@@ -239,8 +239,6 @@ export const Route = createFileRoute("/browse")({
   component: Browse,
 });
 
-type View = "grid" | "scroll";
-
 function Browse() {
   const navigate = useNavigate();
   const { user, loading: sessionLoading } = useSession();
