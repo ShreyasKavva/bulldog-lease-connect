@@ -120,16 +120,23 @@ function MarketPage() {
             <div className="mt-3 flex flex-wrap gap-3">
               <Link
                 to="/post"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
               >
                 Post a sublease
               </Link>
               <Link
                 to="/sublease/$slug"
                 params={{ slug: active.slug }}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
               >
                 Browse listings at {active.short_name} →
+              </Link>
+              {/* Q465 — thin campus data should always offer the full feed too. */}
+              <Link
+                to="/browse"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border bg-surface px-5 py-2.5 text-sm font-bold hover:bg-muted"
+              >
+                Browse all subleases
               </Link>
             </div>
           )}
@@ -274,7 +281,7 @@ function MarketPage() {
                 <Link
                   to="/sublease/$slug"
                   params={{ slug: active.slug }}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
                 >
                   Browse listings at {active.short_name} →
                 </Link>
