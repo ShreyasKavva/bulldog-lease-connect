@@ -10,6 +10,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { deleteListingPhoto } from "@/lib/leaseup/post-photos";
 import { supabase } from "@/integrations/supabase/client";
 import { looksLikeStreetAddress, AREA_ADDRESS_ERROR } from "@/lib/leaseup/area";
 import { signPath } from "@/lib/leaseup/signed-urls";
@@ -357,6 +358,19 @@ export function PostWizard({ userId }: { userId: string }) {
   }, [userId]);
 
 
+  // Q470 — the same size/type checks must cover a pasted screenshot, not just
+  // the picker and drag & drop. Only active while the photo step is showing.
+  useEffect(() => {
+    if (d.step !== 2) return;
+    function onPaste(e: ClipboardEvent) {
+      const files = Array.from(e.clipboardData?.files ?? []);
+      if (files.length) { e.preventDefault(); void handleFiles(files); }
+    }
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.step, d.photos.length]);
+
   async function handleFiles(list: FileList | File[]) {
     const all = Array.from(list);
     const picked = all.filter((f) => f.type.startsWith("image/"));
@@ -401,6 +415,23 @@ export function PostWizard({ userId }: { userId: string }) {
     setUploading(null);
     if (failed > 1) notes.push(`${failed} photos didn't upload — the rest were added.`);
     setPhotoError(notes.length ? notes.join(" ") : null);
+  }
+
+  /** Q470 — removing a photo also deletes the object the student uploaded. */
+  function removePhoto(path: string) {
+    setD((p) => ({ ...p, photos: p.photos.filter((x) => x.path !== path) }));
+    void deleteListingPhoto(path);
+  }
+
+  /** Q470 — photo order IS the stored order; index 0 is the cover. */
+  function movePhoto(from: number, to: number) {
+    setD((p) => {
+      if (to < 0 || to >= p.photos.length || from === to) return p;
+      const next = [...p.photos];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return { ...p, photos: next };
+    });
   }
 
   function next() {
