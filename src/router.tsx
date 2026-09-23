@@ -11,7 +11,7 @@
  * - defaultPreloadStaleTime: 0 forces preloads to refetch fresh data; we
  *   rely on TanStack Query's own caching for dedupe.
  */
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, dehydrate, hydrate, type DehydratedState } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
@@ -23,6 +23,22 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Q471 — hand the server's query cache to the browser. Without this the
+    // client starts with an EMPTY cache, so the first client render of any
+    // query-backed text (the footer's campus links, counts, rails) differs
+    // from the server HTML and React throws #418 and re-renders the whole
+    // page, discarding our SSR output.
+    // TanStack types the dehydrated payload against a Serializable check that
+    // React Query's own DehydratedState (whose `data` is `unknown`) can never
+    // satisfy. The payload is serialized with seroval, which handles Map/Set/
+    // Date fine — the values here are plain query results and Maps.
+    // @ts-expect-error -- DehydratedState.data is `unknown`; serialization is safe.
+    dehydrate: () => ({
+      queryState: dehydrate(queryClient, { shouldDehydrateMutation: () => false }),
+    }),
+    hydrate: (dehydrated: { queryState: DehydratedState }) => {
+      hydrate(queryClient, dehydrated.queryState);
+    },
   });
 
   return router;
