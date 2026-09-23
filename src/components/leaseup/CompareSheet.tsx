@@ -2,6 +2,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Check, X, BedDouble, Bath, MapPin, Calendar, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ListingPhoto } from "./ListingPhoto";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 
 import { formatDay } from "@/lib/leaseup/dates";
@@ -63,11 +64,7 @@ export function CompareSheet({
                 return (
                   <div key={l.id} className="rounded-xl border bg-surface shadow-card">
                     <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl bg-muted">
-                      {photo ? (
-                        <img src={photo} alt={l.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="grid h-full w-full place-items-center text-4xl">🏠</div>
-                      )}
+                      <ListingPhoto src={photo} alt={l.title} size="md" className="h-full w-full object-cover" />
                       <button
                         onClick={() => onRemove(l.id)}
                         aria-label="Remove from compare"

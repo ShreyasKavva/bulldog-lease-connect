@@ -1,6 +1,7 @@
 import type { Listing } from "@/lib/leaseup/types";
 import { Scale, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ListingPhoto } from "./ListingPhoto";
 
 export function CompareBar({
   listings,
@@ -26,11 +27,7 @@ export function CompareBar({
                 className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-foreground bg-muted"
                 title={l.title}
               >
-                {photo ? (
-                  <img src={photo} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center text-base">🏠</div>
-                )}
+                <ListingPhoto src={photo} alt="" size="xs" className="h-full w-full object-cover" />
                 <button
                   onClick={() => onRemove(l.id)}
                   aria-label="Remove"

@@ -3,6 +3,7 @@
  */
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
+import { ListingPhoto } from "./ListingPhoto";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
 import { formatDateRange } from "@/lib/leaseup/dates";
@@ -43,16 +44,15 @@ export function ListingListRow({
       onKeyDown={(e) => { if (e.key === "Enter") onOpen?.(); }}
       className="relative mb-2 flex min-h-24 cursor-pointer overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:shadow-md sm:min-h-28"
     >
-      {photo ? (
-        <img
-          src={photo}
-          alt={listing?.title ?? "Listing photo"}
-          loading="lazy"
-          className="h-full w-36 shrink-0 object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-36 shrink-0 items-center justify-center bg-muted text-2xl">🏠</div>
-      )}
+      {/* Q482 — shared honest placeholder, also used when a photo fails to load. */}
+      <ListingPhoto
+        src={photo}
+        alt={listing?.title ?? "Listing photo"}
+        size="sm"
+        loading="lazy"
+        className="h-full w-36 shrink-0 object-cover"
+      />
+
 
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 py-2 pr-10">
         <Link

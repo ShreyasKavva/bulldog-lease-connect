@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Flame, Heart, Home } from "lucide-react";
+import { Flame, Heart } from "lucide-react";
+import { ListingPhoto } from "./ListingPhoto";
 import type { Listing } from "@/lib/leaseup/types";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -73,13 +74,8 @@ export function TrendingCarousel({
               className="group w-[220px] flex-none cursor-pointer snap-start overflow-hidden rounded-2xl bg-surface text-left shadow-card-md transition hover:-translate-y-0.5 hover:shadow-card-lg"
             >
               <div className="relative h-[200px] w-full overflow-hidden bg-muted">
-                {l.photo_urls?.[0] ? (
-                  <img src={l.photo_urls[0]} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" loading="lazy" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-muted dark:to-background">
-                    <Home className="h-7 w-7 text-gray-400" />
-                  </div>
-                )}
+                {/* Q482 — same honest placeholder everywhere; no stand-in photos. */}
+                <ListingPhoto src={l.photo_urls?.[0]} alt={l.title} size="md" className="h-full w-full object-cover transition group-hover:scale-105" loading="lazy" />
                 <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/80 px-2 py-1 text-[10px] font-bold text-white">
                   <Flame className="h-3 w-3 text-orange-400" /> Trending
                 </div>

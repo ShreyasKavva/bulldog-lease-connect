@@ -1,4 +1,5 @@
 import { formatDay } from "@/lib/leaseup/dates";
+import { ListingPhoto, ListingPhotoFallback } from "./ListingPhoto";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
@@ -300,9 +301,7 @@ export function ListingDetailSheet({
               ))}
             </div>
           ) : (
-            <div className="grid aspect-[16/10] w-full place-items-center bg-gradient-to-br from-primary/20 via-primary-light to-primary/10 text-7xl">
-              🏠
-            </div>
+            <ListingPhotoFallback size="lg" className="aspect-[16/10]" />
           )}
 
           {/* Photo X of Y counter */}
@@ -584,11 +583,7 @@ export function ListingDetailSheet({
                     onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
                     className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
                   >
-                    {l.photo_urls?.[0] ? (
-                      <SheetPhoto src={l.photo_urls[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-3xl">🏠</div>
-                    )}
+                    <SheetPhoto src={l.photo_urls?.[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-left">
                       <div className="text-sm font-bold text-white">${l.price.toLocaleString()}<span className="text-[10px] font-medium">/mo</span></div>
                       <div className="line-clamp-1 text-[10px] text-white/80">{l.beds}bd · {l.area ?? "Near campus"}</div>
@@ -689,11 +684,7 @@ export function ListingDetailSheet({
                     className="w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
                   >
                     <div className="h-28 w-full bg-muted">
-                      {l.photo_urls?.[0] ? (
-                        <SheetPhoto src={l.photo_urls[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
-                      ) : (
-                        <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
-                      )}
+                      <SheetPhoto src={l.photo_urls?.[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
                     </div>
                     <div className="p-2">
                       <div className="text-sm font-extrabold text-foreground">
@@ -829,20 +820,13 @@ export function ListingDetailSheet({
  * Q468 — a photo whose signed link has expired must never show the browser's
  * broken-image icon. Same neutral tile the full listing page uses (Q462).
  */
+/** Q482 — delegates to the shared honest placeholder on load failure. */
 function SheetPhoto({ src, alt, className, onClick, loading }: {
-  src: string; alt: string; className?: string;
+  src: string | null | undefined; alt: string; className?: string;
   onClick?: (e: React.MouseEvent) => void; loading?: "lazy" | "eager";
 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div onClick={onClick} className={cn("grid place-items-center bg-muted text-3xl", className)} aria-label={alt}>
-        🏠
-      </div>
-    );
-  }
   return (
-    <img src={src} alt={alt} loading={loading} onClick={onClick} onError={() => setFailed(true)} className={className} />
+    <ListingPhoto src={src} alt={alt} size="sm" loading={loading} onClick={onClick} className={className} />
   );
 }
 

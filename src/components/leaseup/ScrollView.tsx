@@ -31,6 +31,7 @@ function timeAgo(iso: string) {
 }
 
 import { formatDateRange } from "@/lib/leaseup/dates";
+import { ListingPhoto } from "./ListingPhoto";
 
 export function ScrollView({
   listings,
@@ -256,17 +257,14 @@ function ScrollCard({
         onClick={handlePhotoTap}
         {...picker.bind}
       >
-        {photo ? (
-          <img
-            key={photo}
-            src={photo}
-            alt={l.title}
-            className="absolute inset-0 h-full w-full animate-[lu-card-pop_400ms_ease-out] object-cover"
-            loading={eager ? "eager" : "lazy"}
-          />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/40 to-primary-dark/60 text-7xl">🏠</div>
-        )}
+        <ListingPhoto
+          key={photo}
+          src={photo}
+          alt={l.title}
+          size="lg"
+          className="absolute inset-0 h-full w-full animate-[lu-card-pop_400ms_ease-out] object-cover"
+          loading={eager ? "eager" : "lazy"}
+        />
         {picker.overlay}
       </div>
 

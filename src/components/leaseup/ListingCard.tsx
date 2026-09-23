@@ -8,7 +8,8 @@ import { Link } from "@tanstack/react-router";
  * lister's name when their email is verified.
  */
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, Check, ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ListingPhotoFallback } from "./ListingPhoto";
 import { postedAgo } from "@/lib/leaseup/constants";
 import { CardPriceBadge } from "./PriceBadge";
 import { posterName } from "@/lib/leaseup/display-name";
@@ -296,10 +297,8 @@ export function ListingCard({
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-muted dark:to-background">
-            <Home className="h-5 w-5 text-gray-400 dark:text-muted-foreground/60" aria-hidden />
-            <span className="text-xs font-medium text-gray-500 dark:text-muted-foreground">No photos yet</span>
-          </div>
+          /* Q482 — shared honest placeholder; never a stand-in photo of another home. */
+          <ListingPhotoFallback size="md" />
         )}
 
         {/* Preload only the adjacent photos */}
