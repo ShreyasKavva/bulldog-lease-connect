@@ -943,21 +943,27 @@ function Browse() {
                 <>
                   {/* Q180 — hidden-by-filters recovery, never a dead end.
                       Q282 — name the single most-restrictive filter and offer
-                      a one-tap relax that keeps every other filter. */}
+                      a one-tap relax that keeps every other filter.
+                      Q446 — honest fallback when no single filter is the
+                      culprit, and a mobile-safe stacked action list. */}
                   {relaxOptions.length > 0 ? (
                     <>
-                      <h3 className="mt-5 max-w-lg text-xl font-semibold">
+                      <h3 className="mt-5 max-w-lg text-lg font-semibold sm:text-xl">
                         {relaxOptions[0].heading}.
                       </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                         That filter is ruling out the most listings. Remove it, or relax a different one:
                       </p>
-                      <div className="mt-6 flex flex-col items-center gap-2">
-                        {relaxOptions.map((opt) => (
+                      <div className="mt-6 flex w-full max-w-xs flex-col items-stretch gap-2">
+                        {relaxOptions.map((opt, i) => (
                           <button
                             key={opt.key}
                             onClick={() => relaxOption(opt)}
-                            className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                            className={
+                              i === 0
+                                ? "w-full rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                                : "w-full rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                            }
                           >
                             {opt.button} — show {opt.count}
                           </button>
@@ -965,26 +971,69 @@ function Browse() {
                       </div>
                     </>
                   ) : (
-                    <h3 className="mt-5 max-w-lg text-xl font-semibold">
-                      No listings with these filters
-                    </h3>
+                    <>
+                      <h3 className="mt-5 max-w-lg text-lg font-semibold sm:text-xl">
+                        Nothing matches all of these filters at once
+                      </h3>
+                      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                        Removing any single one still comes up empty, so this search needs a wider net.
+                      </p>
+                      <button
+                        onClick={clearFilters}
+                        className="mt-6 w-full max-w-xs rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                      >
+                        Start over with no filters
+                      </button>
+                    </>
+                  )}
+                  {relaxOptions.length > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
+                </>
+              ) : campusId ? (
+                <>
+                  {/* Q446 — the campus, not a filter, is why this is empty. */}
+                  <h3 className="mt-5 max-w-lg text-lg font-semibold sm:text-xl">
+                    No live subleases at {campusLabel} yet
+                  </h3>
+                  <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                    {anywhereCount > 0
+                      ? "Your filters are fine — this campus just has nothing posted right now."
+                      : "Nobody has posted here yet. Be the first, or look at other campuses."}
+                  </p>
+                  {anywhereCount > 0 && (
+                    <button
+                      onClick={() => patchSearch({ campus: undefined })}
+                      className="mt-6 w-full max-w-xs rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                    >
+                      Search all campuses — show {anywhereCount}
+                    </button>
                   )}
                   <button
                     onClick={clearFilters}
-                    className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    className={
+                      anywhereCount > 0
+                        ? "mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                        : "mt-6 w-full max-w-xs rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+                    }
                   >
                     Clear all filters
                   </button>
                 </>
               ) : (
                 <>
-                  <h3 className="mt-5 text-xl font-semibold">No subleases match your filters</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <h3 className="mt-5 text-lg font-semibold sm:text-xl">No subleases match your filters</h3>
+                  <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                     Try adjusting your dates, size, or price range
                   </p>
                   <button
                     onClick={clearFilters}
-                    className="mt-6 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+                    className="mt-6 w-full max-w-xs rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
                   >
                     Clear all filters
                   </button>
