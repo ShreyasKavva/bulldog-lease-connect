@@ -21,18 +21,38 @@ import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection"
 import { termPresets, isQuarterSystem } from "@/lib/leaseup/academic-calendar";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
-const DRAFT_KEY = "leaseup-post-draft";
-/** Q181 — remembers which draft id the user waved off, so it never nags again. */
-const DISMISSED_KEY = "leaseup-post-draft-dismissed";
+/**
+ * Q451 — drafts are scoped per signed-in user so two students sharing a laptop
+ * never see each other's half-written listing. The old shared keys are cleared
+ * on mount. Every storage touch is SSR-guarded and wrapped in try/catch.
+ */
+const LEGACY_DRAFT_KEY = "leaseup-post-draft";
+const LEGACY_DISMISSED_KEY = "leaseup-post-draft-dismissed";
+const draftKey = (userId: string) => `leaseup-post-draft:${userId}`;
+const dismissedKey = (userId: string) => `leaseup-post-draft-dismissed:${userId}`;
 
-function draftId() {
+function lsGet(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function lsSet(key: string, value: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(key, value); } catch { /* quota / private mode */ }
+}
+function lsRemove(key: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(key); } catch { /* noop */ }
+}
+
+function draftId(userId: string) {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
+    const raw = lsGet(draftKey(userId));
     const parsed = raw ? JSON.parse(raw) : null;
     if (parsed?.draftId) return parsed.draftId as string;
   } catch { /* noop */ }
   return `d${Date.now()}`;
 }
+
 const MAX_PHOTOS = 10;
 /** Q447 — client-side guards so bad input never reaches the database. */
 const MAX_PHOTO_MB = 10;
