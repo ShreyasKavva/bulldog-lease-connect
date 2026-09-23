@@ -151,7 +151,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         queryFn: fetchCampusListingCounts,
       }),
     ]),
-  head: () => ({
+  // Q450 — the catch-all 404 (unmatched URL, handled by notFoundComponent
+  // below) has no head of its own, so it inherited this root title and no
+  // robots directive. The router flags the root match with globalNotFound
+  // before head() runs on both SSR and client, so append the 404 title and
+  // noindex only for that case. Every other entry is unchanged.
+  head: ({ matches }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
