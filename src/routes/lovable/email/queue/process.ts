@@ -1,6 +1,7 @@
 import { sendLovableEmail } from '@lovable.dev/email-js'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
+import { classifyEmailFailure, logEmailFailure } from '@/lib/email/observability'
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -69,7 +70,17 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
         if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
-          console.error('Missing required environment variables')
+          logEmailFailure({
+            stage: 'queue-process:config',
+            template: null,
+            cause: 'never_attempted',
+            detail: 'missing LOVABLE_API_KEY / SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY',
+            extra: {
+              has_api_key: Boolean(apiKey),
+              has_supabase_url: Boolean(supabaseUrl),
+              has_service_key: Boolean(supabaseServiceKey),
+            },
+          })
           return Response.json(
             { error: 'Server configuration error' },
             { status: 500 }
@@ -258,12 +269,20 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
               totalProcessed++
             } catch (error) {
               const errorMsg = error instanceof Error ? error.message : String(error)
-              console.error('Email send failed', {
-                queue,
-                msg_id: msg.msg_id,
-                read_ct: msg.read_ct,
-                failed_attempts: failedAttempts,
-                error: errorMsg,
+              logEmailFailure({
+                stage: 'queue-process:send',
+                template: (payload.label as string) || queue,
+                recipient: payload.to as string,
+                cause: classifyEmailFailure(error),
+                detail: errorMsg,
+                extra: {
+                  queue,
+                  msg_id: msg.msg_id,
+                  message_id: payload.message_id ?? null,
+                  read_ct: msg.read_ct,
+                  failed_attempts: failedAttempts,
+                  sender_domain: payload.sender_domain ?? null,
+                },
               })
 
               if (isRateLimited(error)) {
