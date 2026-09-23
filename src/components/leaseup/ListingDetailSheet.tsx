@@ -104,10 +104,6 @@ export function ListingDetailSheet({
   /** Q397/Q402 — capture the tab title that was in effect the moment the sheet
    *  opens and restore exactly that value both during cleanup and explicitly
    *  after the sheet transitions closed. */
-  /** Q468 — read inside the history effect without re-running it per listing. */
-  const listingIdRef = useRef<string | null>(null);
-  listingIdRef.current = listing?.id ?? null;
-
   const prevTitleRef = useRef<string | null>(null);
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -186,11 +182,11 @@ export function ListingDetailSheet({
   useEffect(() => {
     if (typeof window === "undefined" || !open) return;
     const openedAt = window.location.href;
-    // Q468 — the throwaway entry now carries the listing's own URL, so the
-    // address bar shows something shareable while the slide-out is open.
-    // Back pops it and restores /browse with its filters and scroll intact.
-    const sheetUrl = listingIdRef.current ? `/listing/${listingIdRef.current}` : undefined;
-    window.history.pushState({ ...(window.history.state ?? {}), luListingSheet: true }, "", sheetUrl);
+    // Q468 — deliberately URL-less. TanStack Router patches window.history, so
+    // pushing a real /listing/<id> URL here makes the router navigate to the
+    // full page and throws the visitor off /browse. The shareable URL lives on
+    // the "View full page →" link and the copy-link button instead.
+    window.history.pushState({ ...(window.history.state ?? {}), luListingSheet: true }, "");
     const onPop = () => onOpenChange(false);
     window.addEventListener("popstate", onPop);
     return () => {
