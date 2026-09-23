@@ -515,9 +515,10 @@ export function BrowseMapView({
           background:rgba(255,255,255,.92) !important; border-radius:9999px !important;
           padding:2px 10px !important; margin:6px !important; box-shadow:none !important; }
         .leaflet-control-attribution a { color:#4b5563 !important; text-decoration:underline; }
-        /* Clear the fixed mobile bottom nav and the "Show N subleases" pill. */
+        /* Q503 — sit above the "Show N subleases" pill, which itself clears
+           the tab bar: pill bottom 4rem+safe+0.75rem (76px) + 44px tall + 8px gap. */
         @media (max-width: 767px) {
-          .leaflet-control-attribution { margin:0 6px 84px 6px !important; }
+          .leaflet-control-attribution { margin:0 6px calc(128px + env(safe-area-inset-bottom)) 6px !important; }
         }
       `}</style>
 
