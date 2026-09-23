@@ -61,7 +61,12 @@ export function SmartSections({
     {
       key: "soon",
       title: `Available this month${at}`,
-      seeAll: { ...seeAllCampus, from: isoDaysFromNow(31) },
+      // Q486 — the link must describe the window the rail's query actually
+      // shows: available from today through today+31 (the same isoDaysFromNow
+      // value the query's availableBefore uses). Was `from: +31`, which made
+      // "See all" a start-date-31-days-out search and pulled in listings the
+      // rail excludes.
+      seeAll: { ...seeAllCampus, from: isoDaysFromNow(0), to: isoDaysFromNow(31) },
       query: {
         ...scope,
         availableBefore: isoDaysFromNow(31),
