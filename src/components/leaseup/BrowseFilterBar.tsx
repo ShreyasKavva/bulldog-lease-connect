@@ -609,7 +609,9 @@ export function BrowseFilterBar({
             </button>
           </div>
 
-          {!isLoading && (
+          {/* Q476 — never show a bare "0 subleases"; the empty state below
+              names the filter and offers the way out instead. */}
+          {!isLoading && resultCount > 0 && (
             <span className="hidden shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:block">
               {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
             </span>
