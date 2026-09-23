@@ -13,6 +13,7 @@
  * per-listing analytics (my-listings.$listingId.analytics.tsx).
  */
 import { formatDay } from "@/lib/leaseup/dates";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -207,7 +208,7 @@ function MyListingsPage() {
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
       toast.success(l.is_active ? "Hidden from feed" : "Live on feed");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   async function remove(l: Listing) {
@@ -217,7 +218,7 @@ function MyListingsPage() {
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Deleted");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   async function markFilled(l: Listing) {
@@ -245,7 +246,7 @@ function MyListingsPage() {
         const name = prof?.name ?? "your subletter";
         setReviewFor({ listing: l, userId: otherId, name });
       }
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   async function reopen(l: Listing) {
@@ -254,7 +255,7 @@ function MyListingsPage() {
       qc.invalidateQueries({ queryKey: ["my-listings", user!.id] });
       qc.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Listing reopened");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   function relist(l: Listing) {
@@ -270,7 +271,7 @@ function MyListingsPage() {
       toast.success("Reposted — update the dates and save.");
       navigate({ to: "/listing/$id/edit", params: { id: newId } });
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't repost that listing");
+      toast.error(friendlyError(e, "Couldn't repost that listing"));
     } finally {
       setReposting(null);
     }
@@ -660,7 +661,7 @@ function RenewalNudge({
       setOpen(false);
       onExtended();
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't extend that listing");
+      toast.error(friendlyError(e, "Couldn't extend that listing"));
     } finally {
       setSaving(false);
     }
@@ -743,7 +744,7 @@ function BumpButton({ listing }: { listing: Listing }) {
       setLast(now);
       toast.success("⬆️ Listing bumped to top!");
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't bump that listing");
+      toast.error(friendlyError(e, "Couldn't bump that listing"));
     } finally {
       setBusy(false);
     }

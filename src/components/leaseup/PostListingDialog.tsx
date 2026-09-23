@@ -20,6 +20,7 @@
  * upload photos as storage paths → insert listing row (RLS scopes user_id).
  */
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -369,7 +370,7 @@ export function PostListingDialog({ open, onOpenChange, relistFrom, editListingI
       await doPublish();
     } catch (e: any) {
       console.error("[PostListingDialog] insert failed:", e);
-      toast.error(e?.message || e?.error_description || e?.hint || "Failed to post listing");
+      toast.error(friendlyError(e, "Failed to post listing"));
     } finally {
       setSubmitting(false);
     }

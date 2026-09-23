@@ -1,4 +1,5 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,7 +107,7 @@ export function ProfileSheet({
     };
     if (campusTouched) payload.campus_id = campus?.id ?? null;
     const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Profile updated");
     qc.invalidateQueries({ queryKey: ["profile"] });
     qc.invalidateQueries({ queryKey: ["public-profile"] });
@@ -133,7 +134,7 @@ export function ProfileSheet({
       qc.invalidateQueries({ queryKey: ["profile"] });
       qc.invalidateQueries({ queryKey: ["public-profile"] });
     } catch (e: any) {
-      toast.error(e?.message ?? "Upload failed");
+      toast.error(friendlyError(e, "Upload failed"));
     } finally {
       setUploading(false);
     }

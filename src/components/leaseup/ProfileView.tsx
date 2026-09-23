@@ -3,6 +3,7 @@
  * Reads via public.get_public_profile RPC so it works for any viewer.
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -174,7 +175,7 @@ export function ProfileView({ userId }: { userId: string }) {
       qc.invalidateQueries({ queryKey: ["public-profile", userId] });
       qc.invalidateQueries({ queryKey: ["profile", userId] });
     } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
+      toast.error(friendlyError(e, "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -189,7 +190,7 @@ export function ProfileView({ userId }: { userId: string }) {
   async function handleConnect() {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } as any }); return; }
     const { error } = await supabase.from("roommate_interests").insert({ from_user_id: user.id, to_user_id: userId, status: "pending" });
-    if (error && !error.message.includes("duplicate")) { toast.error(error.message); return; }
+    if (error && !error.message.includes("duplicate")) { toast.error(friendlyError(error)); return; }
     toast.success("Connection request sent!");
   }
 
@@ -571,7 +572,7 @@ function RelistDialog({ listing, onClose }: { listing: any; onClose: () => void 
       qc.invalidateQueries();
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not relist");
+      toast.error(friendlyError(err, "Could not relist"));
     } finally {
       setBusy(false);
     }

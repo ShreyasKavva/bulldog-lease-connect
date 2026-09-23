@@ -6,6 +6,7 @@
  * `openQuickInquiry(listing)`.
  */
 import { useEffect, useMemo, useState } from "react";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -82,7 +83,7 @@ export function QuickInquiryModal() {
       toast.success("Message sent");
       setListing(null);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't send message");
+      toast.error(friendlyError(e, "Couldn't send message"));
     } finally {
       setBusy(false);
     }

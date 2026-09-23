@@ -11,6 +11,7 @@
  * intent (?post / ?message / ?save) is replayed by the effects below.
  */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -181,7 +182,7 @@ function Home() {
       setActiveConv(id);
       setMessagesOpen(true);
       setSelected(null);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   const toggleSave = useToggleSave(user?.id);

@@ -21,6 +21,7 @@
  * a banner inside the thread. It does NOT block messages.
  */
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { haptic } from "@/lib/leaseup/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -263,7 +264,7 @@ export function MessagesSheet({
       qc.invalidateQueries({ queryKey: ["messages", active.id] });
       qc.invalidateQueries({ queryKey: ["conversations", user.id] });
     } catch (e: any) {
-      toast.error(e?.message || "Upload failed");
+      toast.error(friendlyError(e, "Upload failed"));
     } finally {
       setUploading(false);
       setAttachMenuOpen(false);
@@ -685,7 +686,7 @@ function ConversationActionsSheet({
       await setConversationFlag(conv, userId, flag, value);
       if (flag === "deleted" && value) { onDeleted(); toast.success("Conversation hidden"); }
       else onAny();
-    } catch (e: any) { toast.error(e?.message || "Failed"); }
+    } catch (e: any) { toast.error(friendlyError(e, "Failed")); }
     onClose();
   }
 
@@ -699,7 +700,7 @@ function ConversationActionsSheet({
         toast.message("Open the listing to file a detailed report.");
       }
     } catch (e: any) {
-      toast.error(e?.message || "Failed to report");
+      toast.error(friendlyError(e, "Failed to report"));
     }
     onClose();
   }

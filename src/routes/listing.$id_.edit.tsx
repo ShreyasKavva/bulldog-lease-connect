@@ -5,6 +5,7 @@
  * the existing row. Ownership is checked client-side (and enforced by RLS).
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ImagePlus, Loader2, Minus, Plus, X } from "lucide-react";
@@ -192,7 +193,7 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
       const paths = await uploadListingPhotos(userId, arr, (done, total) => setUploading({ done, total }));
       set({ photos: [...form.photos, ...paths] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Photo upload failed");
+      toast.error(friendlyError(e, "Photo upload failed"));
     } finally {
       setUploading(null);
       if (fileRef.current) fileRef.current.value = "";

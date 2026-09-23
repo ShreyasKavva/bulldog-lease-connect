@@ -9,6 +9,7 @@
  * deposit, tour booking, report) stay in the slide-in sheet.
  */
 import { formatDateRange as sharedRange, formatDay, toDate } from "@/lib/leaseup/dates";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { createFileRoute, Link, useNavigate, useRouter, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
@@ -381,7 +382,7 @@ function ListingDetailPage() {
     try {
       const convId = await getOrCreateConversation(user.id, otherId, listing.id);
       navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
-    } catch (e: any) { toast.error(e.message ?? "Could not open conversation"); }
+    } catch (e: any) { toast.error(friendlyError(e, "Could not open conversation")); }
   }
   const [viewCount, setViewCount] = useState<number>(listing.view_count ?? 0);
 
@@ -513,7 +514,7 @@ function ListingDetailPage() {
       const convId = await getOrCreateConversation(user.id, listing.user_id, listing.id);
       navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't open the conversation");
+      toast.error(friendlyError(e, "Couldn't open the conversation"));
     } finally {
       setMessaging(false);
     }
@@ -738,7 +739,7 @@ function ListingDetailPage() {
                         setBumpOpen(false);
                         qc.invalidateQueries({ queryKey: ["listings"] });
                       } catch (e: any) {
-                        toast.error(e?.message ?? "Could not bump listing");
+                        toast.error(friendlyError(e, "Could not bump listing"));
                       } finally {
                         setBumping(false);
                       }
@@ -1714,7 +1715,7 @@ function MarkAsRentedButton({ listingId }: { listingId: string }) {
         navigate({ to: "/profile" });
       }
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't mark as rented");
+      toast.error(friendlyError(e, "Couldn't mark as rented"));
     } finally {
       setBusy(false);
     }
