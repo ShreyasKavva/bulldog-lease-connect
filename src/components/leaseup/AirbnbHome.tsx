@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCampusListingCounts, publicLocationLabel } from "@/lib/leaseup/queries";
+import { fetchCampusListingCounts, publicLocationLabel, PUBLIC_LISTING_COLUMNS } from "@/lib/leaseup/queries";
 import { campusShortName } from "@/lib/leaseup/campus-name";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
@@ -1187,7 +1187,7 @@ function NewThisWeekSection({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("listings")
-        .select("*")
+        .select(PUBLIC_LISTING_COLUMNS)
         .eq("campus_id", lastCampus!.id)
         .eq("is_active", true)
         .eq("status", "active")
@@ -1265,7 +1265,7 @@ function RecentlyViewedSection({
     enabled: recentIds.length >= RECENT_RAIL_MIN,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("listings").select("*").in("id", recentIds);
+      const { data, error } = await supabase.from("listings").select(PUBLIC_LISTING_COLUMNS).in("id", recentIds);
       if (error) throw error;
       const rows = await publicLocationLabel((data ?? []) as unknown as Listing[]);
       // Preserve newest-first order from localStorage.

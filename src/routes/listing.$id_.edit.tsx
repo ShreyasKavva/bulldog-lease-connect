@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ImagePlus, Loader2, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { looksLikeStreetAddress, AREA_ADDRESS_ERROR } from "@/lib/leaseup/area";
 import { signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
@@ -205,6 +206,8 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
     if (!form.campusId) { toast.error("Pick a campus"); return; }
     const price = parseInt(form.price, 10);
     if (!Number.isFinite(price) || price <= 0) { toast.error("Enter a monthly rent"); return; }
+    // Q454 — neighborhood only; `area` is visible to anyone browsing.
+    if (looksLikeStreetAddress(form.area)) { toast.error(AREA_ADDRESS_ERROR); return; }
 
     setSaving(true);
     const a = new Set(form.amenities);
@@ -327,6 +330,12 @@ function EditForm({ listingId, listing, userId }: { listingId: string; listing: 
                 placeholder="e.g. Five Points"
                 className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground"
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Neighborhood only — not your street address.
+              </p>
+              {looksLikeStreetAddress(form.area) && (
+                <p className="mt-1 text-xs text-red-600">{AREA_ADDRESS_ERROR}</p>
+              )}
             </Field>
           </div>
 

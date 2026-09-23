@@ -21,6 +21,20 @@ import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSear
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
+/**
+ * Q454 — the column list every NON-OWNER listing read must use.
+ *
+ * `select("*")` ships `address`, `lat`, `lng` and the free-text `area` (which
+ * posters routinely fill with a real street address) to whoever asked,
+ * including anonymous callers. Those four columns are deliberately absent
+ * here; the public label comes from publicLocationLabel() instead. Owner-only
+ * reads (fetchMyListings, the edit form, the legacy prefill) keep "*".
+ *
+ * Keep in sync with the `listings` row type when a new column is added.
+ */
+export const PUBLIC_LISTING_COLUMNS =
+  "id,user_id,campus_id,title,description,type,price,beds,baths,furnished,utilities_included,pet_friendly,parking,wifi_included,laundry,amenities,photos,available_from,available_to,semester,status,is_active,is_featured,featured_until,pending_review,verification_tier,flagged,safe_score,view_count,views,saves_count,share_count,created_at,updated_at,sort_at,bumped_at,filled_at,filled_via_lease_up,roommate_prefs,display_name,deposit_amount,deposit_escrow_enabled" as const;
+
 async function attachSignedUrls(
   listings: Listing[],
   opts?: { fullSize?: boolean },
@@ -89,7 +103,7 @@ export async function fetchListings(): Promise<Listing[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_LISTING_COLUMNS)
     .eq("is_active", true)
     .eq("status", "active")
     .or(`available_to.is.null,available_to.gte.${today}`)
@@ -102,7 +116,7 @@ export async function fetchListings(): Promise<Listing[]> {
 
 
 export async function fetchListing(id: string): Promise<Listing | null> {
-  const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("listings").select(PUBLIC_LISTING_COLUMNS).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const [withProfile] = await attachProfiles([data]);
@@ -274,7 +288,7 @@ async function enrichConversations(userId: string, visible: Conversation[]): Pro
   const [{ data: profs }, { data: lists }, { data: lookingRows }] = await Promise.all([
     otherIds.length ? supabase.from("profiles_public").select("*").in("id", otherIds) : Promise.resolve({ data: [] as any }),
     listingIds.length
-      ? supabase.from("listings").select("id,title,price,beds,area,available_from,available_to,is_active,status,photos,user_id,display_name").in("id", listingIds)
+      ? supabase.from("listings").select("id,title,price,beds,campus_id,available_from,available_to,is_active,status,photos,user_id,display_name").in("id", listingIds)
       : Promise.resolve({ data: [] as any }),
     postIds.length
       ? supabase
@@ -290,12 +304,15 @@ async function enrichConversations(userId: string, visible: Conversation[]): Pro
     ]),
   );
   // Sign first photo of each listing (absolute URLs pass through untouched)
-  const firstPaths = (lists ?? [])
+  // Q454 — the thread header shows the listing to the OTHER participant, so
+  // the location text is the campus label, never the poster's raw `area`.
+  const listsPublic = await publicLocationLabel((lists ?? []) as any[]);
+  const firstPaths = (listsPublic)
     .map((l: any) => (l.photos && l.photos[0]) || null)
     .filter((p: string | null): p is string => !!p && !/^https?:\/\//.test(p));
   const signedMap = await signPaths("listing-photos", firstPaths, { ttl: SIGNED_URL_TTL });
   const pMap = new Map<string, Profile>((profs ?? []).map((p: any) => [p.id, p]));
-  const lMap = new Map<string, any>((lists ?? []).map((l: any) => {
+  const lMap = new Map<string, any>(listsPublic.map((l: any) => {
     const first = l.photos && l.photos[0];
     const photo_url = first ? (/^https?:\/\//.test(first) ? first : signedMap.get(first) ?? null) : null;
     return [l.id, { ...l, photo_url }];
@@ -466,12 +483,14 @@ export async function sendMessage(conversationId: string, senderId: string, reci
       }),
       supabase.from("profiles_public").select("name").eq("id", senderId).maybeSingle(),
       listingId
-        ? supabase.from("listings").select("title,price,area").eq("id", listingId).maybeSingle()
+        ? supabase.from("listings").select("title,price,campus_id").eq("id", listingId).maybeSingle()
         : Promise.resolve({ data: null } as any),
     ]);
     if (recipientEmail) {
       const origin = typeof window !== "undefined" ? window.location.origin : "https://leasup.co";
-      const listing = (listingRes as any)?.data ?? null;
+      const rawListing = (listingRes as any)?.data ?? null;
+      // Q454 — the notification goes to the other participant: campus label only.
+      const listing = rawListing ? (await publicLocationLabel([rawListing]))[0] : null;
       const replyUrl = `${origin}/messages/${conversationId}`;
       void sendTransactionalEmail({
         templateName: "new-message",
@@ -667,7 +686,7 @@ export async function toggleLookingForInterest(userId: string, requestId: string
 }
 
 export async function fetchMatchingListingsForPost(post: LookingForPost): Promise<Listing[]> {
-  let q = supabase.from("listings").select("*").eq("is_active", true);
+  let q = supabase.from("listings").select(PUBLIC_LISTING_COLUMNS).eq("is_active", true);
   if (post.campus_id) q = q.eq("campus_id", post.campus_id);
   if (post.budget_max) q = q.lte("price", post.budget_max);
   if (post.beds_min) q = q.gte("beds", post.beds_min);
@@ -685,7 +704,7 @@ export async function fetchSavedListings(userId: string): Promise<Listing[]> {
   const ids = (rows ?? []).map((r: any) => r.listing_id);
   if (ids.length === 0) return [];
   const { data, error } = await supabase
-    .from("listings").select("*")
+    .from("listings").select(PUBLIC_LISTING_COLUMNS)
     .in("id", ids).eq("is_active", true)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -697,7 +716,7 @@ export async function fetchSavedListings(userId: string): Promise<Listing[]> {
 export async function fetchListingsByIds(ids: string[]): Promise<Listing[]> {
   if (ids.length === 0) return [];
   const { data, error } = await supabase
-    .from("listings").select("*")
+    .from("listings").select(PUBLIC_LISTING_COLUMNS)
     .in("id", ids)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -723,7 +742,7 @@ export async function fetchCuratedListings(opts: {
 }): Promise<Listing[]> {
   const today = new Date().toISOString().slice(0, 10);
   let q = supabase
-    .from("listings").select("*")
+    .from("listings").select(PUBLIC_LISTING_COLUMNS)
     .eq("is_active", true)
     .eq("status", "active")
     // Q175 — never surface a listing whose availability window already ended.

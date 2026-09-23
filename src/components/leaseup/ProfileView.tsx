@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
 import { fetchUserReviews, computeReviewStats } from "@/lib/leaseup/reviews.queries";
-import { getOrCreateConversation, publicLocationLabel } from "@/lib/leaseup/queries";
+import { getOrCreateConversation, publicLocationLabel, PUBLIC_LISTING_COLUMNS } from "@/lib/leaseup/queries";
 import { fetchMyRoommateProfile } from "@/lib/leaseup/roommates";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { ProfileSheet } from "@/components/leaseup/ProfileSheet";
@@ -83,7 +83,8 @@ async function fetchPublicProfile(userId: string): Promise<PublicProfile | null>
 }
 
 async function fetchUserListings(userId: string, activeOnly: boolean) {
-  let q = supabase.from("listings").select("*").eq("user_id", userId)
+  // Q454 — non-owner view (activeOnly) never selects area/address/lat/lng.
+  let q: any = supabase.from("listings").select(activeOnly ? PUBLIC_LISTING_COLUMNS : "*").eq("user_id", userId)
     .order("is_featured", { ascending: false }).order("created_at", { ascending: false });
   if (activeOnly) q = q.eq("is_active", true);
   const { data, error } = await q;

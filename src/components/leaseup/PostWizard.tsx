@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { looksLikeStreetAddress, AREA_ADDRESS_ERROR } from "@/lib/leaseup/area";
 import { signPath } from "@/lib/leaseup/signed-urls";
 import { fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { CampusAutocomplete } from "@/components/leaseup/CampusAutocomplete";
@@ -404,6 +405,8 @@ export function PostWizard({ userId }: { userId: string }) {
     if (!Number.isFinite(from) || !Number.isFinite(to)) return setError("Check your available dates");
     if (to < from) return setError("Your end date is before your start date — swap them around");
     if (to < Date.now() - 86400000) return setError("Those dates are already in the past — pick dates students can still move in on");
+    // Q454 — `area` is public; a street address here is a safety problem.
+    if (looksLikeStreetAddress(d.area)) return setError(AREA_ADDRESS_ERROR);
     setError(null);
     set({ step: 2 });
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
@@ -756,14 +759,20 @@ export function PostWizard({ userId }: { userId: string }) {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">Address or neighborhood</label>
+                <label className="mb-1 block text-sm font-medium">Neighborhood</label>
                 <input
                   className={inputCls()}
                   maxLength={120}
                   value={d.area}
                   onChange={(e) => set({ area: e.target.value })}
-                  placeholder="e.g. 120 W 21st St or West Campus"
+                  placeholder="e.g. West Campus or Five Points"
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Neighborhood only — not your street address. Renters see this before you've met them.
+                </p>
+                {looksLikeStreetAddress(d.area) && (
+                  <p className="mt-1 text-xs text-red-600">{AREA_ADDRESS_ERROR}</p>
+                )}
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}
