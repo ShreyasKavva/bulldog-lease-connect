@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Flame, Heart, Home } from "lucide-react";
+import { Flame, Heart } from "lucide-react";
+import { ListingPhoto } from "./ListingPhoto";
 import type { Listing } from "@/lib/leaseup/types";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/leaseup/use-session";
