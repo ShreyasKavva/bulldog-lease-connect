@@ -21,18 +21,38 @@ import { RoommatePrefsSection } from "@/components/leaseup/RoommatePrefsSection"
 import { termPresets, isQuarterSystem } from "@/lib/leaseup/academic-calendar";
 import { hasRoommatePrefs, type RoommatePrefs } from "@/lib/leaseup/roommate-prefs";
 
-const DRAFT_KEY = "leaseup-post-draft";
-/** Q181 — remembers which draft id the user waved off, so it never nags again. */
-const DISMISSED_KEY = "leaseup-post-draft-dismissed";
+/**
+ * Q451 — drafts are scoped per signed-in user so two students sharing a laptop
+ * never see each other's half-written listing. The old shared keys are cleared
+ * on mount. Every storage touch is SSR-guarded and wrapped in try/catch.
+ */
+const LEGACY_DRAFT_KEY = "leaseup-post-draft";
+const LEGACY_DISMISSED_KEY = "leaseup-post-draft-dismissed";
+const draftKey = (userId: string) => `leaseup-post-draft:${userId}`;
+const dismissedKey = (userId: string) => `leaseup-post-draft-dismissed:${userId}`;
 
-function draftId() {
+function lsGet(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function lsSet(key: string, value: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(key, value); } catch { /* quota / private mode */ }
+}
+function lsRemove(key: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(key); } catch { /* noop */ }
+}
+
+function draftId(userId: string) {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
+    const raw = lsGet(draftKey(userId));
     const parsed = raw ? JSON.parse(raw) : null;
     if (parsed?.draftId) return parsed.draftId as string;
   } catch { /* noop */ }
   return `d${Date.now()}`;
 }
+
 const MAX_PHOTOS = 10;
 /** Q447 — client-side guards so bad input never reaches the database. */
 const MAX_PHOTO_MB = 10;
@@ -261,16 +281,34 @@ export function PostWizard({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [urlOk, setUrlOk] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  /** Q451 — in-flight guard: state updates are async, a ref is not. */
+  const publishingRef = useRef(false);
+
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
   const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number; draftId?: string } | null>(null);
+  // Q451 — confirmation bar after a restore, plus a "re-add your photos" note.
+  const [restored, setRestored] = useState<{ hadPhotos: boolean } | null>(null);
+  // Q451 — the session died before the insert; keep the form, ask them to sign in.
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
 
+  const saveDraftNow = () => {
+    const cur = draftRef.current;
+    lsSet(
+      draftKey(userId),
+      JSON.stringify({ ...cur, photos: [], draftId: draftId(userId), savedAt: Date.now() }),
+    );
+  };
+
   useEffect(() => {
     fetchCampuses().then(setCampuses).catch(() => setCampuses([]));
+    // Q451 — retire the account-agnostic keys so a draft can't cross accounts.
+    lsRemove(LEGACY_DRAFT_KEY);
+    lsRemove(LEGACY_DISMISSED_KEY);
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const raw = lsGet(draftKey(userId));
       if (raw) {
         const parsed = JSON.parse(raw) as Draft & { savedAt?: number; draftId?: string };
         const savedAt = typeof parsed?.savedAt === "number" ? parsed.savedAt : 0;
@@ -280,17 +318,17 @@ export function PostWizard({ userId }: { userId: string }) {
         const datesPast =
           !!parsed?.availableTo && new Date(parsed.availableTo).getTime() < Date.now();
         const dismissed =
-          !!parsed?.draftId && localStorage.getItem(DISMISSED_KEY) === parsed.draftId;
+          !!parsed?.draftId && lsGet(dismissedKey(userId)) === parsed.draftId;
         if (fresh && meaningful && !datesPast && !dismissed) {
           setRecovered({ draft: { ...EMPTY, ...parsed, step: 1 }, savedAt, draftId: parsed.draftId });
         } else if (!dismissed) {
-          localStorage.removeItem(DRAFT_KEY);
+          lsRemove(draftKey(userId));
         }
       }
     } catch { /* ignore bad draft */ }
     // Always start fresh at step 1 on mount (SPA navigation keeps state otherwise).
     setD((p) => ({ ...p, step: 1 }));
-  }, []);
+  }, [userId]);
 
   // Keep the newest form state for the interval / unload writers.
   const draftRef = useRef(d);
@@ -305,9 +343,7 @@ export function PostWizard({ userId }: { userId: string }) {
       const cur = draftRef.current;
       // Q181 — a draft is only real once a campus, price or title exists.
       if (!cur.campusId && !cur.price && !cur.title?.trim()) return;
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...cur, draftId: draftId(), savedAt: Date.now() }));
-      } catch { /* quota */ }
+      saveDraftNow();
     };
     const id = window.setInterval(save, 60_000);
     window.addEventListener("beforeunload", save);
@@ -316,7 +352,9 @@ export function PostWizard({ userId }: { userId: string }) {
       window.removeEventListener("beforeunload", save);
       save();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
 
   async function handleFiles(list: FileList | File[]) {
     const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
@@ -386,14 +424,27 @@ export function PostWizard({ userId }: { userId: string }) {
 
 
   async function publish() {
-    if (publishing) return;
+    // Q451 — a ref, not the state flag: two clicks in the same tick both read
+    // the old `publishing` value, so state alone cannot stop a double insert.
+    if (publishingRef.current) return;
     const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
     if (d.photos.length === 0 && validUrls.length === 0) {
       setPhotoError("Please add at least 1 photo");
       return;
     }
+    publishingRef.current = true;
     setPublishing(true);
     try {
+      // Q451 — if the session died while the form was open, keep everything.
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess?.session) {
+        saveDraftNow();
+        setSessionExpired(true);
+        publishingRef.current = false;
+        setPublishing(false);
+        return;
+      }
+
       const a = new Set(d.amenities);
       const extras: string[] = [];
       if (a.has("ac")) extras.push("A/C");
@@ -429,14 +480,24 @@ export function PostWizard({ userId }: { userId: string }) {
         .single();
       if (err) throw err;
       // Q181 — the draft became a live listing: it is dead, never prompt again.
-      try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DISMISSED_KEY); } catch { /* noop */ }
+      lsRemove(draftKey(userId));
+      lsRemove(dismissedKey(userId));
       toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
-      toast.error(friendlyPublishError(e));
+      // Q451 — an expired session mid-publish keeps the form and the draft.
+      const low = String(e?.message ?? "").toLowerCase();
+      if (low.includes("jwt") || low.includes("not authenticated") || e?.code === "42501" || low.includes("row-level security")) {
+        saveDraftNow();
+        setSessionExpired(true);
+      } else {
+        toast.error(friendlyPublishError(e));
+      }
+      publishingRef.current = false;
       setPublishing(false);
     }
   }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -453,12 +514,11 @@ export function PostWizard({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={() => {
-              try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftRef.current, draftId: draftId(), savedAt: Date.now() }));
-              } catch { /* quota */ }
+              saveDraftNow();
               toast.success("Draft saved");
               navigate({ to: "/" });
             }}
+
             className="text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
           >
             Save &amp; exit
@@ -475,7 +535,15 @@ export function PostWizard({ userId }: { userId: string }) {
             </span>
             <button
               type="button"
-              onClick={() => { setD({ ...recovered.draft, step: 1 }); setRecovered(null); }}
+              onClick={() => {
+                // Q451 — photos are never persisted; the student re-adds them.
+                const hadPhotos =
+                  (recovered.draft.photos?.length ?? 0) > 0 ||
+                  !!recovered.draft.photoUrls?.some((u) => u.trim());
+                setD({ ...recovered.draft, photos: [], photoUrls: [""], step: 1 });
+                setRecovered(null);
+                setRestored({ hadPhotos });
+              }}
               className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
             >
               Resume
@@ -484,10 +552,8 @@ export function PostWizard({ userId }: { userId: string }) {
               type="button"
               onClick={() => {
                 // Q181 — remember the dismissal so this draft never nags again.
-                try {
-                  if (recovered.draftId) localStorage.setItem(DISMISSED_KEY, recovered.draftId);
-                  localStorage.removeItem(DRAFT_KEY);
-                } catch { /* noop */ }
+                if (recovered.draftId) lsSet(dismissedKey(userId), recovered.draftId);
+                lsRemove(draftKey(userId));
                 setRecovered(null);
               }}
               className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
@@ -496,6 +562,61 @@ export function PostWizard({ userId }: { userId: string }) {
             </button>
           </div>
         )}
+
+        {/* Q451 — post-restore confirmation, dismissible, with a way back to blank. */}
+        {restored && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
+            <span className="flex-1">
+              We restored your draft.{restored.hadPhotos ? " Photos aren't saved with a draft — please re-add them." : ""}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setD({ ...EMPTY });
+                lsRemove(draftKey(userId));
+                setRestored(null);
+              }}
+              className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            >
+              Start fresh
+            </button>
+            <button
+              type="button"
+              onClick={() => setRestored(null)}
+              aria-label="Dismiss"
+              className="rounded-full p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Q451 — session expired at publish: the form and draft are both kept. */}
+        {sessionExpired && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <p className="font-semibold">You've been signed out</p>
+            <p className="mt-1">
+              Your listing is saved as a draft — nothing is lost. Sign in again and it'll be waiting here.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                to="/auth"
+                search={{ mode: "in", next: "/post" } as any}
+                className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+              >
+                Sign in again
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSessionExpired(false)}
+                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         {d.step === 1 ? (
           <>
             <p className="mb-6 text-xs text-gray-400">Step 1 of 3 — Basic details</p>
@@ -548,7 +669,13 @@ export function PostWizard({ userId }: { userId: string }) {
                     </button>
                   ))}
                 </div>
+                {/* Q451 — placeType is not saved to the listing yet, so say so
+                    rather than imply it will show up on the listing page. */}
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-foreground/60">
+                  Not shown on your listing yet — mention it in your description so renters know.
+                </p>
               </div>
+
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Campus</label>
@@ -722,6 +849,11 @@ export function PostWizard({ userId }: { userId: string }) {
                 {/* Or paste direct image links */}
                 <div className="mt-5 space-y-3 border-t border-gray-100 pt-5 dark:border-border">
                   <p className="text-sm font-medium">Or paste a photo URL</p>
+                  {/* Q451 — testers saw the same stock cover on several listings. */}
+                  <p className="text-xs text-gray-500 dark:text-foreground/60">
+                    Use real photos of your place. Stock photos get listings taken down, and renters skip them.
+                  </p>
+
                   {d.photoUrls.map((u, i) => (
                     <PhotoUrlRow
                       key={i}
