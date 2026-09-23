@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useToggleSave } from "@/lib/leaseup/use-toggle-save";
 import { pushRecentSearch } from "@/lib/leaseup/recent-searches";
+import { saveLastBrowse } from "@/lib/leaseup/last-browse";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchListings, fetchSavedIds, getOrCreateConversation } from "@/lib/leaseup/queries";
@@ -427,6 +428,18 @@ function Browse() {
     if (stored === "grid" || stored === "list" || stored === "map") patchSearch({ view: stored });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.view]);
+
+  /**
+   * Q448 — remember the exact browse state (filters, campus, sort, view, page)
+   * so a listing page opened with no in-app history can send the visitor back
+   * here instead of to a bare /browse.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    saveLastBrowse(window.location.search);
+  }, [s]);
+
+
 
   const [selected, setSelected] = useState<Listing | null>(null);
   const [posting, setPosting] = useState(false);
