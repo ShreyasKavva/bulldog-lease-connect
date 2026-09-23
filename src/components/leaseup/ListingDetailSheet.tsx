@@ -829,20 +829,13 @@ export function ListingDetailSheet({
  * Q468 — a photo whose signed link has expired must never show the browser's
  * broken-image icon. Same neutral tile the full listing page uses (Q462).
  */
+/** Q482 — delegates to the shared honest placeholder on load failure. */
 function SheetPhoto({ src, alt, className, onClick, loading }: {
-  src: string; alt: string; className?: string;
+  src: string | null | undefined; alt: string; className?: string;
   onClick?: (e: React.MouseEvent) => void; loading?: "lazy" | "eager";
 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div onClick={onClick} className={cn("grid place-items-center bg-muted text-3xl", className)} aria-label={alt}>
-        🏠
-      </div>
-    );
-  }
   return (
-    <img src={src} alt={alt} loading={loading} onClick={onClick} onError={() => setFailed(true)} className={className} />
+    <ListingPhoto src={src} alt={alt} size="sm" loading={loading} onClick={onClick} className={className} />
   );
 }
 
