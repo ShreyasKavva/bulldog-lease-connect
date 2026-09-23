@@ -8,6 +8,7 @@ Disallow: /tours
 Disallow: /saved
 Disallow: /post
 Disallow: /notifications
+Disallow: /my-listings
 Disallow: /onboarding
 Disallow: /auth
 
