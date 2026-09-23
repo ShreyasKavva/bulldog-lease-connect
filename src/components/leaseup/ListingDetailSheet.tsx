@@ -1,5 +1,5 @@
 import { formatDay } from "@/lib/leaseup/dates";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
 import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
@@ -263,7 +263,10 @@ export function ListingDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
 
-        <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
+        <SheetHeader className="sr-only">
+          <SheetTitle>{listing.title}</SheetTitle>
+          <SheetDescription>Listing details, photos and the option to message the poster.</SheetDescription>
+        </SheetHeader>
 
         {/* View full page link — shareable URL */}
         <a
@@ -531,7 +534,7 @@ export function ListingDetailSheet({
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => onMessage(listing)}
-              className="bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
+              className="h-11 bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
             >
               <MessageSquare className="h-4 w-4" />Message
             </Button>
@@ -542,7 +545,7 @@ export function ListingDetailSheet({
                 if (listing.profile?.phone) toast.success(`📞 ${listing.profile.phone}`);
                 else toast(`✉️ ${listing.profile?.email ?? "Use Message instead"}`);
               }}
-              className="gap-2"
+              className="h-11 gap-2"
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
           <TourBookingPanel listing={listing} />
