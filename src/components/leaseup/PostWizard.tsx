@@ -409,8 +409,13 @@ export function PostWizard({ userId }: { userId: string }) {
     if (!/[a-z0-9]/i.test(d.title)) return setError("Give your listing a title students can read — a few words about the place");
     if (!d.campusId) return setError("Pick your campus");
     const price = Number(d.price);
+    // Q464 — order matters: "abc" is NaN, which also fails `> 0`, so the
+    // number check has to come first or the student gets the wrong sentence.
+    if (!d.price.trim()) return setError("Add a monthly rent");
+    if (!Number.isFinite(price)) return setError("Enter the monthly rent as a number, like 750");
+    if (price < 0) return setError("Rent can't be a negative number");
+    if (price === 0) return setError("Add a monthly rent above $0");
     if (!(price > 0)) return setError("Add a monthly rent");
-    if (!Number.isFinite(price)) return setError("Enter the monthly rent as a number");
     if (price > MAX_PRICE) return setError(`That rent looks too high — enter the monthly rent, not the whole lease`);
     if (!d.availableFrom || !d.availableTo) return setError("Add your available dates");
     const from = new Date(`${d.availableFrom}T00:00:00`).getTime();
