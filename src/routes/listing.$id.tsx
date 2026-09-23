@@ -1625,10 +1625,11 @@ function DeepLinkBackLink() {
         <button
           type="button"
           onClick={() => router.history.back()}
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
         >
           ← Back
         </button>
+
       </div>
     );
   }
