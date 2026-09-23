@@ -30,6 +30,7 @@ export const Route = createFileRoute("/saved/")({
     meta: [
       { title: "Saved subleases — LeaseUp" },
       { name: "description", content: "Subleases you saved on LeaseUp." },
+      { name: "robots", content: "noindex" },
       { property: "og:title", content: "Saved subleases — LeaseUp" },
       { property: "og:description", content: "Subleases you saved on LeaseUp." },
     ],
