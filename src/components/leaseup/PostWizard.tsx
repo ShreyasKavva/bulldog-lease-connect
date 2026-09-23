@@ -421,14 +421,27 @@ export function PostWizard({ userId }: { userId: string }) {
 
 
   async function publish() {
-    if (publishing) return;
+    // Q451 — a ref, not the state flag: two clicks in the same tick both read
+    // the old `publishing` value, so state alone cannot stop a double insert.
+    if (publishingRef.current) return;
     const validUrls = d.photoUrls.map((u) => u.trim()).filter((u) => u && urlOk[u]);
     if (d.photos.length === 0 && validUrls.length === 0) {
       setPhotoError("Please add at least 1 photo");
       return;
     }
+    publishingRef.current = true;
     setPublishing(true);
     try {
+      // Q451 — if the session died while the form was open, keep everything.
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess?.session) {
+        saveDraftNow();
+        setSessionExpired(true);
+        publishingRef.current = false;
+        setPublishing(false);
+        return;
+      }
+
       const a = new Set(d.amenities);
       const extras: string[] = [];
       if (a.has("ac")) extras.push("A/C");
