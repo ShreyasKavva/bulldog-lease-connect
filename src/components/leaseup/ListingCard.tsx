@@ -123,6 +123,8 @@ export function ListingCard({
   const picker = useReactionPicker(listing.id);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
+  /** Q466 — blocks a second save toggle while the first is still running. */
+  const saveBusy = useRef(false);
   const { user } = useSession();
   const toggleSave = useToggleSave(user?.id);
   const rating = useListingRating(listing.id);
@@ -173,18 +175,27 @@ export function ListingCard({
   async function handleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    import("@/lib/haptics").then((m) => m.haptic(10));
-    if (onHeart) {
-      const result = await onHeart();
+    // Q466 — "spam the heart, only ever one": every tap while a toggle is
+    // still in flight is dropped here. useToggleSave has the same guard, but
+    // the onHeart override (Q91) bypasses it, so the card holds its own.
+    if (saveBusy.current) return;
+    saveBusy.current = true;
+    try {
+      import("@/lib/haptics").then((m) => m.haptic(10));
+      if (onHeart) {
+        const result = await onHeart();
+        if (result) bumpSaveCount(result === "unsaved");
+        return;
+      }
+      if (!user) {
+        openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
+        return;
+      }
+      const result = await toggleSave(listing.id);
       if (result) bumpSaveCount(result === "unsaved");
-      return;
+    } finally {
+      saveBusy.current = false;
     }
-    if (!user) {
-      openSignIn(typeof window !== "undefined" ? window.location.pathname : undefined);
-      return;
-    }
-    const result = await toggleSave(listing.id);
-    if (result) bumpSaveCount(result === "unsaved");
   }
 
   /** Q159 — quick "Message" action; signed-out users get the sign-in modal. */
@@ -315,7 +326,7 @@ export function ListingCard({
             type="button"
             onClick={handleMessage}
             aria-label="Message the host"
-            className="rounded-full border border-white/70 bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white"
+            className="relative rounded-full border border-white/70 bg-white/90 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm hover:bg-white before:absolute before:inset-x-0 before:-inset-y-[9px] before:content-['']"
           >
             💬 Message
           </button>
@@ -391,7 +402,7 @@ export function ListingCard({
           onClick={handleSave}
           aria-label={saved ? "Unsave" : "Save"}
           title={saved ? "Remove from Saved" : "Save to see it in Saved"}
-          className="group/save absolute right-3 top-3 flex h-8 items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
+          className="group/save absolute right-3 top-3 flex h-8 items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation before:absolute before:-inset-1.5 before:content-['']"
         >
           <span
             role="tooltip"
@@ -475,7 +486,7 @@ export function ListingCard({
               to="/profile/$userId"
               params={{ userId: listing.user_id }}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
-              className="truncate hover:underline"
+              className="inline-flex min-h-11 -my-3 items-center truncate hover:underline"
             >
               {posterName(listing)}
             </Link>
@@ -489,7 +500,7 @@ export function ListingCard({
           to="/listing/$id"
           params={{ id: listing.id }}
           onClick={handleOpenLink}
-          className="mt-3 block w-full rounded-full bg-[#4F46E5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:inline-block sm:w-auto"
+          className="relative mt-3 block w-full rounded-full bg-[#4F46E5] px-4 py-2 text-center before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] sm:before:content-none text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#4338CA] hover:shadow-md sm:inline-block sm:w-auto"
         >
           View listing →
         </Link>
