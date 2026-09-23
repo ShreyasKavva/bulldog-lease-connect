@@ -18,6 +18,16 @@ export const Route = createFileRoute("/market")({
     ],
     links: [{ rel: "canonical", href: "https://leasup.co/market" }],
   }),
+  // Q502 — seed the page's two first-paint queries on the server so the SSR
+  // HTML carries the real heading, copy and price tables instead of a pulse
+  // skeleton. Same keys/functions as the useQuery calls below; public reads.
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData({ queryKey: ["campuses"], queryFn: fetchCampuses }),
+      context.queryClient.ensureQueryData({ queryKey: ["campus-price-stats"], queryFn: fetchAllPriceStats }),
+      context.queryClient.ensureQueryData({ queryKey: ["active-listing-counts-by-campus"], queryFn: fetchActiveListingCountsByCampus }),
+    ]).catch(() => undefined);
+  },
   component: MarketPage,
 });
 
