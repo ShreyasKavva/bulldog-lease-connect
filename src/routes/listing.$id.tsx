@@ -919,8 +919,9 @@ function ListingDetailPage() {
           </section>
         )}
 
-        {/* PART E — similar (Q100: snap-scroll row, hidden below 2 results) */}
-        {similar.length >= 2 && (
+        {/* PART E — similar (Q100). Q488: partitioned by campus_id so the
+            "Similar subleases" heading only ever holds same-campus cards. */}
+        {sameCampusSimilar.length > 0 && (
           <section className="mt-10 border-t border-gray-100 pt-10 dark:border-border">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xl font-semibold">Similar subleases</h2>
@@ -933,7 +934,7 @@ function ListingDetailPage() {
               </Link>
             </div>
             <ScrollRow>
-              {similar.map((l) => (
+              {sameCampusSimilar.map((l) => (
                 <div key={l.id} className="w-[82%] shrink-0 snap-start sm:w-[280px] lg:w-[calc((100%-3rem)/4)]">
                   <ListingCard
                     listing={l}
@@ -946,7 +947,30 @@ function ListingDetailPage() {
             </ScrollRow>
           </section>
         )}
-
+        {otherCampusSimilar.length > 0 && (
+          <section className="mt-10 border-t border-gray-100 pt-10 dark:border-border">
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="text-xl font-semibold">More subleases on LeaseUp</h2>
+            </div>
+            {sameCampusSimilar.length === 0 && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                Nothing else at {similarCampusName} yet — here's what's live at other campuses.
+              </p>
+            )}
+            <ScrollRow>
+              {otherCampusSimilar.map((l) => (
+                <div key={l.id} className="w-[82%] shrink-0 snap-start sm:w-[280px] lg:w-[calc((100%-3rem)/4)]">
+                  <ListingCard
+                    listing={l}
+                    saved={false}
+                    onSave={() => {}}
+                    onOpen={() => navigate({ to: "/listing/$id", params: { id: l.id } })}
+                  />
+                </div>
+              ))}
+            </ScrollRow>
+          </section>
+        )}
 
         {/* PART E2 — send to a friend */}
         <section className="border-t border-border py-10">
