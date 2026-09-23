@@ -266,11 +266,6 @@ export function AirbnbHome({
     return m;
   }, [dbCampusCounts, listings]);
 
-  const campusCount = useMemo(() => {
-    let n = 0;
-    for (const c of campusCounts.values()) if (c > 0) n++;
-    return n;
-  }, [campusCounts]);
 
 
   const spotlightCampuses = useMemo(() => {
