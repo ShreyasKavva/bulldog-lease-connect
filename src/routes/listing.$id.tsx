@@ -373,6 +373,10 @@ function ListingDetailPage() {
     queryFn: () => fetchSimilar(listing),
     staleTime: 60_000,
   });
+  // Q488 — partition (not filter) by campus_id; same 6-card cap from fetchSimilar.
+  const sameCampusSimilar = similar.filter((l) => l.campus_id === listing.campus_id);
+  const otherCampusSimilar = similar.filter((l) => l.campus_id !== listing.campus_id);
+  const similarCampusName = listing.campus?.short_name || listing.campus?.name || "this campus";
   const { data: lfMatches = [] } = useQuery({
     queryKey: ["listing-lf-matches", listing.id],
     queryFn: () => fetchLookingForMatchesForListing(listing, 3),
