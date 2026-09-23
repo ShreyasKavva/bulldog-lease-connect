@@ -1738,7 +1738,7 @@ function MoreOptionsMenu({ onReport }: { onReport: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted"
+        className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition hover:bg-muted md:h-10 md:w-10"
       >
         <MoreHorizontal className="h-5 w-5" />
       </button>
