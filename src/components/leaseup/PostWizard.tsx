@@ -1149,8 +1149,9 @@ export function PostWizard({ userId }: { userId: string }) {
                     </div>
                   </div>
 
+                  {/* Q479 — dropped an invented "3x more inquiries" statistic. */}
                   <p className="mt-4 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-muted dark:text-muted-foreground">
-                    💡 Complete listings get 3x more inquiries. Add at least 3 photos!
+                    💡 Listings with three or more photos are far easier to say yes to.
                     {photoCount < 3 ? ` You have ${photoCount}.` : ""}
                   </p>
 
