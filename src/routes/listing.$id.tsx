@@ -1573,7 +1573,7 @@ function Lightbox({
                 i === index ? "border-2 border-white" : "opacity-60 hover:opacity-100",
               )}
             >
-              <img src={p} alt="" className="h-full w-full object-cover" />
+              <PhotoImg src={p} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
