@@ -40,6 +40,7 @@ import { OnboardingModal } from "@/components/leaseup/OnboardingModal";
 import { PushPermissionPrompt } from "@/components/leaseup/PushPermissionPrompt";
 import { NotificationToastListener } from "@/components/leaseup/NotificationToastListener";
 import { TopBar } from "@/components/leaseup/TopBar";
+import { useSession } from "@/lib/leaseup/use-session";
 import { BottomNav, isBottomNavHidden } from "@/components/leaseup/BottomNav";
 import { Footer } from "@/components/leaseup/Footer";
 import { fetchCampuses } from "@/lib/leaseup/campuses";
@@ -51,6 +52,7 @@ import { useRouterState } from "@tanstack/react-router";
 function AppShell() {
   const router = useRouter();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user: sessionUser, loading: sessionLoading } = useSession();
   const hideNav = path.startsWith("/auth") || path.startsWith("/onboarding");
   const handleRefresh = async () => {
     await router.invalidate();
@@ -64,7 +66,7 @@ function AppShell() {
           key={path}
           className={
             "lu-page-enter min-h-[calc(100dvh-3.5rem)] md:pb-0 " +
-            (isBottomNavHidden(path) ? "pb-0" : "pb-[calc(5rem+env(safe-area-inset-bottom))]")
+            (isBottomNavHidden(path, !sessionLoading && !sessionUser) ? "pb-0" : "pb-[calc(5rem+env(safe-area-inset-bottom))]")
           }
         >
           <Outlet />
