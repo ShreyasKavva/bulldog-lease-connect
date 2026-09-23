@@ -1109,16 +1109,14 @@ function FeaturedListingCard({
         className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md"
       >
         <div className="relative w-full overflow-hidden bg-muted">
-          {photo ? (
-            <img
-              src={photo}
-              alt={featured.title}
-              loading="lazy"
-              className="max-h-64 w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-            />
-          ) : (
-            <div className="grid h-full w-full place-items-center text-5xl">🏠</div>
-          )}
+          <ListingPhoto
+            src={photo}
+            alt={featured.title}
+            size="md"
+            loading="lazy"
+            className="max-h-64 w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+            fallbackClassName="min-h-48"
+          />
           <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-gray-900 shadow-sm">
             ⭐ Featured
           </span>
