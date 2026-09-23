@@ -284,13 +284,28 @@ export function PostWizard({ userId }: { userId: string }) {
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
   const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number; draftId?: string } | null>(null);
+  // Q451 — confirmation bar after a restore, plus a "re-add your photos" note.
+  const [restored, setRestored] = useState<{ hadPhotos: boolean } | null>(null);
+  // Q451 — the session died before the insert; keep the form, ask them to sign in.
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
 
+  const saveDraftNow = () => {
+    const cur = draftRef.current;
+    lsSet(
+      draftKey(userId),
+      JSON.stringify({ ...cur, photos: [], draftId: draftId(userId), savedAt: Date.now() }),
+    );
+  };
+
   useEffect(() => {
     fetchCampuses().then(setCampuses).catch(() => setCampuses([]));
+    // Q451 — retire the account-agnostic keys so a draft can't cross accounts.
+    lsRemove(LEGACY_DRAFT_KEY);
+    lsRemove(LEGACY_DISMISSED_KEY);
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const raw = lsGet(draftKey(userId));
       if (raw) {
         const parsed = JSON.parse(raw) as Draft & { savedAt?: number; draftId?: string };
         const savedAt = typeof parsed?.savedAt === "number" ? parsed.savedAt : 0;
@@ -300,17 +315,17 @@ export function PostWizard({ userId }: { userId: string }) {
         const datesPast =
           !!parsed?.availableTo && new Date(parsed.availableTo).getTime() < Date.now();
         const dismissed =
-          !!parsed?.draftId && localStorage.getItem(DISMISSED_KEY) === parsed.draftId;
+          !!parsed?.draftId && lsGet(dismissedKey(userId)) === parsed.draftId;
         if (fresh && meaningful && !datesPast && !dismissed) {
           setRecovered({ draft: { ...EMPTY, ...parsed, step: 1 }, savedAt, draftId: parsed.draftId });
         } else if (!dismissed) {
-          localStorage.removeItem(DRAFT_KEY);
+          lsRemove(draftKey(userId));
         }
       }
     } catch { /* ignore bad draft */ }
     // Always start fresh at step 1 on mount (SPA navigation keeps state otherwise).
     setD((p) => ({ ...p, step: 1 }));
-  }, []);
+  }, [userId]);
 
   // Keep the newest form state for the interval / unload writers.
   const draftRef = useRef(d);
@@ -325,9 +340,7 @@ export function PostWizard({ userId }: { userId: string }) {
       const cur = draftRef.current;
       // Q181 — a draft is only real once a campus, price or title exists.
       if (!cur.campusId && !cur.price && !cur.title?.trim()) return;
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...cur, draftId: draftId(), savedAt: Date.now() }));
-      } catch { /* quota */ }
+      saveDraftNow();
     };
     const id = window.setInterval(save, 60_000);
     window.addEventListener("beforeunload", save);
@@ -336,7 +349,9 @@ export function PostWizard({ userId }: { userId: string }) {
       window.removeEventListener("beforeunload", save);
       save();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
 
   async function handleFiles(list: FileList | File[]) {
     const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
