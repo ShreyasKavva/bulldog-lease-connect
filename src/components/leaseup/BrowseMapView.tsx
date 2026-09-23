@@ -516,9 +516,9 @@ export function BrowseMapView({
           padding:2px 10px !important; margin:6px !important; box-shadow:none !important; }
         .leaflet-control-attribution a { color:#4b5563 !important; text-decoration:underline; }
         /* Q503 — sit above the "Show N subleases" pill, which itself clears
-           the tab bar: pill bottom 4rem+safe+0.75rem (76px) + 44px tall + 8px gap. */
+           the tab bar: pill bottom 4rem+safe+2.25rem (100px; the map box runs ~17px past the screen) + 44px tall + 8px gap. */
         @media (max-width: 767px) {
-          .leaflet-control-attribution { margin:0 6px calc(128px + env(safe-area-inset-bottom)) 6px !important; }
+          .leaflet-control-attribution { margin:0 6px calc(152px + env(safe-area-inset-bottom)) 6px !important; }
         }
       `}</style>
 
@@ -575,7 +575,7 @@ export function BrowseMapView({
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
-          className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-lg md:hidden"
+          className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom)+2.25rem)] md:bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-lg md:hidden"
         >
           Show {listings.length} sublease{listings.length === 1 ? "" : "s"}
         </button>
