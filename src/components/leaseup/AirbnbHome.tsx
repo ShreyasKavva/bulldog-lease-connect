@@ -266,23 +266,7 @@ export function AirbnbHome({
     return m;
   }, [dbCampusCounts, listings]);
 
-  const campusCount = useMemo(() => {
-    let n = 0;
-    for (const c of campusCounts.values()) if (c > 0) n++;
-    return n;
-  }, [campusCounts]);
 
-  // Q368 — the closing band quotes the same directory total the hero stat
-  // uses (campuses head-count), so the page never states two conflicting
-  // campus numbers.
-  const { data: totalCampuses } = useQuery({
-    queryKey: ["total-campus-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("campuses").select("id", { count: "exact", head: true });
-      return count ?? 0;
-    },
-    staleTime: Infinity,
-  });
 
   const spotlightCampuses = useMemo(() => {
     // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
@@ -779,11 +763,9 @@ export function AirbnbHome({
           <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 text-center">
             <h2 className="text-2xl font-bold text-white">Find your perfect sublease 🎓</h2>
             <p className="mb-5 mt-1 text-sm text-indigo-100">
-              {totalCampuses
-                ? campusCount > 0
-                  ? `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses - ${campusCount} ${campusCount === 1 ? "has" : "have"} live subleases right now.`
-                  : `LeaseUp covers ${totalCampuses.toLocaleString("en-US")} campuses. Be the first to post at yours.`
-                : "Free to use, no broker fees."}
+              {/* Q445 — the hero stat already states the live-campus number; this
+                  band stays on the value proposition so the page never says it twice. */}
+              Free to use, no broker fees. Message any poster directly.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -924,11 +906,9 @@ function LiveCounter() {
         const today = new Date().toISOString().slice(0, 10);
         const [
           { data: exactData, error: exactErr },
-          { data: broadData, error: broadErr },
           { count: msgCount },
           lookers,
           savers,
-          { count: supportedCampuses },
         ] = await Promise.all([
           // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
           supabase
@@ -937,14 +917,9 @@ function LiveCounter() {
             .eq("is_active", true)
             .eq("status", "active")
             .or(`available_to.is.null,available_to.gte.${today}`),
-          // Campuses: keep the original broader scope the product approved.
-          supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
-          // Q280 — campuses we SUPPORT (the full school directory), not just the
-          // handful that already have listings. Honest and self-updating.
-          supabase.from("campuses").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
         if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
@@ -955,14 +930,10 @@ function LiveCounter() {
         const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
           listings,
-          // Q280 — campuses SUPPORTED (whole directory). Falls back to campuses
-          // that actually have listings if the directory count is unavailable.
-          campuses:
-            supportedCampuses && supportedCampuses > 0
-              ? supportedCampuses
-              : broadErr || !broadData
-                ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
-                : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
+          // Q445 — campuses that actually have a live, unexpired sublease right
+          // now (same row set as the listings stat). Derived live: it rises as
+          // real listings are posted at new schools. Never the directory total.
+          campuses: new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
@@ -989,7 +960,10 @@ function LiveCounter() {
   const showInquiryNumber = stats.inquiries >= 25;
   const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
-    { emoji: "\ud83c\udf93", value: stats.campuses, label: "campuses supported" },
+    // Q445 — never print "0 campuses": degrade to a truthful non-numeric stat.
+    stats.campuses > 0
+      ? { emoji: "\ud83c\udf93", value: stats.campuses, label: stats.campuses === 1 ? "campus with live subleases" : "campuses with live subleases" }
+      : { emoji: "\ud83c\udf93", text: "Nationwide", label: "post at any US campus" },
     showInquiryNumber
       ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
       : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
