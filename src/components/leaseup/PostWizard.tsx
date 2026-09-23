@@ -385,6 +385,22 @@ export function PostWizard({ userId }: { userId: string }) {
   }, [d.step, d.photos.length]);
 
   async function handleFiles(list: FileList | File[]) {
+    // Q479 — a second pick/drop/paste while a batch is still uploading read a
+    // stale photo count, so the 10-photo cap could be overshot and the
+    // "Uploading…" label jumped between the two batches. One batch at a time.
+    if (uploadingRef.current) {
+      setPhotoError("Still uploading your last photos — give it a second, then add more.");
+      return;
+    }
+    uploadingRef.current = true;
+    try {
+      await handleFilesInner(list);
+    } finally {
+      uploadingRef.current = false;
+    }
+  }
+
+  async function handleFilesInner(list: FileList | File[]) {
     const all = Array.from(list);
     const picked = all.filter((f) => f.type.startsWith("image/"));
     const notes: string[] = [];
