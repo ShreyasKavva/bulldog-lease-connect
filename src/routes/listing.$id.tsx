@@ -150,7 +150,10 @@ export const Route = createFileRoute("/listing/$id")({
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-md px-6 py-24 text-center">
         <h1 className="mb-2 text-2xl font-black">Couldn't load this listing</h1>
-        <p className="mb-6 text-sm text-muted-foreground">{error.message}</p>
+        {/* Q452 — never print the raw database sentence on screen. */}
+        <p className="mb-6 text-sm text-muted-foreground">
+          {friendlyError(error, "This listing may have been removed. Try again in a moment.")}
+        </p>
         <Button onClick={reset}>Try again</Button>
       </div>
     </div>
