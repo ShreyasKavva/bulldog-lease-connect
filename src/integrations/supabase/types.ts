@@ -3227,6 +3227,10 @@ export type Database = {
       increment_listing_view: { Args: { _listing_id: string }; Returns: number }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_banned: { Args: { _uid: string }; Returns: boolean }
+      listing_engagement_score: {
+        Args: { _listing_id: string }
+        Returns: number
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
