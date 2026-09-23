@@ -135,7 +135,10 @@ const DEFAULT_ACCENT = { accent: "#4F46E5", fg: "#FFFFFF", dark: "#4338CA" };
 function CampusPage() {
   const { campus, allCampuses, listingCounts, stats } = Route.useLoaderData();
   const campusShort = campusShortName(campus);
-  const campusFull = campusFullName(campus);
+  // Q505 — visible body copy uses the everyday name (short_name via the shared
+  // campus-name helper), matching cards, homepage and footer. The legal name
+  // stays in <title>/meta only. A hard-cut short name falls back to the full name.
+  const campusDisplay = campusShort.endsWith("…") ? campusFullName(campus) : campusShort;
   const navigate = useNavigate();
   const { user } = useSession();
   const qc = useQueryClient();
@@ -270,10 +273,10 @@ function CampusPage() {
           </div>
           <h1 className="mt-2 flex items-center gap-3 text-3xl md:text-4xl font-black tracking-tight">
             {curatedAbbrev && <CampusMark campus={campus} className="h-12 w-12 text-base md:h-14 md:w-14 md:text-lg" />}
-            {campusFullName(campus)} Subleases
+            {campusDisplay} Subleases
           </h1>
           <p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Find subleases posted by {campusFull} students who signed up with a campus email.
+            Find subleases posted by {campusDisplay} students who signed up with a campus email.
           </p>
 
           {/* Live stats bar - suppress zero tiles; all-zero shows a prompt instead */}
@@ -290,7 +293,7 @@ function CampusPage() {
             if (tiles.length === 0) {
               return (
                 <p className="mt-5 text-sm text-muted-foreground">
-                  Be the first to list at {campusFull}.
+                  Be the first to list at {campusDisplay}.
                 </p>
               );
             }
@@ -388,8 +391,8 @@ function CampusPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-black">
             {!listingsLoading && filtered.length > 0
-              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusFull}`
-              : `Subleases at ${campusFull}`}
+              ? `${filtered.length} listing${filtered.length === 1 ? "" : "s"} at ${campusDisplay}`
+              : `Subleases at ${campusDisplay}`}
           </h2>
           {/* Sort control — also dead with nothing to sort. */}
           {listings.length > 0 && (
@@ -423,13 +426,13 @@ function CampusPage() {
             <div className="text-5xl">🏠</div>
             <h3 className="mt-3 text-lg font-bold">
               {listings.length > 0
-                ? `No subleases match these filters at ${campusFull}.`
-                : `No subleases posted yet at ${campusFull}.`}
+                ? `No subleases match these filters at ${campusDisplay}.`
+                : `No subleases posted yet at ${campusDisplay}.`}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
               {listings.length > 0
                 ? "Try removing a filter to see more subleases."
-                : `Be the first — post your sublease and help a fellow ${campusFull} student.`}
+                : `Be the first — post your sublease and help a fellow ${campusDisplay} student.`}
             </p>
             <button onClick={handlePost} className="mt-4 inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> Post a sublease →
@@ -448,7 +451,7 @@ function CampusPage() {
         {lookingFor.length > 0 && (
           <section className="mt-12">
             <h2 className="mb-4 text-xl font-black">
-              Students actively looking for a sublease at {campusFull}
+              Students actively looking for a sublease at {campusDisplay}
             </h2>
             <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:px-0">
               {lookingFor.slice(0, 4).map((p) => {
@@ -496,10 +499,10 @@ function CampusPage() {
 
         {/* How it works */}
         <section className="mt-12 border-t pt-8">
-          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campusFull}</h2>
+          <h2 className="mb-5 text-xl font-black">How LeaseUp works at {campusDisplay}</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campusFull} students. Posters sign up with a school email.` },
+              { n: 1, icon: Search, title: "Browse campus listings", body: `Subleases posted by ${campusDisplay} students. Posters sign up with a school email.` },
               { n: 2, icon: Handshake, title: "Message directly", body: "No middleman. Message the lister directly and arrange the handoff." },
               { n: 3, icon: CheckCircle2, title: "Mark as rented", body: "Once a deal is made, the listing is marked complete. No ghost listings." },
             ].map(({ n, icon: Icon, title, body }) => (
@@ -560,15 +563,15 @@ function CampusPage() {
           const short = campusShort;
           const gmUrl = withUtm(baseUrl, "groupme", "campus_share");
           const dcUrl = withUtm(baseUrl, "discord", "campus_share");
-          const gmText = `If you're looking for a sublease at ${short} this summer/fall, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo fees, just real listings from real students 👇\n${gmUrl}`;
+          const gmText = `If you're looking for a sublease at ${short}, check out LeaseUp.\nIt's a free marketplace just for ${short} students — verified .edu sign-in only.\nNo fees, just real listings from real students 👇\n${gmUrl}`;
           const dcText = `**LeaseUp — ${short} subleases**\nFree marketplace just for ${short} students · verified .edu sign-in only.\nReal listings from real students 👇\n\n${dcUrl}`;
           return (
             <section className="mt-12 rounded-2xl border border-border bg-surface p-6 md:p-8">
               <h2 className="text-lg md:text-xl font-black">
-                Know students looking for housing? Share LeaseUp with your {campusFull} GroupMe.
+                Know students looking for housing? Share LeaseUp with your {campusDisplay} GroupMe.
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Pre-written and ready to paste — one tap and you're helping other {campusFull} students find housing.
+                Pre-written and ready to paste — one tap and you're helping other {campusDisplay} students find housing.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
@@ -595,9 +598,9 @@ function CampusPage() {
 
         {/* Bottom lister CTA */}
         <section className="mt-12 rounded-2xl bg-primary/5 border border-primary/20 p-6 md:p-8 text-center">
-          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusFull}?</h2>
+          <h2 className="text-xl md:text-2xl font-black">Have a sublease to fill at {campusDisplay}?</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Post it free. Your listing goes live on the {campus.city} page and in browse the moment you submit it.
+            Post it free. Your listing goes live on the {campusDisplay} page and in browse the moment you submit it.
           </p>
           <button
             onClick={handlePost}
