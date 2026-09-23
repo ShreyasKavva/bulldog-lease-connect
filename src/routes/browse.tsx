@@ -521,64 +521,65 @@ function Browse() {
     | "movein" | "new" | "tenants" | "type" | "maxDuration" | "availableSoon"
     | "postedToday" | "nearCampus" | "roommate";
 
-  function matchesListing(l: Listing, skip: RelaxKey | null): boolean {
-    const qLower = skip === "q" ? "" : (s.q ?? "").toLowerCase();
+  function matchesListing(l: Listing, skips: readonly RelaxKey[]): boolean {
+    const skip = (k: RelaxKey) => skips.includes(k);
+    const qLower = skip("q") ? "" : (s.q ?? "").toLowerCase();
     if (qLower && !(
       l.title.toLowerCase().includes(qLower) ||
       (l.area ?? "").toLowerCase().includes(qLower) ||
       (l.description ?? "").toLowerCase().includes(qLower)
     )) return false;
     if (s.hostId && l.user_id !== s.hostId) return false;
-    if (skip !== "campus" && campusId && l.campus_id !== campusId) return false;
-    if (skip !== "area" && area && l.area !== area) return false;
-    if (skip !== "furnished" && furnishedOnly && !l.furnished) return false;
-    if (skip !== "utilities" && s.utilities === 1 && !l.utilities_included) return false;
-    if (skip !== "parking" && s.parking === 1 && !l.parking) return false;
-    if (skip !== "pets" && s.pets === 1 && !l.pet_friendly) return false;
-    if (skip !== "wifi" && s.wifi === 1 && !(l as any).wifi_included) return false;
-    if (skip !== "laundry" && s.laundry === 1 && !(l as any).laundry) return false;
-    if (skip !== "verified" && s.verified === 1 && !l.profile?.verified_email) return false;
-    if (skip !== "baths" && s.baths != null && (l.baths ?? 0) < s.baths) return false;
-    if (skip !== "price") {
+    if (!skip("campus") && campusId && l.campus_id !== campusId) return false;
+    if (!skip("area") && area && l.area !== area) return false;
+    if (!skip("furnished") && furnishedOnly && !l.furnished) return false;
+    if (!skip("utilities") && s.utilities === 1 && !l.utilities_included) return false;
+    if (!skip("parking") && s.parking === 1 && !l.parking) return false;
+    if (!skip("pets") && s.pets === 1 && !l.pet_friendly) return false;
+    if (!skip("wifi") && s.wifi === 1 && !(l as any).wifi_included) return false;
+    if (!skip("laundry") && s.laundry === 1 && !(l as any).laundry) return false;
+    if (!skip("verified") && s.verified === 1 && !l.profile?.verified_email) return false;
+    if (!skip("baths") && s.baths != null && (l.baths ?? 0) < s.baths) return false;
+    if (!skip("price")) {
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
     }
-    if (skip !== "beds" && !matchesBeds(l)) return false;
+    if (!skip("beds") && !matchesBeds(l)) return false;
     // Q180 — OVERLAP, not containment: a listing matches when its availability
     // overlaps the requested window at all.
-    if (skip !== "dates") {
+    if (!skip("dates")) {
       if (toDate && l.available_from && new Date(l.available_from) > toDate) return false;
       if (fromDate && l.available_to && new Date(l.available_to) < fromDate) return false;
     }
 
     // Q96 — search-bar / category-pill params
-    if (skip !== "tenants" && s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
-    if (skip !== "type") {
+    if (!skip("tenants") && s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+    if (!skip("type")) {
       if (s.type === "studio" && (l.beds ?? 0) !== 0) return false;
       if (s.type === "private_room" && (l.beds ?? 0) !== 1) return false;
       if (s.type === "entire" && (l.beds ?? 0) < 1) return false;
     }
-    if (skip !== "maxDuration" && s.maxDuration != null) {
+    if (!skip("maxDuration") && s.maxDuration != null) {
       if (!l.available_from || !l.available_to) return false;
       const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
       if (!(days > 0 && days <= s.maxDuration)) return false;
     }
-    if (skip !== "availableSoon" && s.availableSoon === 1) {
+    if (!skip("availableSoon") && s.availableSoon === 1) {
       if (!l.available_from) return false;
       if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
     }
-    if (skip !== "new" && s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
-    if (skip !== "movein" && s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
+    if (!skip("new") && s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
+    if (!skip("movein") && s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
 
-    if (skip !== "postedToday" && s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
-    if (skip !== "nearCampus" && s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
-    if (skip !== "roommate" && !matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
+    if (!skip("postedToday") && s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
+    if (!skip("nearCampus") && s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+    if (!skip("roommate") && !matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
 
     return true;
   }
 
   const filtered = useMemo(() => {
-    let r = listings.filter((l) => matchesListing(l, null));
+    let r = listings.filter((l) => matchesListing(l, []));
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
@@ -639,7 +640,7 @@ function Browse() {
     const options: ((typeof candidates)[number] & { count: number })[] = [];
     for (const c of candidates) {
       if (!c.active) continue;
-      const count = listings.filter((l) => matchesListing(l, c.key)).length;
+      const count = listings.filter((l) => matchesListing(l, [c.key])).length;
       if (count > 0) options.push({ ...c, count });
     }
     options.sort((a, b) => b.count - a.count);
@@ -675,7 +676,7 @@ function Browse() {
       ?? "this campus"
     : "this campus";
   const anywhereCount = useMemo(
-    () => (campusId ? listings.filter((l) => matchesListing(l, "campus")).length : 0),
+    () => (campusId ? listings.filter((l) => matchesListing(l, ["campus"])).length : 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [listings, campusId, filtered.length],
   );
