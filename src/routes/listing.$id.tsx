@@ -1012,7 +1012,36 @@ function ListingDetailPage() {
 
 // ---------------- gallery ----------------
 
+/**
+ * Q462 — a signed photo URL can 400 once its 7-day TTL lapses (or the file was
+ * removed from storage). A bare <img> then paints the browser's broken-image
+ * glyph; this swaps in the same neutral "photo unavailable" tile the
+ * zero-photo state uses.
+ */
+function PhotoImg({
+  src, alt, className, onClick,
+}: { src: string; alt: string; className?: string; onClick?: () => void }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={cn("grid h-full w-full place-items-center bg-muted text-muted-foreground", className)}>
+        <Home className="h-10 w-10" strokeWidth={1.5} aria-label={alt} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      onError={() => setFailed(true)}
+      className={className}
+    />
+  );
+}
+
 function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; onOpen: (i: number) => void }) {
+
   // 0 photos
   if (photos.length === 0) {
     return (
