@@ -250,7 +250,13 @@ html, body { overflow-x: hidden; }
   0%   { opacity: 0; transform: translateX(12px); }
   100% { opacity: 1; transform: translateX(0); }
 }
-.lu-page-enter { animation: lu-page-enter 220ms ease-out both; }
+/* Q469 — fill-mode is `backwards`, never `both`. With `both` the final
+   keyframe's `transform: translateX(0)` stuck to the wrapper forever, and a
+   transformed ancestor becomes the containing block for every
+   `position: fixed` descendant — so bottom bars, toasts and drawers scrolled
+   with the page instead of staying on screen. `backwards` gives the same
+   entry animation and leaves no transform behind once it ends. */
+.lu-page-enter { animation: lu-page-enter 220ms ease-out backwards; }
 @media (prefers-reduced-motion: reduce) {
   .lu-page-enter { animation: none !important; }
 }
