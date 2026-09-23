@@ -100,6 +100,19 @@ export function AvailabilityCalendar({
           <MonthGrid key={`${m.getFullYear()}-${m.getMonth()}`} month={m} start={start} end={end} today={today} />
         ))}
       </div>
+
+      {/* Q507 — key for the struck-out days. The code gives past days and days
+          outside the sublease window the same style, so one label covers both. */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden className="text-muted-foreground/50 line-through">14</span>
+          Past or outside the sublease dates
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden className="text-foreground">14</span>
+          Available
+        </span>
+      </div>
     </section>
   );
 }
@@ -151,6 +164,7 @@ function MonthGrid({
                 )}
               >
                 {d.getDate()}
+                {unavailable && <span className="sr-only">, unavailable</span>}
               </span>
             </span>
           );
