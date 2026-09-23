@@ -1,5 +1,5 @@
 import { formatDay } from "@/lib/leaseup/dates";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
 import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
@@ -182,6 +182,10 @@ export function ListingDetailSheet({
   useEffect(() => {
     if (typeof window === "undefined" || !open) return;
     const openedAt = window.location.href;
+    // Q468 — deliberately URL-less. TanStack Router patches window.history, so
+    // pushing a real /listing/<id> URL here makes the router navigate to the
+    // full page and throws the visitor off /browse. The shareable URL lives on
+    // the "View full page →" link and the copy-link button instead.
     window.history.pushState({ ...(window.history.state ?? {}), luListingSheet: true }, "");
     const onPop = () => onOpenChange(false);
     window.addEventListener("popstate", onPop);
@@ -259,13 +263,16 @@ export function ListingDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
 
-        <SheetHeader className="sr-only"><SheetTitle>{listing.title}</SheetTitle></SheetHeader>
+        <SheetHeader className="sr-only">
+          <SheetTitle>{listing.title}</SheetTitle>
+          <SheetDescription>Listing details, photos and the option to message the poster.</SheetDescription>
+        </SheetHeader>
 
         {/* View full page link — shareable URL */}
         <a
           href={`/listing/${listing.id}`}
           onClick={() => onOpenChange(false)}
-          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-md backdrop-blur-sm transition hover:bg-white"
+          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-md backdrop-blur-sm transition hover:bg-white before:absolute before:-inset-2 before:content-['']"
         >
           View full page →
         </a>
@@ -283,7 +290,7 @@ export function ListingDetailSheet({
               }}
             >
               {photos.map((p, i) => (
-                <img
+                <SheetPhoto
                   key={i}
                   src={p}
                   alt={`${listing.title} — photo ${i + 1}`}
@@ -312,7 +319,7 @@ export function ListingDetailSheet({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); haptic("light"); onSave(listing); }}
                 aria-label={isSaved ? "Unsave listing" : "Save listing"}
-                className="grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+                className="relative grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 before:absolute before:-inset-0.5 before:content-['']"
               >
                 <HeartIcon
                   className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
@@ -338,7 +345,7 @@ export function ListingDetailSheet({
               }}
 
               aria-label="Share listing"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 before:absolute before:-inset-0.5 before:content-['']"
             >
               <Share2 className="h-4 w-4 text-foreground/70" />
             </button>
@@ -354,9 +361,9 @@ export function ListingDetailSheet({
                   const el = galleryRef.current;
                   if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
                 }}
-                className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}
+                className={`relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}
               >
-                <img src={p} alt="" className="h-full w-full object-cover" />
+                <SheetPhoto src={p} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
@@ -527,7 +534,7 @@ export function ListingDetailSheet({
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => onMessage(listing)}
-              className="bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
+              className="h-11 bg-primary hover:bg-primary-dark text-primary-foreground gap-2"
             >
               <MessageSquare className="h-4 w-4" />Message
             </Button>
@@ -538,7 +545,7 @@ export function ListingDetailSheet({
                 if (listing.profile?.phone) toast.success(`📞 ${listing.profile.phone}`);
                 else toast(`✉️ ${listing.profile?.email ?? "Use Message instead"}`);
               }}
-              className="gap-2"
+              className="h-11 gap-2"
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
           <TourBookingPanel listing={listing} />
@@ -563,7 +570,7 @@ export function ListingDetailSheet({
             <ShareToStoryButton listing={listing} label="Share to Story" />
             <button
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
-              className="flex items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
+              className="relative flex min-h-11 items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
             ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
@@ -578,7 +585,7 @@ export function ListingDetailSheet({
                     className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
                   >
                     {l.photo_urls?.[0] ? (
-                      <img src={l.photo_urls[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
+                      <SheetPhoto src={l.photo_urls[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-3xl">🏠</div>
                     )}
@@ -683,7 +690,7 @@ export function ListingDetailSheet({
                   >
                     <div className="h-28 w-full bg-muted">
                       {l.photo_urls?.[0] ? (
-                        <img src={l.photo_urls[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
+                        <SheetPhoto src={l.photo_urls[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-2xl">🏠</div>
                       )}
@@ -779,7 +786,7 @@ export function ListingDetailSheet({
           <button
             aria-label="Close"
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
-            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
           >
             <XIcon className="h-5 w-5" />
           </button>
@@ -801,10 +808,10 @@ export function ListingDetailSheet({
               </button>
             </>
           )}
-          <img
+          <SheetPhoto
             src={photos[lightboxIndex]}
             alt={`${listing.title} — photo ${lightboxIndex + 1}`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           {photos.length > 1 && (
@@ -815,6 +822,27 @@ export function ListingDetailSheet({
         </div>
       )}
     </Sheet>
+  );
+}
+
+/**
+ * Q468 — a photo whose signed link has expired must never show the browser's
+ * broken-image icon. Same neutral tile the full listing page uses (Q462).
+ */
+function SheetPhoto({ src, alt, className, onClick, loading }: {
+  src: string; alt: string; className?: string;
+  onClick?: (e: React.MouseEvent) => void; loading?: "lazy" | "eager";
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div onClick={onClick} className={cn("grid place-items-center bg-muted text-3xl", className)} aria-label={alt}>
+        🏠
+      </div>
+    );
+  }
+  return (
+    <img src={src} alt={alt} loading={loading} onClick={onClick} onError={() => setFailed(true)} className={className} />
   );
 }
 
