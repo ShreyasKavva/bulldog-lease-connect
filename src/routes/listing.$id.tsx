@@ -982,8 +982,12 @@ function ListingDetailPage() {
       </div>
 
 
+      {/* Q462 — clears the sticky CTA, which now sits above the bottom nav. */}
+      <div aria-hidden className="h-20 lg:hidden" />
+
       {/* PART F — sticky mobile CTA */}
       <MobileStickyCTA
+
         listing={listing}
         firstName={firstName}
         isOwner={isOwner}
