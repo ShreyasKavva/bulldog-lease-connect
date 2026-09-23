@@ -34,6 +34,46 @@ function draftId() {
   return `d${Date.now()}`;
 }
 const MAX_PHOTOS = 10;
+/** Q447 — client-side guards so bad input never reaches the database. */
+const MAX_PHOTO_MB = 10;
+const MAX_PHOTO_BYTES = MAX_PHOTO_MB * 1024 * 1024;
+const MAX_PRICE = 20000;
+
+/** Q447 — a storage failure in student English, never the raw error text. */
+function friendlyPhotoError(e: any): string {
+  const raw = String(e?.message ?? "").toLowerCase();
+  if (raw.includes("exceeded the maximum allowed size") || raw.includes("payload too large") || raw.includes("413")) {
+    return `That photo is too large. Try one under ${MAX_PHOTO_MB} MB.`;
+  }
+  if (raw.includes("row-level security") || raw.includes("unauthorized") || raw.includes("jwt") || raw.includes("401")) {
+    return "Your sign-in expired. Open LeaseUp in a new tab, sign in again, then come back — your draft is saved.";
+  }
+  if (raw.includes("mime") || raw.includes("content type")) {
+    return "That file type isn't supported. Upload a JPG or PNG.";
+  }
+  if (raw.includes("network") || raw.includes("failed to fetch")) {
+    return "That upload didn't go through — check your connection and try again.";
+  }
+  return "That photo didn't upload. Try again, or pick a different photo.";
+}
+
+/** Q447 — a publish failure in student English, never a Postgres string. */
+function friendlyPublishError(e: any): string {
+  const raw = String(e?.message ?? "");
+  const low = raw.toLowerCase();
+  if (low.includes("row-level security") || low.includes("jwt") || low.includes("not authenticated") || (e?.code === "42501")) {
+    return "Your sign-in expired before we could post this. Sign in again — your draft is saved.";
+  }
+  if (low.includes("price must be greater")) return "Add a monthly rent above $0.";
+  if (low.includes("unrealistically high")) return "That rent looks too high — enter the monthly rent, not the whole lease.";
+  if (low.includes("end date cannot be before")) return "Your end date is before your start date — go back and fix the dates.";
+  if (low.includes("title cannot be empty")) return "Add a listing title before publishing.";
+  if (low.includes("description cannot be empty")) return "Add a short description before publishing.";
+  if (low.includes("bedrooms must be") || low.includes("bathrooms must be")) return "Check the bedroom and bathroom counts.";
+  if (low.includes("banned")) return "This account can't post listings. Email us if you think that's a mistake.";
+  if (low.includes("failed to fetch") || low.includes("network")) return "We couldn't reach LeaseUp. Check your connection and try again.";
+  return "We couldn't post your listing. Try again in a moment — your draft is saved.";
+}
 
 /** Q157 — "2h ago" style label for the draft-recovery banner. */
 function relativeSince(ts: number) {
@@ -279,11 +319,23 @@ export function PostWizard({ userId }: { userId: string }) {
   }, []);
 
   async function handleFiles(list: FileList | File[]) {
-    const files = Array.from(list)
-      .filter((f) => f.type.startsWith("image/"))
+    const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
+    if (picked.length && picked.length < Array.from(list).length) {
+      setPhotoError("Only photos can be uploaded — skipped the other files.");
+    }
+    // Q447 — phone photos are routinely 10–15 MB; reject before the upload
+    // so the student gets a sentence instead of a stalled spinner.
+    const tooBig = picked.filter((f) => f.size > MAX_PHOTO_BYTES);
+    const files = picked
+      .filter((f) => f.size <= MAX_PHOTO_BYTES)
       .slice(0, MAX_PHOTOS - d.photos.length);
+    if (tooBig.length) {
+      setPhotoError(
+        `${tooBig.length === 1 ? "That photo is" : `${tooBig.length} photos are`} over ${MAX_PHOTO_MB} MB. Try a smaller photo, or screenshot it first.`,
+      );
+    }
     if (!files.length) return;
-    setPhotoError(null);
+    if (!tooBig.length) setPhotoError(null);
     try {
       for (const file of files) {
         setUploading(file.name);
@@ -292,7 +344,8 @@ export function PostWizard({ userId }: { userId: string }) {
         setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
       }
     } catch (e: any) {
-      setPhotoError(e?.message ?? "Upload failed");
+      // Q447 — never surface the raw storage error to a student.
+      setPhotoError(friendlyPhotoError(e));
     } finally {
       setUploading(null);
     }
@@ -300,9 +353,19 @@ export function PostWizard({ userId }: { userId: string }) {
 
   function next() {
     if (d.title.trim().length < 3) return setError("Add a listing title");
+    // Q447 — an emoji-only title passes a length check but tells nobody anything.
+    if (!/[a-z0-9]/i.test(d.title)) return setError("Give your listing a title students can read — a few words about the place");
     if (!d.campusId) return setError("Pick your campus");
-    if (!(Number(d.price) > 0)) return setError("Add a monthly rent");
+    const price = Number(d.price);
+    if (!(price > 0)) return setError("Add a monthly rent");
+    if (!Number.isFinite(price)) return setError("Enter the monthly rent as a number");
+    if (price > MAX_PRICE) return setError(`That rent looks too high — enter the monthly rent, not the whole lease`);
     if (!d.availableFrom || !d.availableTo) return setError("Add your available dates");
+    const from = new Date(`${d.availableFrom}T00:00:00`).getTime();
+    const to = new Date(`${d.availableTo}T00:00:00`).getTime();
+    if (!Number.isFinite(from) || !Number.isFinite(to)) return setError("Check your available dates");
+    if (to < from) return setError("Your end date is before your start date — swap them around");
+    if (to < Date.now() - 86400000) return setError("Those dates are already in the past — pick dates students can still move in on");
     setError(null);
     set({ step: 2 });
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
