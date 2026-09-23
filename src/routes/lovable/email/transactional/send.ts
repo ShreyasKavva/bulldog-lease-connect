@@ -20,6 +20,46 @@ function redactEmail(email: string | null | undefined): string {
   if (!localPart || !domain) return '***'
   return `${localPart[0]}***@${domain}`
 }
+// Q456 — what a non-admin, non-system caller is allowed to put in
+// templateData, per template. Anything not listed here is dropped.
+const MAX_TEXT_FIELD = 200
+type FieldKind = 'text' | 'url' | 'number' | 'id'
+const USER_TEMPLATE_FIELDS: Record<string, Record<string, FieldKind>> = {
+  welcome: {
+    firstName: 'text',
+    campusName: 'text',
+    campusUrl: 'url',
+    postUrl: 'url',
+    roommatesUrl: 'url',
+  },
+  'new-message': {
+    senderName: 'text',
+    preview: 'text',
+    listingTitle: 'text',
+    listingPrice: 'number',
+    listingArea: 'text',
+    conversationUrl: 'url',
+    conversationId: 'id',
+  },
+}
+
+// Accept only links on our own site; anything else is rewritten onto the
+// canonical origin (path preserved) so no off-site link can ride our domain.
+function safeSiteUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 500) return null
+  let parsed: URL
+  try {
+    parsed = new URL(value, `https://${FROM_DOMAIN}`)
+  } catch {
+    return null
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null
+  const host = parsed.hostname.toLowerCase()
+  const onSite = host === FROM_DOMAIN || host.endsWith(`.${FROM_DOMAIN}`) || host.endsWith('.lovable.app')
+  if (onSite) return parsed.toString()
+  return `https://${FROM_DOMAIN}${parsed.pathname}${parsed.search}`
+}
+
 
 // Generate a cryptographically random 32-byte hex token
 function generateToken(): string {
@@ -187,6 +227,31 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         // our domain at a third party.
         const effectiveRecipient = template.to
           || (isPrivilegedCaller ? recipientEmail : (derivedRecipient ?? callerEmail))
+
+        // Q456 — template data allowlist. A non-privileged caller can only
+        // supply the fields its template actually renders; everything else is
+        // dropped, strings are length-capped, and any link is rewritten onto
+        // our own origin so the body can never smuggle arbitrary copy or an
+        // off-site URL into mail from our domain.
+        if (!isPrivilegedCaller) {
+          const allowed = USER_TEMPLATE_FIELDS[templateName] ?? {}
+          const safe: Record<string, any> = {}
+          for (const [key, kind] of Object.entries(allowed)) {
+            const value = templateData[key]
+            if (value === undefined || value === null) continue
+            if (kind === 'url') {
+              const url = safeSiteUrl(value)
+              if (url) safe[key] = url
+            } else if (kind === 'number') {
+              if (typeof value === 'number' && Number.isFinite(value)) safe[key] = value
+            } else if (kind === 'id') {
+              if (typeof value === 'string') safe[key] = value.slice(0, 64)
+            } else {
+              if (typeof value === 'string') safe[key] = value.slice(0, MAX_TEXT_FIELD)
+            }
+          }
+          templateData = safe
+        }
 
 
         if (!effectiveRecipient) {
