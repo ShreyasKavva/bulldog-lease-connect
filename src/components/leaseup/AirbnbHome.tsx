@@ -987,7 +987,7 @@ function LookingForStrip({ posts }: { posts: LookingForPost[] }) {
         <h2 className="text-xl font-extrabold sm:text-2xl">
           Students actively looking — reach out to them
         </h2>
-        <Link to="/looking" className="text-sm font-semibold text-primary hover:underline">
+        <Link to="/looking" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-primary hover:underline">
           See all →
         </Link>
       </div>
