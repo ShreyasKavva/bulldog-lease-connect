@@ -437,6 +437,7 @@ export function PostWizard({ userId }: { userId: string }) {
         setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
       } catch (e: any) {
         failed += 1;
+        console.error("[post] photo upload failed", e); // Q508 — raw error for debugging only
         // Q447 — never surface the raw storage error to a student.
         if (failed === 1) notes.push(friendlyPhotoError(e));
       }
@@ -568,6 +569,7 @@ export function PostWizard({ userId }: { userId: string }) {
       toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
+      console.error("[post] publish failed", e); // Q508 — raw error for debugging only
       // Q451 — an expired session mid-publish keeps the form and the draft.
       const low = String(e?.message ?? "").toLowerCase();
       if (low.includes("jwt") || low.includes("not authenticated") || e?.code === "42501" || low.includes("row-level security")) {
