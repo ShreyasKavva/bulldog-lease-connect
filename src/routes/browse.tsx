@@ -946,7 +946,7 @@ function Browse() {
           {user && <RenterFeedbackPrompt userId={user.id} />}
           {/* Q375 — in the zero-results-with-active-filters state the rail
               renders below the empty state instead of above it. */}
-          {view === "grid" && !emptyWithFilters && trendingRail}
+          {!emptyWithFilters && trendingRail}
           {isError ? (
             <p className="py-16 text-center text-sm text-gray-500 dark:text-muted-foreground">
               Something went wrong loading listings. Try refreshing.
