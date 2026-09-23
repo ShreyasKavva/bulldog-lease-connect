@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { deleteListingPhoto } from "@/lib/leaseup/post-photos";
 import { supabase } from "@/integrations/supabase/client";
@@ -706,30 +706,9 @@ export function PostWizard({ userId }: { userId: string }) {
               </div>
 
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">Listing type</label>
-                <div className="flex overflow-hidden rounded-full border border-gray-300 dark:border-border">
-                  {PLACE_TYPES.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => set({ placeType: t.id })}
-                      className={cn(
-                        "flex-1 px-3 py-2.5 text-sm font-medium transition",
-                        d.placeType === t.id ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "hover:bg-muted",
-                      )}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                {/* Q451 — placeType is not saved to the listing yet, so say so
-                    rather than imply it will show up on the listing page. */}
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-foreground/60">
-                  Not shown on your listing yet — mention it in your description so renters know.
-                </p>
-              </div>
-
+              {/* Q470 — "Listing type" was collected but there is no column to
+                  store it, so the choice silently vanished on publish. Hidden
+                  until a column exists; see the Q470 report for the migration. */}
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Campus</label>
