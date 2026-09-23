@@ -353,6 +353,8 @@ export function PostWizard({ userId }: { userId: string }) {
     const save = () => {
       // Don't clobber a recoverable draft the user hasn't answered on yet.
       if (blockedRef.current) return;
+      // Q479 — the listing was published; never resurrect its draft.
+      if (publishedRef.current) return;
       const cur = draftRef.current;
       // Q181 — a draft is only real once a campus, price or title exists.
       if (!cur.campusId && !cur.price && !cur.title?.trim()) return;
