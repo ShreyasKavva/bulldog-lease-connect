@@ -1210,7 +1210,7 @@ function NewThisWeekSection({
         <Link
           to="/browse"
           search={{ sort: "newest" } as any}
-          className="text-sm font-semibold text-primary hover:underline"
+          className="inline-flex min-h-[44px] items-center text-sm font-semibold text-primary hover:underline"
         >
           Just listed →
         </Link>
