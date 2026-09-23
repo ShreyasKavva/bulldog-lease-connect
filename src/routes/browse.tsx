@@ -378,7 +378,6 @@ function Browse() {
   }, [s.q, s.campus, s.bedrooms, s.max_price, s.movein, campusId, campuses.length]);
 
 
-  const [view] = useState<View>("grid");
   const mapView = s.view === "map";
 
   /** Q177 — the campus the visitor actually searched for (not their profile). */
