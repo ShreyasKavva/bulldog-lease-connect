@@ -788,6 +788,10 @@ export function PostWizard({ userId }: { userId: string }) {
                 <p className="mt-1 text-xs text-gray-500">
                   Neighborhood only — not your street address. Renters see this before you've met them.
                 </p>
+                {/* Q464 — say plainly where the exact address does go. */}
+                <p className="mt-1 text-xs text-gray-500">
+                  Your exact address is never on your listing. Share it in messages once you've connected with someone.
+                </p>
                 {looksLikeStreetAddress(d.area) && (
                   <p className="mt-1 text-xs text-red-600">{AREA_ADDRESS_ERROR}</p>
                 )}
