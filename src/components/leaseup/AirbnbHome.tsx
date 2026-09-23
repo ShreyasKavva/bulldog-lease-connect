@@ -948,14 +948,10 @@ function LiveCounter() {
         const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
           listings,
-          // Q280 — campuses SUPPORTED (whole directory). Falls back to campuses
-          // that actually have listings if the directory count is unavailable.
-          campuses:
-            supportedCampuses && supportedCampuses > 0
-              ? supportedCampuses
-              : broadErr || !broadData
-                ? new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size
-                : new Set(broadData.map((r) => r?.campus_id).filter(Boolean)).size,
+          // Q445 — campuses that actually have a live, unexpired sublease right
+          // now (same row set as the listings stat). Derived live: it rises as
+          // real listings are posted at new schools. Never the directory total.
+          campuses: new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size,
           inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
