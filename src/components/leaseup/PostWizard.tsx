@@ -228,12 +228,12 @@ function PhotoUrlRow({
           type="button"
           onClick={onRemove}
           aria-label="Remove photo URL"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
         >
           <X className="h-4 w-4" />
         </button>
       ) : (
-        <span className="h-8 w-8 shrink-0" />
+        <span className="h-11 w-11 shrink-0" />
       )}
     </div>
   );
@@ -257,7 +257,7 @@ function Stepper({
   format?: (v: number) => string;
 }) {
   const btn =
-    "flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40 dark:border-border dark:text-foreground";
+    "flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40 dark:border-border dark:text-foreground";
   return (
     <div className="flex items-center gap-4">
       <button type="button" className={btn} disabled={value <= min} onClick={() => onChange(Math.max(min, +(value - step).toFixed(1)))}>
@@ -358,36 +358,49 @@ export function PostWizard({ userId }: { userId: string }) {
 
 
   async function handleFiles(list: FileList | File[]) {
-    const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
-    if (picked.length && picked.length < Array.from(list).length) {
-      setPhotoError("Only photos can be uploaded — skipped the other files.");
+    const all = Array.from(list);
+    const picked = all.filter((f) => f.type.startsWith("image/"));
+    const notes: string[] = [];
+    if (picked.length < all.length) {
+      notes.push("Only photos can be uploaded — skipped the other files.");
     }
     // Q447 — phone photos are routinely 10–15 MB; reject before the upload
     // so the student gets a sentence instead of a stalled spinner.
     const tooBig = picked.filter((f) => f.size > MAX_PHOTO_BYTES);
-    const files = picked
-      .filter((f) => f.size <= MAX_PHOTO_BYTES)
-      .slice(0, MAX_PHOTOS - d.photos.length);
     if (tooBig.length) {
-      setPhotoError(
+      notes.push(
         `${tooBig.length === 1 ? "That photo is" : `${tooBig.length} photos are`} over ${MAX_PHOTO_MB} MB. Try a smaller photo, or screenshot it first.`,
       );
     }
-    if (!files.length) return;
-    if (!tooBig.length) setPhotoError(null);
-    try {
-      for (const file of files) {
+    const room = Math.max(0, MAX_PHOTOS - d.photos.length);
+    const okSize = picked.filter((f) => f.size <= MAX_PHOTO_BYTES);
+    const files = okSize.slice(0, room);
+    // Q464 — silently dropping extras looked like a failed upload.
+    if (okSize.length > files.length) {
+      notes.push(`You can add ${MAX_PHOTOS} photos — the extra ${okSize.length - files.length === 1 ? "one wasn't" : "ones weren't"} added.`);
+    }
+    if (!files.length) {
+      setPhotoError(notes.length ? notes.join(" ") : null);
+      return;
+    }
+    // Q464 — one bad file used to abort the whole batch. Upload each on its
+    // own so the good photos still land and only the failures are reported.
+    let failed = 0;
+    for (const file of files) {
+      try {
         setUploading(file.name);
         const [path] = await uploadListingPhotos(userId, [file]);
         const url = await signPath("listing-photos", path, { ttl: 60 * 60 * 24 });
         setD((p) => ({ ...p, photos: [...p.photos, { path, url: url ?? "" }] }));
+      } catch (e: any) {
+        failed += 1;
+        // Q447 — never surface the raw storage error to a student.
+        if (failed === 1) notes.push(friendlyPhotoError(e));
       }
-    } catch (e: any) {
-      // Q447 — never surface the raw storage error to a student.
-      setPhotoError(friendlyPhotoError(e));
-    } finally {
-      setUploading(null);
     }
+    setUploading(null);
+    if (failed > 1) notes.push(`${failed} photos didn't upload — the rest were added.`);
+    setPhotoError(notes.length ? notes.join(" ") : null);
   }
 
   function next() {
@@ -396,8 +409,13 @@ export function PostWizard({ userId }: { userId: string }) {
     if (!/[a-z0-9]/i.test(d.title)) return setError("Give your listing a title students can read — a few words about the place");
     if (!d.campusId) return setError("Pick your campus");
     const price = Number(d.price);
+    // Q464 — order matters: "abc" is NaN, which also fails `> 0`, so the
+    // number check has to come first or the student gets the wrong sentence.
+    if (!d.price.trim()) return setError("Add a monthly rent");
+    if (!Number.isFinite(price)) return setError("Enter the monthly rent as a number, like 750");
+    if (price < 0) return setError("Rent can't be a negative number");
+    if (price === 0) return setError("Add a monthly rent above $0");
     if (!(price > 0)) return setError("Add a monthly rent");
-    if (!Number.isFinite(price)) return setError("Enter the monthly rent as a number");
     if (price > MAX_PRICE) return setError(`That rent looks too high — enter the monthly rent, not the whole lease`);
     if (!d.availableFrom || !d.availableTo) return setError("Add your available dates");
     const from = new Date(`${d.availableFrom}T00:00:00`).getTime();
@@ -522,7 +540,7 @@ export function PostWizard({ userId }: { userId: string }) {
               navigate({ to: "/" });
             }}
 
-            className="text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
           >
             Save &amp; exit
           </button>
@@ -770,6 +788,10 @@ export function PostWizard({ userId }: { userId: string }) {
                 <p className="mt-1 text-xs text-gray-500">
                   Neighborhood only — not your street address. Renters see this before you've met them.
                 </p>
+                {/* Q464 — say plainly where the exact address does go. */}
+                <p className="mt-1 text-xs text-gray-500">
+                  Your exact address is never on your listing. Share it in messages once you've connected with someone.
+                </p>
                 {looksLikeStreetAddress(d.area) && (
                   <p className="mt-1 text-xs text-red-600">{AREA_ADDRESS_ERROR}</p>
                 )}
@@ -846,7 +868,7 @@ export function PostWizard({ userId }: { userId: string }) {
                         <button
                           type="button"
                           onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
-                          className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow"
+                          className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow"
                         >
                           <X className="h-4 w-4 text-gray-900" />
                         </button>
@@ -882,7 +904,7 @@ export function PostWizard({ userId }: { userId: string }) {
                     <button
                       type="button"
                       onClick={() => set({ photoUrls: [...d.photoUrls, ""] })}
-                      className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
+                      className="inline-flex min-h-[44px] items-center rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
                     >
                       Add another photo +
                     </button>
@@ -964,7 +986,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 <button
                   type="button"
                   onClick={() => set({ step: 1 })}
-                  className="text-sm text-gray-400 hover:text-gray-600"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-400 hover:text-gray-600"
                 >
                   ← Back
                 </button>
@@ -1047,7 +1069,7 @@ export function PostWizard({ userId }: { userId: string }) {
                     <button
                       type="button"
                       onClick={() => set({ step: 2 })}
-                      className="text-sm text-gray-400 hover:text-gray-600"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-400 hover:text-gray-600"
                     >
                       ← Back
                     </button>
