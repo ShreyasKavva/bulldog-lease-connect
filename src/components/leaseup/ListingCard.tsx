@@ -8,7 +8,8 @@ import { Link } from "@tanstack/react-router";
  * lister's name when their email is verified.
  */
 import type { Listing } from "@/lib/leaseup/types";
-import { Heart, Check, ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ListingPhotoFallback } from "./ListingPhoto";
 import { postedAgo } from "@/lib/leaseup/constants";
 import { CardPriceBadge } from "./PriceBadge";
 import { posterName } from "@/lib/leaseup/display-name";
