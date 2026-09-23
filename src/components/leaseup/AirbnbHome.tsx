@@ -33,7 +33,7 @@ import { ListingCard } from "./ListingCard";
 import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
 import { cn } from "@/lib/utils";
-import { CampusMark } from "@/components/leaseup/CampusMark";
+import { CampusMark, campusInitials } from "@/components/leaseup/CampusMark";
 import { useLastCampusSlug } from "@/lib/leaseup/last-campus";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 
@@ -740,7 +740,11 @@ export function AirbnbHome({
                   {/* Q478 — at 375px a single truncated line rendered both
                       Georgia Tech and Georgia State as "Georgia …". Wrap to two
                       lines instead so neighbouring campuses stay distinguishable. */}
-                  <div className="line-clamp-2 text-sm font-bold leading-tight sm:truncate sm:text-base">{campusShortName(c)}</div>
+                  {/* Q491 — when the short name IS the badge's initials (FSU, UGA, UCF),
+                      the tile read "FSU FSU"; show the full name instead. */}
+                  <div className="line-clamp-2 text-sm font-bold leading-tight sm:truncate sm:text-base">
+                    {campusShortName(c).trim().toUpperCase() === campusInitials(c).trim().toUpperCase() && c.name ? c.name : campusShortName(c)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     <span className="sm:hidden">{c.state}</span>
                     <span className="hidden sm:inline">{c.city}, {c.state}</span>
