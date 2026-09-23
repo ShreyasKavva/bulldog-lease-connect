@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { looksLikeStreetAddress } from "@/lib/leaseup/area";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, type Campus } from "@/lib/leaseup/campuses";
@@ -217,9 +218,17 @@ function MarketPage() {
               {(() => {
                 const cleanNeighborhoods = neighborhoods.filter((n) => {
                   const a = (n.area ?? "").trim();
+                  // Q473 — the shared rule set (also used by the post form and
+                  // the owner edit screen) is the source of truth, so the two
+                  // can never drift apart.
+                  if (looksLikeStreetAddress(a)) return false;
+                  // Three extra rules this page had that the shared helper does
+                  // not cover. Keeping them means nothing that is hidden today
+                  // becomes visible: a name too short to be a neighborhood
+                  // ("bs"), any leading digit ("12th Ward"), and "Pl"/"Place".
                   if (a.length < 3) return false;
                   if (/^\d/.test(a)) return false;
-                  if (/\b(dr|st|ave|blvd|rd|ln|ct|way|pl|drive|street|avenue|boulevard|road|lane|court)\b/i.test(a)) return false;
+                  if (/\b(pl|place)\b/i.test(a)) return false;
                   return true;
                 });
                 // Q457 — same comps floor as the bedroom table: a "median" for
@@ -268,13 +277,14 @@ function MarketPage() {
 
             </section>
 
-            {hasComps && (
-              <p className="mt-6 text-xs text-muted-foreground">
-                {totalListings > 0
-                  ? `Data updated daily. Based on ${totalListings} active listings at ${active.short_name} (last 90 days).`
-                  : `Data updated daily. Prices shown reflect listings at ${active.short_name} from the last 90 days.`}
-              </p>
-            )}
+            {hasComps &&               // Q473 — the old footnote claimed a daily refresh over a 90-day
+              // window. The figures are simply every active listing at this
+              // campus, read live on page load. Say exactly that.
+              totalListings > 0 && (
+                <p className="mt-6 text-xs text-muted-foreground">
+                  {`Based on ${totalListings} active listing${totalListings === 1 ? "" : "s"} at ${active.short_name} right now. Updates as students post.`}
+                </p>
+              )}
 
             {hasComps && (
               <div className="mt-6">
