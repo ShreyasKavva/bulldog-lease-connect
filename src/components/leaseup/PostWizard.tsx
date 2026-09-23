@@ -511,12 +511,11 @@ export function PostWizard({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={() => {
-              try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftRef.current, draftId: draftId(), savedAt: Date.now() }));
-              } catch { /* quota */ }
+              saveDraftNow();
               toast.success("Draft saved");
               navigate({ to: "/" });
             }}
+
             className="text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
           >
             Save &amp; exit
