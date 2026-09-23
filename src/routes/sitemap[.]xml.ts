@@ -4,7 +4,15 @@ import type {} from "@tanstack/react-start";
 
 const BASE_URL = "https://leasup.co";
 
-type Entry = { loc: string; priority: string; changefreq?: string };
+type Entry = { loc: string; priority: string; changefreq?: string; lastmod?: string };
+
+/** Q474 — W3C date from a listing's own updated_at. Never "now": a build-time
+ *  timestamp on every URL tells crawlers nothing and trains them to ignore it. */
+function lastmodOf(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
+}
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
@@ -33,21 +41,30 @@ export const Route = createFileRoute("/sitemap.xml")({
           // which campus pages are worth submitting (Q269: an empty campus
           // page is thin content, so it stays out of the sitemap).
           const campusIds = new Set<string>();
+          // Newest listing change per campus — the campus page's real lastmod.
+          const campusTouched = new Map<string, string>();
           for (let offset = 0; ; offset += pageSize) {
             const { data, error } = await supabase
               .from("listings")
-              .select("id,campus_id")
+              .select("id,campus_id,updated_at")
               .eq("is_active", true)
               .eq("status", "active")
               .order("id")
               .range(offset, offset + pageSize - 1);
             if (error) throw error;
             for (const l of data ?? []) {
-              if (l.campus_id) campusIds.add(l.campus_id as string);
+              const touched = lastmodOf(l.updated_at);
+              if (l.campus_id) {
+                const cid = l.campus_id as string;
+                campusIds.add(cid);
+                const seen = campusTouched.get(cid);
+                if (touched && (!seen || touched > seen)) campusTouched.set(cid, touched);
+              }
               entries.push({
                 loc: `${BASE_URL}/listing/${l.id}`,
                 priority: "0.6",
                 changefreq: "daily",
+                lastmod: touched,
               });
             }
             if (!data || data.length < pageSize) break;
@@ -57,7 +74,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             for (let i = 0; i < ids.length; i += 200) {
               const { data, error } = await supabase
                 .from("campuses")
-                .select("slug")
+                .select("id,slug")
                 .in("id", ids.slice(i, i + 200))
                 .order("name");
               if (error) throw error;
@@ -66,6 +83,7 @@ export const Route = createFileRoute("/sitemap.xml")({
                   loc: `${BASE_URL}/sublease/${c.slug}`,
                   priority: "0.9",
                   changefreq: "daily",
+                  lastmod: campusTouched.get(c.id as string),
                 });
               }
             }
@@ -81,6 +99,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             [
               `  <url>`,
               `    <loc>${e.loc}</loc>`,
+              e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
               `    <priority>${e.priority}</priority>`,
               e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
               `  </url>`,
