@@ -433,7 +433,7 @@ export function PostWizard({ userId }: { userId: string }) {
       toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not publish listing");
+      toast.error(friendlyPublishError(e));
       setPublishing(false);
     }
   }
