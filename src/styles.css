@@ -106,7 +106,12 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body, #root { height: 100%; }
+  /* Q481 — `height: 100%` on html/body clamped the document to one viewport and
+     (together with the overflow-x rule below) made the BODY the scroll
+     container, so window.scrollTo / browser scroll restoration did nothing.
+     min-height keeps full-height backgrounds without trapping the scroll. */
+  html { height: 100%; }
+  body, #root { min-height: 100%; }
   html { background-color: var(--color-background); }
   body {
     background-color: var(--color-background);
@@ -242,8 +247,11 @@
   .lu-card-hover, .lu-card-img { transition: none !important; }
 }
 
-/* Prevent accidental horizontal scroll on narrow mobile viewports */
-html, body { overflow-x: hidden; }
+/* Prevent accidental horizontal scroll on narrow mobile viewports.
+   Q481 — `overflow-x: hidden` here forced overflow-y to `auto`, which turned
+   the root box into a scroll container and broke window scrolling. `clip`
+   blocks sideways scroll without creating a scroll container. */
+html { overflow-x: clip; }
 
 /* Route enter animation — applied by AppShell on pathname change */
 @keyframes lu-page-enter {
