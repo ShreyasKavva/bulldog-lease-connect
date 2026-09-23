@@ -20,6 +20,46 @@ function redactEmail(email: string | null | undefined): string {
   if (!localPart || !domain) return '***'
   return `${localPart[0]}***@${domain}`
 }
+// Q456 — what a non-admin, non-system caller is allowed to put in
+// templateData, per template. Anything not listed here is dropped.
+const MAX_TEXT_FIELD = 200
+type FieldKind = 'text' | 'url' | 'number' | 'id'
+const USER_TEMPLATE_FIELDS: Record<string, Record<string, FieldKind>> = {
+  welcome: {
+    firstName: 'text',
+    campusName: 'text',
+    campusUrl: 'url',
+    postUrl: 'url',
+    roommatesUrl: 'url',
+  },
+  'new-message': {
+    senderName: 'text',
+    preview: 'text',
+    listingTitle: 'text',
+    listingPrice: 'number',
+    listingArea: 'text',
+    conversationUrl: 'url',
+    conversationId: 'id',
+  },
+}
+
+// Accept only links on our own site; anything else is rewritten onto the
+// canonical origin (path preserved) so no off-site link can ride our domain.
+function safeSiteUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 500) return null
+  let parsed: URL
+  try {
+    parsed = new URL(value, `https://${FROM_DOMAIN}`)
+  } catch {
+    return null
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null
+  const host = parsed.hostname.toLowerCase()
+  const onSite = host === FROM_DOMAIN || host.endsWith(`.${FROM_DOMAIN}`) || host.endsWith('.lovable.app')
+  if (onSite) return parsed.toString()
+  return `https://${FROM_DOMAIN}${parsed.pathname}${parsed.search}`
+}
+
 
 // Generate a cryptographically random 32-byte hex token
 function generateToken(): string {
