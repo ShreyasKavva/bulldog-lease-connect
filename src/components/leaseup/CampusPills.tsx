@@ -89,7 +89,7 @@ export function CampusPills({
               aria-disabled={n === 0 || undefined}
               aria-current={isLast ? "true" : undefined}
               tabIndex={n === 0 ? -1 : undefined}
-              className={`group flex shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary ${
+              className={`group flex min-h-[44px] shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary ${
                 isLast
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border bg-surface text-foreground"
