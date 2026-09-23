@@ -16,30 +16,49 @@ import { cn } from "@/lib/utils";
 
 const MIN_SAMPLE = 3;
 
-async function fetchCampusAverage(campusId: string): Promise<number | null> {
+/**
+ * Q467 — one request for the whole page instead of one per campus.
+ * Previously each distinct campus on screen fired its own prices query; a
+ * mixed grid meant N round trips. Now every active listing's (campus, price)
+ * pair is fetched once, cached for the session, and averaged in the browser.
+ * The inputs and the MIN_SAMPLE rule are identical, so the badge shows on
+ * exactly the same listings as before.
+ */
+async function fetchCampusAverages(): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from("listings")
-    .select("price")
-    .eq("campus_id", campusId)
+    .select("campus_id, price")
     .eq("is_active", true)
     .eq("status", "active")
-    .limit(500);
-  if (error || !data || data.length < MIN_SAMPLE) return null;
-  const prices = data.map((r) => Number(r.price)).filter((p) => Number.isFinite(p) && p > 0);
-  if (prices.length < MIN_SAMPLE) return null;
-  return prices.reduce((a, b) => a + b, 0) / prices.length;
+    .limit(2000);
+  if (error || !data) return {};
+  const sums: Record<string, { total: number; n: number }> = {};
+  for (const row of data) {
+    const id = (row as { campus_id: string | null }).campus_id;
+    const price = Number((row as { price: number | null }).price);
+    if (!id || !Number.isFinite(price) || price <= 0) continue;
+    const bucket = (sums[id] ??= { total: 0, n: 0 });
+    bucket.total += price;
+    bucket.n += 1;
+  }
+  const averages: Record<string, number> = {};
+  for (const [id, { total, n }] of Object.entries(sums)) {
+    if (n >= MIN_SAMPLE) averages[id] = total / n;
+  }
+  return averages;
 }
 
-/** Cached per campus for the whole session. Never throws. */
+/** Cached once for the whole session. Never throws. */
 export function useCampusAverage(campusId: string | null | undefined) {
-  return useQuery({
-    queryKey: ["campus-avg-price", campusId],
+  const query = useQuery({
+    queryKey: ["campus-avg-prices"],
     enabled: !!campusId,
     staleTime: Infinity,
     gcTime: Infinity,
     retry: false,
-    queryFn: () => fetchCampusAverage(campusId!).catch(() => null),
+    queryFn: () => fetchCampusAverages().catch(() => ({} as Record<string, number>)),
   });
+  return { ...query, data: campusId ? query.data?.[campusId] ?? null : null };
 }
 
 export type PriceTier = { label: string; tone: "great" } | null;

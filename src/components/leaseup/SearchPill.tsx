@@ -92,13 +92,20 @@ export function SearchPill({
 
   const canSearch = value.where.trim().length > 0;
 
+  // Q467 — an empty search is a valid intent: show everything. With a campus
+  // typed we hand off to the page's own handler as before.
+  function submit() {
+    setOpenField(null);
+    if (canSearch) onSearch?.();
+    else navigate({ to: "/browse" });
+  }
+
   return (
     <div
       onKeyDown={(e) => {
-        if (e.key === "Enter" && canSearch) {
+        if (e.key === "Enter") {
           e.preventDefault();
-          setOpenField(null);
-          onSearch?.();
+          submit();
         }
       }}
       className={cn(
@@ -240,18 +247,14 @@ export function SearchPill({
           even while a popover is open. pointerdown fires before Radix's dismiss layer. */}
       <button
         onPointerDown={(e) => {
-          if (!canSearch) return;
           e.preventDefault();
           firedRef.current = true;
-          setOpenField(null);
-          onSearch?.();
+          submit();
         }}
         onClick={() => {
           if (firedRef.current) { firedRef.current = false; return; }
-          setOpenField(null);
-          onSearch?.();
+          submit();
         }}
-        disabled={!canSearch}
         className={cn(
           "relative z-[60] mt-2 flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:mt-0 sm:my-2 sm:mr-2 sm:ml-1 sm:self-center",
           anyActive ? "sm:w-auto sm:px-5" : "sm:w-12 sm:justify-center",
