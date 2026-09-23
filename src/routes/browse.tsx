@@ -657,7 +657,7 @@ function Browse() {
             pairs.push({
               key: `${a.key}+${b.key}` as RelaxKey,
               active: true,
-              heading: `${a.heading} with those other filters`,
+              heading: "No subleases match all of these filters at once",
               button: `${a.button.replace(/^Remove /, "Remove ")} and ${b.button.replace(/^(Remove|Clear) (the )?/, "").replace(/ filters?$/, "")} filter`,
               patch: { ...a.patch, ...b.patch },
               count,
