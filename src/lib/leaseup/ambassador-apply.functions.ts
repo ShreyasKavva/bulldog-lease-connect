@@ -3,6 +3,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { classifyEmailFailure, logEmailFailure } from "@/lib/email/observability";
 
 const ApplySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
