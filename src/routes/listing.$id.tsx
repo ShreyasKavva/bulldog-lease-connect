@@ -1589,10 +1589,14 @@ function DeepLinkBackLink() {
   const router = useRouter();
   const [campus, setCampus] = useState<string | undefined>(undefined);
   const [canGoBack, setCanGoBack] = useState(false);
+  // Q448 — the search the visitor last had on /browse, so even a deep link
+  // lands back on their filters instead of a bare, reset browse page.
+  const [lastBrowse, setLastBrowse] = useState<Record<string, string> | null>(null);
   useEffect(() => {
     const c = new URLSearchParams(window.location.search).get("campus");
     setCampus(c ?? undefined);
     setCanGoBack(router.history.canGoBack());
+    setLastBrowse(getLastBrowse());
   }, [router]);
 
   if (canGoBack) {
@@ -1609,11 +1613,13 @@ function DeepLinkBackLink() {
     );
   }
 
+  const fallbackSearch = lastBrowse ?? (campus ? { campus } : {});
+
   return (
     <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6 lg:px-8">
       <Link
         to="/browse"
-        search={(campus ? { campus } : {}) as any}
+        search={fallbackSearch as any}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
         ← Back to browse
