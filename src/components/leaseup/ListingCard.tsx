@@ -14,7 +14,7 @@ import { CardPriceBadge } from "./PriceBadge";
 import { posterName } from "@/lib/leaseup/display-name";
 import { hasSchoolEmail, SCHOOL_EMAIL_BADGE } from "@/lib/leaseup/school-email";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReactionPicker } from "./useReactionPicker";
 import { useSession } from "@/lib/leaseup/use-session";
 import { openSignIn } from "./SignInModal";
@@ -165,6 +165,13 @@ export function ListingCard({
   // (which already includes their save) can't double-count.
   const [savesOverride, setSavesOverride] = useState<number | null>(null);
   const savesCount = savesOverride ?? Math.max(0, listing.saves_count ?? 0);
+
+  // Q477 — when fresh server data arrives for this listing, drop the local
+  // override so the displayed count reconciles with the database instead of
+  // drifting on a long-lived page.
+  useEffect(() => {
+    setSavesOverride(null);
+  }, [listing.saves_count]);
 
   function bumpSaveCount(savedBefore: boolean) {
     setSavesOverride((c) =>

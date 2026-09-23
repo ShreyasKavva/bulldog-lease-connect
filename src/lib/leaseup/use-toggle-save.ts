@@ -38,6 +38,10 @@ export function useToggleSave(userId: string | undefined) {
       savesInFlight.add(requestKey);
       try {
         await toggleSaved(userId, listingId, wasSaved);
+        // Q477 — reconcile the optimistic flip against the server once the
+        // write has settled. Refetches the saved-id set only (one small
+        // query); listing/browse data is still never invalidated.
+        void qc.invalidateQueries({ queryKey: key });
         return wasSaved ? "unsaved" as const : "saved" as const;
       } catch {
         qc.setQueryData(key, prev ?? new Set<string>());

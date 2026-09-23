@@ -161,13 +161,21 @@ export async function fetchSavedIds(userId: string): Promise<Set<string>> {
   return new Set((data ?? []).map((r: any) => r.listing_id));
 }
 
+/**
+ * Save / unsave a listing. Idempotent in both directions:
+ *  - saving twice is a no-op (unique index + ignoreDuplicates), and a
+ *    duplicate-key error from a racing write (23505) counts as SUCCESS —
+ *    the row the caller wanted already exists.
+ *  - unsaving something that isn't saved deletes zero rows, no error.
+ * Q477 — never surface a raw DB message for either case.
+ */
 export async function toggleSaved(userId: string, listingId: string, saved: boolean) {
   if (saved) {
     const { error } = await supabase.from("saved_listings").delete().eq("user_id", userId).eq("listing_id", listingId);
     if (error) throw error;
   } else {
     const { error } = await supabase.from("saved_listings").upsert({ user_id: userId, listing_id: listingId }, { onConflict: "user_id,listing_id", ignoreDuplicates: true });
-    if (error) throw error;
+    if (error && (error as { code?: string }).code !== "23505") throw error;
   }
 }
 
