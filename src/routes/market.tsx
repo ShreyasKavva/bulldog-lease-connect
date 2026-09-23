@@ -142,7 +142,7 @@ function MarketPage() {
               key={c.id}
               onClick={() => setSelected(c.id)}
               className={cn(
-                "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition",
+                "inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold transition",
                 activeId === c.id ? "bg-primary text-primary-foreground" : "bg-surface border hover:bg-muted",
               )}
             >
