@@ -1528,11 +1528,12 @@ function Lightbox({
       </div>
 
       <div className="relative flex flex-1 items-center justify-center px-4">
-        <img
+        <PhotoImg
           src={photos[index]}
           alt={`Photo ${index + 1} of ${photos.length}`}
           className="mx-auto max-h-[80vh] max-w-[90vw] object-contain"
         />
+
         {photos.length > 1 && (
           <>
             <button
