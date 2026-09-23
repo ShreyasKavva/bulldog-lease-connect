@@ -8,7 +8,7 @@ import { BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { signPath, signPaths } from "@/lib/leaseup/signed-urls";
 import { useSession } from "@/lib/leaseup/use-session";
-import { getOrCreateConversation, publicLocationLabel } from "@/lib/leaseup/queries";
+import { getOrCreateConversation, publicLocationLabel, PUBLIC_LISTING_COLUMNS } from "@/lib/leaseup/queries";
 import { ListingCard } from "@/components/leaseup/ListingCard";
 import { openSignIn } from "@/components/leaseup/SignInModal";
 import type { Listing } from "@/lib/leaseup/types";
