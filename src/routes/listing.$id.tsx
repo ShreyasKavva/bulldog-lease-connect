@@ -1390,8 +1390,17 @@ function MobileStickyCTA({
   onMessage: () => void;
   messaging?: boolean;
 }) {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+  // Q462 — the root page wrapper carries `.lu-page-enter` with
+  // animation-fill-mode: both, so its final transform permanently makes it the
+  // containing block for `position: fixed`. That anchored this bar to the
+  // bottom of the *document* instead of the viewport, so it was invisible for
+  // the whole scroll. Portalling to <body> restores true viewport-fixed, and
+  // the bottom offset clears the (md:hidden, h-16) global bottom nav.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
+    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 backdrop-blur md:bottom-0 lg:hidden">
       <div className="flex items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="min-w-0">
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
@@ -1410,9 +1419,11 @@ function MobileStickyCTA({
           )}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
+
 
 // ---------------- lightbox ----------------
 
