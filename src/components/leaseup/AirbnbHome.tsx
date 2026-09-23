@@ -740,7 +740,10 @@ export function AirbnbHome({
               >
                 <CampusMark campus={c} className="h-11 w-11 text-xs shadow-sm sm:h-14 sm:w-14 sm:text-sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold leading-tight sm:text-base">{campusShortName(c)}</div>
+                  {/* Q478 — at 375px a single truncated line rendered both
+                      Georgia Tech and Georgia State as "Georgia …". Wrap to two
+                      lines instead so neighbouring campuses stay distinguishable. */}
+                  <div className="line-clamp-2 text-sm font-bold leading-tight sm:truncate sm:text-base">{campusShortName(c)}</div>
                   <div className="text-xs text-muted-foreground">
                     <span className="sm:hidden">{c.state}</span>
                     <span className="hidden sm:inline">{c.city}, {c.state}</span>
