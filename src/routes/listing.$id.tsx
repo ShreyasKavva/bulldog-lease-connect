@@ -982,8 +982,12 @@ function ListingDetailPage() {
       </div>
 
 
+      {/* Q462 — clears the sticky CTA, which now sits above the bottom nav. */}
+      <div aria-hidden className="h-20 lg:hidden" />
+
       {/* PART F — sticky mobile CTA */}
       <MobileStickyCTA
+
         listing={listing}
         firstName={firstName}
         isOwner={isOwner}
@@ -1008,7 +1012,36 @@ function ListingDetailPage() {
 
 // ---------------- gallery ----------------
 
+/**
+ * Q462 — a signed photo URL can 400 once its 7-day TTL lapses (or the file was
+ * removed from storage). A bare <img> then paints the browser's broken-image
+ * glyph; this swaps in the same neutral "photo unavailable" tile the
+ * zero-photo state uses.
+ */
+function PhotoImg({
+  src, alt, className, onClick,
+}: { src: string; alt: string; className?: string; onClick?: () => void }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={cn("grid h-full w-full place-items-center bg-muted text-muted-foreground", className)}>
+        <Home className="h-10 w-10" strokeWidth={1.5} aria-label={alt} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      onError={() => setFailed(true)}
+      className={className}
+    />
+  );
+}
+
 function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; onOpen: (i: number) => void }) {
+
   // 0 photos
   if (photos.length === 0) {
     return (
@@ -1029,7 +1062,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
         onClick={() => onOpen(0)}
         className="block h-[45vh] w-full overflow-hidden lg:h-[55vh]"
       >
-        <img src={photos[0]} alt={`${title} — photo 1`} className="h-full w-full cursor-zoom-in object-cover" />
+        <PhotoImg src={photos[0]} alt={`${title} — photo 1`} className="h-full w-full cursor-zoom-in object-cover" />
       </button>
     );
   }
@@ -1049,7 +1082,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
             onClick={() => onOpen(0)}
             className="col-span-3 row-span-2 overflow-hidden"
           >
-            <img
+            <PhotoImg
               src={photos[0]}
               alt={`${title} — photo 1`}
               className="h-full w-full cursor-zoom-in object-cover transition hover:brightness-95"
@@ -1062,7 +1095,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
               onClick={() => onOpen(i + 1)}
               className="overflow-hidden"
             >
-              <img
+              <PhotoImg
                 src={p}
                 alt={`${title} — photo ${i + 2}`}
                 className="h-full w-full cursor-zoom-in object-cover transition hover:brightness-95"
@@ -1106,7 +1139,7 @@ function MobileCarousel({ photos, title, onOpen }: { photos: string[]; title: st
         className="flex h-[45vh] snap-x snap-mandatory overflow-x-auto scroll-smooth"
       >
         {photos.map((p, i) => (
-          <img
+          <PhotoImg
             key={i}
             src={p}
             alt={`${title} — photo ${i + 1}`}
@@ -1390,8 +1423,17 @@ function MobileStickyCTA({
   onMessage: () => void;
   messaging?: boolean;
 }) {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+  // Q462 — the root page wrapper carries `.lu-page-enter` with
+  // animation-fill-mode: both, so its final transform permanently makes it the
+  // containing block for `position: fixed`. That anchored this bar to the
+  // bottom of the *document* instead of the viewport, so it was invisible for
+  // the whole scroll. Portalling to <body> restores true viewport-fixed, and
+  // the bottom offset clears the (md:hidden, h-16) global bottom nav.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
+    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 backdrop-blur md:bottom-0 lg:hidden">
       <div className="flex items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="min-w-0">
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
@@ -1410,9 +1452,11 @@ function MobileStickyCTA({
           )}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
+
 
 // ---------------- lightbox ----------------
 
@@ -1484,11 +1528,12 @@ function Lightbox({
       </div>
 
       <div className="relative flex flex-1 items-center justify-center px-4">
-        <img
+        <PhotoImg
           src={photos[index]}
           alt={`Photo ${index + 1} of ${photos.length}`}
           className="mx-auto max-h-[80vh] max-w-[90vw] object-contain"
         />
+
         {photos.length > 1 && (
           <>
             <button
@@ -1528,7 +1573,7 @@ function Lightbox({
                 i === index ? "border-2 border-white" : "opacity-60 hover:opacity-100",
               )}
             >
-              <img src={p} alt="" className="h-full w-full object-cover" />
+              <PhotoImg src={p} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -1610,10 +1655,11 @@ function DeepLinkBackLink() {
         <button
           type="button"
           onClick={() => router.history.back()}
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
         >
           ← Back
         </button>
+
       </div>
     );
   }
@@ -1625,8 +1671,9 @@ function DeepLinkBackLink() {
       <Link
         to="/browse"
         search={fallbackSearch as any}
-        className="text-sm text-muted-foreground hover:text-foreground"
+        className="-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
       >
+
         ← Back to browse
       </Link>
 
