@@ -8,8 +8,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star } from "lucide-react";
+import { X, Minus, Plus, ImagePlus, ImageOff, Loader2, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { deleteListingPhoto } from "@/lib/leaseup/post-photos";
 import { supabase } from "@/integrations/supabase/client";
 import { looksLikeStreetAddress, AREA_ADDRESS_ERROR } from "@/lib/leaseup/area";
 import { signPath } from "@/lib/leaseup/signed-urls";
@@ -277,6 +278,8 @@ export function PostWizard({ userId }: { userId: string }) {
   const [campuses, setCampuses] = useState<Campus[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  /** Q470 — index of the thumbnail being dragged (desktop reordering). */
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -357,6 +360,19 @@ export function PostWizard({ userId }: { userId: string }) {
   }, [userId]);
 
 
+  // Q470 — the same size/type checks must cover a pasted screenshot, not just
+  // the picker and drag & drop. Only active while the photo step is showing.
+  useEffect(() => {
+    if (d.step !== 2) return;
+    function onPaste(e: ClipboardEvent) {
+      const files = Array.from(e.clipboardData?.files ?? []);
+      if (files.length) { e.preventDefault(); void handleFiles(files); }
+    }
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.step, d.photos.length]);
+
   async function handleFiles(list: FileList | File[]) {
     const all = Array.from(list);
     const picked = all.filter((f) => f.type.startsWith("image/"));
@@ -401,6 +417,23 @@ export function PostWizard({ userId }: { userId: string }) {
     setUploading(null);
     if (failed > 1) notes.push(`${failed} photos didn't upload — the rest were added.`);
     setPhotoError(notes.length ? notes.join(" ") : null);
+  }
+
+  /** Q470 — removing a photo also deletes the object the student uploaded. */
+  function removePhoto(path: string) {
+    setD((p) => ({ ...p, photos: p.photos.filter((x) => x.path !== path) }));
+    void deleteListingPhoto(path);
+  }
+
+  /** Q470 — photo order IS the stored order; index 0 is the cover. */
+  function movePhoto(from: number, to: number) {
+    setD((p) => {
+      if (to < 0 || to >= p.photos.length || from === to) return p;
+      const next = [...p.photos];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return { ...p, photos: next };
+    });
   }
 
   function next() {
@@ -673,30 +706,9 @@ export function PostWizard({ userId }: { userId: string }) {
               </div>
 
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">Listing type</label>
-                <div className="flex overflow-hidden rounded-full border border-gray-300 dark:border-border">
-                  {PLACE_TYPES.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => set({ placeType: t.id })}
-                      className={cn(
-                        "flex-1 px-3 py-2.5 text-sm font-medium transition",
-                        d.placeType === t.id ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "hover:bg-muted",
-                      )}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                {/* Q451 — placeType is not saved to the listing yet, so say so
-                    rather than imply it will show up on the listing page. */}
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-foreground/60">
-                  Not shown on your listing yet — mention it in your description so renters know.
-                </p>
-              </div>
-
+              {/* Q470 — "Listing type" was collected but there is no column to
+                  store it, so the choice silently vanished on publish. Hidden
+                  until a column exists; see the Q470 report for the migration. */}
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Campus</label>
@@ -854,10 +866,26 @@ export function PostWizard({ userId }: { userId: string }) {
                   )}
                 </div>
                 {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
+                {d.photos.length > 1 && (
+                  <p className="mt-3 text-xs text-gray-500 dark:text-foreground/60">
+                    The first photo is the one renters see first. Drag a photo, or use the buttons on it, to change the order.
+                  </p>
+                )}
                 {d.photos.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     {d.photos.map((p, i) => (
-                      <div key={p.path} className="relative overflow-hidden rounded-xl bg-muted">
+                      <div
+                        key={p.path}
+                        draggable
+                        onDragStart={() => setDragIdx(i)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (dragIdx !== null) movePhoto(dragIdx, i); setDragIdx(null); }}
+                        onDragEnd={() => setDragIdx(null)}
+                        className={cn(
+                          "relative overflow-hidden rounded-xl bg-muted",
+                          dragIdx === i && "opacity-60 ring-2 ring-gray-900 dark:ring-white",
+                        )}
+                      >
                         <img src={p.url} alt="" className="h-32 w-full object-cover" />
                         {i === 0 && (
                           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-gray-900/85 px-2 py-1 text-[11px] font-medium text-white">
@@ -867,11 +895,42 @@ export function PostWizard({ userId }: { userId: string }) {
                         )}
                         <button
                           type="button"
-                          onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
+                          onClick={() => removePhoto(p.path)}
+                          aria-label="Remove photo"
                           className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow"
                         >
                           <X className="h-4 w-4 text-gray-900" />
                         </button>
+                        {/* Q470 — touch-friendly reordering; drag works on desktop. */}
+                        <div className="absolute inset-x-0 bottom-0 flex items-stretch gap-px bg-black/45 backdrop-blur-sm">
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, i - 1)}
+                            disabled={i === 0}
+                            aria-label="Move photo left"
+                            className="grid min-h-11 flex-1 place-items-center text-white disabled:opacity-35"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, 0)}
+                            disabled={i === 0}
+                            aria-label="Make this the cover photo"
+                            className="min-h-11 flex-[2] px-1 text-[11px] font-semibold text-white disabled:opacity-35"
+                          >
+                            {i === 0 ? "Cover" : "Make cover"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, i + 1)}
+                            disabled={i === d.photos.length - 1}
+                            aria-label="Move photo right"
+                            className="grid min-h-11 flex-1 place-items-center text-white disabled:opacity-35"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
