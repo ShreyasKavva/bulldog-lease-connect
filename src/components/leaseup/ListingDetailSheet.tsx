@@ -181,12 +181,18 @@ export function ListingDetailSheet({
    */
   useEffect(() => {
     if (typeof window === "undefined" || !open) return;
+    const openedAt = window.location.href;
     window.history.pushState({ ...(window.history.state ?? {}), luListingSheet: true }, "");
     const onPop = () => onOpenChange(false);
     window.addEventListener("popstate", onPop);
     return () => {
       window.removeEventListener("popstate", onPop);
-      if ((window.history.state as { luListingSheet?: boolean } | null)?.luListingSheet) {
+      // Q448 — only retire our throwaway entry when the visitor is still on the
+      // page the sheet was opened from. If the sheet closed because they
+      // navigated somewhere else (message, profile, sign-in), going back here
+      // would yank them off the page they just asked for.
+      const stillHere = window.location.href === openedAt;
+      if (stillHere && (window.history.state as { luListingSheet?: boolean } | null)?.luListingSheet) {
         window.history.back();
       }
     };
