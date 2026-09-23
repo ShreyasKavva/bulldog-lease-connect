@@ -515,10 +515,16 @@ export function BrowseMapView({
           font-size:14px; font-weight:600; white-space:nowrap;
           box-shadow:0 2px 8px rgba(0,0,0,.15); border:1px solid rgba(0,0,0,.06);
           font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
-        .leaflet-control-attribution { font-size:9px !important; color:#9ca3af !important;
-          background:rgba(255,255,255,.7) !important; border-radius:9999px !important;
-          padding:1px 8px !important; margin:6px !important; box-shadow:none !important; }
-        .leaflet-control-attribution a { color:#9ca3af !important; }
+        /* Q480 — OpenStreetMap requires the credit to be legible. Was 9px
+           #9ca3af on 70% white (~2.4:1 contrast). */
+        .leaflet-control-attribution { font-size:11px !important; color:#4b5563 !important;
+          background:rgba(255,255,255,.92) !important; border-radius:9999px !important;
+          padding:2px 10px !important; margin:6px !important; box-shadow:none !important; }
+        .leaflet-control-attribution a { color:#4b5563 !important; text-decoration:underline; }
+        /* Clear the fixed mobile bottom nav and the "Show N subleases" pill. */
+        @media (max-width: 767px) {
+          .leaflet-control-attribution { margin:0 6px 84px 6px !important; }
+        }
       `}</style>
 
       {/* Left list — desktop only */}
