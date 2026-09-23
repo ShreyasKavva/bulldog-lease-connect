@@ -477,14 +477,24 @@ export function PostWizard({ userId }: { userId: string }) {
         .single();
       if (err) throw err;
       // Q181 — the draft became a live listing: it is dead, never prompt again.
-      try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DISMISSED_KEY); } catch { /* noop */ }
+      lsRemove(draftKey(userId));
+      lsRemove(dismissedKey(userId));
       toast.success("Your sublease is live! 🎉");
       navigate({ to: "/listing/$id", params: { id: data.id } });
     } catch (e: any) {
-      toast.error(friendlyPublishError(e));
+      // Q451 — an expired session mid-publish keeps the form and the draft.
+      const low = String(e?.message ?? "").toLowerCase();
+      if (low.includes("jwt") || low.includes("not authenticated") || e?.code === "42501" || low.includes("row-level security")) {
+        saveDraftNow();
+        setSessionExpired(true);
+      } else {
+        toast.error(friendlyPublishError(e));
+      }
+      publishingRef.current = false;
       setPublishing(false);
     }
   }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
