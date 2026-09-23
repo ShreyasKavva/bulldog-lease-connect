@@ -669,7 +669,13 @@ export function PostWizard({ userId }: { userId: string }) {
                     </button>
                   ))}
                 </div>
+                {/* Q451 — placeType is not saved to the listing yet, so say so
+                    rather than imply it will show up on the listing page. */}
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-foreground/60">
+                  Not shown on your listing yet — mention it in your description so renters know.
+                </p>
               </div>
+
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Campus</label>
