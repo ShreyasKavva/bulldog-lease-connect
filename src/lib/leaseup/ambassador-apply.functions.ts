@@ -23,7 +23,7 @@ async function notifyAmbassadorApplication(applicationId: string, data: {
 }) {
   try {
     const origin = new URL(getRequest().url).origin;
-    await fetch(`${origin}/lovable/email/transactional/send`, {
+    const res = await fetch(`${origin}/lovable/email/transactional/send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,8 +41,23 @@ async function notifyAmbassadorApplication(applicationId: string, data: {
         },
       }),
     });
+    if (!res.ok) {
+      logEmailFailure({
+        stage: "ambassador-apply:request",
+        template: "ambassador-application",
+        cause: res.status >= 500 ? "provider_unavailable" : "provider_rejected",
+        detail: await res.text().catch(() => `HTTP ${res.status}`),
+        extra: { status: res.status, application_id: applicationId },
+      });
+    }
   } catch (err) {
-    console.warn("[ambassador-apply] notification email failed", err);
+    logEmailFailure({
+      stage: "ambassador-apply:request",
+      template: "ambassador-application",
+      cause: classifyEmailFailure(err),
+      detail: err,
+      extra: { application_id: applicationId },
+    });
   }
 }
 
