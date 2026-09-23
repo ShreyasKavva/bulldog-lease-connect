@@ -34,6 +34,7 @@ import { ListingRatingSummary, ListingReviewsSection } from "@/components/leaseu
 import { AvailabilityCalendar } from "@/components/leaseup/AvailabilityCalendar";
 import { HostProfileCard } from "@/components/leaseup/HostProfileCard";
 import { timeAgo } from "@/lib/leaseup/constants";
+import { getLastBrowse } from "@/lib/leaseup/last-browse";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
