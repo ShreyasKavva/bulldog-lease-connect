@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampuses, fetchActiveListingCountsByCampus, searchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { fetchMajorCampuses } from "@/lib/leaseup/major-campuses";
 import { Search, School } from "lucide-react";
-import { CampusMark } from "@/components/leaseup/CampusMark";
+import { CampusMark, campusInitials } from "@/components/leaseup/CampusMark";
 import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
 
 
@@ -22,13 +22,18 @@ export const Route = createFileRoute("/campuses")({
       {
         name: "description",
         content:
-          "Browse verified student subleases at 33 universities — UGA, Georgia Tech, UF, Michigan, Ohio State, and more. Free to post, and you message the lister directly.",
+          "Find or post a student sublease at your college. Every US campus is in the directory; listings grow as students post. Free to post, and you message the lister directly.",
       },
       { property: "og:title", content: "Find Student Subleases at Your College | LeaseUp" },
       {
         property: "og:description",
         content:
-          "Browse verified student subleases at 33 universities. Free to post, and you message the lister directly.",
+          "Find or post a student sublease at your college. Free to post, and you message the lister directly.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Find or post a student sublease at your college. Free to post, and you message the lister directly.",
       },
       { property: "og:url", content: "https://leasup.co/campuses" },
       { property: "og:type", content: "website" },
@@ -183,6 +188,21 @@ function CampusDirectoryPage() {
 
 function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
   const has = count > 0;
+  // Q500 — the row always leads with the full readable name (CSS-clamped,
+  // full text in a title), never the bare acronym or a sliced "…" string.
+  // The short name is a secondary label only when it adds something: not a
+  // repeat of the full name, not the badge's initials, not a truncation.
+  const full = campusFullName(c);
+  const short = campusShortName(c);
+  const norm = (t: string) => t.replace(/[^a-z0-9]/gi, "").toUpperCase();
+  const secondary =
+    short &&
+    !short.endsWith("…") &&
+    norm(short) !== norm(full) &&
+    norm(short) !== norm(campusInitials(c)) &&
+    !norm(full).startsWith(norm(short))
+      ? short
+      : null;
   return (
     <Link
       to="/sublease/$slug"
@@ -193,16 +213,13 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
         <div className="flex items-start gap-3">
           <CampusMark campus={c} className="h-11 w-11 text-xs" />
           <div className="min-w-0">
-            <div className="text-base font-bold text-foreground group-hover:text-primary">
-              <span className="sm:hidden">{campusShortName(c) || campusFullName(c)}</span>
-              <span className="hidden sm:inline">{campusFullName(c)}</span>
+            <div title={full} className="line-clamp-2 break-words text-base font-bold text-foreground group-hover:text-primary">
+              {full}
             </div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 truncate text-xs text-muted-foreground">
               {c.city}
               {c.state ? `, ${c.state}` : ""}
-              {campusShortName(c) && campusShortName(c) !== campusFullName(c) ? (
-                <span className="hidden sm:inline">{` · ${campusShortName(c)}`}</span>
-              ) : null}
+              {secondary ? ` · ${secondary}` : null}
             </div>
           </div>
         </div>
@@ -218,7 +235,7 @@ function CampusCard({ campus: c, count }: { campus: Campus; count: number }) {
           </span>
         </div>
         <span className="text-xs font-semibold text-primary group-hover:underline">
-          {has ? `Browse ${campusShortName(c) || "listings"} →` : "Be the first →"}
+          {has ? `Browse ${secondary ?? "listings"} →` : "Be the first →"}
         </span>
       </div>
     </Link>
