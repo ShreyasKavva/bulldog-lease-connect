@@ -20,7 +20,12 @@ import { Link } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
-import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
+import {
+  BASEMAP_URL,
+  BASEMAP_OPTIONS,
+  BASEMAP_ATTRIBUTION_HREF,
+  BASEMAP_ATTRIBUTION_TEXT,
+} from "@/lib/leaseup/map-tiles";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { posterName } from "@/lib/leaseup/display-name";
 
