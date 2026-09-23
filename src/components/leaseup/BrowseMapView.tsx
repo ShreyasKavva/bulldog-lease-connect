@@ -430,21 +430,10 @@ export function BrowseMapView({
       .map((l) => coordsFor(l, mapCenter, campusCoords))
       .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180);
     if (pts.length >= 2) {
-      // Trim far-flung outliers: if the set spans a continent, a literal
-      // fitBounds leaves every pin unreadably piled. Fit the dense cluster
-      // (points within a few degrees of the median) instead.
-      const lats = pts.map((p) => p[0]).sort((a, b) => a - b);
-      const lngs = pts.map((p) => p[1]).sort((a, b) => a - b);
-      // A multi-state spread (e.g. the whole Southeast) is just as unreadable
-      // as a continental one, so cluster tightly around the median.
-      if (lats[lats.length - 1] - lats[0] > 1.5 || lngs[lngs.length - 1] - lngs[0] > 1.5) {
-        const medLat = lats[Math.floor(lats.length / 2)];
-        const medLng = lngs[Math.floor(lngs.length / 2)];
-        const core = pts.filter((p) => Math.abs(p[0] - medLat) <= 0.6 && Math.abs(p[1] - medLng) <= 0.8);
-        if (core.length > 0) pts = core;
-      }
-      if (pts.length === 1) map.setView(pts[0], 14);
-      else map.fitBounds(L.latLngBounds(pts), { padding: [48, 48], maxZoom: 14 });
+      // Q497 — fit every result. The old "trim far-flung outliers" step kept
+      // only the cluster around the median, so a Georgia Tech listing in an
+      // otherwise-Tempe set was left ~321,000px off-screen.
+      map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 14 });
     } else if (pts.length === 1) {
       map.setView(pts[0], 14);
     } else if (center) {
@@ -585,7 +574,7 @@ export function BrowseMapView({
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
-          className="absolute bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-lg md:hidden"
+          className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-lg md:hidden"
         >
           Show {listings.length} sublease{listings.length === 1 ? "" : "s"}
         </button>
