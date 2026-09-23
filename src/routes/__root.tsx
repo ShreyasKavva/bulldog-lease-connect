@@ -171,6 +171,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "LeaseUp" },
+      ...(matches.some((m) => m.globalNotFound === true)
+        ? [
+            { title: "Page not found — LeaseUp" },
+            { name: "robots", content: "noindex" },
+            { property: "og:title", content: "Page not found — LeaseUp" },
+          ]
+        : []),
     ],
     links: [
       { rel: "stylesheet", href: appCss },
