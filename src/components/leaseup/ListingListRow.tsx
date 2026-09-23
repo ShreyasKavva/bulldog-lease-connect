@@ -3,6 +3,7 @@
  */
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
+import { ListingPhoto } from "./ListingPhoto";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
 import { formatDateRange } from "@/lib/leaseup/dates";
