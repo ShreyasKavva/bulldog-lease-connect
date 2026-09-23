@@ -228,12 +228,12 @@ function PhotoUrlRow({
           type="button"
           onClick={onRemove}
           aria-label="Remove photo URL"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10"
         >
           <X className="h-4 w-4" />
         </button>
       ) : (
-        <span className="h-8 w-8 shrink-0" />
+        <span className="h-11 w-11 shrink-0" />
       )}
     </div>
   );
@@ -257,7 +257,7 @@ function Stepper({
   format?: (v: number) => string;
 }) {
   const btn =
-    "flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40 dark:border-border dark:text-foreground";
+    "flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:border-gray-900 disabled:opacity-40 dark:border-border dark:text-foreground";
   return (
     <div className="flex items-center gap-4">
       <button type="button" className={btn} disabled={value <= min} onClick={() => onChange(Math.max(min, +(value - step).toFixed(1)))}>
@@ -540,7 +540,7 @@ export function PostWizard({ userId }: { userId: string }) {
               navigate({ to: "/" });
             }}
 
-            className="text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
           >
             Save &amp; exit
           </button>
@@ -868,7 +868,7 @@ export function PostWizard({ userId }: { userId: string }) {
                         <button
                           type="button"
                           onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
-                          className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow"
+                          className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow"
                         >
                           <X className="h-4 w-4 text-gray-900" />
                         </button>
@@ -904,7 +904,7 @@ export function PostWizard({ userId }: { userId: string }) {
                     <button
                       type="button"
                       onClick={() => set({ photoUrls: [...d.photoUrls, ""] })}
-                      className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
+                      className="inline-flex min-h-[44px] items-center rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-foreground/70"
                     >
                       Add another photo +
                     </button>
@@ -986,7 +986,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 <button
                   type="button"
                   onClick={() => set({ step: 1 })}
-                  className="text-sm text-gray-400 hover:text-gray-600"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-400 hover:text-gray-600"
                 >
                   ← Back
                 </button>
@@ -1069,7 +1069,7 @@ export function PostWizard({ userId }: { userId: string }) {
                     <button
                       type="button"
                       onClick={() => set({ step: 2 })}
-                      className="text-sm text-gray-400 hover:text-gray-600"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-400 hover:text-gray-600"
                     >
                       ← Back
                     </button>
