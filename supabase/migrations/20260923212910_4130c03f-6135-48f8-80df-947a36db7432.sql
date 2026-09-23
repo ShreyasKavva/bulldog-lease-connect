@@ -1,0 +1,3 @@
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.listings, public.notifications FROM anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.profiles_public, public.campus_price_stats, public.listing_reaction_counts, public.listing_reaction_events, public.saved_listing_counts, public.saved_listing_events, public.suspicious_listings, public.suspicious_listings_filtered, public.trending_listings, public.user_risk_scores FROM anon;
+REVOKE UPDATE, DELETE, TRUNCATE ON public.ambassador_applications, public.campus_notify_signups, public.listing_reports, public.listing_shares, public.saved_searches FROM anon;
