@@ -116,7 +116,7 @@ function MarketPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {active && !hasComps
               ? `Not enough listings at ${active.short_name} yet to show price trends. Here's what we have so far.`
-              : `Pricing from active student subleases at ${active.short_name}, read live on page load.`}
+              : `Pricing from active student subleases at ${active?.short_name}, read live on page load.`}
           </p>
           {active && !hasComps && (
             <div className="mt-3 flex flex-wrap gap-3">
