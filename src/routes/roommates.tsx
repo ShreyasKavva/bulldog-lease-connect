@@ -13,6 +13,7 @@
  * browse the board.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession, useMyProfile } from "@/lib/leaseup/use-session";
@@ -106,7 +107,7 @@ function RoommatesPage() {
       const convId = await getOrCreateConversation(user.id, target.user_id, null);
       navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't open chat");
+      toast.error(friendlyError(e, "Couldn't open chat"));
     }
   }
 

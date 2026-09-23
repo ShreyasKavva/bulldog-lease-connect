@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -264,7 +265,7 @@ function LookingForPage() {
       const id = await getOrCreateConversation(user.id, otherId, null, lookingPostId);
       navigate({ to: "/messages/$conversationId", params: { conversationId: id } });
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't open the chat");
+      toast.error(friendlyError(e, "Couldn't open the chat"));
     }
   }
 
@@ -288,7 +289,7 @@ function LookingForPage() {
       await toggleLookingForInterest(user.id, p.id, interested);
       qc.invalidateQueries({ queryKey: ["looking-for-interests", user.id] });
       toast.success(interested ? "We'll ping you when you post a match" : "Notifications off for this post");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   async function onRenew(p: LookingForPost) {
@@ -296,7 +297,7 @@ function LookingForPage() {
       await renewLookingFor(p.id);
       qc.invalidateQueries({ queryKey: ["looking-for"] });
       toast.success("Renewed for 60 more days");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
   }
 
   return (
@@ -488,7 +489,7 @@ function LookingForPage() {
             await deleteLookingFor(confirmDelete.id);
             toast.success("Post removed");
             qc.invalidateQueries({ queryKey: ["looking-for"] });
-          } catch (e: any) { toast.error(e.message); }
+          } catch (e: any) { toast.error(friendlyError(e)); }
           finally { setConfirmDelete(null); }
         }}
       />
@@ -814,7 +815,7 @@ function LookingForFormDialog({
       }
       onSaved();
       onOpenChange(false);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
     finally { setBusy(false); }
   }
 
@@ -901,7 +902,7 @@ function FoundDialog({
       toast.success(via ? "🎉 Love to hear it!" : "Glad you found a place!");
       onDone();
       onClose();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
     finally { setBusy(false); }
   }
   return (
