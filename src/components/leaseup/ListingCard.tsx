@@ -166,6 +166,13 @@ export function ListingCard({
   const [savesOverride, setSavesOverride] = useState<number | null>(null);
   const savesCount = savesOverride ?? Math.max(0, listing.saves_count ?? 0);
 
+  // Q477 — when fresh server data arrives for this listing, drop the local
+  // override so the displayed count reconciles with the database instead of
+  // drifting on a long-lived page.
+  useEffect(() => {
+    setSavesOverride(null);
+  }, [listing.saves_count]);
+
   function bumpSaveCount(savedBefore: boolean) {
     setSavesOverride((c) =>
       Math.max(0, (c ?? listing.saves_count ?? 0) + (savedBefore ? -1 : 1)),
