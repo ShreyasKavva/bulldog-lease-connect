@@ -20,17 +20,18 @@ import type { LucideIcon } from "lucide-react";
 type LegacyProps = { onPost?: () => void; onChat?: () => void; onProfile?: () => void };
 
 /** Full-screen flows own the viewport on mobile — no tab bar, and no space reserved for it. */
-export function isBottomNavHidden(path: string) {
+// Q504 — chat surfaces hide the bar only for signed-in users (the composer
+// needs the space); a signed-out visitor sees the sign-in gate and keeps the bar.
+export function isBottomNavHidden(path: string, signedOut = false) {
   return (
     path.startsWith("/post/") ||
-    path.includes("message") ||
-    path.includes("conversation")
+    (!signedOut && (path.includes("message") || path.includes("conversation")))
   );
 }
 
 export function BottomNav(_legacy: LegacyProps = {}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { user } = useSession();
+  const { user, loading } = useSession();
   const unread = useUnreadCount();
 
   // Hide when the soft keyboard is open so it doesn't cover inputs.
@@ -58,7 +59,7 @@ export function BottomNav(_legacy: LegacyProps = {}) {
 
   // Full-screen routes own the whole viewport on mobile.
   // Q142 — also hidden on any chat surface so it never covers the keyboard.
-  if (isBottomNavHidden(path)) return null;
+  if (isBottomNavHidden(path, !loading && !user)) return null;
 
 
   const isHome = path === "/";
