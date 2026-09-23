@@ -561,6 +561,8 @@ export function PostWizard({ userId }: { userId: string }) {
         .single();
       if (err) throw err;
       // Q181 — the draft became a live listing: it is dead, never prompt again.
+      // Q479 — flag it before navigating: unmount would otherwise re-save it.
+      publishedRef.current = true;
       lsRemove(draftKey(userId));
       lsRemove(dismissedKey(userId));
       toast.success("Your sublease is live! 🎉");
