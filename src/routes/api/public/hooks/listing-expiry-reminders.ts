@@ -18,6 +18,7 @@ import { render } from 'react-email'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
+import { logEmailFailure } from '@/lib/email/observability'
 
 const SITE_NAME = 'LeaseUp'
 const SENDER_DOMAIN = 'notify.leasup.co'
@@ -64,7 +65,12 @@ export const Route = createFileRoute('/api/public/hooks/listing-expiry-reminders
         // Q217 — fail closed. Without the service-role secret we cannot
         // authenticate the caller, so we send nothing.
         if (!supabaseUrl || !serviceKey) {
-          console.error('[expiry-cron] missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY')
+          logEmailFailure({
+            stage: 'expiry-cron:config',
+            template: 'listing-expiry',
+            cause: 'never_attempted',
+            detail: 'missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY',
+          })
           return Response.json({ error: 'Service unavailable' }, { status: 503 })
         }
 
@@ -179,7 +185,14 @@ export const Route = createFileRoute('/api/public/hooks/listing-expiry-reminders
           })
 
           if (enqErr) {
-            console.error('[expiry-cron] enqueue failed', { listing: l.id, err: enqErr })
+            logEmailFailure({
+              stage: 'expiry-cron:enqueue',
+              template: 'listing-expiry',
+              recipient: owner.email,
+              cause: 'queue_failure',
+              detail: enqErr.message ?? enqErr,
+              extra: { listing_id: l.id, sender_domain: SENDER_DOMAIN },
+            })
             await supabase.from('email_send_log').insert({
               message_id: messageId,
               template_name: 'listing-expiry',
