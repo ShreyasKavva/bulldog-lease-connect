@@ -942,9 +942,6 @@ function LiveCounter() {
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
-          // Q280 — campuses we SUPPORT (the full school directory), not just the
-          // handful that already have listings. Honest and self-updating.
-          supabase.from("campuses").select("id", { count: "exact", head: true }),
         ]);
         if (cancelled) return;
         if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
