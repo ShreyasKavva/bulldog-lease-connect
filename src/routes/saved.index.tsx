@@ -120,7 +120,7 @@ function SavedPage() {
           </button>
           <Link
             to="/browse"
-            className="mt-3 inline-block text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            className="mt-3 inline-flex items-center justify-center min-h-[44px] px-4 rounded-full text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
           >
             Browse subleases
           </Link>

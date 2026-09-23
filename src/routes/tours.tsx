@@ -38,7 +38,7 @@ function ToursPage() {
             Tours you schedule with a poster show up here, on every device you sign in on.
           </p>
           <button type="button" onClick={() => openSignIn("/tours")} className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary-dark">Sign in with Google →</button>
-          <Link to="/browse" className="mt-3 inline-block text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground">
+          <Link to="/browse" className="mt-3 inline-flex items-center justify-center min-h-[44px] px-4 rounded-full text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground">
             Browse subleases
           </Link>
         </div>
