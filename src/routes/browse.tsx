@@ -218,6 +218,8 @@ export const Route = createFileRoute("/browse")({
         { property: "og:type", content: "website" },
         { property: "og:url", content: "https://leasup.co/browse" },
         { name: "twitter:card", content: "summary_large_image" },
+        { property: "og:image", content: "https://leasup.co/og-image.png" },
+        { name: "twitter:image", content: "https://leasup.co/og-image.png" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
       ],
