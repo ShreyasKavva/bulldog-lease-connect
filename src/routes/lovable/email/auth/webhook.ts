@@ -10,6 +10,7 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { logEmailFailure } from '@/lib/email/observability'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirm your email',
@@ -50,7 +51,12 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         const apiKey = process.env.LOVABLE_API_KEY
 
         if (!apiKey) {
-          console.error('LOVABLE_API_KEY not configured')
+          logEmailFailure({
+            stage: 'auth-webhook:config',
+            template: null,
+            cause: 'never_attempted',
+            detail: 'LOVABLE_API_KEY not configured',
+          })
           return Response.json(
             { error: 'Server configuration error' },
             { status: 500 }
@@ -153,7 +159,14 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
         if (!supabaseUrl || !supabaseServiceKey) {
-          console.error('Missing Supabase environment variables')
+          logEmailFailure({
+            stage: 'auth-webhook:config',
+            template: emailType,
+            recipient: payload.data.email,
+            cause: 'never_attempted',
+            detail: 'missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY',
+            extra: { run_id },
+          })
           return Response.json(
             { error: 'Server configuration error' },
             { status: 500 }
@@ -189,7 +202,14 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         })
 
         if (enqueueError) {
-          console.error('Failed to enqueue auth email', { error: enqueueError, run_id, emailType })
+          logEmailFailure({
+            stage: 'auth-webhook:enqueue',
+            template: emailType,
+            recipient: payload.data.email,
+            cause: 'queue_failure',
+            detail: enqueueError.message ?? enqueueError,
+            extra: { run_id, sender_domain: SENDER_DOMAIN },
+          })
           await supabase.from('email_send_log').insert({
             message_id: messageId,
             template_name: emailType,
