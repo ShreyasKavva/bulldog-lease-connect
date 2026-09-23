@@ -10,9 +10,10 @@ export const Route = createFileRoute("/market")({
   head: () => ({
     meta: [
       { title: "Sublease Prices — Market Data | LeaseUp" },
-      { name: "description", content: "Real-time sublease pricing data by campus and bedroom count. See median, average, and range across active student listings." },
+      { name: "description", content: "Sublease price data by campus and bedroom count, built from active student listings on LeaseUp. Coverage grows as students post." },
       { property: "og:title", content: "Sublease Market Data — LeaseUp" },
-      { property: "og:description", content: "Median sublease prices, neighborhood breakdowns, and pricing trends by campus." },
+      { property: "og:description", content: "Sublease price data by campus, built from active student listings on LeaseUp." },
+      { name: "twitter:description", content: "Sublease price data by campus, built from active student listings on LeaseUp." },
       { property: "og:url", content: "https://leasup.co/market" },
     ],
     links: [{ rel: "canonical", href: "https://leasup.co/market" }],
