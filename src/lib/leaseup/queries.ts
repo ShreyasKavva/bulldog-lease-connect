@@ -21,6 +21,26 @@ import type { Listing, Profile, Conversation, Message, LookingForPost, SavedSear
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
+/**
+ * Q454 — the column list every NON-OWNER listing read must use.
+ *
+ * `select("*")` ships `address`, `lat`, `lng` and the free-text `area` (which
+ * posters routinely fill with a real street address) to whoever asked,
+ * including anonymous callers. Those four columns are deliberately absent
+ * here; the public label comes from publicLocationLabel() instead. Owner-only
+ * reads (fetchMyListings, the edit form, the legacy prefill) keep "*".
+ *
+ * Keep in sync with the `listings` row type when a new column is added.
+ */
+export const PUBLIC_LISTING_COLUMNS =
+  "id,user_id,campus_id,title,description,type,price,beds,baths," +
+  "furnished,utilities_included,pet_friendly,parking,wifi_included,laundry," +
+  "amenities,photos,available_from,available_to,semester," +
+  "status,is_active,is_featured,featured_until,pending_review,verification_tier," +
+  "flagged,safe_score,view_count,views,saves_count,share_count," +
+  "created_at,updated_at,sort_at,bumped_at,filled_at,filled_via_lease_up," +
+  "roommate_prefs,display_name,deposit_amount,deposit_escrow_enabled";
+
 async function attachSignedUrls(
   listings: Listing[],
   opts?: { fullSize?: boolean },
