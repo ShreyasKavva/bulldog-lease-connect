@@ -876,7 +876,8 @@ function Browse() {
           {/* Q90/Q160 — grid / list / map toggle */}
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => patchSearch({ view: "grid" })}
+              aria-pressed={!mapView && !listView}
+              onClick={() => patchSearch({ view: "grid", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 mapView || listView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
@@ -885,7 +886,8 @@ function Browse() {
               <LayoutGrid className="h-3.5 w-3.5" />Grid
             </button>
             <button
-              onClick={() => patchSearch({ view: "list" })}
+              aria-pressed={listView}
+              onClick={() => patchSearch({ view: "list", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 listView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
@@ -894,7 +896,8 @@ function Browse() {
               <List className="h-3.5 w-3.5" />List
             </button>
             <button
-              onClick={() => patchSearch({ view: "map" })}
+              aria-pressed={mapView}
+              onClick={() => patchSearch({ view: "map", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 mapView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
