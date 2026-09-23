@@ -44,33 +44,67 @@ import { adminReleaseDeposit, adminRefundDeposit } from "@/lib/leaseup/stripe.fu
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
 
 export const Route = createFileRoute("/admin")({
+  // Client-only: the session lives in localStorage, so server rendering can
+  // only ever emit a "Loading…" shell for a page nobody but admins may see.
+  ssr: false,
   head: () => ({ meta: [{ title: "Admin — LeaseUp" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminPage,
 });
 
 type Tab = "overview" | "reports" | "suspicious" | "listings" | "users" | "revenue" | "deposits" | "feedback";
 
+function AccessPanel({ icon, title, body, action }: { icon: string; title: string; body: string; action: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-md mt-24 rounded-2xl bg-surface p-8 shadow-card-md text-center">
+        <div className="text-4xl">{icon}</div>
+        <h1 className="mt-2 text-xl font-black">{title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+        <div className="mt-4">{action}</div>
+      </div>
+    </div>
+  );
+}
+
 function AdminPage() {
   const { user, loading } = useSession();
-  const { data: me, isLoading: profileLoading } = useMyProfile();
+  const { data: me, isLoading: profileLoading, isError: profileError } = useMyProfile();
   const [tab, setTab] = useState<Tab>("overview");
 
-  if (loading || (user && profileLoading)) {
+  // Never hang: only wait while the session is resolving, or while a
+  // signed-in user's profile is still in flight (an errored profile falls
+  // through to the no-access panel rather than spinning forever).
+  if (loading || (user && profileLoading && !profileError)) {
     return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
   }
 
-  if (!user || !me?.is_admin) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-md mt-24 rounded-2xl bg-surface p-8 shadow-card-md text-center">
-          <div className="text-4xl">🚫</div>
-          <h1 className="mt-2 text-xl font-black">Admin access only</h1>
-          <p className="mt-1 text-sm text-muted-foreground">You don't have permission to view this page.</p>
-          <Link to="/" className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Back to LeaseUp</Link>
-        </div>
-      </div>
+      <AccessPanel
+        icon="🔒"
+        title="Sign in required"
+        body="Sign in to continue. This page is for LeaseUp admins only."
+        action={
+          <Link to="/auth" search={{ mode: "in", next: "/admin" } as never}
+            className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Sign in</Link>
+        }
+      />
     );
   }
+
+  if (!me?.is_admin) {
+    return (
+      <AccessPanel
+        icon="🚫"
+        title="You don't have access to this page"
+        body="This page is for LeaseUp admins only."
+        action={
+          <Link to="/" className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">Back to LeaseUp</Link>
+        }
+      />
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-background">
