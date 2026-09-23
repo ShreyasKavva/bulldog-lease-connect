@@ -147,12 +147,13 @@ function Section({
 
   return (
     <section className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>
-      <div className="flex items-baseline justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg font-semibold">{heading}</h2>
+        {/* Q478 — 44px tap target on phones (was a 20px-tall text link). */}
         <Link
           to="/browse"
           search={seeAllSearch as never}
-          className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
+          className="inline-flex min-h-[44px] shrink-0 items-center text-sm text-gray-500 hover:underline dark:text-muted-foreground"
         >
           See all
         </Link>
