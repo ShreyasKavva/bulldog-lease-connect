@@ -10,9 +10,10 @@ export const Route = createFileRoute("/market")({
   head: () => ({
     meta: [
       { title: "Sublease Prices — Market Data | LeaseUp" },
-      { name: "description", content: "Real-time sublease pricing data by campus and bedroom count. See median, average, and range across active student listings." },
+      { name: "description", content: "Sublease price data by campus and bedroom count, built from active student listings on LeaseUp. Coverage grows as students post." },
       { property: "og:title", content: "Sublease Market Data — LeaseUp" },
-      { property: "og:description", content: "Median sublease prices, neighborhood breakdowns, and pricing trends by campus." },
+      { property: "og:description", content: "Sublease price data by campus, built from active student listings on LeaseUp." },
+      { name: "twitter:description", content: "Sublease price data by campus, built from active student listings on LeaseUp." },
       { property: "og:url", content: "https://leasup.co/market" },
     ],
     links: [{ rel: "canonical", href: "https://leasup.co/market" }],
@@ -115,7 +116,7 @@ function MarketPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {active && !hasComps
               ? `Not enough listings at ${active.short_name} yet to show price trends. Here's what we have so far.`
-              : "Live pricing trends across active student subleases. Updated daily."}
+              : `Pricing from active student subleases at ${active?.short_name}, read live on page load.`}
           </p>
           {active && !hasComps && (
             <div className="mt-3 flex flex-wrap gap-3">
