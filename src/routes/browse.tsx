@@ -693,7 +693,7 @@ function Browse() {
   /** Q375 — the zero-results-with-active-filters state the rail moves below. */
   const emptyWithFilters = !isLoading && !isError && filtered.length === 0 && hasActiveFilters;
 
-  const trendingRail = view === "grid" ? (
+  const trendingRail = (
     <TrendingCarousel
       listings={trendingListings}
       campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
