@@ -106,7 +106,12 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body, #root { height: 100%; }
+  /* Q481 — `height: 100%` on html/body clamped the document to one viewport and
+     (together with the overflow-x rule below) made the BODY the scroll
+     container, so window.scrollTo / browser scroll restoration did nothing.
+     min-height keeps full-height backgrounds without trapping the scroll. */
+  html { height: 100%; }
+  body, #root { min-height: 100%; }
   html { background-color: var(--color-background); }
   body {
     background-color: var(--color-background);
