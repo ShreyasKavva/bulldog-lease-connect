@@ -1049,16 +1049,28 @@ function Browse() {
                 </>
               ) : (
                 <>
-                  <h3 className="mt-5 text-lg font-semibold sm:text-xl">No subleases match your filters</h3>
+                  {/* Q476 — this branch only fires when nothing is live at all,
+                      so "clear your filters" would be a false lead. */}
+                  <h3 className="mt-5 text-lg font-semibold sm:text-xl">
+                    {hasActiveFilters ? "Nothing is posted right now" : "No subleases are live right now"}
+                  </h3>
                   <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                    Try adjusting your dates, size, or price range
+                    It isn’t your filters — there’s nothing posted at the moment. Post yours, and it’s the first one people see.
                   </p>
-                  <button
-                    onClick={clearFilters}
-                    className="mt-6 w-full max-w-xs rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+                  <Link
+                    to="/post"
+                    className="mt-6 inline-flex w-full max-w-xs items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
                   >
-                    Clear all filters
-                  </button>
+                    Post a sublease
+                  </Link>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
                 </>
               )}
               {/* Q375 — the rail moves below the empty state here, as the
