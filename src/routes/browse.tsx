@@ -239,8 +239,6 @@ export const Route = createFileRoute("/browse")({
   component: Browse,
 });
 
-type View = "grid" | "scroll";
-
 function Browse() {
   const navigate = useNavigate();
   const { user, loading: sessionLoading } = useSession();
@@ -380,7 +378,6 @@ function Browse() {
   }, [s.q, s.campus, s.bedrooms, s.max_price, s.movein, campusId, campuses.length]);
 
 
-  const [view] = useState<View>("grid");
   const mapView = s.view === "map";
 
   /** Q177 — the campus the visitor actually searched for (not their profile). */
@@ -425,7 +422,16 @@ function Browse() {
     // Q355 — allowlist: only a real view value is restored; anything else is
     // treated as absent. Grid is now recognised, so a stored "map" can no
     // longer swallow a visitor's explicit grid choice.
-    if (stored === "grid" || stored === "list" || stored === "map") patchSearch({ view: stored });
+    // Q476 — restore with replace + keep the page: this is not a navigation
+    // the visitor made, so it must not add a history entry (Back would bounce
+    // straight back here) and must not throw away ?page=.
+    if (stored === "grid" || stored === "list" || stored === "map") {
+      navigate({
+        to: "/browse",
+        search: (prev: BrowseSearch) => ({ ...prev, view: stored as BrowseSearch["view"] }),
+        replace: true,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.view]);
 
@@ -515,64 +521,65 @@ function Browse() {
     | "movein" | "new" | "tenants" | "type" | "maxDuration" | "availableSoon"
     | "postedToday" | "nearCampus" | "roommate";
 
-  function matchesListing(l: Listing, skip: RelaxKey | null): boolean {
-    const qLower = skip === "q" ? "" : (s.q ?? "").toLowerCase();
+  function matchesListing(l: Listing, skips: readonly RelaxKey[]): boolean {
+    const skip = (k: RelaxKey) => skips.includes(k);
+    const qLower = skip("q") ? "" : (s.q ?? "").toLowerCase();
     if (qLower && !(
       l.title.toLowerCase().includes(qLower) ||
       (l.area ?? "").toLowerCase().includes(qLower) ||
       (l.description ?? "").toLowerCase().includes(qLower)
     )) return false;
     if (s.hostId && l.user_id !== s.hostId) return false;
-    if (skip !== "campus" && campusId && l.campus_id !== campusId) return false;
-    if (skip !== "area" && area && l.area !== area) return false;
-    if (skip !== "furnished" && furnishedOnly && !l.furnished) return false;
-    if (skip !== "utilities" && s.utilities === 1 && !l.utilities_included) return false;
-    if (skip !== "parking" && s.parking === 1 && !l.parking) return false;
-    if (skip !== "pets" && s.pets === 1 && !l.pet_friendly) return false;
-    if (skip !== "wifi" && s.wifi === 1 && !(l as any).wifi_included) return false;
-    if (skip !== "laundry" && s.laundry === 1 && !(l as any).laundry) return false;
-    if (skip !== "verified" && s.verified === 1 && !l.profile?.verified_email) return false;
-    if (skip !== "baths" && s.baths != null && (l.baths ?? 0) < s.baths) return false;
-    if (skip !== "price") {
+    if (!skip("campus") && campusId && l.campus_id !== campusId) return false;
+    if (!skip("area") && area && l.area !== area) return false;
+    if (!skip("furnished") && furnishedOnly && !l.furnished) return false;
+    if (!skip("utilities") && s.utilities === 1 && !l.utilities_included) return false;
+    if (!skip("parking") && s.parking === 1 && !l.parking) return false;
+    if (!skip("pets") && s.pets === 1 && !l.pet_friendly) return false;
+    if (!skip("wifi") && s.wifi === 1 && !(l as any).wifi_included) return false;
+    if (!skip("laundry") && s.laundry === 1 && !(l as any).laundry) return false;
+    if (!skip("verified") && s.verified === 1 && !l.profile?.verified_email) return false;
+    if (!skip("baths") && s.baths != null && (l.baths ?? 0) < s.baths) return false;
+    if (!skip("price")) {
       if (minPrice != null && (l.price ?? 0) < minPrice) return false;
       if (maxPrice != null && (l.price ?? 0) > maxPrice) return false;
     }
-    if (skip !== "beds" && !matchesBeds(l)) return false;
+    if (!skip("beds") && !matchesBeds(l)) return false;
     // Q180 — OVERLAP, not containment: a listing matches when its availability
     // overlaps the requested window at all.
-    if (skip !== "dates") {
+    if (!skip("dates")) {
       if (toDate && l.available_from && new Date(l.available_from) > toDate) return false;
       if (fromDate && l.available_to && new Date(l.available_to) < fromDate) return false;
     }
 
     // Q96 — search-bar / category-pill params
-    if (skip !== "tenants" && s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
-    if (skip !== "type") {
+    if (!skip("tenants") && s.tenants != null && (l.beds ?? 0) < Math.ceil(s.tenants / 2)) return false;
+    if (!skip("type")) {
       if (s.type === "studio" && (l.beds ?? 0) !== 0) return false;
       if (s.type === "private_room" && (l.beds ?? 0) !== 1) return false;
       if (s.type === "entire" && (l.beds ?? 0) < 1) return false;
     }
-    if (skip !== "maxDuration" && s.maxDuration != null) {
+    if (!skip("maxDuration") && s.maxDuration != null) {
       if (!l.available_from || !l.available_to) return false;
       const days = (new Date(l.available_to).getTime() - new Date(l.available_from).getTime()) / 86400000;
       if (!(days > 0 && days <= s.maxDuration)) return false;
     }
-    if (skip !== "availableSoon" && s.availableSoon === 1) {
+    if (!skip("availableSoon") && s.availableSoon === 1) {
       if (!l.available_from) return false;
       if (new Date(l.available_from).getTime() > Date.now() + 31 * 86400000) return false;
     }
-    if (skip !== "new" && s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
-    if (skip !== "movein" && s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
+    if (!skip("new") && s.new === true && Date.now() - new Date(l.created_at).getTime() > 7 * 86400000) return false;
+    if (!skip("movein") && s.movein && !matchesMoveIn(l.available_from, s.movein)) return false;
 
-    if (skip !== "postedToday" && s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
-    if (skip !== "nearCampus" && s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
-    if (skip !== "roommate" && !matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
+    if (!skip("postedToday") && s.postedToday === 1 && Date.now() - new Date(l.created_at).getTime() > 86400000) return false;
+    if (!skip("nearCampus") && s.nearCampus === 1 && !/campus|near|walk/i.test(l.area ?? "")) return false;
+    if (!skip("roommate") && !matchesRoommateFilters((l as any).roommate_prefs, rmFilters)) return false;
 
     return true;
   }
 
   const filtered = useMemo(() => {
-    let r = listings.filter((l) => matchesListing(l, null));
+    let r = listings.filter((l) => matchesListing(l, []));
     if (sort === "price_asc") r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "popular") r = [...r].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
@@ -633,10 +640,34 @@ function Browse() {
     const options: ((typeof candidates)[number] & { count: number })[] = [];
     for (const c of candidates) {
       if (!c.active) continue;
-      const count = listings.filter((l) => matchesListing(l, c.key)).length;
+      const count = listings.filter((l) => matchesListing(l, [c.key])).length;
       if (count > 0) options.push({ ...c, count });
     }
     options.sort((a, b) => b.count - a.count);
+    // Q476 — when no single filter is the culprit, two of them together are.
+    // Offer the best pairs rather than a bare "start over".
+    if (options.length === 0) {
+      const act = candidates.filter((c) => c.active);
+      const pairs: typeof options = [];
+      for (let i = 0; i < act.length; i++) {
+        for (let j = i + 1; j < act.length; j++) {
+          const a = act[i], b = act[j];
+          const count = listings.filter((l) => matchesListing(l, [a.key, b.key])).length;
+          if (count > 0) {
+            pairs.push({
+              key: `${a.key}+${b.key}` as RelaxKey,
+              active: true,
+              heading: "No subleases match all of these filters at once",
+              button: `${a.button.replace(/^Remove /, "Remove ")} and ${b.button.replace(/^(Remove|Clear) (the )?/, "").replace(/ filters?$/, "")} filter`,
+              patch: { ...a.patch, ...b.patch },
+              count,
+            });
+          }
+        }
+      }
+      pairs.sort((x, y) => y.count - x.count);
+      return pairs.slice(0, 3);
+    }
     return options;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered.length, listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet,
@@ -648,7 +679,7 @@ function Browse() {
   const culprit = relaxOptions[0] ?? null;
 
   function relaxOption(option: (typeof relaxOptions)[number]) {
-    if (option.key === "q") setSearchInput("");
+    if (String(option.key).split("+").includes("q")) setSearchInput("");
     patchSearch(option.patch);
   }
 
@@ -669,7 +700,7 @@ function Browse() {
       ?? "this campus"
     : "this campus";
   const anywhereCount = useMemo(
-    () => (campusId ? listings.filter((l) => matchesListing(l, "campus")).length : 0),
+    () => (campusId ? listings.filter((l) => matchesListing(l, ["campus"])).length : 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [listings, campusId, filtered.length],
   );
@@ -687,7 +718,7 @@ function Browse() {
   /** Q375 — the zero-results-with-active-filters state the rail moves below. */
   const emptyWithFilters = !isLoading && !isError && filtered.length === 0 && hasActiveFilters;
 
-  const trendingRail = view === "grid" ? (
+  const trendingRail = (
     <TrendingCarousel
       listings={trendingListings}
       campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
@@ -695,7 +726,7 @@ function Browse() {
       savedIds={savedIds}
       heading={emptyWithFilters ? "Not matching your filters — trending this week" : undefined}
     />
-  ) : null;
+  );
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -870,7 +901,8 @@ function Browse() {
           {/* Q90/Q160 — grid / list / map toggle */}
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => patchSearch({ view: "grid" })}
+              aria-pressed={!mapView && !listView}
+              onClick={() => patchSearch({ view: "grid", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 mapView || listView ? "border border-border bg-surface text-muted-foreground" : "bg-foreground text-background",
@@ -879,7 +911,8 @@ function Browse() {
               <LayoutGrid className="h-3.5 w-3.5" />Grid
             </button>
             <button
-              onClick={() => patchSearch({ view: "list" })}
+              aria-pressed={listView}
+              onClick={() => patchSearch({ view: "list", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 listView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
@@ -888,7 +921,8 @@ function Browse() {
               <List className="h-3.5 w-3.5" />List
             </button>
             <button
-              onClick={() => patchSearch({ view: "map" })}
+              aria-pressed={mapView}
+              onClick={() => patchSearch({ view: "map", page: s.page })}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 mapView ? "bg-foreground text-background" : "border border-border bg-surface text-muted-foreground",
@@ -937,7 +971,7 @@ function Browse() {
           {user && <RenterFeedbackPrompt userId={user.id} />}
           {/* Q375 — in the zero-results-with-active-filters state the rail
               renders below the empty state instead of above it. */}
-          {view === "grid" && !emptyWithFilters && trendingRail}
+          {!emptyWithFilters && trendingRail}
           {isError ? (
             <p className="py-16 text-center text-sm text-gray-500 dark:text-muted-foreground">
               Something went wrong loading listings. Try refreshing.
@@ -965,7 +999,9 @@ function Browse() {
                         {relaxOptions[0].heading}.
                       </h3>
                       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                        That filter is ruling out the most listings. Remove it, or relax a different one:
+                        {String(relaxOptions[0].key).includes("+")
+                          ? "No single filter is the whole story — these combinations bring results back:"
+                          : "That filter is ruling out the most listings. Remove it, or relax a different one:"}
                       </p>
                       <div className="mt-6 flex w-full max-w-xs flex-col items-stretch gap-2">
                         {relaxOptions.map((opt, i) => (
@@ -1040,16 +1076,28 @@ function Browse() {
                 </>
               ) : (
                 <>
-                  <h3 className="mt-5 text-lg font-semibold sm:text-xl">No subleases match your filters</h3>
+                  {/* Q476 — this branch only fires when nothing is live at all,
+                      so "clear your filters" would be a false lead. */}
+                  <h3 className="mt-5 text-lg font-semibold sm:text-xl">
+                    {hasActiveFilters ? "Nothing is posted right now" : "No subleases are live right now"}
+                  </h3>
                   <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                    Try adjusting your dates, size, or price range
+                    It isn’t your filters — there’s nothing posted at the moment. Post yours, and it’s the first one people see.
                   </p>
-                  <button
-                    onClick={clearFilters}
-                    className="mt-6 w-full max-w-xs rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-gray-900"
+                  <Link
+                    to="/post"
+                    className="mt-6 inline-flex w-full max-w-xs items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
                   >
-                    Clear all filters
-                  </button>
+                    Post a sublease
+                  </Link>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
                 </>
               )}
               {/* Q375 — the rail moves below the empty state here, as the

@@ -609,7 +609,9 @@ export function BrowseFilterBar({
             </button>
           </div>
 
-          {!isLoading && (
+          {/* Q476 — never show a bare "0 subleases"; the empty state below
+              names the filter and offers the way out instead. */}
+          {!isLoading && resultCount > 0 && (
             <span className="hidden shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:block">
               {resultCount} {resultCount === 1 ? "sublease" : "subleases"}
             </span>
@@ -859,7 +861,9 @@ export function BrowseFilterBar({
               onClick={() => setFiltersOpen(false)}
               className="min-h-[44px] rounded-full bg-foreground px-6 text-sm font-bold text-background transition-transform active:scale-95"
             >
-              Show {resultCount} listing{resultCount === 1 ? "" : "s"} →
+              {resultCount === 0
+                ? "No matches — see what to change →"
+                : `Show ${resultCount} listing${resultCount === 1 ? "" : "s"} →`}
             </button>
           </div>
         </SheetContent>
