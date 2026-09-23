@@ -1062,7 +1062,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
         onClick={() => onOpen(0)}
         className="block h-[45vh] w-full overflow-hidden lg:h-[55vh]"
       >
-        <img src={photos[0]} alt={`${title} — photo 1`} className="h-full w-full cursor-zoom-in object-cover" />
+        <PhotoImg src={photos[0]} alt={`${title} — photo 1`} className="h-full w-full cursor-zoom-in object-cover" />
       </button>
     );
   }
@@ -1082,7 +1082,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
             onClick={() => onOpen(0)}
             className="col-span-3 row-span-2 overflow-hidden"
           >
-            <img
+            <PhotoImg
               src={photos[0]}
               alt={`${title} — photo 1`}
               className="h-full w-full cursor-zoom-in object-cover transition hover:brightness-95"
@@ -1095,7 +1095,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
               onClick={() => onOpen(i + 1)}
               className="overflow-hidden"
             >
-              <img
+              <PhotoImg
                 src={p}
                 alt={`${title} — photo ${i + 2}`}
                 className="h-full w-full cursor-zoom-in object-cover transition hover:brightness-95"
@@ -1139,7 +1139,7 @@ function MobileCarousel({ photos, title, onOpen }: { photos: string[]; title: st
         className="flex h-[45vh] snap-x snap-mandatory overflow-x-auto scroll-smooth"
       >
         {photos.map((p, i) => (
-          <img
+          <PhotoImg
             key={i}
             src={p}
             alt={`${title} — photo ${i + 1}`}
