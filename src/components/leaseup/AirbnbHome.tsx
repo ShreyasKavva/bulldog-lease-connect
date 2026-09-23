@@ -944,16 +944,13 @@ function LiveCounter() {
 
   if (!stats || stats.listings === 0) return null;
 
-  const showInquiryNumber = stats.inquiries >= 25;
   const blocks: { emoji: string; value?: number; text?: string; label: string }[] = [
     { emoji: "\ud83c\udfe0", value: stats.listings, label: "subleases posted" },
     // Q445 — never print "0 campuses": degrade to a truthful non-numeric stat.
     stats.campuses > 0
       ? { emoji: "\ud83c\udf93", value: stats.campuses, label: stats.campuses === 1 ? "campus with live subleases" : "campuses with live subleases" }
       : { emoji: "\ud83c\udf93", text: "Nationwide", label: "post at any US campus" },
-    showInquiryNumber
-      ? { emoji: "\ud83d\udcac", value: stats.inquiries, label: "student inquiries" }
-      : { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
+    { emoji: "\ud83d\udcac", text: "Free", label: "to message a poster" },
   ];
 
   return (
