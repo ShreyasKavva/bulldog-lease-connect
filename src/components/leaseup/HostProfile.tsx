@@ -59,7 +59,7 @@ async function fetchActiveListings(userId: string): Promise<Listing[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_LISTING_COLUMNS)
     .eq("user_id", userId)
     .eq("is_active", true)
     .eq("status", "active")

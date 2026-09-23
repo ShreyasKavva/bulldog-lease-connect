@@ -207,7 +207,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 async function fetchListingDetail(id: string): Promise<ListingLoadResult | null> {
   if (!UUID_RE.test(id)) return null;
-  const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("listings").select(PUBLIC_LISTING_COLUMNS).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const row = data as any;
@@ -261,7 +261,7 @@ async function fetchSimilar(l: Listing): Promise<Listing[]> {
   try {
     const { data, error } = await supabase
       .from("listings")
-      .select("*")
+      .select(PUBLIC_LISTING_COLUMNS)
       .eq("is_active", true)
       .eq("status", "active")
       .neq("id", l.id)

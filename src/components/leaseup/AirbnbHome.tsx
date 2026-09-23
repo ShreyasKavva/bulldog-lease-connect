@@ -1187,7 +1187,7 @@ function NewThisWeekSection({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("listings")
-        .select("*")
+        .select(PUBLIC_LISTING_COLUMNS)
         .eq("campus_id", lastCampus!.id)
         .eq("is_active", true)
         .eq("status", "active")
@@ -1265,7 +1265,7 @@ function RecentlyViewedSection({
     enabled: recentIds.length >= RECENT_RAIL_MIN,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("listings").select("*").in("id", recentIds);
+      const { data, error } = await supabase.from("listings").select(PUBLIC_LISTING_COLUMNS).in("id", recentIds);
       if (error) throw error;
       const rows = await publicLocationLabel((data ?? []) as unknown as Listing[]);
       // Preserve newest-first order from localStorage.

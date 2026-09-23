@@ -83,7 +83,8 @@ async function fetchPublicProfile(userId: string): Promise<PublicProfile | null>
 }
 
 async function fetchUserListings(userId: string, activeOnly: boolean) {
-  let q = supabase.from("listings").select("*").eq("user_id", userId)
+  // Q454 — non-owner view (activeOnly) never selects area/address/lat/lng.
+  let q = supabase.from("listings").select(activeOnly ? PUBLIC_LISTING_COLUMNS : "*").eq("user_id", userId)
     .order("is_featured", { ascending: false }).order("created_at", { ascending: false });
   if (activeOnly) q = q.eq("is_active", true);
   const { data, error } = await q;
