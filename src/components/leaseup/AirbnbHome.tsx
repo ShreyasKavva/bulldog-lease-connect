@@ -28,6 +28,7 @@ import type { Campus } from "@/lib/leaseup/campuses";
 import { SearchPill, EMPTY_SEARCH, type SearchState } from "./SearchPill";
 import { buildBrowseSearch } from "@/lib/leaseup/search-params";
 import { ListingRail } from "./ListingRail";
+import { ListingPhoto } from "./ListingPhoto";
 import { ListingCard } from "./ListingCard";
 import { ListingCardSkeletonRow } from "./ListingCardSkeleton";
 import { SmartSections, ScrollRow } from "./SmartSections";
@@ -571,11 +572,7 @@ export function AirbnbHome({
                     className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
                   >
                     <span className="absolute right-1.5 top-1.5 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] text-white">Today</span>
-                    {l.photo_urls?.[0] ? (
-                      <img src={l.photo_urls[0]} alt={l.title} className="h-24 w-full object-cover" />
-                    ) : (
-                      <div className="grid h-24 w-full place-items-center bg-gray-100 text-2xl dark:bg-muted">🏠</div>
-                    )}
+                    <ListingPhoto src={l.photo_urls?.[0]} alt={l.title} size="sm" className="h-24 w-full object-cover" />
                     <div className="px-2 py-1.5">
                       <div className="text-sm font-bold">${l.price}/mo</div>
                       <div className="truncate text-xs text-gray-400">{c?.short_name ?? c?.name ?? "Near campus"}</div>
