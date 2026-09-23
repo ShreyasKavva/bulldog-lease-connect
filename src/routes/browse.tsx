@@ -644,6 +644,30 @@ function Browse() {
       if (count > 0) options.push({ ...c, count });
     }
     options.sort((a, b) => b.count - a.count);
+    // Q476 — when no single filter is the culprit, two of them together are.
+    // Offer the best pairs rather than a bare "start over".
+    if (options.length === 0) {
+      const act = candidates.filter((c) => c.active);
+      const pairs: typeof options = [];
+      for (let i = 0; i < act.length; i++) {
+        for (let j = i + 1; j < act.length; j++) {
+          const a = act[i], b = act[j];
+          const count = listings.filter((l) => matchesListing(l, [a.key, b.key])).length;
+          if (count > 0) {
+            pairs.push({
+              key: `${a.key}+${b.key}` as RelaxKey,
+              active: true,
+              heading: `${a.heading} with those other filters`,
+              button: `${a.button.replace(/^Remove /, "Remove ")} and ${b.button.replace(/^(Remove|Clear) (the )?/, "").replace(/ filters?$/, "")} filter`,
+              patch: { ...a.patch, ...b.patch },
+              count,
+            });
+          }
+        }
+      }
+      pairs.sort((x, y) => y.count - x.count);
+      return pairs.slice(0, 3);
+    }
     return options;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered.length, listings, s.q, campusId, area, furnishedOnly, minPrice, maxPrice, bedSet,
