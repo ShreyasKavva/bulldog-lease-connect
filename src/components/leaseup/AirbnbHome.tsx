@@ -924,11 +924,9 @@ function LiveCounter() {
         const today = new Date().toISOString().slice(0, 10);
         const [
           { data: exactData, error: exactErr },
-          { data: broadData, error: broadErr },
           { count: msgCount },
           lookers,
           savers,
-          { count: supportedCampuses },
         ] = await Promise.all([
           // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
           supabase
@@ -937,8 +935,6 @@ function LiveCounter() {
             .eq("is_active", true)
             .eq("status", "active")
             .or(`available_to.is.null,available_to.gte.${today}`),
-          // Campuses: keep the original broader scope the product approved.
-          supabase.from("listings").select("campus_id").eq("status", "active"),
           supabase.from("messages").select("id", { count: "exact", head: true }),
           supabase.from("looking_for_posts").select("user_id"),
           supabase.from("saved_listings").select("user_id"),
