@@ -272,17 +272,6 @@ export function AirbnbHome({
     return n;
   }, [campusCounts]);
 
-  // Q368 — the closing band quotes the same directory total the hero stat
-  // uses (campuses head-count), so the page never states two conflicting
-  // campus numbers.
-  const { data: totalCampuses } = useQuery({
-    queryKey: ["total-campus-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("campuses").select("id", { count: "exact", head: true });
-      return count ?? 0;
-    },
-    staleTime: Infinity,
-  });
 
   const spotlightCampuses = useMemo(() => {
     // Q139 — show up to 12 campuses (3x4 on desktop, 2x6 on mobile). Campuses
