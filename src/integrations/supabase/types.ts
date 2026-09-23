@@ -2961,139 +2961,19 @@ export type Database = {
       }
       trending_listings: {
         Row: {
-          amenities: string[] | null
-          available_from: string | null
-          available_to: string | null
-          baths: number | null
-          beds: number | null
-          bumped_at: string | null
           campus_id: string | null
-          created_at: string | null
-          deposit_amount: number | null
-          deposit_escrow_enabled: boolean | null
-          description: string | null
-          display_name: string | null
-          featured_until: string | null
-          filled_at: string | null
-          filled_via_lease_up: boolean | null
-          flagged: boolean | null
-          furnished: boolean | null
           id: string | null
-          is_active: boolean | null
-          is_featured: boolean | null
-          laundry: string | null
-          parking: boolean | null
-          pending_review: boolean | null
-          pet_friendly: boolean | null
-          photos: string[] | null
-          price: number | null
-          roommate_prefs: Json | null
-          safe_score: number | null
-          saves_count: number | null
-          semester: string | null
-          share_count: number | null
-          sort_at: string | null
-          status: string | null
-          title: string | null
           trending_score: number | null
-          type: string | null
-          updated_at: string | null
-          user_id: string | null
-          utilities_included: boolean | null
-          verification_tier: string | null
-          view_count: number | null
-          views: number | null
-          wifi_included: boolean | null
         }
         Insert: {
-          amenities?: string[] | null
-          available_from?: string | null
-          available_to?: string | null
-          baths?: number | null
-          beds?: number | null
-          bumped_at?: string | null
           campus_id?: string | null
-          created_at?: string | null
-          deposit_amount?: number | null
-          deposit_escrow_enabled?: boolean | null
-          description?: string | null
-          display_name?: string | null
-          featured_until?: string | null
-          filled_at?: string | null
-          filled_via_lease_up?: boolean | null
-          flagged?: boolean | null
-          furnished?: boolean | null
           id?: string | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          laundry?: string | null
-          parking?: boolean | null
-          pending_review?: boolean | null
-          pet_friendly?: boolean | null
-          photos?: string[] | null
-          price?: number | null
-          roommate_prefs?: Json | null
-          safe_score?: number | null
-          saves_count?: number | null
-          semester?: string | null
-          share_count?: number | null
-          sort_at?: string | null
-          status?: string | null
-          title?: string | null
           trending_score?: never
-          type?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          utilities_included?: boolean | null
-          verification_tier?: string | null
-          view_count?: number | null
-          views?: number | null
-          wifi_included?: boolean | null
         }
         Update: {
-          amenities?: string[] | null
-          available_from?: string | null
-          available_to?: string | null
-          baths?: number | null
-          beds?: number | null
-          bumped_at?: string | null
           campus_id?: string | null
-          created_at?: string | null
-          deposit_amount?: number | null
-          deposit_escrow_enabled?: boolean | null
-          description?: string | null
-          display_name?: string | null
-          featured_until?: string | null
-          filled_at?: string | null
-          filled_via_lease_up?: boolean | null
-          flagged?: boolean | null
-          furnished?: boolean | null
           id?: string | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          laundry?: string | null
-          parking?: boolean | null
-          pending_review?: boolean | null
-          pet_friendly?: boolean | null
-          photos?: string[] | null
-          price?: number | null
-          roommate_prefs?: Json | null
-          safe_score?: number | null
-          saves_count?: number | null
-          semester?: string | null
-          share_count?: number | null
-          sort_at?: string | null
-          status?: string | null
-          title?: string | null
           trending_score?: never
-          type?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          utilities_included?: boolean | null
-          verification_tier?: string | null
-          view_count?: number | null
-          views?: number | null
-          wifi_included?: boolean | null
         }
         Relationships: [
           {
