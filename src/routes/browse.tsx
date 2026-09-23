@@ -718,7 +718,15 @@ function Browse() {
   /** Q375 — the zero-results-with-active-filters state the rail moves below. */
   const emptyWithFilters = !isLoading && !isError && filtered.length === 0 && hasActiveFilters;
 
-  const trendingRail = (
+  /**
+   * Q485 — the rail is only honest when it is a genuine subset of what the
+   * page shows. With 2-3 live listings "Trending this week" would just repeat
+   * the grid beneath it, so render nothing at all until there is more on the
+   * page than the rail can hold. One boolean guards every rail render.
+   */
+  const showTrendingRail = trendingListings.length > 0 && trendingListings.length < filtered.length;
+
+  const trendingRail = showTrendingRail ? (
     <TrendingCarousel
       listings={trendingListings}
       campusName={searchedCampus ? (searchedCampus.short_name ?? searchedCampus.name) : null}
@@ -726,7 +734,7 @@ function Browse() {
       savedIds={savedIds}
       heading={emptyWithFilters ? "Not matching your filters — trending this week" : undefined}
     />
-  );
+  ) : null;
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
@@ -1102,7 +1110,7 @@ function Browse() {
               )}
               {/* Q375 — the rail moves below the empty state here, as the
                   only content on a zero-results page with active filters. */}
-              {emptyWithFilters && (
+              {emptyWithFilters && showTrendingRail && (
                 <div className="w-full">{trendingRail}</div>
               )}
             </div>
