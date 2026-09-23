@@ -215,8 +215,18 @@ function MarketPage() {
                   if (/\b(dr|st|ave|blvd|rd|ln|ct|way|pl|drive|street|avenue|boulevard|road|lane|court)\b/i.test(a)) return false;
                   return true;
                 });
-                if (cleanNeighborhoods.length === 0) {
-                  return <p className="text-sm text-muted-foreground">Not enough neighborhood-tagged data yet.</p>;
+                // Q457 — same comps floor as the bedroom table: a "median" for
+                // one listing is that listing's own rent, not a market figure.
+                const priced = cleanNeighborhoods.filter((n) => Number(n.listing_count) >= MIN_COMPS);
+                const thin = cleanNeighborhoods.length - priced.length;
+                if (priced.length === 0) {
+                  return (
+                    <p className="text-sm text-muted-foreground">
+                      {thin > 0
+                        ? `We need at least ${MIN_COMPS} listings in a neighborhood before showing a price for it. Check back as more students post.`
+                        : "Not enough neighborhood-tagged data yet."}
+                    </p>
+                  );
                 }
                 return (
                   <div className="overflow-x-auto">
@@ -230,7 +240,7 @@ function MarketPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {cleanNeighborhoods.map((n) => (
+                        {priced.map((n) => (
                           <tr key={n.area} className="border-b last:border-0">
                             <td className="py-2 font-semibold">{n.area}</td>
                             <td className="py-2 text-right pl-2">{n.listing_count}</td>
@@ -240,9 +250,15 @@ function MarketPage() {
                         ))}
                       </tbody>
                     </table>
+                    {thin > 0 && (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Neighborhoods with fewer than {MIN_COMPS} listings are left out until there's enough to price them fairly.
+                      </p>
+                    )}
                   </div>
                 );
               })()}
+
             </section>
 
             {hasComps && (
