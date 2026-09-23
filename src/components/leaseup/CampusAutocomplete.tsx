@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
-import { searchCampuses, type Campus } from "@/lib/leaseup/campuses";
+import { searchCampuses, fetchCampuses, type Campus } from "@/lib/leaseup/campuses";
 import { cn } from "@/lib/utils";
 
 export function CampusAutocomplete({
@@ -46,14 +46,34 @@ export function CampusAutocomplete({
 
   const q = debounced.trim();
   const canSearch = q.length === 0 || q.length >= 2;
-  const { data: results = [], isFetching } = useQuery({
+
+  // Q467 — the typeahead only hits the network once the field is open AND the
+  // visitor has typed 2+ characters. Before, it ran on mount with an empty
+  // string, which fired two extra campus requests on every page holding this
+  // box — including one hidden at phone width.
+  const { data: typed = [], isFetching } = useQuery({
     queryKey: ["campus-search", q.toLowerCase()],
-    queryFn: () => searchCampuses(q, q ? 8 : 14),
-    enabled: canSearch,
+    queryFn: () => searchCampuses(q, 8),
+    enabled: open && q.length >= 2,
     staleTime: 60_000,
     placeholderData: (prev) => prev,
   });
-  const visibleResults = canSearch ? results : [];
+
+  // Q467 — the empty/"Suggested campuses" list is served from the shared
+  // ["campuses"] cache that browse, the homepage and /post already load, so
+  // opening the box costs nothing extra.
+  const { data: allCampuses = [] } = useQuery({
+    queryKey: ["campuses"],
+    queryFn: fetchCampuses,
+    enabled: open && q.length === 0,
+    staleTime: 5 * 60_000,
+  });
+  const suggested = allCampuses
+    .slice()
+    .sort((a, b) => (b.listing_count ?? 0) - (a.listing_count ?? 0))
+    .slice(0, 14);
+
+  const visibleResults = !canSearch ? [] : q.length === 0 ? suggested : typed;
 
   useEffect(() => setActive(0), [q, open]);
 
