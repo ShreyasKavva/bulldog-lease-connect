@@ -679,7 +679,7 @@ function Browse() {
   const culprit = relaxOptions[0] ?? null;
 
   function relaxOption(option: (typeof relaxOptions)[number]) {
-    if (option.key === "q") setSearchInput("");
+    if (String(option.key).split("+").includes("q")) setSearchInput("");
     patchSearch(option.patch);
   }
 
@@ -999,7 +999,9 @@ function Browse() {
                         {relaxOptions[0].heading}.
                       </h3>
                       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                        That filter is ruling out the most listings. Remove it, or relax a different one:
+                        {String(relaxOptions[0].key).includes("+")
+                          ? "No single filter is the whole story — these combinations bring results back:"
+                          : "That filter is ruling out the most listings. Remove it, or relax a different one:"}
                       </p>
                       <div className="mt-6 flex w-full max-w-xs flex-col items-stretch gap-2">
                         {relaxOptions.map((opt, i) => (
