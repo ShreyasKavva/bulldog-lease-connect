@@ -701,7 +701,7 @@ function Browse() {
       savedIds={savedIds}
       heading={emptyWithFilters ? "Not matching your filters — trending this week" : undefined}
     />
-  ) : null;
+  );
 
   const activeFilterCount =
     (s.q ? 1 : 0) +
