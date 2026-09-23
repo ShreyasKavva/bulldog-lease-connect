@@ -860,7 +860,8 @@ export function PostWizard({ userId }: { userId: string }) {
                   <span className="text-xs text-gray-500">{d.photos.length} / {MAX_PHOTOS} photos added</span>
                 </div>
                 <p className="mb-3 text-xs text-gray-500">
-                  Add at least 3 photos — listings with photos get 5× more views
+                  {/* Q479 — dropped an invented "5× more views" statistic. */}
+                  Add at least 3 photos — students skip listings they can't see inside
                 </p>
                 <input
                   ref={fileRef}
