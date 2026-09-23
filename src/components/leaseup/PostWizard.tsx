@@ -532,7 +532,15 @@ export function PostWizard({ userId }: { userId: string }) {
             </span>
             <button
               type="button"
-              onClick={() => { setD({ ...recovered.draft, step: 1 }); setRecovered(null); }}
+              onClick={() => {
+                // Q451 — photos are never persisted; the student re-adds them.
+                const hadPhotos =
+                  (recovered.draft.photos?.length ?? 0) > 0 ||
+                  !!recovered.draft.photoUrls?.some((u) => u.trim());
+                setD({ ...recovered.draft, photos: [], photoUrls: [""], step: 1 });
+                setRecovered(null);
+                setRestored({ hadPhotos });
+              }}
               className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
             >
               Resume
@@ -541,10 +549,8 @@ export function PostWizard({ userId }: { userId: string }) {
               type="button"
               onClick={() => {
                 // Q181 — remember the dismissal so this draft never nags again.
-                try {
-                  if (recovered.draftId) localStorage.setItem(DISMISSED_KEY, recovered.draftId);
-                  localStorage.removeItem(DRAFT_KEY);
-                } catch { /* noop */ }
+                if (recovered.draftId) lsSet(dismissedKey(userId), recovered.draftId);
+                lsRemove(draftKey(userId));
                 setRecovered(null);
               }}
               className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
@@ -553,6 +559,61 @@ export function PostWizard({ userId }: { userId: string }) {
             </button>
           </div>
         )}
+
+        {/* Q451 — post-restore confirmation, dismissible, with a way back to blank. */}
+        {restored && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
+            <span className="flex-1">
+              We restored your draft.{restored.hadPhotos ? " Photos aren't saved with a draft — please re-add them." : ""}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setD({ ...EMPTY });
+                lsRemove(draftKey(userId));
+                setRestored(null);
+              }}
+              className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            >
+              Start fresh
+            </button>
+            <button
+              type="button"
+              onClick={() => setRestored(null)}
+              aria-label="Dismiss"
+              className="rounded-full p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Q451 — session expired at publish: the form and draft are both kept. */}
+        {sessionExpired && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <p className="font-semibold">You've been signed out</p>
+            <p className="mt-1">
+              Your listing is saved as a draft — nothing is lost. Sign in again and it'll be waiting here.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                to="/auth"
+                search={{ mode: "in", next: "/post" } as any}
+                className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+              >
+                Sign in again
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSessionExpired(false)}
+                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         {d.step === 1 ? (
           <>
             <p className="mb-6 text-xs text-gray-400">Step 1 of 3 — Basic details</p>
