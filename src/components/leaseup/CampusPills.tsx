@@ -83,7 +83,7 @@ export function CampusPills({
           return (
             <Link
               key={c.id}
-              to="/campus/$slug"
+              to="/sublease/$slug"
               params={{ slug: c.slug }}
               onClick={() => setLastCampusSlug(c.slug)}
               aria-disabled={n === 0 || undefined}
