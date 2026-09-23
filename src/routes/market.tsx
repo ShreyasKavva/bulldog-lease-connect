@@ -81,8 +81,13 @@ function MarketPage() {
     return (
       <div className="min-h-screen bg-background pb-20">
         <main className="mx-auto max-w-5xl px-4 py-8">
-          <div className="h-8 w-64 animate-pulse rounded-full bg-muted" />
-          <div className="mt-3 h-4 w-80 max-w-full animate-pulse rounded-full bg-muted" />
+          {/* Q502 — real heading and copy even while data loads (and if the
+              server-side fetch fails), so the page is never an empty shell. */}
+          <h1 className="text-3xl font-extrabold tracking-tight">Sublease market data</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Sublease prices by campus and bedroom count, built from active student listings on LeaseUp.
+            A price only shows once at least 3 listings back it up, so coverage grows as students post.
+          </p>
           <div className="mt-8 grid grid-cols-3 gap-3">
             {[0, 1, 2].map((i) => (
               <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
