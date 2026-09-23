@@ -849,6 +849,11 @@ export function PostWizard({ userId }: { userId: string }) {
                 {/* Or paste direct image links */}
                 <div className="mt-5 space-y-3 border-t border-gray-100 pt-5 dark:border-border">
                   <p className="text-sm font-medium">Or paste a photo URL</p>
+                  {/* Q451 — testers saw the same stock cover on several listings. */}
+                  <p className="text-xs text-gray-500 dark:text-foreground/60">
+                    Use real photos of your place. Stock photos get listings taken down, and renters skip them.
+                  </p>
+
                   {d.photoUrls.map((u, i) => (
                     <PhotoUrlRow
                       key={i}
