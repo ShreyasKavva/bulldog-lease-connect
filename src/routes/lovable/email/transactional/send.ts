@@ -3,6 +3,7 @@ import { render } from 'react-email'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
+import { logEmailFailure } from '@/lib/email/observability'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "bulldog-lease-connect"
@@ -37,7 +38,12 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
         if (!supabaseUrl || !supabaseServiceKey) {
-          console.error('Missing required environment variables')
+          logEmailFailure({
+            stage: 'transactional-send:config',
+            template: null,
+            cause: 'never_attempted',
+            detail: 'missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY',
+          })
           return Response.json(
             { error: 'Server configuration error' },
             { status: 500 }
@@ -369,10 +375,13 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         })
 
         if (enqueueError) {
-          console.error('Failed to enqueue email', {
-            error: enqueueError,
-            templateName,
-            recipient_redacted: redactEmail(effectiveRecipient),
+          logEmailFailure({
+            stage: 'transactional-send:enqueue',
+            template: templateName,
+            recipient: effectiveRecipient,
+            cause: 'queue_failure',
+            detail: enqueueError.message ?? enqueueError,
+            extra: { sender_domain: SENDER_DOMAIN },
           })
 
           await supabase.from('email_send_log').insert({
