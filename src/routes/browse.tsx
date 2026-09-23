@@ -496,6 +496,7 @@ function Browse() {
    * the culprit. Semantics unchanged ("3 baths" still means 3 or more).
    */
   type RelaxKey =
+    | "campus"
     | "q" | "area" | "price" | "beds" | "baths" | "dates" | "furnished"
     | "utilities" | "parking" | "pets" | "wifi" | "laundry" | "verified"
     | "movein" | "new" | "tenants" | "type" | "maxDuration" | "availableSoon"
@@ -509,7 +510,7 @@ function Browse() {
       (l.description ?? "").toLowerCase().includes(qLower)
     )) return false;
     if (s.hostId && l.user_id !== s.hostId) return false;
-    if (campusId && l.campus_id !== campusId) return false;
+    if (skip !== "campus" && campusId && l.campus_id !== campusId) return false;
     if (skip !== "area" && area && l.area !== area) return false;
     if (skip !== "furnished" && furnishedOnly && !l.furnished) return false;
     if (skip !== "utilities" && s.utilities === 1 && !l.utilities_included) return false;
