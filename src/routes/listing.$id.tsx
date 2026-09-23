@@ -579,9 +579,11 @@ function ListingDetailPage() {
         <div className="grid grid-cols-1 gap-10 py-8 lg:grid-cols-3 lg:gap-12 lg:py-12">
           {/* PART B — details */}
           <div className="min-w-0 lg:col-span-2">
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
-              <div className="flex shrink-0 items-center gap-2">
+            {/* Q494 — below md the actions get their own row above the title so
+                the h1 uses the full width (was squeezed to ~158px at 375px). */}
+            <div className="flex flex-col-reverse gap-3 md:flex-row md:items-start md:justify-between">
+              <h1 className="min-w-0 break-words text-2xl font-black leading-tight sm:text-3xl">{listing.title}</h1>
+              <div className="flex shrink-0 items-center justify-end gap-2">
                 <ShareSheet
                   url={baseListingUrl()}
                   title={`${listing.title} — LeaseUp`}
@@ -605,7 +607,7 @@ function ListingDetailPage() {
                     type="button"
                     onClick={handleToggleSave}
                     aria-label={isSaved ? "Remove from saved" : "Save listing"}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90"
+                    className="grid h-11 w-11 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90 md:h-10 md:w-10"
                   >
                     <Heart className={cn("h-5 w-5", isSaved ? "fill-[#FF5A5F] text-[#FF5A5F]" : "text-foreground")} />
                   </button>
@@ -623,11 +625,13 @@ function ListingDetailPage() {
             )}
             <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               {listing.area && (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" /> {listing.area}
-                </span>
+                <>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" /> {listing.area}
+                  </span>
+                  <span aria-hidden>·</span>
+                </>
               )}
-              <span aria-hidden>·</span>
               <span className="inline-flex items-center gap-1">
                 <Bed className="h-3.5 w-3.5" /> {listing.beds === 0 ? "Studio" : `${listing.beds} bd`}
               </span>
@@ -1734,7 +1738,7 @@ function MoreOptionsMenu({ onReport }: { onReport: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted"
+        className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition hover:bg-muted md:h-10 md:w-10"
       >
         <MoreHorizontal className="h-5 w-5" />
       </button>
