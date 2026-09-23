@@ -422,7 +422,16 @@ function Browse() {
     // Q355 — allowlist: only a real view value is restored; anything else is
     // treated as absent. Grid is now recognised, so a stored "map" can no
     // longer swallow a visitor's explicit grid choice.
-    if (stored === "grid" || stored === "list" || stored === "map") patchSearch({ view: stored });
+    // Q476 — restore with replace + keep the page: this is not a navigation
+    // the visitor made, so it must not add a history entry (Back would bounce
+    // straight back here) and must not throw away ?page=.
+    if (stored === "grid" || stored === "list" || stored === "map") {
+      navigate({
+        to: "/browse",
+        search: (prev: BrowseSearch) => ({ ...prev, view: stored as BrowseSearch["view"] }),
+        replace: true,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.view]);
 
