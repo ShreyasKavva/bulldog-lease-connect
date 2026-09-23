@@ -13,6 +13,14 @@ export const BASEMAP_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 export const BASEMAP_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+/**
+ * Q480 — the same credit as plain text/URL, for places that render the
+ * attribution outside the Leaflet control (e.g. a caption under the map, which
+ * stays visible when the in-map control is clipped by a fixed bottom bar).
+ */
+export const BASEMAP_ATTRIBUTION_TEXT = "OpenStreetMap contributors";
+export const BASEMAP_ATTRIBUTION_HREF = "https://www.openstreetmap.org/copyright";
+
 export const BASEMAP_OPTIONS = {
   maxZoom: 19,
   attribution: BASEMAP_ATTRIBUTION,

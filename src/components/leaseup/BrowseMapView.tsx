@@ -20,7 +20,12 @@ import { Link } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/leaseup/types";
-import { BASEMAP_URL, BASEMAP_OPTIONS } from "@/lib/leaseup/map-tiles";
+import {
+  BASEMAP_URL,
+  BASEMAP_OPTIONS,
+  BASEMAP_ATTRIBUTION_HREF,
+  BASEMAP_ATTRIBUTION_TEXT,
+} from "@/lib/leaseup/map-tiles";
 import { useRecentViews } from "@/lib/leaseup/recent-views";
 import { posterName } from "@/lib/leaseup/display-name";
 
@@ -515,10 +520,16 @@ export function BrowseMapView({
           font-size:14px; font-weight:600; white-space:nowrap;
           box-shadow:0 2px 8px rgba(0,0,0,.15); border:1px solid rgba(0,0,0,.06);
           font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
-        .leaflet-control-attribution { font-size:9px !important; color:#9ca3af !important;
-          background:rgba(255,255,255,.7) !important; border-radius:9999px !important;
-          padding:1px 8px !important; margin:6px !important; box-shadow:none !important; }
-        .leaflet-control-attribution a { color:#9ca3af !important; }
+        /* Q480 — OpenStreetMap requires the credit to be legible. Was 9px
+           #9ca3af on 70% white (~2.4:1 contrast). */
+        .leaflet-control-attribution { font-size:11px !important; color:#4b5563 !important;
+          background:rgba(255,255,255,.92) !important; border-radius:9999px !important;
+          padding:2px 10px !important; margin:6px !important; box-shadow:none !important; }
+        .leaflet-control-attribution a { color:#4b5563 !important; text-decoration:underline; }
+        /* Clear the fixed mobile bottom nav and the "Show N subleases" pill. */
+        @media (max-width: 767px) {
+          .leaflet-control-attribution { margin:0 6px 84px 6px !important; }
+        }
       `}</style>
 
       {/* Left list — desktop only */}
@@ -597,7 +608,15 @@ export function BrowseMapView({
       )}
     </div>
     <p className="px-4 py-2 text-xs text-muted-foreground">
-      Map shows approximate areas. Exact address is shared by the host after you connect.
+      Map shows approximate areas. Exact address is shared by the host after you connect.{" "}
+      {/* Q480 — the in-map credit can sit under the fixed bottom bar on a phone,
+          so the same credit is repeated here where it is always readable. */}
+      <span className="whitespace-nowrap">
+        Map data &copy;{" "}
+        <a href={BASEMAP_ATTRIBUTION_HREF} target="_blank" rel="noreferrer" className="underline">
+          {BASEMAP_ATTRIBUTION_TEXT}
+        </a>
+      </span>
     </p>
     </div>
   );
