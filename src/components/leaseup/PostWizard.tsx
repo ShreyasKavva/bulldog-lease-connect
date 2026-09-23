@@ -281,6 +281,9 @@ export function PostWizard({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [urlOk, setUrlOk] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  /** Q451 — in-flight guard: state updates are async, a ref is not. */
+  const publishingRef = useRef(false);
+
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
   const [recovered, setRecovered] = useState<{ draft: Draft; savedAt: number; draftId?: string } | null>(null);
