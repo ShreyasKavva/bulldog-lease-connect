@@ -63,6 +63,16 @@ export const Route = createFileRoute("/looking")({
     ],
     links: [{ rel: "canonical", href: "https://leasup.co/looking" }],
   }),
+  // Q502 — seed the default ("all campuses") post list and campus list on
+  // the server so crawlers and no-JS visitors get real posts, not skeletons.
+  // Same keys and functions as the component's useQuery calls. Public reads;
+  // a failure here just falls back to the client fetch.
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData({ queryKey: ["looking-for", null], queryFn: () => fetchLookingFor(null) }),
+      context.queryClient.ensureQueryData({ queryKey: ["campuses"], queryFn: fetchCampuses }),
+    ]).catch(() => undefined);
+  },
   component: LookingForPage,
 });
 
