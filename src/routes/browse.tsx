@@ -645,6 +645,22 @@ function Browse() {
     [listings, campusId],
   );
 
+  /**
+   * Q446 — when the campus itself is the reason the page is empty (only a
+   * handful of campuses have live subleases), name the campus instead of
+   * blaming a filter, and offer the same-filters count everywhere else.
+   */
+  const campusLabel = campusId
+    ? campuses.find((c) => c.id === campusId)?.short_name
+      ?? campuses.find((c) => c.id === campusId)?.name
+      ?? "this campus"
+    : "this campus";
+  const anywhereCount = useMemo(
+    () => (campusId ? listings.filter((l) => matchesListing(l, "campus")).length : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [listings, campusId, filtered.length],
+  );
+
   /** Q375 — is at least one filter active? Same active flags as relaxOptions. */
   const hasActiveFilters =
     s.baths != null || minPrice != null || maxPrice != null || bedSet.size > 0 ||
