@@ -278,6 +278,8 @@ export function PostWizard({ userId }: { userId: string }) {
   const [campuses, setCampuses] = useState<Campus[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  /** Q470 — index of the thumbnail being dragged (desktop reordering). */
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -885,10 +887,26 @@ export function PostWizard({ userId }: { userId: string }) {
                   )}
                 </div>
                 {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
+                {d.photos.length > 1 && (
+                  <p className="mt-3 text-xs text-gray-500 dark:text-foreground/60">
+                    The first photo is the one renters see first. Drag a photo, or use the buttons on it, to change the order.
+                  </p>
+                )}
                 {d.photos.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     {d.photos.map((p, i) => (
-                      <div key={p.path} className="relative overflow-hidden rounded-xl bg-muted">
+                      <div
+                        key={p.path}
+                        draggable
+                        onDragStart={() => setDragIdx(i)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); if (dragIdx !== null) movePhoto(dragIdx, i); setDragIdx(null); }}
+                        onDragEnd={() => setDragIdx(null)}
+                        className={cn(
+                          "relative overflow-hidden rounded-xl bg-muted",
+                          dragIdx === i && "opacity-60 ring-2 ring-gray-900 dark:ring-white",
+                        )}
+                      >
                         <img src={p.url} alt="" className="h-32 w-full object-cover" />
                         {i === 0 && (
                           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-gray-900/85 px-2 py-1 text-[11px] font-medium text-white">
@@ -898,11 +916,42 @@ export function PostWizard({ userId }: { userId: string }) {
                         )}
                         <button
                           type="button"
-                          onClick={() => set({ photos: d.photos.filter((x) => x.path !== p.path) })}
+                          onClick={() => removePhoto(p.path)}
+                          aria-label="Remove photo"
                           className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow"
                         >
                           <X className="h-4 w-4 text-gray-900" />
                         </button>
+                        {/* Q470 — touch-friendly reordering; drag works on desktop. */}
+                        <div className="absolute inset-x-0 bottom-0 flex items-stretch gap-px bg-black/45 backdrop-blur-sm">
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, i - 1)}
+                            disabled={i === 0}
+                            aria-label="Move photo left"
+                            className="grid min-h-11 flex-1 place-items-center text-white disabled:opacity-35"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, 0)}
+                            disabled={i === 0}
+                            aria-label="Make this the cover photo"
+                            className="min-h-11 flex-[2] px-1 text-[11px] font-semibold text-white disabled:opacity-35"
+                          >
+                            {i === 0 ? "Cover" : "Make cover"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(i, i + 1)}
+                            disabled={i === d.photos.length - 1}
+                            aria-label="Move photo right"
+                            className="grid min-h-11 flex-1 place-items-center text-white disabled:opacity-35"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
