@@ -36,7 +36,17 @@ function PostPage() {
   const { relist } = Route.useSearch();
 
   if (loading) {
-    return <div className="min-h-[60vh]" />;
+    // Q464 — a bare empty div read as a broken page on slow phones. Show the
+    // page's own heading while the session resolves, so nothing ever blanks.
+    return (
+      <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-6 pb-20 text-center md:pb-0">
+        <div className="text-6xl">🏡</div>
+        <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900">
+          Post Your Sublease
+        </h1>
+        <p className="mt-2 text-base text-gray-500">Loading…</p>
+      </main>
+    );
   }
 
   if (!user) {
