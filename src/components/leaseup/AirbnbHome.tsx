@@ -891,12 +891,15 @@ function LatestFeedSection({
  * Q104 — live supply counter under the hero search.
  * Fire-and-forget: renders nothing while loading or on any failure.
  *
- * Q192 — exact active-listing count (same filters as /browse), no rounding;
- * inquiries shown only when credible (>= 25), otherwise "Free to message".
- * Campuses count stays on the broader active-listing set (do not touch it).
+ * Q192 — exact active-listing count (same filters as /browse), no rounding.
+ * Q463 — the old third stat ("student inquiries") added message rows to
+ * distinct savers/lookers, so a save was counted as an inquiry: a number we
+ * cannot defend. Those three tables are also unreadable by the anon role, so
+ * every signed-out visit fired three 401s to build it. Removed: the third
+ * pillar is now the plain, always-true "Free to message a poster".
  */
 function LiveCounter() {
-  const [stats, setStats] = useState<{ listings: number; campuses: number; inquiries: number } | null>(null);
+  const [stats, setStats] = useState<{ listings: number; campuses: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -904,37 +907,21 @@ function LiveCounter() {
     (async () => {
       try {
         const today = new Date().toISOString().slice(0, 10);
-        const [
-          { data: exactData, error: exactErr },
-          { count: msgCount },
-          lookers,
-          savers,
-        ] = await Promise.all([
-          // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
-          supabase
-            .from("listings")
-            .select("campus_id")
-            .eq("is_active", true)
-            .eq("status", "active")
-            .or(`available_to.is.null,available_to.gte.${today}`),
-          supabase.from("messages").select("id", { count: "exact", head: true }),
-          supabase.from("looking_for_posts").select("user_id"),
-          supabase.from("saved_listings").select("user_id"),
-        ]);
+        // Q192 — match fetchListings exactly so the hero never disagrees with /browse.
+        const { data: exactData, error: exactErr } = await supabase
+          .from("listings")
+          .select("campus_id")
+          .eq("is_active", true)
+          .eq("status", "active")
+          .or(`available_to.is.null,available_to.gte.${today}`);
         if (cancelled) return;
         if (exactErr || !exactData) { setStats(null); setLoading(false); return; }
-        const listings = exactData.length;
-        const distinct = new Set<string>();
-        for (const r of lookers.data ?? []) if (r?.user_id) distinct.add(`l:${r.user_id}`);
-        for (const r of savers.data ?? []) if (r?.user_id) distinct.add(`s:${r.user_id}`);
-        const rawInquiries = (msgCount ?? 0) + distinct.size;
         setStats({
-          listings,
+          listings: exactData.length,
           // Q445 — campuses that actually have a live, unexpired sublease right
           // now (same row set as the listings stat). Derived live: it rises as
           // real listings are posted at new schools. Never the directory total.
           campuses: new Set(exactData.map((r) => r?.campus_id).filter(Boolean)).size,
-          inquiries: rawInquiries,
         });
       } catch { if (!cancelled) setStats(null); }
       if (!cancelled) setLoading(false);
