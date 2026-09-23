@@ -287,6 +287,15 @@ export function PostWizard({ userId }: { userId: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   /** Q451 — in-flight guard: state updates are async, a ref is not. */
   const publishingRef = useRef(false);
+  /**
+   * Q479 — once the listing is live the draft is dead. Without this flag the
+   * unmount save() below (it runs when publish navigates away) re-wrote the
+   * draft that publish had just deleted, so the next visit to /post offered
+   * "Resume your draft" for a listing the student had already posted.
+   */
+  const publishedRef = useRef(false);
+  /** Q479 — one photo batch at a time; picker, drag-drop and paste share it. */
+  const uploadingRef = useRef(false);
 
 
   // Q157 — draft recovery: a saved draft is offered, never silently restored.
@@ -344,6 +353,8 @@ export function PostWizard({ userId }: { userId: string }) {
     const save = () => {
       // Don't clobber a recoverable draft the user hasn't answered on yet.
       if (blockedRef.current) return;
+      // Q479 — the listing was published; never resurrect its draft.
+      if (publishedRef.current) return;
       const cur = draftRef.current;
       // Q181 — a draft is only real once a campus, price or title exists.
       if (!cur.campusId && !cur.price && !cur.title?.trim()) return;
@@ -374,6 +385,22 @@ export function PostWizard({ userId }: { userId: string }) {
   }, [d.step, d.photos.length]);
 
   async function handleFiles(list: FileList | File[]) {
+    // Q479 — a second pick/drop/paste while a batch is still uploading read a
+    // stale photo count, so the 10-photo cap could be overshot and the
+    // "Uploading…" label jumped between the two batches. One batch at a time.
+    if (uploadingRef.current) {
+      setPhotoError("Still uploading your last photos — give it a second, then add more.");
+      return;
+    }
+    uploadingRef.current = true;
+    try {
+      await handleFilesInner(list);
+    } finally {
+      uploadingRef.current = false;
+    }
+  }
+
+  async function handleFilesInner(list: FileList | File[]) {
     const all = Array.from(list);
     const picked = all.filter((f) => f.type.startsWith("image/"));
     const notes: string[] = [];
@@ -534,6 +561,8 @@ export function PostWizard({ userId }: { userId: string }) {
         .single();
       if (err) throw err;
       // Q181 — the draft became a live listing: it is dead, never prompt again.
+      // Q479 — flag it before navigating: unmount would otherwise re-save it.
+      publishedRef.current = true;
       lsRemove(draftKey(userId));
       lsRemove(dismissedKey(userId));
       toast.success("Your sublease is live! 🎉");
@@ -831,7 +860,8 @@ export function PostWizard({ userId }: { userId: string }) {
                   <span className="text-xs text-gray-500">{d.photos.length} / {MAX_PHOTOS} photos added</span>
                 </div>
                 <p className="mb-3 text-xs text-gray-500">
-                  Add at least 3 photos — listings with photos get 5× more views
+                  {/* Q479 — dropped an invented "5× more views" statistic. */}
+                  Add at least 3 photos — students skip listings they can't see inside
                 </p>
                 <input
                   ref={fileRef}
@@ -1119,8 +1149,9 @@ export function PostWizard({ userId }: { userId: string }) {
                     </div>
                   </div>
 
+                  {/* Q479 — dropped an invented "3x more inquiries" statistic. */}
                   <p className="mt-4 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-muted dark:text-muted-foreground">
-                    💡 Complete listings get 3x more inquiries. Add at least 3 photos!
+                    💡 Listings with three or more photos are far easier to say yes to.
                     {photoCount < 3 ? ` You have ${photoCount}.` : ""}
                   </p>
 
