@@ -5,6 +5,7 @@ import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
 import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "@/lib/leaseup/use-session";
@@ -578,17 +579,20 @@ export function ListingDetailSheet({
               <h3 className="mb-2 text-sm font-bold uppercase text-muted-foreground">Students also saved →</h3>
               <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
                 {alsoSaved.map((l) => (
-                  <button
+                  <Link
                     key={l.id}
-                    onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
-                    className="group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
+                    to="/listing/$id"
+                    params={{ id: l.id }}
+                    aria-label={`${l.title?.trim() || "Sublease"}, $${l.price.toLocaleString()} per month`}
+                    onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault(); onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
+                    className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
                   >
                     <SheetPhoto src={l.photo_urls?.[0]} alt={l.title} className="lu-card-img h-full w-full object-cover" />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-left">
                       <div className="text-sm font-bold text-white">${l.price.toLocaleString()}<span className="text-[10px] font-medium">/mo</span></div>
                       <div className="line-clamp-1 text-[10px] text-white/80">{l.beds}bd · {l.area ?? "Near campus"}</div>
                     </div>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -678,10 +682,13 @@ export function ListingDetailSheet({
               </h3>
               <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
                 {moreAtCampus.map((l) => (
-                  <button
+                  <Link
                     key={l.id}
-                    onClick={() => { onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
-                    className="w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
+                    to="/listing/$id"
+                    params={{ id: l.id }}
+                    aria-label={`${l.title?.trim() || "Sublease"}, $${l.price.toLocaleString()} per month`}
+                    onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault(); onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
+                    className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
                   >
                     <div className="h-28 w-full bg-muted">
                       <SheetPhoto src={l.photo_urls?.[0]} alt={l.title} loading="lazy" className="h-28 w-full object-cover" />
@@ -697,7 +704,7 @@ export function ListingDetailSheet({
                           : (l.area ?? "Near campus")}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
