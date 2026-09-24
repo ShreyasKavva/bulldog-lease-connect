@@ -374,6 +374,7 @@ export function PostWizard({ userId }: { userId: string }) {
     const input = campusWrapRef.current?.querySelector("input");
     if (!input) return;
     input.id = "post-campus";
+    input.setAttribute("aria-label", "Campus");
     input.setAttribute("aria-invalid", fieldErrors.campus ? "true" : "false");
     if (fieldErrors.campus) input.setAttribute("aria-describedby", "post-campus-error");
     else input.removeAttribute("aria-describedby");
