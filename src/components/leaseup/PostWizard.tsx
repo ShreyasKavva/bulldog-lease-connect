@@ -375,6 +375,8 @@ export function PostWizard({ userId }: { userId: string }) {
     if (!input) return;
     input.id = "post-campus";
     input.setAttribute("aria-label", "Campus");
+    input.style.minHeight = "44px";
+    campusWrapRef.current?.querySelectorAll<HTMLElement>("[role=option]").forEach((o) => { o.style.minHeight = "44px"; });
     input.setAttribute("aria-invalid", fieldErrors.campus ? "true" : "false");
     if (fieldErrors.campus) input.setAttribute("aria-describedby", "post-campus-error");
     else input.removeAttribute("aria-describedby");
@@ -869,7 +871,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 <div
                   ref={campusWrapRef}
                   className={cn(
-                    "rounded-xl border bg-background px-3 [&_input]:min-h-11 [&_[role=option]]:min-h-11 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/40",
+                    "rounded-xl border bg-background px-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/40",
                     fieldErrors.campus ? "border-red-600" : "border-border",
                   )}
                 >

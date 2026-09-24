@@ -25,7 +25,10 @@ async function mockBackend(page: Page, opts: { failUploadName?: string; insertDe
     const json = (body: unknown, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
     if (url.includes("/auth/v1/user")) return json(user);
     if (url.includes("/auth/v1/")) return json({});
-    if (url.includes("/storage/v1/object/sign/")) return json({ signedURL: `/storage/v1/object/sign/listing-photos/x.png?token=fake` });
+    if (url.includes("/storage/v1/object/sign/")) {
+      const signed = decodeURIComponent(url.split("/storage/v1/object/sign/listing-photos/")[1] ?? "x").split("?")[0];
+      return json({ signedURL: `/storage/v1/object/sign/listing-photos/${signed}?token=fake` });
+    }
     if (url.includes("/storage/v1/object/listing-photos/") && method === "POST") {
       const path = decodeURIComponent(url.split("/storage/v1/object/listing-photos/")[1] ?? "");
       const body = req.postDataBuffer()?.toString("latin1") ?? "";
@@ -145,7 +148,8 @@ test.describe("/post", () => {
       await expect(page.locator("#post-photos-error")).toBeVisible();
       await expect(page.locator("#post-photos-error")).not.toContainText(/duplicate key|constraint/i);
 
-      // reorder: make photo 2 the cover
+      // reorder: make photo 2 the cover (uploads finish in any order, so read it off the page)
+      const secondSrc = (await page.getByRole("img", { name: /^Photo 2 of 2/ }).getAttribute("src")) ?? "";
       await page.getByRole("button", { name: "Make photo 2 the cover photo" }).click();
 
       await page.getByRole("button", { name: "Preview →" }).click();
@@ -159,7 +163,8 @@ test.describe("/post", () => {
         expect(p).not.toMatch(/^https?:|token=/);
         expect(p.startsWith(`${USER_ID}/`)).toBe(true);
       }
-      expect(photos[0]).toBe(cap.uploads[1]); // reorder respected
+      expect(secondSrc).toContain(photos[0]); // the photo moved to cover is stored first
+      expect(new Set(photos)).toEqual(new Set(cap.uploads));
       expect(cap.inserts[0].price).toBe(750);
       await expect(page.getByRole("link", { name: "View your listing" })).toHaveAttribute("href", "/listing/11111111-2222-4333-8444-555555555555");
     });
