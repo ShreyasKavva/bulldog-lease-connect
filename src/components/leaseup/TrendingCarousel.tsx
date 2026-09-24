@@ -75,7 +75,7 @@ export function TrendingCarousel({
               <Link
                 to="/listing/$id"
                 params={{ id: l.id }}
-                aria-label={`${l.title?.trim() || "Sublease"}, $${Number(l.price).toLocaleString("en-US")} per month`}
+                aria-label={`View ${l.title?.trim() || "sublease"}, $${Number(l.price).toLocaleString("en-US")} per month`}
                 onClick={(e) => {
                   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
                   e.preventDefault();

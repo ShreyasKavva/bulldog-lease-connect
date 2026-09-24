@@ -583,7 +583,7 @@ export function ListingDetailSheet({
                     key={l.id}
                     to="/listing/$id"
                     params={{ id: l.id }}
-                    aria-label={`${l.title?.trim() || "Sublease"}, $${l.price.toLocaleString()} per month`}
+                    aria-label={`View ${l.title?.trim() || "sublease"}, $${l.price.toLocaleString()} per month`}
                     onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault(); onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
                     className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 group relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg bg-muted shadow-card"
                   >
@@ -686,7 +686,7 @@ export function ListingDetailSheet({
                     key={l.id}
                     to="/listing/$id"
                     params={{ id: l.id }}
-                    aria-label={`${l.title?.trim() || "Sublease"}, $${l.price.toLocaleString()} per month`}
+                    aria-label={`View ${l.title?.trim() || "sublease"}, $${l.price.toLocaleString()} per month`}
                     onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault(); onOpenChange(false); setTimeout(() => window.dispatchEvent(new CustomEvent("lu:open-listing", { detail: l.id })), 50); }}
                     className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-44 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-surface text-left transition hover:shadow-md dark:border-border"
                   >

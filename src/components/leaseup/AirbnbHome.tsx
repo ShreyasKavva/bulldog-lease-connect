@@ -581,7 +581,7 @@ export function AirbnbHome({
                     <Link
                       to="/listing/$id"
                       params={{ id: l.id }}
-                      aria-label={`${l.title?.trim() || "Sublease"}, $${l.price} per month`}
+                      aria-label={`View ${l.title?.trim() || "sublease"}, $${l.price} per month`}
                       onClick={(e) => openInPlace(e, () => onOpen(l))}
                       className="absolute inset-0 z-10 rounded-xl focus:outline-none"
                     />
@@ -1124,7 +1124,7 @@ function FeaturedListingCard({
       <Link
         to="/listing/$id"
         params={{ id: featured.id }}
-        aria-label={`${featured.title?.trim() || "Sublease"}, $${featured.price.toLocaleString()} per month`}
+        aria-label={`View ${featured.title?.trim() || "sublease"}, $${featured.price.toLocaleString()} per month`}
         onClick={(e) => openInPlace(e, () => onOpen(featured))}
         className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       >

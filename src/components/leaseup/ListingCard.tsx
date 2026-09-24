@@ -274,7 +274,7 @@ export function ListingCard({
         to="/listing/$id"
         params={{ id: listing.id }}
         onClick={handleOpenLink}
-        aria-label={`${listing.title?.trim() || "Sublease"}, $${Number(listing.price).toLocaleString("en-US")} per month`}
+        aria-label={`View ${listing.title?.trim() || "sublease"}, $${Number(listing.price).toLocaleString("en-US")} per month`}
         className="absolute inset-0 z-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       />
       <div
