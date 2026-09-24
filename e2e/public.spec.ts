@@ -50,7 +50,9 @@ test.describe("/browse filters", () => {
 
       await page.reload();
       await waitForBrowse(page);
-      expect(page.url()).toContain(c.qs.split("&")[0]);
+      // Router may JSON-quote values (bedrooms=2 -> bedrooms=%222%22); compare decoded.
+      const [k, v] = c.qs.split("&")[0].split("=");
+      expect(new URL(page.url()).searchParams.get(k)?.replace(/"/g, "")).toBe(v);
       expect(await cardLinks(page).count()).toBe(filtered);
     });
   }
