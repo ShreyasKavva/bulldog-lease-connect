@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Flame, Heart } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { ListingPhoto } from "./ListingPhoto";
 import type { Listing } from "@/lib/leaseup/types";
 import { cn } from "@/lib/utils";
@@ -67,12 +68,21 @@ export function TrendingCarousel({
           return (
             <div
               key={l.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onOpen(l)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(l); } }}
-              className="group w-[220px] flex-none cursor-pointer snap-start overflow-hidden rounded-2xl bg-surface text-left shadow-card-md transition hover:-translate-y-0.5 hover:shadow-card-lg"
+              className="group relative w-[220px] flex-none cursor-pointer snap-start overflow-hidden rounded-2xl bg-surface text-left shadow-card-md transition focus-within:ring-2 focus-within:ring-indigo-600 hover:-translate-y-0.5 hover:shadow-card-lg"
             >
+              {/* Q510 — stretched real link; plain left click still opens the
+                  slide-out, modified clicks fall through to the browser. */}
+              <Link
+                to="/listing/$id"
+                params={{ id: l.id }}
+                aria-label={`${l.title?.trim() || "Sublease"}, $${Number(l.price).toLocaleString("en-US")} per month`}
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                  e.preventDefault();
+                  onOpen(l);
+                }}
+                className="absolute inset-0 z-10 rounded-2xl focus:outline-none"
+              />
               <div className="relative h-[200px] w-full overflow-hidden bg-muted">
                 {/* Q482 — same honest placeholder everywhere; no stand-in photos. */}
                 <ListingPhoto src={l.photo_urls?.[0]} alt={l.title} size="md" className="h-full w-full object-cover transition group-hover:scale-105" loading="lazy" />
@@ -84,7 +94,7 @@ export function TrendingCarousel({
                   onClick={(e) => handleSave(e, l)}
                   aria-label={saved ? "Unsave" : "Save"}
                   title={saved ? "Remove from Saved" : "Save to see it in Saved"}
-                  className="absolute right-2 top-2 flex items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
+                  className="absolute right-2 top-2 z-20 flex items-center gap-1 transition-transform hover:scale-110 active:scale-95 touch-manipulation"
                 >
                   <span className="grid h-8 w-8 place-items-center rounded-full border border-white/30 bg-black/25 shadow-sm backdrop-blur-sm">
                     <Heart
