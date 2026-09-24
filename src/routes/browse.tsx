@@ -413,12 +413,20 @@ function Browse() {
   const listView = s.view === "list";
 
   /** Q160 — remember the last chosen browse layout. */
+  // Q511 — the stored view is restored ONCE per visit to /browse. Re-running it
+  // every time `view` goes missing turned Back into a trap: stepping back to a
+  // history entry with no ?view= immediately rewrote it to the stored "map"
+  // (replace), so the visitor could never get back out of the map view.
+  const viewRestoredRef = useRef(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (s.view) {
+      viewRestoredRef.current = true;
       try { window.localStorage.setItem("leasup_browse_view", s.view); } catch { /* ignore */ }
       return;
     }
+    if (viewRestoredRef.current) return;
+    viewRestoredRef.current = true;
     let stored: string | null = null;
     try { stored = window.localStorage.getItem("leasup_browse_view"); } catch { /* ignore */ }
     // Q355 — allowlist: only a real view value is restored; anything else is
