@@ -186,11 +186,12 @@ async function findConversation(
   listingId: string | null,
   lookingPostId: string | null,
 ): Promise<string | null> {
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("conversations")
     .select("id, listing_id, looking_post_id")
     .eq("participant_1_id", a)
     .eq("participant_2_id", b);
+  if (error) console.error("findConversation lookup failed", error);
   // Q183 — dedupe key is (p1, p2, listing_id, looking_post_id): a pair can hold
   // one listing thread AND one roommate-post thread without colliding.
   const match = rows?.find(

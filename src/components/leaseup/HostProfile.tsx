@@ -3,6 +3,7 @@
  * Public: anyone can view. Owner sees an "Edit profile" button.
  */
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,13 +137,18 @@ export function HostProfile({ userId }: { userId: string }) {
     : null;
   const responds = responseLabel(profile.response_rate);
 
+  const [opening, setOpening] = useState(false);
   async function handleMessage() {
     if (!user) { openSignIn(`/profile/${userId}`); return; }
+    if (opening) return;
+    setOpening(true);
     try {
       const convId = await getOrCreateConversation(user.id, userId, null);
       navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch {
       navigate({ to: "/messages" });
+    } finally {
+      setOpening(false);
     }
   }
 
@@ -152,7 +158,9 @@ export function HostProfile({ userId }: { userId: string }) {
       <button
         type="button"
         onClick={handleMessage}
-        className="mt-4 w-full rounded-full bg-[#FF5A5F] py-3 font-semibold text-white transition active:scale-[0.98]"
+        disabled={opening}
+        aria-busy={opening}
+        className="mt-4 w-full rounded-full bg-[#FF5A5F] py-3 font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
       >
         Message {first}
       </button>

@@ -182,10 +182,19 @@ export function ProfileView({ userId }: { userId: string }) {
     }
   }
 
+  const [opening, setOpening] = useState(false);
   async function handleMessage() {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } as any }); return; }
-    const convId = await getOrCreateConversation(user.id, userId, null);
-    navigate({ to: "/", search: { conversation: convId } as any });
+    if (opening) return;
+    setOpening(true);
+    try {
+      const convId = await getOrCreateConversation(user.id, userId, null);
+      navigate({ to: "/", search: { conversation: convId } as any });
+    } catch (e) {
+      toast.error(friendlyError(e, "Couldn't open that conversation. Try again."));
+    } finally {
+      setOpening(false);
+    }
   }
 
   async function handleConnect() {
@@ -273,7 +282,7 @@ export function ProfileView({ userId }: { userId: string }) {
                 <Pencil className="h-4 w-4" /> Edit Profile
               </Button>
             ) : (
-              <Button onClick={handleMessage} className="w-full gap-2 bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
+              <Button onClick={handleMessage} disabled={opening} aria-busy={opening} className="w-full gap-2 bg-primary hover:bg-primary-dark text-primary-foreground font-bold">
                 <MessageCircle className="h-4 w-4" /> Message →
               </Button>
             )}
