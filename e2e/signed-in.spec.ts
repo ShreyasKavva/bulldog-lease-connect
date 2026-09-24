@@ -28,7 +28,7 @@ test("send a message to a poster", async ({ signedIn: page }) => {
   await expect(page.getByText(/\[e2e\] automated test/).last()).toBeVisible();
 });
 
-test("post wizard reaches the review step", async ({ signedIn: page }) => {
+test("post wizard opens for a signed-in user (does not publish)", async ({ signedIn: page }) => {
   // Stops before the final publish so no listing is created.
   await page.goto("/post");
   await expect(page.getByRole("heading").first()).toBeVisible();
