@@ -21,7 +21,7 @@ async function axeSerious(page: Page) {
         nodes: v.nodes
           .map((n: any) => n.target.join(" "))
           // BottomNav is owned by separate queued work; reported, not failed here.
-          .filter((t: string) => !/BottomNav|nav\[aria-label="Primary"\]|fixed bottom-0/.test(t)),
+          .filter((t: string) => !/^a\[aria-label="(Home|Browse|Messages|Saved|Post)"\] > \.text-xs$/.test(t)),
       }))
       .filter((v: any) => v.nodes.length > 0);
   });
@@ -80,10 +80,10 @@ test.describe("homepage", () => {
     }
     expect([...reached].sort()).toEqual([...cardHrefs].sort());
 
-    const rails = page.getByRole("region", { name: /Just posted|Available this month|Under/ });
+    const rails = page.locator('main [role="region"][tabindex="0"]');
     expect(await rails.count()).toBeGreaterThan(0);
     const rail = rails.first();
-    await expect(rail).toHaveAttribute("tabindex", "0");
+    await expect(rail).toHaveAttribute("aria-label", /\S/);
     const canScroll = await rail.evaluate((el) => el.scrollWidth > el.clientWidth);
     if (canScroll) {
       await rail.focus();
