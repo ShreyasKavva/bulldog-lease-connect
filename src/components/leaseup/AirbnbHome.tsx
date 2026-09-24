@@ -1107,10 +1107,12 @@ function FeaturedListingCard({
         Most popular {campus ? `near ${campus.short_name ?? campus.name}` : "this week"}
       </h2>
 
-      <button
-        type="button"
-        onClick={() => onOpen(featured)}
-        className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md"
+      <Link
+        to="/listing/$id"
+        params={{ id: featured.id }}
+        aria-label={`${featured.title?.trim() || "Sublease"}, $${featured.price.toLocaleString()} per month`}
+        onClick={(e) => openInPlace(e, () => onOpen(featured))}
+        className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       >
         <div className="relative w-full overflow-hidden bg-muted">
           <ListingPhoto
