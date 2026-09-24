@@ -101,13 +101,18 @@ function RoommatesPage() {
     });
   }, [feed, mode, budgetFilter, moveInFilter]);
 
+  const [openingChat, setOpeningChat] = useState(false);
   async function handleMessage(target: RoommateProfileWithUser) {
     if (!user) { openSignIn("/roommates"); return; }
+    if (openingChat) return;
+    setOpeningChat(true);
     try {
       const convId = await getOrCreateConversation(user.id, target.user_id, null);
       navigate({ to: "/messages/$conversationId", params: { conversationId: convId } });
     } catch (e: any) {
       toast.error(friendlyError(e, "Couldn't open chat"));
+    } finally {
+      setOpeningChat(false);
     }
   }
 

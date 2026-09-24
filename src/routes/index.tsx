@@ -200,10 +200,12 @@ function Home() {
 
   async function startConvWith(otherId: string) {
     if (!user) return;
-    const id = await getOrCreateConversation(user.id, otherId, null);
-    setActiveConv(id);
-    setMessagesOpen(true);
-    setProfileViewId(null);
+    try {
+      const id = await getOrCreateConversation(user.id, otherId, null);
+      setActiveConv(id);
+      setMessagesOpen(true);
+      setProfileViewId(null);
+    } catch (e) { toast.error(friendlyError(e, "Couldn't open that conversation. Try again.")); }
   }
 
   // Cross-component "open this listing" event (used by "People also saved" etc.)

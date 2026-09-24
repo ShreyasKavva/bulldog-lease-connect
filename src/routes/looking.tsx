@@ -271,14 +271,19 @@ function LookingForPage() {
   // Q183 — messaging a Roommate Search post opens a real thread tied to that
   // post (conversations dedupe on participants + listing_id + looking_post_id,
   // so re-clicking Message always returns to the same conversation).
+  const [openingChat, setOpeningChat] = useState(false);
   async function startConv(otherId: string, lookingPostId: string | null = null) {
     if (!user) return openSignIn("/looking");
     if (otherId === user.id) return;
+    if (openingChat) return;
+    setOpeningChat(true);
     try {
       const id = await getOrCreateConversation(user.id, otherId, null, lookingPostId);
       navigate({ to: "/messages/$conversationId", params: { conversationId: id } });
     } catch (e: any) {
       toast.error(friendlyError(e, "Couldn't open the chat"));
+    } finally {
+      setOpeningChat(false);
     }
   }
 

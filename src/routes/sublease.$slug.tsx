@@ -18,6 +18,7 @@ import { campusShortName, campusFullName } from "@/lib/leaseup/campus-name";
 import { MapPin, Sparkles, Plus, MessageCircle, Search, Handshake, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { copyToClipboard, shareToGroupMe, withUtm } from "@/lib/leaseup/share";
 import { posterName, posterFirstName, profileDisplayName } from "@/lib/leaseup/display-name";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
@@ -203,10 +204,12 @@ function CampusPage() {
   async function handleMessage(l: Listing) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
     if (l.user_id === user.id) { toast("That's your own listing"); return; }
-    const id = await getOrCreateConversation(user.id, l.user_id, l.id);
-    setActiveConv(id);
-    setMessagesOpen(true);
-    setSelected(null);
+    try {
+      const id = await getOrCreateConversation(user.id, l.user_id, l.id);
+      setActiveConv(id);
+      setMessagesOpen(true);
+      setSelected(null);
+    } catch (e) { toast.error(friendlyError(e, "Couldn't open that conversation. Try again.")); }
   }
 
   const filtered = useMemo(() => {
@@ -239,9 +242,11 @@ function CampusPage() {
   async function handleMessageUser(userId: string) {
     if (!user) { navigate({ to: "/auth", search: { mode: "in" } }); return; }
     if (userId === user.id) { toast("That's your own post"); return; }
-    const id = await getOrCreateConversation(user.id, userId, null);
-    setActiveConv(id);
-    setMessagesOpen(true);
+    try {
+      const id = await getOrCreateConversation(user.id, userId, null);
+      setActiveConv(id);
+      setMessagesOpen(true);
+    } catch (e) { toast.error(friendlyError(e, "Couldn't open that conversation. Try again.")); }
   }
 
 
@@ -620,8 +625,10 @@ function CampusPage() {
       <ProfileSheet userId={profileId} open={!!profileId} onOpenChange={(o) => !o && setProfileId(null)}
         onMessage={async (otherId) => {
           if (!user) return;
-          const id = await getOrCreateConversation(user.id, otherId, null);
-          setActiveConv(id); setMessagesOpen(true); setProfileId(null);
+          try {
+            const id = await getOrCreateConversation(user.id, otherId, null);
+            setActiveConv(id); setMessagesOpen(true); setProfileId(null);
+          } catch (e) { toast.error(friendlyError(e, "Couldn't open that conversation. Try again.")); }
         }} />
       <PostListingDialog open={posting} onOpenChange={setPosting} />
     </div>
