@@ -1102,6 +1102,7 @@ export function PostWizard({ userId }: { userId: string }) {
                     {d.photos.map((p, i) => (
                       <li
                         key={p.path}
+                        data-photo-path={p.path}
                         draggable
                         onDragStart={() => setDragIdx(i)}
                         onDragOver={(e) => e.preventDefault()}

@@ -149,7 +149,7 @@ test.describe("/post", () => {
       await expect(page.locator("#post-photos-error")).not.toContainText(/duplicate key|constraint/i);
 
       // reorder: make photo 2 the cover (uploads finish in any order, so read it off the page)
-      const secondSrc = (await page.getByRole("img", { name: /^Photo 2 of 2/ }).getAttribute("src")) ?? "";
+      const secondSrc = (await page.locator("li[data-photo-path]").nth(1).getAttribute("data-photo-path")) ?? "";
       await page.getByRole("button", { name: "Make photo 2 the cover photo" }).click();
 
       await page.getByRole("button", { name: "Preview →" }).click();
@@ -163,7 +163,7 @@ test.describe("/post", () => {
         expect(p).not.toMatch(/^https?:|token=/);
         expect(p.startsWith(`${USER_ID}/`)).toBe(true);
       }
-      expect(secondSrc).toContain(photos[0]); // the photo moved to cover is stored first
+      expect(photos[0]).toBe(secondSrc); // the photo moved to cover is stored first
       expect(new Set(photos)).toEqual(new Set(cap.uploads));
       expect(cap.inserts[0].price).toBe(750);
       await expect(page.getByRole("link", { name: "View your listing" })).toHaveAttribute("href", "/listing/11111111-2222-4333-8444-555555555555");
