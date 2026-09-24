@@ -113,7 +113,7 @@ function Section({
   query: Parameters<typeof fetchCuratedListings>[0];
   divider: boolean;
 }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["home-section", id, query],
     staleTime: 60_000,
     queryFn: async () => {
@@ -133,7 +133,8 @@ function Section({
 
   if (isLoading) {
     return (
-      <section className="mt-10">
+      <section className="mt-10" aria-busy="true" aria-label={`${title} — loading`}>
+        <span className="sr-only" role="status">Loading {title.toLowerCase()}…</span>
         <div className="h-6 w-48 animate-pulse rounded-lg bg-gray-100 dark:bg-muted" />
         <div className="mt-4 flex gap-4 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -148,22 +149,43 @@ function Section({
     );
   }
 
+  // Q520 — a failed read used to vanish silently; say so and offer a retry.
+  if (isError && !data) {
+    return (
+      <section className="mt-10" aria-labelledby={`home-rail-${id}`}>
+        <h2 id={`home-rail-${id}`} className="text-lg font-semibold">{title}</h2>
+        <div role="alert" className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-muted/40 px-4 py-4 text-sm text-foreground">
+          <span>We couldn't load these subleases.</span>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="min-h-11 rounded-full bg-[#4F46E5] px-4 text-sm font-semibold text-white hover:bg-[#4338CA] disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
+          >
+            {isFetching ? "Retrying…" : "Try again"}
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   if (items.length < (minItems ?? 1)) return null;
 
   return (
-    <section className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>
+    <section aria-labelledby={`home-rail-${id}`} className={cn("mt-10", divider && "border-b border-gray-100 pb-10 dark:border-border")}>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">{heading}</h2>
+        <h2 id={`home-rail-${id}`} className="text-lg font-semibold">{heading}</h2>
         {/* Q478 — 44px tap target on phones (was a 20px-tall text link). */}
         <Link
           to="/browse"
           search={seeAllSearch as never}
-          className="inline-flex min-h-[44px] shrink-0 items-center text-sm text-gray-500 hover:underline dark:text-muted-foreground"
+          aria-label={`See all: ${heading}`}
+          className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded text-sm text-gray-600 hover:underline dark:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
         >
           See all
         </Link>
       </div>
-      <ScrollRow>
+      <ScrollRow label={heading}>
         {items.map((l) => (
           <div key={l.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
             <ListingCard
@@ -179,7 +201,7 @@ function Section({
   );
 }
 
-export function ScrollRow({ children }: { children: React.ReactNode }) {
+export function ScrollRow({ children, label = "Listings" }: { children: React.ReactNode; label?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(true);
@@ -211,7 +233,12 @@ export function ScrollRow({ children }: { children: React.ReactNode }) {
       <div
         ref={ref}
         onScroll={measure}
-        className="mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // Q520 — a named, focusable region: arrow keys scroll it, and Tab
+        // moves card to card (the browser scrolls each card into view).
+        role="region"
+        aria-label={label}
+        tabIndex={0}
+        className="mt-4 flex snap-x rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2  snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
@@ -234,7 +261,7 @@ function ArrowBtn({ side, onClick }: { side: "left" | "right"; onClick: () => vo
       onClick={onClick}
       aria-label={side === "left" ? "Scroll left" : "Scroll right"}
       className={cn(
-        "absolute top-[28%] z-10 hidden h-7 w-7 place-items-center rounded-full border border-gray-100 bg-white shadow-md transition hover:scale-105 md:grid dark:border-border dark:bg-surface",
+        "absolute top-[28%] z-10 hidden h-11 w-11 place-items-center outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2 rounded-full border border-gray-100 bg-white shadow-md transition hover:scale-105 md:grid dark:border-border dark:bg-surface",
         side === "left" ? "-left-3" : "-right-3",
       )}
     >

@@ -115,7 +115,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
         className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm dark:border-border dark:bg-surface"
       >
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-6 sm:px-10 lg:px-20">
-          <Link to="/" className="text-xl font-bold tracking-tight text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
+          <Link to="/" className="inline-flex min-h-11 items-center rounded text-xl font-bold tracking-tight outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2 text-gray-900 shrink-0 dark:text-foreground">LeaseUp</Link>
 
           {/* Center: functional compact search bar on non-home routes */}
           {!isHome && (
@@ -291,7 +291,7 @@ export function TopBar(_legacy: LegacyProps = {}) {
             ) : (
               <button
                 onClick={openSignIn}
-                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-background dark:border-border"
+                className="min-h-11 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-background dark:border-border outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
               >Sign In</button>
             )}
           </div>

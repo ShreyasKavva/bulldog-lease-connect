@@ -98,7 +98,7 @@ export function CampusPills({
 
               <span>{label}</span>
               <span
-                className={`text-xs font-medium ${n > 0 ? "text-emerald-600" : "text-muted-foreground"}`}
+                className={`text-xs font-medium ${n > 0 ? "text-emerald-700" : "text-muted-foreground"}`}
               >
                 {n > 0 ? `${n} live` : "New"}
               </span>

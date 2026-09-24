@@ -455,14 +455,15 @@ export function ListingCard({
           to="/listing/$id"
           params={{ id: listing.id }}
           onClick={handleOpenLink}
-          className="block"
+          className="-my-2 block rounded py-2 outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
         >
-          <h3 className="truncate text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
+          {/* Q520 — two lines instead of a mid-word "Georgia Te…" cut. */}
+          <h3 className="line-clamp-2 break-words text-sm font-medium text-foreground">{listing.title?.trim() || "Untitled sublease"}</h3>
         </Link>
         {campusLabel ? (
           <p className="mt-1 truncate text-sm text-muted-foreground">{campusLabel}</p>
         ) : null}
-        <p className="mt-0.5 text-xs text-muted-foreground/80">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {views > 0 && <>{views} view{views === 1 ? "" : "s"} · </>}
           Posted {postedAgo(listing.created_at)}
         </p>

@@ -159,6 +159,28 @@ export function campusInitials(input: { name?: string | null; short_name?: strin
   return words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
 }
 
+/** Q520 — school colour pairs like orange-on-navy fail 4.5:1; keep the brand
+ *  background and switch the initials to white or near-black when needed. */
+function luminance(hex: string): number | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+}
+function ratio(a: number, b: number) {
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+function readableOn(bg: string, fg: string): string {
+  const lb = luminance(bg);
+  const lf = luminance(fg);
+  if (lb === null || lf === null || ratio(lb, lf) >= 4.5) return fg;
+  return ratio(lb, 1) >= ratio(lb, luminance("#111827")!) ? "#FFFFFF" : "#111827";
+}
+
 export function CampusMark({
   campus,
   className,
@@ -169,8 +191,10 @@ export function CampusMark({
   textClassName?: string;
 }) {
   const key = campus.id || campus.slug || campus.name || "campus";
-  const { bg, fg } =
+  const brand =
     brandColor(campus.name) ?? brandColor(campus.short_name) ?? PALETTE[hash(key) % PALETTE.length];
+  const bg = brand.bg;
+  const fg = readableOn(brand.bg, brand.fg);
   const initials = campusInitials(campus);
   return (
     <span
