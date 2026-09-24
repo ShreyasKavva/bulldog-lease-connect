@@ -568,9 +568,16 @@ export function AirbnbHome({
                 return (
                   <div
                     key={l.id}
-                    onClick={() => onOpen(l)}
-                    className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
+                    className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition focus-within:ring-2 focus-within:ring-indigo-600 hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
                   >
+                    {/* Q510 — stretched real link (no nested controls here). */}
+                    <Link
+                      to="/listing/$id"
+                      params={{ id: l.id }}
+                      aria-label={`${l.title?.trim() || "Sublease"}, $${l.price} per month`}
+                      onClick={(e) => openInPlace(e, () => onOpen(l))}
+                      className="absolute inset-0 z-10 rounded-xl focus:outline-none"
+                    />
                     <span className="absolute right-1.5 top-1.5 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] text-white">Today</span>
                     <ListingPhoto src={l.photo_urls?.[0]} alt={l.title} size="sm" className="h-24 w-full object-cover" />
                     <div className="px-2 py-1.5">
