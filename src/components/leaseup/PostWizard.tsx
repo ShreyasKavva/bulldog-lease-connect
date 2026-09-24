@@ -689,16 +689,17 @@ export function PostWizard({ userId }: { userId: string }) {
         </div>
 
         <div className="flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-xl font-bold">LeaseUp</Link>
+          <Link to="/" className={cn("rounded text-xl font-bold", FOCUS_RING)}>LeaseUp</Link>
           <button
             type="button"
             onClick={() => {
+              exitingRef.current = true;
               saveDraftNow();
               toast.success("Draft saved");
               navigate({ to: "/" });
             }}
 
-            className="inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-500 transition hover:text-gray-900 dark:hover:text-foreground"
+            className={cn("inline-flex min-h-[44px] items-center justify-center rounded-full px-3 text-sm text-gray-600 transition hover:text-gray-900 dark:text-muted-foreground dark:hover:text-foreground", FOCUS_RING)}
           >
             Save &amp; exit
           </button>
@@ -723,7 +724,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 setRecovered(null);
                 setRestored({ hadPhotos });
               }}
-              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+              className="rounded-lg bg-amber-700 px-3 py-1.5 min-h-11 inline-flex items-center text-xs font-semibold text-white hover:bg-amber-800"
             >
               Resume
             </button>
@@ -735,7 +736,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 lsRemove(draftKey(userId));
                 setRecovered(null);
               }}
-              className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
+              className="rounded-lg border border-amber-300 px-3 py-1.5 min-h-11 inline-flex items-center text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
             >
               Start fresh
             </button>
@@ -755,7 +756,7 @@ export function PostWizard({ userId }: { userId: string }) {
                 lsRemove(draftKey(userId));
                 setRestored(null);
               }}
-              className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+              className="rounded-lg border border-indigo-300 px-3 py-1.5 min-h-11 inline-flex items-center text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
             >
               Start fresh
             </button>
@@ -763,7 +764,7 @@ export function PostWizard({ userId }: { userId: string }) {
               type="button"
               onClick={() => setRestored(null)}
               aria-label="Dismiss"
-              className="rounded-full p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+              className="grid h-11 w-11 place-items-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
             >
               <X className="h-4 w-4" />
             </button>
@@ -781,14 +782,14 @@ export function PostWizard({ userId }: { userId: string }) {
               <Link
                 to="/auth"
                 search={{ mode: "in", next: "/post" } as any}
-                className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+                className="rounded-lg bg-amber-700 px-3 py-1.5 min-h-11 inline-flex items-center text-xs font-semibold text-white hover:bg-amber-800"
               >
                 Sign in again
               </Link>
               <button
                 type="button"
                 onClick={() => setSessionExpired(false)}
-                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
+                className="rounded-lg border border-amber-300 px-3 py-1.5 min-h-11 inline-flex items-center text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20"
               >
                 Dismiss
               </button>
