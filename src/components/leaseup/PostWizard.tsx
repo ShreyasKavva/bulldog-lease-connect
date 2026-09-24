@@ -376,11 +376,24 @@ export function PostWizard({ userId }: { userId: string }) {
     input.id = "post-campus";
     input.setAttribute("aria-label", "Campus");
     input.style.minHeight = "44px";
-    campusWrapRef.current?.querySelectorAll<HTMLElement>("[role=option]").forEach((o) => { o.style.minHeight = "44px"; });
+
     input.setAttribute("aria-invalid", fieldErrors.campus ? "true" : "false");
     if (fieldErrors.campus) input.setAttribute("aria-describedby", "post-campus-error");
     else input.removeAttribute("aria-describedby");
   });
+
+  // Q519 — the picker's suggestion rows render asynchronously; keep each one
+  // at a 44px tap height on this page only.
+  useEffect(() => {
+    const wrap = campusWrapRef.current;
+    if (!wrap || typeof MutationObserver === "undefined") return;
+    const size = () =>
+      wrap.querySelectorAll<HTMLElement>("[role=option]").forEach((o) => { o.style.minHeight = "44px"; });
+    const mo = new MutationObserver(size);
+    mo.observe(wrap, { childList: true, subtree: true });
+    size();
+    return () => mo.disconnect();
+  }, [d.step, successId]);
 
   useEffect(() => {
     if (successId) successHeadingRef.current?.focus();
