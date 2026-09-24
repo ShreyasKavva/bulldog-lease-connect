@@ -238,7 +238,18 @@ export function ListingCard({
     setIdx((p) => Math.min(Math.max(p + dir, 0), photos.length - 1));
   }
 
+  /** Q510 — photo/body sit above the stretched link, so modified or middle
+   *  clicks there are forwarded as "open in new tab" instead of the slide-out. */
+  function openNewTabIfModified(e: React.MouseEvent): boolean {
+    if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1)) return false;
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(`/listing/${listing.id}`, "_blank", "noopener");
+    return true;
+  }
+
   function handlePhotoClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (openNewTabIfModified(e)) return;
     if (swiped.current) { swiped.current = false; e.stopPropagation(); return; }
     const res = picker.handleClick(e);
     if (res.suppressed) { e.stopPropagation(); return; }
@@ -281,6 +292,7 @@ export function ListingCard({
         ref={picker.containerRef}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
         onClick={handlePhotoClick}
+        onAuxClick={(e) => { if (e.button === 1) openNewTabIfModified(e); }}
         onMouseLeave={() => setIdx(0)}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
@@ -438,7 +450,7 @@ export function ListingCard({
 
 
 
-      <div className="relative z-10 px-1 py-3" onClick={onOpen}>
+      <div className="relative z-10 px-1 py-3" onClick={(e) => { if (!openNewTabIfModified(e)) onOpen(); }} onAuxClick={(e) => { if (e.button === 1) openNewTabIfModified(e); }}>
         <Link
           to="/listing/$id"
           params={{ id: listing.id }}
