@@ -20,6 +20,13 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts, publicLocationLabel, PUBLIC_LISTING_COLUMNS } from "@/lib/leaseup/queries";
 import { campusShortName } from "@/lib/leaseup/campus-name";
 import { Link, useNavigate } from "@tanstack/react-router";
+
+/** Q510 — plain left click opens in place; modified clicks fall through to the link. */
+function openInPlace(e: React.MouseEvent, open: () => void) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  e.preventDefault();
+  open();
+}
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
@@ -568,9 +575,16 @@ export function AirbnbHome({
                 return (
                   <div
                     key={l.id}
-                    onClick={() => onOpen(l)}
-                    className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
+                    className="relative w-40 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white transition focus-within:ring-2 focus-within:ring-indigo-600 hover:shadow-md dark:border-border dark:bg-surface sm:w-44"
                   >
+                    {/* Q510 — stretched real link (no nested controls here). */}
+                    <Link
+                      to="/listing/$id"
+                      params={{ id: l.id }}
+                      aria-label={`View ${l.title?.trim() || "sublease"}, $${l.price} per month`}
+                      onClick={(e) => openInPlace(e, () => onOpen(l))}
+                      className="absolute inset-0 z-10 rounded-xl focus:outline-none"
+                    />
                     <span className="absolute right-1.5 top-1.5 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] text-white">Today</span>
                     <ListingPhoto src={l.photo_urls?.[0]} alt={l.title} size="sm" className="h-24 w-full object-cover" />
                     <div className="px-2 py-1.5">
@@ -1107,10 +1121,12 @@ function FeaturedListingCard({
         Most popular {campus ? `near ${campus.short_name ?? campus.name}` : "this week"}
       </h2>
 
-      <button
-        type="button"
-        onClick={() => onOpen(featured)}
-        className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md"
+      <Link
+        to="/listing/$id"
+        params={{ id: featured.id }}
+        aria-label={`View ${featured.title?.trim() || "sublease"}, $${featured.price.toLocaleString()} per month`}
+        onClick={(e) => openInPlace(e, () => onOpen(featured))}
+        className="group block w-full overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:shadow-card-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       >
         <div className="relative w-full overflow-hidden bg-muted">
           <ListingPhoto
@@ -1146,7 +1162,7 @@ function FeaturedListingCard({
             View listing <ArrowRight className="h-4 w-4" />
           </span>
         </div>
-      </button>
+      </Link>
     </section>
   );
 }
