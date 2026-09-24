@@ -20,6 +20,13 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampusListingCounts, publicLocationLabel, PUBLIC_LISTING_COLUMNS } from "@/lib/leaseup/queries";
 import { campusShortName } from "@/lib/leaseup/campus-name";
 import { Link, useNavigate } from "@tanstack/react-router";
+
+/** Q510 — plain left click opens in place; modified clicks fall through to the link. */
+function openInPlace(e: React.MouseEvent, open: () => void) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  e.preventDefault();
+  open();
+}
 import { MapPin, Flame, Sparkles, ArrowRight, Search, SlidersHorizontal, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
@@ -1155,7 +1162,7 @@ function FeaturedListingCard({
             View listing <ArrowRight className="h-4 w-4" />
           </span>
         </div>
-      </button>
+      </Link>
     </section>
   );
 }
