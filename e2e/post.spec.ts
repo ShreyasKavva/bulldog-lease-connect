@@ -47,7 +47,7 @@ async function mockBackend(page: Page, opts: { failUploadName?: string; insertDe
   });
   await page.goto("/");
   await page.evaluate(
-    ([k, v]) => localStorage.setItem(k, v),
+    ([k, v]) => { localStorage.setItem(k, v); localStorage.setItem("leaseup-onboarding-complete", "true"); },
     [STORAGE_KEY, JSON.stringify({
       access_token: "e2e.fake.token", refresh_token: "fake", token_type: "bearer",
       expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600 * 24, user,
