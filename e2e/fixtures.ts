@@ -34,6 +34,9 @@ export async function waitForBrowse(page: Page) {
       timeout: 20_000,
     })
     .toBe(true);
+  // SSR paints cards before React hydrates; clicks/keys before hydration do a
+  // full-page navigation instead of opening the slide-out.
+  await page.waitForLoadState("networkidle").catch(() => {});
 }
 
 export function cardLinks(page: Page) {

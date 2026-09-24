@@ -31,9 +31,9 @@ test.describe("/browse grid", () => {
 test.describe("/browse filters", () => {
   const cases: { name: string; qs: string }[] = [
     { name: "price", qs: "max_price=1" },
-    { name: "beds", qs: "bedrooms=9" },
+    { name: "beds", qs: "bedrooms=2" },
     { name: "dates", qs: "from=2031-01-01&to=2031-02-01" },
-    { name: "campus", qs: "campus=harvard-university" },
+    { name: "campus", qs: "campus=georgia-tech" },
   ];
 
   for (const c of cases) {
@@ -60,11 +60,11 @@ test.describe("/browse view toggle", () => {
   test("Grid -> Map -> Grid works", async ({ page }) => {
     await page.goto("/browse?view=grid");
     await waitForBrowse(page);
-    await page.getByRole("button", { name: /^Map$/ }).first().click();
+    await page.locator("button[aria-pressed]", { hasText: /^Map$/ }).click();
     await expect(page).toHaveURL(/view=map/);
     await expect(page.locator(".leaflet-container").first()).toBeVisible();
     await expect(page.locator(".leaflet-control-attribution").first()).toContainText("OpenStreetMap");
-    await page.getByRole("button", { name: /^Grid$/ }).first().click();
+    await page.locator("button[aria-pressed]", { hasText: /^Grid$/ }).click();
     await expect(page).toHaveURL(/view=grid/);
     await expect(cardLinks(page).first()).toBeVisible();
     // Remembered view must not trap the user in map after reload.
