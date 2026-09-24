@@ -19,8 +19,6 @@ async function axeSerious(page: Page) {
         id: v.id,
         nodes: v.nodes
           .map((n: any) => n.target.join(" "))
-          // BottomNav belongs to separate queued work; reported, not failed here.
-          .filter((t: string) => !/^a\[aria-label="(Home|Browse|Messages|Saved|Post)"\] > \.text-xs$/.test(t)),
       }))
       .filter((v: any) => v.nodes.length > 0);
   });

@@ -57,6 +57,20 @@ function AppShell() {
   const handleRefresh = async () => {
     await router.invalidate();
   };
+  // Q522 — gated pages (e.g. /my-listings, /join) send signed-out visitors to
+  // /auth. /auth stays full-screen (no TopBar), but keeps the mobile tab bar
+  // so every signed-out gate offers the same way out. /onboarding (a
+  // signed-in, step-by-step flow) still hides it.
+  if (path.startsWith("/auth")) {
+    return (
+      <>
+        <div className="pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+          <Outlet />
+        </div>
+        <BottomNav />
+      </>
+    );
+  }
   if (hideNav) return <Outlet />;
   return (
     <>

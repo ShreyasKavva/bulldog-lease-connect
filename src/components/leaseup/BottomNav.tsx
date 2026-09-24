@@ -137,7 +137,7 @@ function Tab({
         "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 transition-transform active:scale-90",
         accent || active
           ? "text-[#4F46E5]"
-          : "text-gray-400",
+          : "text-gray-600 dark:text-gray-400",
         active && "font-semibold",
       )}
     >

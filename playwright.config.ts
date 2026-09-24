@@ -15,7 +15,7 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:8080",
+    baseURL: process.env.E2E_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:8080",
     trace: "retain-on-failure",
     viewport: { width: 1280, height: 900 },
   },
