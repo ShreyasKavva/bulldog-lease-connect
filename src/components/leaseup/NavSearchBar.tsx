@@ -61,10 +61,10 @@ export function NavSearchBar() {
   return (
     <>
       {/* Desktop */}
-      <div className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm hover:shadow lg:flex dark:border-border dark:bg-background">
+      <div className="hidden min-w-0 flex-1 max-w-md items-center gap-2 rounded-full border border-gray-200 bg-white pl-4 pr-1 text-sm text-gray-600 shadow-sm hover:shadow lg:flex dark:border-border dark:bg-background">
         <Popover open={open === "where"} onOpenChange={(o) => setOpen(o ? "where" : null)}>
           <PopoverTrigger asChild>
-            <button className={cn("flex min-w-0 items-center gap-1.5", seg)}>
+            <button className={cn("flex min-h-11 min-w-0 items-center gap-1.5", seg)}>
               <MapPin className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{value.where || "Where"}</span>
             </button>
@@ -88,7 +88,7 @@ export function NavSearchBar() {
 
         <Popover open={open === "when"} onOpenChange={(o) => setOpen(o ? "when" : null)}>
           <PopoverTrigger asChild>
-            <button className={cn("flex min-w-0 items-center gap-1.5", seg)}>
+            <button className={cn("flex min-h-11 min-w-0 items-center gap-1.5", seg)}>
               <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{dateLabel}</span>
             </button>
@@ -115,7 +115,7 @@ export function NavSearchBar() {
 
         <Popover open={open === "who"} onOpenChange={(o) => setOpen(o ? "who" : null)}>
           <PopoverTrigger asChild>
-            <button className={cn("flex min-w-0 items-center gap-1.5", seg)}>
+            <button className={cn("flex min-h-11 min-w-0 items-center gap-1.5", seg)}>
               <Users className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{whoLabel}</span>
             </button>
@@ -143,7 +143,7 @@ export function NavSearchBar() {
         <button
           onClick={submit}
           aria-label="Search subleases"
-          className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+          className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gray-900 relative before:absolute before:-inset-0.5 before:content-[''] text-white dark:bg-white dark:text-gray-900"
         >
           <Search className="h-3.5 w-3.5" />
         </button>
