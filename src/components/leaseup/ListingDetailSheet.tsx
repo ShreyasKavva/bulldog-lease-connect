@@ -3,7 +3,7 @@ import { ListingPhoto, ListingPhotoFallback } from "./ListingPhoto";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { Listing } from "@/lib/leaseup/types";
 import { roommatePrefChips } from "@/lib/leaseup/roommate-prefs";
-import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
+import { BadgeCheck, Bed, Bath, MapPin, Calendar, Share2, MessageSquare, Phone, Flag, Eye, Heart as HeartIcon, MessageCircle, Clock } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,11 @@ import { CostCalculator } from "@/components/leaseup/CostCalculator";
 import { ExpiryChip } from "@/components/leaseup/ExpiryChip";
 import { hasSchoolEmail, SCHOOL_EMAIL_LINE, NO_SCHOOL_EMAIL_LINE } from "@/lib/leaseup/school-email";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
+import { PhotoLightbox } from "./PhotoLightbox";
+import { SafetyTips } from "./SafetyTips";
+
+/** Q513 — one visible indigo focus ring for every hand-rolled control. */
+const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2";
 
 
 
@@ -58,6 +63,13 @@ export function ListingDetailSheet({
   const { user } = useSession();
   const [statusSaving, setStatusSaving] = useState(false);
   const qc = useQueryClient();
+  /** Q513 — the slide-out opens from a card link, not a Radix Trigger, so Radix
+   *  has nowhere to return focus on close. Remember the opener ourselves. */
+  const openerRef = useRef<HTMLElement | null>(null);
+  if (open && openerRef.current === null && typeof document !== "undefined") {
+    const a = document.activeElement as HTMLElement | null;
+    openerRef.current = a && a !== document.body ? a : null;
+  }
 
 
   useEffect(() => {
@@ -263,10 +275,21 @@ export function ListingDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+      {/* Q513 — the built-in close button (first child) was painted under the
+            Save heart: 16×16 and unclickable. Enlarge it to 44×44, lift it
+            above the gallery, and give it a visible indigo focus ring. */}
+      <SheetContent
+        side="right"
+        aria-modal="true"
+        onCloseAutoFocus={(e) => {
+          const el = openerRef.current;
+          openerRef.current = null;
+          if (el && el.isConnected) { e.preventDefault(); el.focus(); }
+        }}
+        className="w-full sm:max-w-xl overflow-y-auto p-0 [&>button:first-child]:z-20 [&>button:first-child]:grid [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:place-items-center [&>button:first-child]:rounded-full [&>button:first-child]:bg-white/90 [&>button:first-child]:text-foreground [&>button:first-child]:opacity-100 [&>button:first-child]:shadow-md [&>button:first-child]:backdrop-blur-sm [&>button:first-child]:right-3 [&>button:first-child]:top-3 [&>button:first-child_svg]:h-5 [&>button:first-child_svg]:w-5 [&>button:first-child]:focus:ring-[#4F46E5]"
+      >
 
         <SheetHeader className="sr-only">
-          <SheetTitle>{listing.title}</SheetTitle>
           <SheetDescription>Listing details, photos and the option to message the poster.</SheetDescription>
         </SheetHeader>
 
@@ -274,7 +297,7 @@ export function ListingDetailSheet({
         <a
           href={`/listing/${listing.id}`}
           onClick={() => onOpenChange(false)}
-          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-md backdrop-blur-sm transition hover:bg-white before:absolute before:-inset-2 before:content-['']"
+          className={cn("absolute left-3 top-3 z-10 inline-flex min-h-11 items-center rounded-full bg-white/90 px-4 text-xs font-semibold text-gray-900 shadow-md backdrop-blur-sm transition hover:bg-white", FOCUS)}
         >
           View full page →
         </a>
@@ -292,13 +315,19 @@ export function ListingDetailSheet({
               }}
             >
               {photos.map((p, i) => (
-                <SheetPhoto
+                <button
                   key={i}
-                  src={p}
-                  alt={`${listing.title} — photo ${i + 1}`}
+                  type="button"
                   onClick={() => setLightboxIndex(i)}
-                  className="h-full w-full flex-shrink-0 cursor-zoom-in snap-start object-cover"
-                />
+                  aria-label={`Open photo ${i + 1} of ${photos.length} full screen`}
+                  className={cn("h-full w-full flex-shrink-0 cursor-zoom-in snap-start focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#4F46E5]")}
+                >
+                  <SheetPhoto
+                    src={p}
+                    alt={`${listing.title} — photo ${i + 1} of ${photos.length}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
               ))}
             </div>
           ) : (
@@ -307,22 +336,23 @@ export function ListingDetailSheet({
 
           {/* Photo X of Y counter */}
           {photos.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+            <div aria-hidden className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
               {activePhoto + 1} / {photos.length}
             </div>
           )}
 
           {/* Save + Share — top-right overlay */}
-          <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <div className="absolute right-3 top-16 flex flex-col gap-2">
             {onSave && (
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); haptic("light"); onSave(listing); }}
                 aria-label={isSaved ? "Unsave listing" : "Save listing"}
-                className="relative grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 before:absolute before:-inset-0.5 before:content-['']"
+                className={cn("grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95", FOCUS)}
               >
                 <HeartIcon
-                  className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")}
+                  className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-gray-900")}
+                  aria-hidden
                 />
               </button>
             )}
@@ -345,9 +375,9 @@ export function ListingDetailSheet({
               }}
 
               aria-label="Share listing"
-              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 before:absolute before:-inset-0.5 before:content-['']"
+              className={cn("grid h-11 w-11 place-items-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform hover:scale-105 active:scale-95", FOCUS)}
             >
-              <Share2 className="h-4 w-4 text-foreground/70" />
+              <Share2 className="h-4 w-4 text-gray-900" aria-hidden />
             </button>
           </div>
         </div>
@@ -356,12 +386,15 @@ export function ListingDetailSheet({
             {photos.map((p, i) => (
               <button
                 key={i}
+                type="button"
+                aria-label={`Show photo ${i + 1} of ${photos.length}`}
+                aria-current={i === activePhoto ? "true" : undefined}
                 onClick={() => {
                   setActivePhoto(i);
                   const el = galleryRef.current;
                   if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
                 }}
-                className={`relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 ${i === activePhoto ? "border-primary" : "border-transparent"}`}
+                className={cn("relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border-2", i === activePhoto ? "border-primary" : "border-transparent", FOCUS)}
               >
                 <SheetPhoto src={p} alt="" className="h-full w-full object-cover" />
               </button>
@@ -371,20 +404,20 @@ export function ListingDetailSheet({
 
         <div className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white ${listing.type === "transfer" ? "bg-success" : "bg-foreground/80"}`}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white ${listing.type === "transfer" ? "bg-emerald-700" : "bg-foreground/80"}`}>
                   {listing.type === "transfer" ? "Lease Transfer" : "Sublease"}
                 </span>
                 {hasSchoolEmail(listing.profile) && (
-                  <span className="flex items-center gap-1 text-xs font-semibold text-success">
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                     <BadgeCheck className="h-4 w-4" />{SCHOOL_EMAIL_LINE}
                   </span>
                 )}
               </div>
-              <h2 className="mt-1 text-2xl font-extrabold">{listing.title}</h2>
+              <SheetTitle className="mt-1 break-words text-2xl font-extrabold">{listing.title}</SheetTitle>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />{listing.area ?? "Near campus"}
+                <MapPin className="h-4 w-4" aria-hidden />{listing.area ?? "Near campus"}
               </div>
             </div>
             <div className="text-right">
@@ -501,8 +534,9 @@ export function ListingDetailSheet({
 
           {listing.profile && (
             <button
+              type="button"
               onClick={() => onViewProfile(listing.user_id)}
-              className="flex w-full items-center gap-3 rounded-xl border p-3 text-left hover:bg-background"
+              className={cn("flex w-full items-center gap-3 rounded-xl border p-3 text-left hover:bg-background", FOCUS)}
             >
               <UserAvatar
                 name={posterName(listing)}
@@ -548,6 +582,7 @@ export function ListingDetailSheet({
               className="h-11 gap-2"
             ><Phone className="h-4 w-4" />Contact</Button>
           </div>
+          {user?.id !== listing.user_id && <SafetyTips />}
           <TourBookingPanel listing={listing} />
 
 
@@ -569,8 +604,9 @@ export function ListingDetailSheet({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <ShareToStoryButton listing={listing} label="Share to Story" />
             <button
+              type="button"
               onClick={() => { if (!user) { toast.error("Sign in to report"); return; } setReportOpen(true); }}
-              className="relative flex min-h-11 items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
+              className="relative flex min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] items-center gap-1.5 rounded-md py-2 text-xs font-semibold text-muted-foreground hover:text-red-600"
             ><Flag className="h-3.5 w-3.5" />Report</button>
           </div>
 
@@ -598,9 +634,6 @@ export function ListingDetailSheet({
             </div>
           )}
 
-          <p className="rounded-md bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">
-            Always visit the property in person before sending any payment. Never pay a deposit via Venmo, CashApp, or wire transfer without a signed agreement.
-          </p>
 
           {/* Q166 — social proof row */}
           {((views ?? 0) > 0 || saveCount > 0 || msgCount > 0) && (() => {
@@ -613,7 +646,7 @@ export function ListingDetailSheet({
               <div className="mt-2 flex items-center gap-3 border-t border-gray-100 py-2.5 text-xs text-gray-500 dark:border-border dark:text-muted-foreground">
                 {items.map((t, i) => (
                   <span key={t} className="flex items-center gap-1">
-                    {i > 0 && <span className="text-gray-300">·</span>}
+                    {i > 0 && <span aria-hidden className="text-gray-300">·</span>}
                     {t}
                   </span>
                 ))}
@@ -626,7 +659,7 @@ export function ListingDetailSheet({
           <button
             type="button"
             onClick={() => onViewProfile(listing.user_id)}
-            className="flex w-full items-center gap-3 rounded-xl border bg-muted/40 p-3 text-left transition hover:bg-muted/60"
+            className={cn("flex w-full items-center gap-3 rounded-xl border bg-muted/40 p-3 text-left transition hover:bg-muted/60", FOCUS)}
           >
             {host?.avatar_url ? (
               <img src={host.avatar_url} alt={hostName} className="h-12 w-12 rounded-full object-cover" />
@@ -639,7 +672,7 @@ export function ListingDetailSheet({
               <div className="flex items-center gap-1.5">
                 <span className="truncate font-bold text-foreground">{hostName}</span>
                 {(host?.verified_email ?? listing.profile?.verified_email) && (
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
                     <BadgeCheck className="h-3 w-3" /> School email
                   </span>
                 )}
@@ -722,7 +755,8 @@ export function ListingDetailSheet({
               <button
                 type="button"
                 onClick={() => { haptic("light"); onSave(listing); }}
-                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 text-sm font-semibold transition hover:bg-background dark:border-border"
+                aria-pressed={!!isSaved}
+                className={cn("flex h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 text-sm font-semibold transition hover:bg-background dark:border-border", FOCUS)}
               >
                 <HeartIcon className={cn("h-4 w-4", isSaved ? "fill-red-500 text-red-500" : "text-foreground/70")} />
                 {isSaved ? "Saved" : "Save"}
@@ -734,7 +768,7 @@ export function ListingDetailSheet({
           {user?.id !== listing.user_id && (
             <Button
               onClick={() => onMessage(listing)}
-              className="h-12 w-full gap-2 bg-[#FF5A5F] text-white font-bold text-sm hover:bg-[#e04e53]"
+              className="h-12 w-full gap-2 bg-[#4F46E5] text-white font-bold text-sm hover:bg-[#4338CA] focus-visible:ring-[#4F46E5]"
             >
               <MessageSquare className="h-4 w-4" />
               Message {hostDisplayName || "Host"} →
@@ -777,47 +811,13 @@ export function ListingDetailSheet({
       <ReportListingDialog open={reportOpen} onOpenChange={setReportOpen} listingId={listing.id} />
       <SecureDepositDialog listing={listing} open={depositOpen} onOpenChange={setDepositOpen} />
       {lightboxIndex !== null && photos.length > 0 && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
-          onClick={() => setLightboxIndex(null)}
-        >
-          <button
-            aria-label="Close"
-            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
-            className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-          {photos.length > 1 && (
-            <>
-              <button
-                aria-label="Previous"
-                onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length); }}
-                className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button
-                aria-label="Next"
-                onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % photos.length); }}
-                className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            </>
-          )}
-          <SheetPhoto
-            src={photos[lightboxIndex]}
-            alt={`${listing.title} — photo ${lightboxIndex + 1}`}
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[90vw] object-contain"
-          />
-          {photos.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-              {lightboxIndex + 1} / {photos.length}
-            </div>
-          )}
-        </div>
+        <PhotoLightbox
+          photos={photos}
+          index={lightboxIndex}
+          title={listing.title}
+          onIndex={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </Sheet>
   );
