@@ -12,7 +12,7 @@ import { formatDateRange as sharedRange, formatDay, toDate } from "@/lib/leaseup
 import { friendlyError } from "@/lib/leaseup/friendly-error";
 import { createFileRoute, Link, useNavigate, useRouter, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { signPaths } from "@/lib/leaseup/signed-urls";
@@ -39,8 +39,8 @@ import { getLastBrowse } from "@/lib/leaseup/last-browse";
 import type { Listing, LookingForPost, Profile } from "@/lib/leaseup/types";
 import {
   Home, Bed, Bath, MapPin, Calendar, BadgeCheck, Eye, Bookmark, Clock,
-  Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon, X as XIcon,
-  ChevronLeft, ChevronRight, ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
+  Sofa, Snowflake, Car, WashingMachine, PawPrint, Zap, Wifi as WifiIcon,
+  ArrowRight, Pencil, CheckCircle2, Heart, Share2, ArrowUp,
   MoreHorizontal, Flag, Grid2x2, Loader2,
 } from "lucide-react";
 import { ReportListingDialog } from "@/components/leaseup/ReportListingDialog";
@@ -53,6 +53,11 @@ import {
 import { posterName, posterFirstName } from "@/lib/leaseup/display-name";
 import { listingPageTitle } from "@/lib/leaseup/listing-title";
 import { UserAvatar } from "@/components/leaseup/UserAvatar";
+import { PhotoLightbox } from "@/components/leaseup/PhotoLightbox";
+import { SafetyTips } from "@/components/leaseup/SafetyTips";
+
+/** Q513 — one visible indigo focus ring for every hand-rolled control. */
+const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2";
 
 
 
@@ -568,7 +573,7 @@ function ListingDetailPage() {
                 <button
                   type="button"
                   onClick={() => navigate({ to: "/post", search: { relist: listing.id } as any })}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark"
+                  className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-dark", FOCUS)}
                 >
                   Relist <ArrowRight className="h-4 w-4" />
                 </button>
@@ -597,7 +602,7 @@ function ListingDetailPage() {
                   <Link
                     to="/listing/$id/edit"
                     params={{ id: listing.id }}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-4 text-sm font-medium shadow-sm transition active:scale-95"
+                    className={cn("inline-flex h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-4 text-sm font-medium shadow-sm transition active:scale-95", FOCUS)}
                   >
                     <Pencil className="h-4 w-4" /> Edit listing
                   </Link>
@@ -607,7 +612,8 @@ function ListingDetailPage() {
                     type="button"
                     onClick={handleToggleSave}
                     aria-label={isSaved ? "Remove from saved" : "Save listing"}
-                    className="grid h-11 w-11 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90 md:h-10 md:w-10"
+                    aria-pressed={isSaved}
+                    className={cn("grid h-11 w-11 place-items-center rounded-full border border-border bg-surface shadow-sm transition active:scale-90", FOCUS)}
                   >
                     <Heart className={cn("h-5 w-5", isSaved ? "fill-[#FF5A5F] text-[#FF5A5F]" : "text-foreground")} />
                   </button>
@@ -618,7 +624,7 @@ function ListingDetailPage() {
             {isSaved && !isOwner && (
               <p className="mt-2 text-xs text-muted-foreground">
                 Saved to your list ·{" "}
-                <button type="button" onClick={handleToggleSave} className="font-semibold text-primary hover:underline">
+                <button type="button" onClick={handleToggleSave} className={cn("inline-flex min-h-11 items-center font-semibold text-primary hover:underline", FOCUS)}>
                   Remove
                 </button>
               </p>
@@ -769,7 +775,7 @@ function ListingDetailPage() {
                 <button
                   type="button"
                   onClick={() => setReportOpen(true)}
-                  className="underline underline-offset-2 hover:text-foreground"
+                  className={cn("inline-flex min-h-11 items-center underline underline-offset-2 hover:text-foreground", FOCUS)}
                 >
                   Report it →
                 </button>
@@ -802,7 +808,7 @@ function ListingDetailPage() {
                   <button
                     type="button"
                     onClick={() => messageAboutRoommates()}
-                    className="mt-3 text-sm text-[#FF5A5F] hover:underline"
+                    className={cn("mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#4F46E5] hover:underline", FOCUS)}
                   >
                     Message host about roommates →
                   </button>
@@ -847,7 +853,7 @@ function ListingDetailPage() {
                       <dd className="font-semibold">
                         {viewCount.toLocaleString()}
                         {viewsThisWeek > 0 && (
-                          <span className="ml-2 text-xs font-medium text-emerald-600">
+                          <span className="ml-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                             ↑ {viewsThisWeek} this week
                           </span>
                         )}
@@ -863,7 +869,7 @@ function ListingDetailPage() {
                         <dd className="font-semibold">
                           {msgStats.inbound.toLocaleString()}
                           {unanswered > 0 && (
-                            <span className="ml-2 text-xs font-medium text-amber-600">
+                            <span className="ml-2 text-xs font-medium text-amber-700 dark:text-amber-400">
                               ({unanswered} unanswered)
                             </span>
                           )}
@@ -936,7 +942,7 @@ function ListingDetailPage() {
               <Link
                 to="/browse"
                 search={{ campus: listing.campus_id } as never}
-                className="shrink-0 text-sm text-gray-500 hover:underline dark:text-muted-foreground"
+                className={cn("inline-flex min-h-11 shrink-0 items-center text-sm text-gray-500 hover:underline dark:text-muted-foreground", FOCUS)}
               >
                 See all →
               </Link>
@@ -990,21 +996,21 @@ function ListingDetailPage() {
               <button
                 type="button"
                 onClick={handleShare}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95"
+                className={cn("inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition active:scale-95", FOCUS)}
               >
                 <Share2 className="h-4 w-4" /> Share listing
               </button>
               <button
                 type="button"
                 onClick={handleShareGroupMe}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95"
+                className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95", FOCUS)}
               >
                 Share to GroupMe
               </button>
               <button
                 type="button"
                 onClick={handleShareDiscord}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95"
+                className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold shadow-sm transition active:scale-95", FOCUS)}
               >
                 Copy for Discord
               </button>
@@ -1029,8 +1035,9 @@ function ListingDetailPage() {
 
       {/* Lightbox */}
       {lightboxIndex !== null && photos.length > 0 && (
-        <Lightbox
+        <PhotoLightbox
           photos={photos}
+          title={listing.title}
           index={lightboxIndex}
           onIndex={setLightboxIndex}
           onClose={() => setLightboxIndex(null)}
@@ -1057,7 +1064,7 @@ function PhotoImg({
   if (failed) {
     return (
       <div className={cn("grid h-full w-full place-items-center bg-muted text-muted-foreground", className)}>
-        <Home className="h-10 w-10" strokeWidth={1.5} aria-label={alt} />
+        <Home className="h-10 w-10" strokeWidth={1.5} role="img" aria-label={alt} />
       </div>
     );
   }
@@ -1079,7 +1086,7 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
     return (
       <div className="grid h-[45vh] w-full place-items-center bg-muted lg:h-[55vh]">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Home className="h-16 w-16" strokeWidth={1.5} />
+          <Home className="h-16 w-16" strokeWidth={1.5} aria-hidden />
           <span className="text-sm">No photos yet</span>
         </div>
       </div>
@@ -1092,7 +1099,8 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
       <button
         type="button"
         onClick={() => onOpen(0)}
-        className="block h-[45vh] w-full overflow-hidden lg:h-[55vh]"
+        aria-label="Open photo full screen"
+        className={cn("block h-[45vh] w-full overflow-hidden lg:h-[55vh]", "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#4F46E5]")}
       >
         <PhotoImg src={photos[0]} alt={`${title} — photo 1`} className="h-full w-full cursor-zoom-in object-cover" />
       </button>
@@ -1112,7 +1120,8 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
           <button
             type="button"
             onClick={() => onOpen(0)}
-            className="col-span-3 row-span-2 overflow-hidden"
+            aria-label={`Open photo 1 of ${photos.length} full screen`}
+            className={cn("col-span-3 row-span-2 overflow-hidden", FOCUS)}
           >
             <PhotoImg
               src={photos[0]}
@@ -1125,7 +1134,8 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
               key={i}
               type="button"
               onClick={() => onOpen(i + 1)}
-              className="overflow-hidden"
+              aria-label={`Open photo ${i + 2} of ${photos.length} full screen`}
+              className={cn("overflow-hidden", FOCUS)}
             >
               <PhotoImg
                 src={p}
@@ -1145,9 +1155,9 @@ function Gallery({ photos, title, onOpen }: { photos: string[]; title: string; o
             <button
               type="button"
               onClick={() => onOpen(0)}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-900/10 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-md transition hover:bg-gray-50"
+              className={cn("inline-flex min-h-11 items-center gap-2 rounded-lg border border-gray-900/10 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-md transition hover:bg-gray-50", FOCUS)}
             >
-              <Grid2x2 className="h-4 w-4" /> Show all {photos.length} photos
+              <Grid2x2 className="h-4 w-4" aria-hidden /> Show all {photos.length} photos
             </button>
           </div>
         )}
@@ -1171,16 +1181,22 @@ function MobileCarousel({ photos, title, onOpen }: { photos: string[]; title: st
         className="flex h-[45vh] snap-x snap-mandatory overflow-x-auto scroll-smooth"
       >
         {photos.map((p, i) => (
-          <PhotoImg
+          <button
             key={i}
-            src={p}
-            alt={`${title} — photo ${i + 1}`}
+            type="button"
             onClick={() => onOpen(i)}
-            className="h-full w-full flex-shrink-0 cursor-zoom-in snap-start object-cover"
-          />
+            aria-label={`Open photo ${i + 1} of ${photos.length} full screen`}
+            className="h-full w-full flex-shrink-0 cursor-zoom-in snap-start focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#4F46E5]"
+          >
+            <PhotoImg
+              src={p}
+              alt={`${title} — photo ${i + 1} of ${photos.length}`}
+              className="h-full w-full object-cover"
+            />
+          </button>
         ))}
       </div>
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+      <div aria-hidden className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
         {active + 1} / {photos.length}
       </div>
     </div>
@@ -1292,7 +1308,8 @@ function Description({ text }: { text: string }) {
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
-          className="mt-2 text-sm font-semibold text-primary underline underline-offset-4 sm:hidden"
+          aria-expanded={expanded}
+          className={cn("mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4 sm:hidden", FOCUS)}
         >
           {expanded ? "Show less" : "Read more"}
         </button>
@@ -1327,7 +1344,7 @@ function HostCard({
 
   return (
     <div className="flex items-center gap-4">
-      <Link to="/profile/$userId" params={{ userId: listing.user_id }} className="shrink-0">
+      <Link to="/profile/$userId" params={{ userId: listing.user_id }} aria-hidden tabIndex={-1} className="shrink-0">
         <UserAvatar
           name={posterName({ display_name: listing.display_name, profile: poster as any })}
           avatarUrl={poster?.avatar_url}
@@ -1341,11 +1358,11 @@ function HostCard({
           <Link
             to="/profile/$userId"
             params={{ userId: listing.user_id }}
-            className="truncate text-base font-bold hover:underline"
+            className={cn("inline-flex min-h-11 min-w-0 items-center truncate text-base font-bold hover:underline", FOCUS)}
           >
             Hosted by {posterName({ display_name: listing.display_name, profile: poster as any })}
           </Link>
-          {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
+          {isEdu && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" role="img" aria-label="School email" />}
         </div>
         {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
         {activeLabel && <p className="mt-0.5 text-xs text-muted-foreground">{activeLabel}</p>}
@@ -1384,7 +1401,7 @@ function PriceSidebar({
       <div className="mt-4 space-y-2 rounded-xl border border-border p-3 text-sm">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 truncate text-foreground">
+          <span className="min-w-0 break-words text-foreground">
             {formatRange(listing.available_from, listing.available_to)}
           </span>
         </div>
@@ -1400,7 +1417,7 @@ function PriceSidebar({
         onClick={onMessage}
         size="lg"
         disabled={messaging}
-        className="mt-5 w-full bg-[#FF5A5F] text-white hover:bg-[#e04e53]"
+        className="mt-5 h-12 w-full bg-[#4F46E5] text-white hover:bg-[#4338CA] focus-visible:ring-[#4F46E5]"
       >
         {isOwner ? (
           <>
@@ -1422,6 +1439,8 @@ function PriceSidebar({
           🧪 Sample listing — this one is posted by the LeaseUp demo account, so don't expect a reply.
         </p>
       )}
+
+      {!isOwner && <SafetyTips className="mt-3" />}
 
 
       {months > 0 && (
@@ -1471,7 +1490,7 @@ function MobileStickyCTA({
           <div className="text-lg font-black leading-none">${listing.price.toLocaleString()}</div>
           <div className="text-[11px] text-muted-foreground">per month</div>
         </div>
-        <Button onClick={onMessage} disabled={messaging} className="ml-auto flex-1 bg-[#FF5A5F] text-white hover:bg-[#e04e53]" size="lg">
+        <Button onClick={onMessage} disabled={messaging} className="ml-auto h-12 flex-1 bg-[#4F46E5] text-white hover:bg-[#4338CA] focus-visible:ring-[#4F46E5]" size="lg">
           {isOwner ? "Edit listing" : messaging ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Opening chat…
@@ -1489,131 +1508,6 @@ function MobileStickyCTA({
   );
 }
 
-
-// ---------------- lightbox ----------------
-
-function Lightbox({
-  photos, index, onIndex, onClose,
-}: {
-  photos: string[];
-  index: number;
-  onIndex: (i: number) => void;
-  onClose: () => void;
-}) {
-  const go = useCallback(
-    (delta: number) => onIndex((index + delta + photos.length) % photos.length),
-    [index, photos.length, onIndex],
-  );
-
-  // Escape/arrows are bound on window so they work wherever focus sits,
-  // including inside the thumbnail strip.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowRight") go(1);
-      else if (e.key === "ArrowLeft") go(-1);
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [go, onClose]);
-
-  // Mobile swipe: 50px horizontal threshold.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
-
-  const touchX = useRef<number | null>(null);
-  function onTouchStart(e: React.TouchEvent) {
-    touchX.current = e.changedTouches[0]?.clientX ?? null;
-  }
-  function onTouchEnd(e: React.TouchEvent) {
-    const start = touchX.current;
-    touchX.current = null;
-    if (start == null) return;
-    const dx = (e.changedTouches[0]?.clientX ?? start) - start;
-    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
-  }
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex flex-col bg-black/95"
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
-      <div className="flex items-center justify-end px-4 py-3 text-white">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-        >
-          <XIcon className="h-5 w-5" />
-        </button>
-      </div>
-
-      <div className="relative flex flex-1 items-center justify-center px-4">
-        <PhotoImg
-          src={photos[index]}
-          alt={`Photo ${index + 1} of ${photos.length}`}
-          className="mx-auto max-h-[80vh] max-w-[90vw] object-contain"
-        />
-
-        {photos.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous photo"
-              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next photo"
-              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </>
-        )}
-        <div className="absolute bottom-6 left-0 right-0 text-center text-sm text-white">
-          {index + 1} / {photos.length}
-        </div>
-      </div>
-
-      {photos.length > 1 && (
-        <div className="flex justify-center gap-2 overflow-x-auto px-4 pb-5 pt-10">
-          {photos.map((p, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onIndex(i)}
-              aria-label={`View photo ${i + 1}`}
-              aria-current={i === index}
-              className={cn(
-                "h-12 w-16 shrink-0 overflow-hidden rounded-md transition",
-                i === index ? "border-2 border-white" : "opacity-60 hover:opacity-100",
-              )}
-            >
-              <PhotoImg src={p} alt="" className="h-full w-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>,
-    document.body,
-  );
-}
 
 // ---------------- misc ----------------
 
@@ -1687,7 +1581,7 @@ function DeepLinkBackLink() {
         <button
           type="button"
           onClick={() => router.history.back()}
-          className="-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
+          className={cn("-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground", FOCUS)}
         >
           ← Back
         </button>
@@ -1703,7 +1597,7 @@ function DeepLinkBackLink() {
       <Link
         to="/browse"
         search={fallbackSearch as any}
-        className="-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
+        className={cn("-ml-3 inline-flex min-h-[44px] items-center rounded-full px-3 text-sm text-muted-foreground hover:text-foreground", FOCUS)}
       >
 
         ← Back to browse
@@ -1738,7 +1632,7 @@ function MoreOptionsMenu({ onReport }: { onReport: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition hover:bg-muted md:h-10 md:w-10"
+        className={cn("grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition hover:bg-muted", FOCUS)}
       >
         <MoreHorizontal className="h-5 w-5" />
       </button>
@@ -1754,7 +1648,8 @@ function MoreOptionsMenu({ onReport }: { onReport: () => void }) {
               setOpen(false);
               onReport();
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-muted"
+            autoFocus
+            className={cn("flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-muted", FOCUS)}
           >
             <Flag className="h-4 w-4" /> Report this listing
           </button>
