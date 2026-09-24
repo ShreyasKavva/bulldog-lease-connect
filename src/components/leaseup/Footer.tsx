@@ -10,7 +10,7 @@ import { fetchCampuses } from "@/lib/leaseup/campuses";
 import { fetchCampusListingCounts } from "@/lib/leaseup/queries";
 
 const headingCls = "mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-const linkCls = "block py-1 text-sm text-gray-600 transition-colors hover:text-foreground dark:text-muted-foreground";
+const linkCls = "flex min-h-11 items-center rounded text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2 focus-visible:ring-offset-0 text-gray-600 transition-colors hover:text-foreground dark:text-muted-foreground";
 
 export function Footer() {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -69,7 +69,7 @@ export function Footer() {
             href="https://leasup.co"
             target="_blank"
             rel="noreferrer"
-            className={`${linkCls} inline-flex items-center gap-1`}
+            className={`${linkCls} w-fit gap-1`}
           >
             leasup.co <ArrowUpRight className="h-3 w-3" />
           </a>

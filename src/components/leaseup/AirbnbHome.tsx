@@ -427,7 +427,7 @@ export function AirbnbHome({
                 type="button"
                 aria-label="Filters"
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition",
+                  "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2",
                   cat !== "all" || priceIsActive
                     ? "border-gray-900 bg-gray-900 font-semibold text-white dark:border-foreground dark:bg-foreground dark:text-background"
                     : "border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 dark:border-border dark:bg-surface dark:text-foreground",
@@ -709,20 +709,25 @@ export function AirbnbHome({
 
         {!loading && inCat.length === 0 && (
           <div className="mx-auto max-w-md px-6 py-16 text-center">
-            <div className="text-6xl">🏠</div>
-            <h2 className="mt-4 text-xl font-bold">No listings with these filters</h2>
+            <div className="text-6xl" aria-hidden="true">🏠</div>
+            {/* Q520 — with no listings at all, "these filters" was wrong: nothing is filtered. */}
+            <h2 className="mt-4 text-xl font-bold">
+              {listings.length === 0 ? "No subleases posted yet" : "No listings with these filters"}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Try changing the price range or type of place.
+              {listings.length === 0
+                ? "Be the first to list your place — it's free."
+                : "Try changing the price range or type of place."}
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <button
                 onClick={() => navigate({ to: "/post" })}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
+                className="min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
               >Post a sublease →</button>
-              <button
+              {listings.length > 0 && <button
                 onClick={() => { setSearch(EMPTY_SEARCH); setCat("all"); setPriceRange([0, PRICE_CEILING]); }}
-                className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90"
-              >Clear filters</button>
+                className="min-h-11 rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90 outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2"
+              >Clear filters</button>}
             </div>
           </div>
         )}
@@ -788,14 +793,14 @@ export function AirbnbHome({
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/browse"
-                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+                className="inline-flex min-h-11 items-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
               >
                 Browse subleases →
               </Link>
               <button
                 type="button"
                 onClick={onPost}
-                className="rounded-xl border border-white px-5 py-2.5 text-sm text-white hover:bg-white/10"
+                className="min-h-11 rounded-xl border border-white px-5 py-2.5 text-sm text-white hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
               >
                 Post a sublease
               </button>
