@@ -250,6 +250,8 @@ function Home() {
 
   return (
     <>
+      {/* Q520 — the homepage had no main landmark. */}
+      <main id="main-content">
       <AirbnbHome
         listings={listings}
         campuses={campuses}
@@ -266,6 +268,7 @@ function Home() {
       />
 
       <CampusPills title="Popular campuses" highlightLast />
+      </main>
 
 
 
